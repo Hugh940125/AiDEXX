@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="actionBarIconSize">40dp</item>
+        <item name="actionBarTitleTextSize">20sp</item>
+        <item name="settingItemHeight">46dp</item>
+        <item name="settingItemIconSize">40dp</item>
+        <item name="settingItemTitleTextSize">16sp</item>
+        <item name="settingItemValueTextSize">16sp</item>
+    </style>
+
+    <style name="AppThemeDark" parent="AppTheme">
+        <item name="settingItemBackgroundPressed">@color/black_27</item>
+    </style>
+
+    <style name="AppThemeLight" parent="AppTheme">
+        <item name="settingItemBackgroundPressed">@color/gray_f6</item>
+    </style>
+</resources>

@@ -1,0 +1,41 @@
+package com.microtech.aidexx.utils.mmkv
+
+import com.tencent.mmkv.MMKV
+
+class MmkvUtil {
+    companion object {
+        private val INSTANCE = MMKV.defaultMMKV()
+
+        fun encodeString(key: String, value: String) {
+            INSTANCE.encode(key, value)
+        }
+
+        fun decodeString(key: String, defValue: String): String {
+            return INSTANCE.decodeString(key, defValue)
+        }
+
+        fun encodeBoolean(key: String, value: Boolean) {
+            INSTANCE.encode(key, value)
+        }
+
+        fun decodeBoolean(key: String, defValue: Boolean): Boolean {
+            return INSTANCE.decodeBool(key, defValue)
+        }
+
+        fun decodeLong(key: String, defValue: Long): Long {
+            return INSTANCE.decodeLong(key, defValue)
+        }
+
+        fun encodeLong(key: String, defValue: Long) {
+            INSTANCE.encode(key, defValue)
+        }
+
+        fun decodeInt(key: String, defValue: Int): Int {
+            return INSTANCE.decodeInt(key, defValue)
+        }
+
+        fun encodeInt(key: String, value: Int) {
+            INSTANCE.encode(key, value)
+        }
+    }
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ActionBarWidget">
+        <attr name="actionBarBackground" format="color|reference" />
+        <attr name="actionBarIconSize" format="dimension|reference" />
+        <attr name="actionBarTitleTextSize" format="dimension|reference" />
+        <attr name="actionBarTitleTextColor" format="color|reference" />
+        <attr name="titleText" format="string" />
+        <attr name="leftIcon" format="reference" />
+        <attr name="rightIcon" format="reference" />
+        <attr name="titleRightIcon" format="reference" />
+    </declare-styleable>
+    <declare-styleable name="SettingItemWidget">
+        <attr name="settingItemHeight" format="dimension|reference" />
+        <attr name="settingItemBackground" format="color|reference" />
+        <attr name="settingItemBackgroundPressed" format="color|reference" />
+        <attr name="settingItemIconSize" format="dimension|reference" />
+        <attr name="settingItemTitleTextSize" format="dimension|reference" />
+        <attr name="settingItemTitleTextColor" format="color|reference" />
+        <attr name="settingItemValueTextSize" format="dimension|reference" />
+        <attr name="settingItemValueTextColor" format="color|reference" />
+        <attr name="settingItemIconColor" format="color|reference" />
+        <attr name="colorIconArrowNext" format="color|reference" />
+        <attr name="title" format="string" />
+        <attr name="value" format="string" />
+        <attr name="icon" format="reference" />
+        <attr name="has_next" format="boolean" />
+        <attr name="has_down" format="boolean" />
+        <attr name="has_line" format="boolean" />
+        <attr name="has_switch" format="boolean" />
+        <attr name="colorLine" format="reference|color" />
+    </declare-styleable>
+</resources>
