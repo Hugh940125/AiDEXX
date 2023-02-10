@@ -12,12 +12,12 @@
         app:actionBarTitleTextColor="@color/colorPrimary"
         app:leftIcon="@drawable/ic_back" />
 
-    <com.microtechmd.cgms.widget.BaseWebView
+    <com.microtech.aidexx.widget.webview.BaseWebView
         android:id="@+id/web_customer_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    </com.microtechmd.cgms.widget.BaseWebView>
+    </com.microtech.aidexx.widget.webview.BaseWebView>
 
 
 </LinearLayout>

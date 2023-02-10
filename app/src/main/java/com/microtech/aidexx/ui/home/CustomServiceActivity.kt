@@ -27,13 +27,14 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
             finish()
         }
         binding.actionBar.setTitle(getString(R.string.online_service))
-        val mobile = StringUtils.instance()
-            .getPrivacyPhone(UserInfoManager.instance().getPhone())
-        val nickName = UserInfoManager.instance().getNickName()
-        val surName = UserInfoManager.instance().getSurName()
-        val givenName = UserInfoManager.instance().getGivenName()
-        val userId = UserInfoManager.instance().getUserId()
-        val defaultModel = TransmitterManager.instance().getDefaultModel()
+        //TODO 需要完善
+//        val mobile = StringUtils.instance()
+//            .getPrivacyPhone(UserInfoManager.instance().getPhone())
+//        val nickName = UserInfoManager.instance().getNickName()
+//        val surName = UserInfoManager.instance().getSurName()
+//        val givenName = UserInfoManager.instance().getGivenName()
+//        val userId = UserInfoManager.instance().getUserId()
+//        val defaultModel = TransmitterManager.instance().getDefaultModel()
         val name =
             if (nickName.isNotEmpty()) nickName
             else if (surName.isNotEmpty() && givenName.isNotEmpty())
@@ -54,7 +55,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == FILE_CHOOSER_RESULT_CODE) { //处理返回的图片，并进行上传
-            uploadMessageAboveL = binding.webCustomerService.uploadMessageAboveL
+            uploadMessageAboveL = binding.webCustomerService.valueCallback
             uploadMessageAboveL?.apply {
                 onActivityResultAboveL(requestCode, resultCode, data)
 
@@ -64,7 +65,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
 
 
     private fun onActivityResultAboveL(requestCode: Int, resultCode: Int, intent: Intent?) {
-        uploadMessageAboveL = binding.webCustomerService.uploadMessageAboveL
+        uploadMessageAboveL = binding.webCustomerService.valueCallback
         if (requestCode != FILE_CHOOSER_RESULT_CODE || uploadMessageAboveL == null) return
         var results: Array<Uri>? = null
         if (resultCode == RESULT_OK) {
@@ -88,7 +89,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
         uploadMessageAboveL?.apply {
             onReceiveValue(results)
         }
-        binding.webCustomerService.uploadMessageAboveL = null
+        binding.webCustomerService.valueCallback = null
         uploadMessageAboveL = null
     }
 }

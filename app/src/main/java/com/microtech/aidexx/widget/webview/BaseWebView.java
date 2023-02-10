@@ -46,7 +46,7 @@ public class BaseWebView extends LinearLayout {
 
     private OnLoadingUrlListener onLoadingUrlListener;
 
-    public ValueCallback<Uri[]> uploadMessageAboveL;
+    public ValueCallback<Uri[]> valueCallback;
     private final static int FILE_CHOOSER_RESULT_CODE = 10000;
     private TextView titleView;
     private Activity mActivity;
@@ -194,7 +194,7 @@ public class BaseWebView extends LinearLayout {
 
         @Override
         public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-            uploadMessageAboveL = filePathCallback;
+            valueCallback = filePathCallback;
             if (fileChooserParams != null && fileChooserParams.getAcceptTypes().length > 0) {
                 if (1 == fileChooserParams.getAcceptTypes().length && "image/*".equals(fileChooserParams.getAcceptTypes()[0])) {
                     openImageChooserActivity();
