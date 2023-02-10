@@ -1,5 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <declare-styleable name="StateButton">
+
+        <!--text color-->
+        <attr format="color|reference" name="normalTextColor"/>
+        <attr format="color|reference" name="pressedTextColor"/>
+        <attr format="color|reference" name="unableTextColor"/>
+
+        <!--stroke width and color, dash width, dash gap-->
+        <attr format="dimension|reference" name="strokeDashWidth"/>
+        <attr format="dimension|reference" name="strokeDashGap"/>
+        <attr format="dimension|reference" name="normalStrokeWidth"/>
+        <attr format="dimension|reference" name="pressedStrokeWidth"/>
+        <attr format="dimension|reference" name="unableStrokeWidth"/>
+        <attr format="color|reference" name="normalStrokeColor"/>
+        <attr format="color|reference" name="pressedStrokeColor"/>
+        <attr format="color|reference" name="unableStrokeColor"/>
+
+        <!--background color-->
+        <attr format="color|reference" name="normalBackgroundColor"/>
+        <attr format="color|reference" name="pressedBackgroundColor"/>
+        <attr format="color|reference" name="unableBackgroundColor"/>
+
+        <!--background radius-->
+        <attr format="dimension|reference" name="statebutton_radius"/>
+        <attr format="boolean|reference" name="statebutton_round"/>
+
+        <!--animation duration-->
+        <attr format="integer|reference" name="animationDuration"/>
+
+    </declare-styleable>
+    <attr name="shadowBgCustomerService" format="color|reference" />
+    <attr name="bgCustomerService" format="color|reference" />
+    <attr name="followListDialogTextColor" format="color" />
+    <attr name="trendSmallTextColor" format="color" />
+    <attr name="homeIconColor" format="color" />
+    <attr name="homeIconBgColor" format="color" />
+    <attr name="dialogCloseIconColor" format="color" />
+    <attr name="mainTabIconColor" format="color" />
+    <attr name="homeChartBgColor" format="color" />
+    <attr name="bgColorDesc" format="color" />
+    <attr name="bgColorDataOwner" format="color" />
+    <attr name="actionbarIconColor" format="reference" />
+    <attr name="snTextColor" format="color" />
+    <attr name="valueTimeTextColor" format="color" />
+    <attr name="bgTimeTabItem" format="color" />
+    <attr name="bgMainTab" format="color" />
+    <attr name="outlineColor" format="color" />
+    <attr name="appColorPrimary" format="reference" />
+    <attr name="appColorAccent" format="reference" />
+
+    <attr name="containerBackground" format="reference" />
+    <attr name="containerBackgroundLight" format="reference" />
+    <attr name="containerBackgroundDark" format="reference" />
+
+    <attr name="textColorPrimary" format="reference" />
+    <attr name="textColorHint" format="reference" />
+    <attr name="btnItemMarginRight" format="reference|dimension" />
+    <attr name="btnItemMarginLeft" format="reference|dimension" />
+    <attr name="scanBg" format="reference|color" />
+    <attr name="buttonPressColor" format="reference|color" />
+    <attr name="bgNav" format="reference|color" />
+    <attr name="bgTrendItem" format="reference|color" />
+    <attr name="bgHistoryItem" format="reference|color" />
+
+    <attr name="bgRadioButtonUnSelect" format="reference|color" />
+    <attr name="bgRadioButtonSelect" format="reference|color" />
+    <attr name="bgbackground" format="reference|color" />
+
+    <attr name="bgHomeBottom" format="reference|color" />
+    <attr name="bgHomeChart" format="reference|color" />
+
+    <attr name="srcTabHistorySelected" format="reference" />
+    <attr name="srcTabTrend" format="reference" />
+    <attr name="srcTabBg" format="reference" />
+    <attr name="srcTabEvent" format="reference" />
+    <attr name="srcTabHome" format="reference" />
+    <attr name="bgHomeGlucose" format="reference" />
+    <attr name="bgIconAccent" format="reference" />
+    <attr name="bgIconBack" format="reference" />
+    <attr name="colorNavUnSelect" format="reference" />
+    <attr name="bgRectFunc" format="reference" />
+    <attr name="bgHomeChartNew" format="reference" />
+    <!--    <attr name="colorLine" format="reference" />-->
+    <attr name="colorLineChart" format="reference" />
+    <attr name="colorChartText" format="reference" />
+    <attr name="colorTextHomeRemain" format="reference" />
+    <attr name="bgSetting" format="reference" />
+    <attr name="colorTrendDesc" format="reference" />
+    <attr name="bgGuideIcon" format="reference" />
+    <attr name="colorTrendLine" format="reference" />
+    <attr name="colorTrendChartMain" format="reference" />
+    <attr name="colorTrendChart75" format="reference" />
+    <attr name="colorTrendChart90" format="reference" />
+    <attr name="colorDialog" format="reference" />
+    <attr name="colorTitle" format="reference" />
+    <attr name="colorDesc" format="reference" />
+
+    <attr name="colorGlucoseUnkown" format="reference" />
+
+    <attr name="colorGlucoseHigh" format="reference" />
+    <attr name="colorGlucoseNormal" format="reference" />
+    <attr name="colorGlucoseLow" format="reference" />
+    <attr name="colorbtnNormal" format="reference" />
+    <attr name="colorbtnPressed" format="reference" />
+    <attr name="colorFormTitle" format="color" />
+    <attr name="colorHint" format="color" />
+
+    <attr name="dividerLine" format="color" />
+    <attr name="backgroundDarker" format="color" />
+    <attr name="backgroundLighter" format="color" />
+    <attr name="colorSeparate" format="color" />
+
+
+    <declare-styleable name="PieChartView">
+        <attr name="circleRadius" format="dimension" />
+        <attr name="textSize" format="dimension" />
+    </declare-styleable>
+
+    <declare-styleable name="HollowPieChartView">
+        <attr name="pieRadius" format="dimension" />
+        <attr name="pieTextSize" format="dimension" />
+        <attr name="exampleDrawable" format="color|reference" />
+    </declare-styleable>
+
+
     <declare-styleable name="ActionBarWidget">
         <attr name="actionBarBackground" format="color|reference" />
         <attr name="actionBarIconSize" format="dimension|reference" />
@@ -9,6 +134,128 @@
         <attr name="leftIcon" format="reference" />
         <attr name="rightIcon" format="reference" />
         <attr name="titleRightIcon" format="reference" />
+    </declare-styleable>
+
+    <declare-styleable name="EditItemWidget">
+        <attr name="editItemHeight" format="dimension|reference" />
+        <attr name="editItemBackground" format="color|reference" />
+        <attr name="editItemValueBackground" format="color|reference" />
+        <attr name="editItemTitleTextSize" format="dimension|reference" />
+        <attr name="editItemTitleTextColor" format="color|reference" />
+        <attr name="editItemValueTextSize" format="dimension|reference" />
+        <attr name="editItemValueTextColor" format="color|reference" />
+        <attr name="editItemValueHintTextColor" format="color|reference" />
+        <attr name="editItemIconColor" format="color|reference" />
+        <attr name="editable" format="boolean" />
+        <attr name="title" format="string" />
+        <attr name="value" format="string" />
+        <attr name="editNum" format="integer" />
+        <attr name="editUnit" format="string" />
+    </declare-styleable>
+
+    <declare-styleable name="NumberPicker">
+        <attr name="np_width" format="dimension" />
+        <attr name="np_height" format="dimension" />
+        <attr name="np_accessibilityDescriptionEnabled" format="boolean" />
+        <attr name="np_divider" format="reference" />
+        <attr name="np_dividerType" format="enum">
+            <enum name="side_lines" value="0" />
+            <enum name="underline" value="1" />
+        </attr>
+        <attr name="np_dividerColor" format="color" />
+        <attr name="np_dividerDistance" format="dimension" />
+        <attr name="np_dividerLength" format="dimension" />
+        <attr name="np_dividerThickness" format="dimension" />
+        <attr name="np_fadingEdgeEnabled" format="boolean" />
+        <attr name="np_fadingEdgeStrength" format="float" />
+        <attr name="np_formatter" format="string" />
+        <attr name="np_hideWheelUntilFocused" format="boolean" />
+        <attr name="np_itemSpacing" format="dimension" />
+        <attr name="np_lineSpacingMultiplier" format="float" />
+        <attr name="np_max" format="integer" />
+        <attr name="np_maxFlingVelocityCoefficient" format="integer" />
+        <attr name="np_min" format="integer" />
+        <attr name="np_order" format="enum">
+            <enum name="ascending" value="0" />
+            <enum name="descending" value="1" />
+        </attr>
+        <attr name="np_orientation" format="enum">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+        <attr name="np_scrollerEnabled" format="boolean" />
+        <attr name="np_selectedTextAlign" format="enum">
+            <enum name="selectedTextAlignRight" value="0" />
+            <enum name="selectedTextAlignCenter" value="1" />
+            <enum name="selectedTextAlignLeft" value="2" />
+        </attr>
+        <attr name="np_selectedTextColor" format="color" />
+        <attr name="np_selectedTextSize" format="dimension" />
+        <attr name="np_selectedTextStrikeThru" format="boolean" />
+        <attr name="np_selectedTextUnderline" format="boolean" />
+        <attr name="np_selectedTypeface" format="string" />
+        <attr name="np_textAlign" format="enum">
+            <enum name="textAlignRight" value="0" />
+            <enum name="textAlignCenter" value="1" />
+            <enum name="textAlignLeft" value="2" />
+        </attr>
+        <attr name="np_textColor" format="color" />
+        <attr name="np_textSize" format="dimension" />
+        <attr name="np_textStrikeThru" format="boolean" />
+        <attr name="np_textUnderline" format="boolean" />
+        <attr name="np_typeface" format="string" />
+        <attr name="np_value" format="integer" />
+        <attr name="np_wheelItemCount" format="integer" />
+        <attr name="np_wrapSelectorWheel" format="boolean" />
+        <attr name="np_textBold" format="boolean" />
+        <attr name="np_selectedTextBold" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="DateTimePicker">
+        <attr name="dt_showLabel" format="boolean" />
+        <attr name="dt_themeColor" format="color" />
+        <attr name="dt_selectTextSize" format="dimension" />
+        <attr name="dt_normalTextSize" format="dimension" />
+        <attr name="dt_normalTextColor" format="color" />
+        <attr name="dt_layout" format="reference" />
+        <attr name="dt_textBold" format="boolean" />
+        <attr name="dt_selectedTextBold" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="DotView">
+        <attr name="dot_color" format="color" />
+    </declare-styleable>
+    <declare-styleable name="ThemeTextView">
+        <attr name="lightColor" format="color" />
+        <attr name="darkColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="AlignTextView">
+        <attr name="alignOnlyOneLine" format="boolean" />
+    </declare-styleable>
+
+    <declare-styleable name="GlucoseChart">
+        <attr name="yAxis" format="enum">
+            <enum name="yAxisRight" value="0" />
+            <enum name="yAxisLeft" value="1" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="NiceImageView">
+        <attr name="is_circle" format="boolean" />
+        <attr name="is_cover_src" format="boolean" />
+        <attr name="corner_radius" format="dimension" />
+        <attr name="corner_top_left_radius" format="dimension" />
+        <attr name="corner_top_right_radius" format="dimension" />
+        <attr name="corner_bottom_left_radius" format="dimension" />
+        <attr name="corner_bottom_right_radius" format="dimension" />
+        <attr name="border_width" format="dimension" />
+        <attr name="border_color" format="color" />
+        <attr name="inner_border_width" format="dimension" />
+        <attr name="inner_border_color" format="color" />
+        <attr name="mask_color" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="MaxHeightRecyclerView">
+        <attr name="maxHeight" format="dimension" />
     </declare-styleable>
     <declare-styleable name="SettingItemWidget">
         <attr name="settingItemHeight" format="dimension|reference" />

@@ -1,7 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="black_27">#1F2227</color>
+    <color name="gray_cf">#cfcfcf</color>
+    <color name="green_7400">#007400</color>
+    <color name="green_65">#70BD65</color>
+    <color name="colorPrimary">@color/gray5</color>
+    <color name="colorPrimaryDark">@color/gray5</color>
+    <color name="colorAccent">@color/blue</color>
+    <color name="colorBtn">#0B5BD5</color>
+    <color name="colorCancel">#444</color>
+    <color name="transparent">#00000000</color>
+    <color name="black">#000000</color>
+    <color name="d_1">#0D0D0F</color>
+    <color name="gray5">#0C0C0C</color>
+    <color name="grayc">#55000000</color>
+    <color name="gray4">#161616</color>
+    <color name="gray3">#222222</color>
+    <color name="gray2">#2B2B2B</color>
+    <color name="gray1">#969696</color>
+    <color name="color">#666666</color>
+    <color name="white1">#DBDBDB</color>
+    <color name="white">#ffffff</color>
+    <color name="gray_e7">#e7e7e7</color>
+    <color name="editLightHint">#999</color>
+    <color name="green">#87B75B</color>
+    <color name="yellow">#E7A959</color>
+    <color name="red">#CD494F</color>
+    <color name="blue">#2784E4</color>
+    <color name="blue33">#cc2784E4</color>
+    <color name="button_press_color">#6FA0F9</color>
+    <color name="button_unclick_color">#999999</color>
+    <color name="purple">#584CF8</color>
+    <color name="whiteAlpha50">#80FFFFFF</color>
+    <color name="whiteAlpha30">#4DFFFFFF</color>
+    <color name="whiteAlpha10">#1AFFFFFF</color>
+    <color name="blackAlpha30">#4D000000</color>
+    <color name="blackAlpha50">#7F000000</color>
+    <color name="blackAlpha10">#1A000000</color>
+    <color name="blackAlpha20">#33000000</color>
+    <color name="dialogBkgDark">#181818</color>
+
+    <color name="nav_bg">#1C1E24</color>
+
+
+    <color name="bgRadioButtonUnSelect">#16171B</color>
+    <color name="bgRadioButtonSelect">#1F2227</color>
+    <color name="event_title">#363743</color>
+    <color name="event_desc">#212225</color>
+    <color name="bg_bg_color">#1F2227</color>
+    <color name="bg_event_color">#1F2227</color>
+    <color name="bg_history">#1F2227</color>
+    <color name="switch_btn_colors">#2784E4</color>
+    <color name="bg_trend_item">#353943</color>
+    <color name="bg_home_chart">#21BAE4B6</color>
+
+    <color name="bg_icon_accent">#dbdbdb</color>
+
+    <color name="light_bg_icon_accent">#333333</color>
+    <color name="light_bg_home_chart">#21BAE4B6</color>
+    <color name="light_home_chart_bg">#EFF8F0</color>
+
+    <color name="bg_icon_back">#ffffff</color>
+    <color name="color_nav_unselect">#CCCCCC</color>
+    <color name="color_line">#262626</color>
+    <color name="color_chart_text">#B1AFB2</color>
+    <color name="colorHomeRemain">#ccc</color>
+    <color name="colorTrendDesc">#666</color>
+    <color name="colorTrend_1">#CD494F</color>
+    <color name="colorTrend_2">#E7A959</color>
+    <color name="colorTrend_3">#5B73B7</color>
+    <color name="colorTrend_4">#87B75B</color>
+    <color name="bgGuideIcon">#DDDDDD</color>
+    <color name="colorTrendLine">#1D1F24</color>
+    <color name="colorTrendChartMain">#0C0087</color>
+    <color name="colorTrendChart75">#4c013CFF</color>
+    <color name="colorTrendChart90">#33018CFF</color>
+    <color name="colorDialog">#2A2D33</color>
+    <color name="colorbtnNormal">#2A2D33</color>
+    <color name="colorTitle">#ccc</color>
+    <color name="colordesc">#999</color>
+
+    <color name="colorGlucoseHigh">#F0BE5A</color>
+    <color name="colorGlucoseNormal">#71BD66</color>
+    <color name="colorGlucoseLow">#E15D4C</color>
+
+    <color name="bgGlucoseHigh">#453b2f</color>
+    <color name="bgGlucoseNormal">#3d493b</color>
+    <color name="bgGlucoseLow">#4b3339</color>
+
+    <color name="light_bgGlucoseHigh">#fff5da</color>
+    <color name="light_bgGlucoseNormal">#e7f1de</color>
+    <color name="light_bgGlucoseLow">#f5dbdc</color>
+
+
+    <color name="light_colorTitle">#2A2D33</color>
+    <color name="light_colordesc">#666</color>
+    <color name="light_colorDialog">#ffffff</color>
+    <color name="light_colorTrendChart75">#8EB4FE</color>
+    <color name="light_colorTrendChart90">#CCE8FE</color>
+
+
+    <color name="light_colorTrendChartMain">#0A1497</color>
+    <color name="light_colorTrendLine">#dddddd</color>
+    <color name="light_bgGuideIcon">#4A4C50</color>
+    <color name="light_colorTrendDesc">#666</color>
+    <color name="light_colorHomeRemain">#333</color>
+    <color name="light_colorIconArrowNext">#999</color>
+    <color name="light_color_chart_text">#2C292C</color>
+    <color name="light_color_line">#F0F0F0</color>
+    <color name="light_button_press_color">#3E7530</color>
+
+    <color name="light_nav_bg">#F6F6F6</color>
+    <color name="light_colorPrimary">#FFFFFF</color>
+    <color name="light_bg_trend_item">#FFFFFF</color>
+    <color name="light_actionbar_title">#2A2A2A</color>
+    <color name="light_colorAccent">#70BD65</color>
+    <color name="light_bgHomeBottom">#F6F6F6</color>
+    <color name="light_bg_history">#F6F6F6</color>
+    <color name="black_33">#333333</color>
+    <color name="gray_cc">#cccccc</color>
+    <color name="gray_e6">#e6e6e6</color>
+    <color name="gray_d8">#d8d8d8</color>
+    <color name="gray_b2">#B6C2B2</color>
+    <color name="gray_bf">#BDC0BF</color>
+    <color name="black_4b">#45484b</color>
+    <color name="gray_1d">#66171A1D</color>
+    <color name="gray_2c">#1F111F2C</color>
+    <color name="black_2c">#FF2C2C2C</color>
+    <color name="black_11">#FF111111</color>
+    <color name="black_23">#FF232323</color>
+    <color name="white_f5">#F5F5F5</color>
+    <color name="black_alpha33">#33000000</color>
     <color name="gray_f6">#f6f6f6</color>
+
+    <color name="lib_pub_color_main">#008577</color>
+    <color name="lib_pub_color_main_press">#00574B</color>
+    <color name="lib_pub_color_main_disable">#7BCBBF</color>
+    <color name="lib_pub_color_main_90">#E6008577</color>
+    <color name="lib_pub_color_main_50">#80008577</color>
+    <color name="lib_pub_color_main_30">#66008577</color>
+    <color name="lib_pub_color_gray">#FF888888</color>
+    <color name="lib_pub_color_lgray">#99CCCCCC</color>
+    <color name="lib_pub_color_dgray">#CCCCCC</color>
+    <color name="lib_pub_color_red">#ff0000</color>
+    <color name="lib_pub_color_green">#00ff00</color>
+
+    <!--事件V2-->
+    <color name="bg_item_color">#FFFFFF</color>
+    <color name="bg_container_color">#F5F5F5</color>
+    <color name="event_label">#FFA2A3A5</color>
+    <color name="event_switch_content">#171A1D</color>
+    <color name="event_hint">#33000000</color>
+    <color name="event_line">#1F111F2C</color>
+    <color name="event_tag_bg">#FFFFFF</color>
+    <color name="event_tag_color_selected">#FF70BD65</color>
+    <color name="event_tag_color">#66171A1D</color>
+    <color name="event_tag_border">#FFDCDFE6</color>
+    <color name="event_bg_preset_list">#FFFFFF</color>
+    <color name="event_preset_title">#FF171A1D</color>
+    <color name="event_preset_label">#66171A1D</color>
+    <color name="event_preset_input">#FF171A1D</color>
+    <color name="event_unit_selected">#FF70BD65</color>
+    <color name="event_unit_color">#66171A1D</color>
+    <color name="event_unit_border">#33171A1D</color>
+    <color name="event_cancel_border">#3D7E868E</color>
+    <color name="event_cancel_text">#FF171A1D</color>
+
+    <!-- 历史模块V2 -->
+    <color name="history_label">#A2A3A5</color>
+    <color name="history_count_text">#171A1D</color>
+    <color name="history_count_unit">#FF6F6F6F</color>
+    <color name="history_title">#333333</color>
+    <color name="history_time">#66171A1D</color>
+    <color name="history_time_line">#FF94D38B</color>
+    <color name="history_bg_icon">#FFFFFF</color>
+
+    <color name="time_picker_title_bg">#e6e6e6</color>
+
 </resources>

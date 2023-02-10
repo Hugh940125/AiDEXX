@@ -6,34 +6,61 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Parcelable
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
-import com.microtech.aidexx.utils.ThemeUtil
+import com.microtech.aidexx.R
+import com.microtech.aidexx.constant.MESSAGE_TYPE_SENRORERROR
+import com.microtech.aidexx.constant.MESSAGE_TYPE_SENROR_EMBEDDING
+import com.microtech.aidexx.constant.MESSAGE_TYPE_SENROR_EMBEDDING_SUPER
+import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.eventbus.AlertInfo
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
-import java.io.Serializable
+import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.widget.dialog.customerservice.CustomerServiceDialog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
 
 
 abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatActivity() {
-    var loadingMsg: String? = null
 
     lateinit var viewModel: VM
     lateinit var binding: VB
+    lateinit var mainScope: CoroutineScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(ThemeUtil.theme.id)
         binding = getViewBinding()
-        initVM()
+        mainScope = MainScope()
+        initViewModel()
+        initEvent()
+    }
+
+    private fun initEvent() {
+        EventBusManager.onReceive(EventBusKey.EVENT_SHOW_ALERT, AlertInfo::class.java, this) {
+            if (ActivityUtil.isForeground(this) && it.content.isNotBlank()) {
+                mainScope.launch {
+                    Dialogs.showAlert(this@BaseActivity, null, it.content) {
+                        if (it.type == MESSAGE_TYPE_SENROR_EMBEDDING_SUPER || it.type == MESSAGE_TYPE_SENROR_EMBEDDING || it.type == MESSAGE_TYPE_SENRORERROR) {
+                            CustomerServiceDialog.Setter().create(this@BaseActivity)?.show()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     abstract fun getViewBinding(): VB
@@ -51,208 +78,69 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
     }
 
-//    override fun getResources(): Resources {
-//        val resources = super.getResources()
-//        if (resources != null) {
-//            val configuration = Configuration()
-//            configuration.setToDefaults()
-//            resources.updateConfiguration(configuration, resources.displayMetrics)
-//        }
-//        return resources
-//    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        PermissionsUtil.instance()
+            .onRequestPermissionsResult(this, requestCode, permissions, grantResults)
+    }
+
+    override fun getResources(): Resources {
+        val resources = super.getResources()
+        if (resources != null) {
+            val configuration = Configuration()
+            configuration.setToDefaults()
+            resources.updateConfiguration(configuration, resources.displayMetrics)
+        }
+        return resources
+    }
 
     override fun onDestroy() {
         super.onDestroy()
+        mainScope.cancel()
     }
 
-    open fun initVM() {
+    open fun initViewModel() {
+        @Suppress("UNCHECKED_CAST")
         val clazz =
             (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<VM>
-        vm = ViewModelProviders.of(this).get(clazz)
-
-        vm.errData.observe(this, Observer {
-
-            if (it.code == 100001) {
-                getString(R.string.failure).toast(this)
-            } else {
-                it.msg.toast(this)
-            }
-
-            if (it.code == 120001 || it.code == 120003 || it.code == 120002) {
-                com.microtechmd.cgms.manager.UserManager.instance().onUserExit(this)
-                val intent = Intent(this, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-                finish()
-            }
-        })
-        vm.showLoadData.observe(this, Observer {
-            //WaitDialog.show(this, loadingMsg)
-        })
-        vm.dismissLoadData.observe(this, Observer {
-            WaitDialog.dismiss()
-        })
-
-
-        //报警消息弹框
-        LiveEventBus
-            .get(
-                EventKey.MESSAGE_COME, Message::
-                class.java
-            )
-            .observe(this) {
-                runOnUiThread {
-                    if (ActivityForeground.isForeground(this)) {
-                        if (it.content.isNotBlank()) {
-                            if (ERROR_BLE == it.content) {
-                                it.content = resources.getString(R.string.error_ble)
-                                LogUtils.data(it.content)
-                                ToastUtil.show(it.content)
-                            }
-                            MessageDialog.showAlert(
-                                this,
-                                it.content, null, it.type
-                            ) {
-                                if (it.type == MESSAGE_TYPE_SENROR_EMBEDDING_SUPER || it.type == MESSAGE_TYPE_SENROR_EMBEDDING || it.type == MESSAGE_TYPE_SENRORERROR) {
-                                    CustomerServiceDialog.Setter().create(this@BaseActivity)?.show()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
+        viewModel = ViewModelProvider(this)[clazz]
     }
 
     protected fun enableBluetooth() {
         if (!BleUtil.isBleEnable(this)) {
-            CgmConfirmDialog.showBlueTooth(this) {
-                BleUtil.enableBluetooth(this, 1)
-            }
-        }
-    }
-
-    fun enableLocation() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && !LocationUtils.isLocServiceEnable(this)) {
-            LogUtils.data("弹出位置信息提示！！！")
-
-            MessageDialog.show(
+            Dialogs.showWhether(
                 this,
-                resources.getString(R.string.location_service), null
-            ) {
-                LocationUtils.openLocation(this)
-            }
+                resources.getString(R.string.Bluetooth),
+                resources.getString(R.string.guide_ble),
+                {
+                    BleUtil.enableBluetooth(this, 1)
+                }
+            )
         }
     }
 
-
-    fun goActivity(clazz: Class<*>, vararg data: Pair<String, Any?>) {
-        val intent = Intent(this, clazz)
-
-        data.forEach {
-            when (it.second) {
-                is Boolean -> {
-                    intent.putExtra(it.first, it.second as Boolean)
+    protected fun enableLocation() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && !LocationUtils.isLocationServiceEnable(
+                this
+            )
+        ) {
+            Dialogs.showWhether(
+                this,
+                content = resources.getString(R.string.location_service),
+                confirm = {
+                    LocationUtils.enableLocationService(this)
                 }
-                is Byte -> {
-                    intent.putExtra(it.first, it.second as Byte)
-                }
-                is Int -> {
-                    intent.putExtra(it.first, it.second as Int)
-                }
-                is Short -> {
-                    intent.putExtra(it.first, it.second as Short)
-                }
-                is Long -> {
-                    intent.putExtra(it.first, it.second as Long)
-                }
-                is Float -> {
-                    intent.putExtra(it.first, it.second as Float)
-                }
-                is Double -> {
-                    intent.putExtra(it.first, it.second as Double)
-                }
-                is Char -> {
-                    intent.putExtra(it.first, it.second as Char)
-                }
-                is String -> {
-                    intent.putExtra(it.first, it.second as String)
-                }
-                is Serializable -> {
-                    intent.putExtra(it.first, it.second as Serializable)
-                }
-                is Parcelable -> {
-                    intent.putExtra(it.first, it.second as Parcelable)
-                }
-            }
+            )
         }
-        startActivity(intent)
-    }
-
-
-    /**
-     * 跳转界面
-     */
-    fun goActivity(bundle: Bundle?, cls: Class<*>) {
-        val intent = Intent(this, cls)
-        val bundle1 = Bundle()
-        if (bundle != null) {
-            bundle1.putAll(bundle)
-        }
-        intent.putExtras(bundle1)
-        startActivity(intent)
-    }
-
-    /**
-     * 调用如: checkPermission(Manifest.permission.CALL_PHONE);
-     *
-     * @param permissions
-     */
-    fun checkMyPermission(permissions: PermissionListener) {
-        this.checkMyPermission(permissions, false)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(resources.configuration)
-        MultiLanguage.setApplicationLanguage(this)
-    }
-
-    /**
-     * 调用如: checkPermission(Manifest.permission.CALL_PHONE);
-     *
-     * @param permissions
-     * @param isOnce      是否一次,只能设置一个权限
-     */
-    fun checkMyPermission(permissions: PermissionListener?, isOnce: Boolean) {
-
-        if (permissions == null) {
-            return
-        }
-
-        if (isOnce) {
-            //只提醒一次
-            if (ActivityCompat.shouldShowRequestPermissionRationale(
-                    this,
-                    permissions.permissions[0]
-                )
-            ) {
-                return
-            }
-        }
-
-        this.mPermissionListener = permissions
-
-        val arr = mPermissionListener?.permissions?.let { checkSelfPermission(this, it) }
-
-        if (arr != null) {
-            ActivityCompat.requestPermissions(
-                this,
-                arr,
-                1001
-            )
-        } else {
-            this.mPermissionListener?.onClick(null)
-        }
+//        MultiLanguage.setApplicationLanguage(this)
     }
 
     /**
@@ -276,50 +164,6 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         return if (list.size > 0) {
             list.toTypedArray()
         } else null
-    }
-
-    /**
-     * 权限回调
-     *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
-     */
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (mPermissionListener == null) {
-            return
-        }
-        when (requestCode) {
-            1001 -> {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty()) {
-                    var ishas = true
-                    for (grantResult in grantResults) {
-                        if (grantResult == PackageManager.PERMISSION_DENIED) {
-                            //其中一个未授权，立即返回false授权失败
-                            ishas = false
-                            break
-                        }
-                    }
-
-                    if (ishas) {
-                        if (this.mPermissionListener != null) {
-                            this.mPermissionListener?.onClick(null)
-                            // this.mPermissionLinstener=null;
-                        }
-                    } else {
-                        if (this.mPermissionListener?.isNeedHas() == true) {
-                            this.mPermissionListener?.getPerName(this)?.let { onOpenPermission(it) }
-                        }
-                    }
-                } else {
-                }
-            }
-        }
     }
 
     //打开权限

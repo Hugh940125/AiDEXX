@@ -11,7 +11,7 @@ class MmkvUtil {
         }
 
         fun decodeString(key: String, defValue: String): String {
-            return INSTANCE.decodeString(key, defValue)
+            return INSTANCE.decodeString(key, defValue)!!
         }
 
         fun encodeBoolean(key: String, value: Boolean) {

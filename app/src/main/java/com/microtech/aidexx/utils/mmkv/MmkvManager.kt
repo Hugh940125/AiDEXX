@@ -1,18 +1,24 @@
 package com.microtech.aidexx.utils.mmkv
 
+import com.microtech.aidexx.common.user.UserInfoManager
+
 object MmkvManager {
 
-    private const val UNIT_VERSION = "UNIT_VERSION"
-    private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
-    private const val UNIT_LATEST_UPDATE_TIME = "UNIT_LATEST_UPDATE_TIME"
+    private const val GET_USER_ID = "GET_USER_ID"
+    private const val THEME = "THEME"
 
-    fun getUnitLatestUpdateTime() = MmkvUtil.decodeLong(UNIT_LATEST_UPDATE_TIME, 0)
-    fun setUnitLatestUpdateTime(time: Long) = MmkvUtil.encodeLong(UNIT_LATEST_UPDATE_TIME, time)
+    fun getUserId() = MmkvUtil.decodeString(GET_USER_ID, "")
 
-    fun getUnitLoadedApkVersion() = MmkvUtil.decodeInt(UNIT_LOADED_APK_VERSION, 0)
-    fun setUnitLoadedApkVersion(v: Int) = MmkvUtil.encodeInt(UNIT_LOADED_APK_VERSION, v)
+    fun getOnlineServiceMsgCount() = MmkvUtil.decodeInt(UserInfoManager.instance().userId(), 0)
 
-    fun getUnitVersion() = MmkvUtil.decodeInt(UNIT_VERSION, 0)
-    fun setUnitVersion(v: Int) = MmkvUtil.encodeInt(UNIT_VERSION, v)
+    fun setOnlineServiceMsgCount(count: Int) =
+        MmkvUtil.encodeInt(UserInfoManager.instance().userId(), count)
 
+    fun getEnquireFlag(flag: String): Boolean = MmkvUtil.decodeBoolean(flag, false)
+
+    fun saveEnquireFlag(flag: String, value: Boolean) = MmkvUtil.encodeBoolean(flag, value)
+
+    fun getTheme(): Int = MmkvUtil.decodeInt(THEME, 1)
+
+    fun saveTheme(index: Int) = MmkvUtil.encodeInt(THEME, index)
 }

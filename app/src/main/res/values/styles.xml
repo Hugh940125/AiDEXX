@@ -1,6 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.SplashScreen.Aidex" parent="Theme.SplashScreen">
+        <!--启动画面背景颜色-->
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <!-- 启动画面icon图标：这里可以是图片、帧动画等-->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <!-- icon动画在关闭之前显示的时长：最长时间为1000毫秒-->
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <!--        &lt;!&ndash; 启动画面底部的 Brand 图片&ndash;&gt;-->
+        <!--        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="s">@drawable/pic_aidex</item>-->
+        <!--        &lt;!&ndash; Splash退出后的主题&ndash;&gt;-->
+        <!--        <item name="postSplashScreenTheme">@style/Theme.Android12_Splash</item>-->
+    </style>
+
+    <style name="StandardDialog" parent="android:style/Theme.Dialog">
+        <item name="android:background">#00000000</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+    <style name="BottomDialog" parent="BaseDialog">
+        <item name="android:windowAnimationStyle">@style/bottomMenuAnim</item>
+    </style>
+    <style name="bottomMenuAnim">
+        <item name="android:windowEnterAnimation">@anim/bottom_menu_enter</item>
+        <item name="android:windowExitAnimation">@anim/bottom_menu_exit</item>
+    </style>
+    <style name="DateTimePicker_BottomSheetDialog" parent="BottomDialog">
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="bottomSheetStyle">@style/Widget.Design.BottomSheet.Modal</item>
+    </style>
+
+    <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="actionBarIconSize">40dp</item>
@@ -9,13 +44,455 @@
         <item name="settingItemIconSize">40dp</item>
         <item name="settingItemTitleTextSize">16sp</item>
         <item name="settingItemValueTextSize">16sp</item>
+        <item name="editItemHeight">60dp</item>
+        <item name="btnItemMarginRight">20dp</item>
+        <item name="btnItemMarginLeft">20dp</item>
     </style>
 
+
+    <!-- StartActivity背景图片 进入app时为了第二屏这样设置  -->
+    <style name="Theme.Start" parent="AppThemeDark">
+        <item name="android:windowNoTitle">true</item>
+        <!--        <item name="android:windowFullscreen">true</item>-->
+        <!--        <item name="android:windowIsTranslucent">true</item>-->
+        <!--<item name="android:windowBackground">@drawable/bg_welcome</item>-->
+    </style>
+
+
     <style name="AppThemeDark" parent="AppTheme">
-        <item name="settingItemBackgroundPressed">@color/black_27</item>
+        <item name="shadowBgCustomerService">@color/black_3a</item>
+        <item name="bgCustomerService">@color/black_3a</item>
+        <item name="followListDialogTextColor">#ffffff</item>
+        <item name="trendSmallTextColor">#C9C9C9</item>
+        <item name="homeIconColor">@color/white</item>
+        <item name="homeIconBgColor">@color/black_1d</item>
+        <item name="dialogCloseIconColor">@color/gray_da</item>
+        <item name="mainTabIconColor">@color/gray_d8</item>
+        <item name="valueTimeTextColor">@color/white</item>
+        <item name="homeChartBgColor">#3a3a3a</item>
+        <item name="bgColorDataOwner">@color/gray_23</item>
+        <item name="outlineColor">@color/black</item>
+        <!-- Customize your theme here. -->
+        <item name="bgTimeTabItem">@color/black_3a</item>
+        <item name="bgMainTab">@color/black_1d</item>
+        <item name="bgNav">@color/bg_history</item>
+        <item name="actionbarIconColor">@color/gray_cf</item>
+        <item name="snTextColor">@color/gray_cf</item>
+        <item name="bgRectFunc">@drawable/shape_rounded_rectangle_gray</item>
+        //顶部oolbar
+        <item name="colorPrimary">@color/nav_bg</item>
+        <item name="colorPrimaryDark">@color/nav_bg</item>
+        //顶部状态栏
+        <item name="bgTrendItem">@color/bg_trend_item</item>
+        //趋势页每一项的背景
+        <!--        <item name="bgHistoryItem">@color/bg_trend_item</item>-->
+        //趋势页每一项的背景
+        <item name="bgRadioButtonUnSelect">@color/bgRadioButtonUnSelect</item>
+        //按钮未选择
+        <item name="bgRadioButtonSelect">@color/bgRadioButtonSelect</item>
+        //按钮未选择
+        <item name="bgbackground">@color/bg_bg_color</item>
+        //血糖背景页面
+        <item name="containerBackground">@color/bg_event_color</item>
+        <item name="editItemBackground">@color/bg_trend_item</item>
+        <item name="containerBackgroundLight">@color/bg_trend_item</item>
+        <item name="android:windowBackground">@color/bg_history</item>
+        <item name="appColorPrimary">@color/d_1</item>
+        <item name="containerBackgroundDark">@color/gray4</item>
+        <item name="buttonPressColor">@color/button_press_color</item>
+        <item name="textColorHint">@color/gray1</item>
+        <item name="textColorPrimary">@color/white</item>
+        <item name="appColorAccent">@color/light_colorAccent</item>
+        <item name="scanBg">@color/grayc</item>
+        <item name="colorAccent">@color/blue</item>
+        <item name='android:textColor'>@color/white</item>
+        <item name='android:textColorHint'>@color/blackAlpha30</item>
+        <item name="actionBarBackground">?colorPrimary</item>
+        <item name="actionBarTitleTextColor">@color/white</item>
+        <item name="settingItemBackground">?containerBackgroundDark</item>
+        <item name="settingItemBackgroundPressed">@color/bg_history</item>
+        <item name="settingItemTitleTextColor">@color/white</item>
+        <item name="settingItemValueTextColor">@color/white</item>
+        <item name="settingItemIconColor">@color/white</item>
+        <item name="colorIconArrowNext">@color/white</item>
+        <item name="editItemValueBackground">@drawable/shape_rounded_rectangle_gray</item>
+        <item name="bgHomeChartNew">@drawable/shape_rounded_rectangle_chart</item>
+        <item name="bgSetting">@drawable/shape_rounded_setting</item>
+        <item name="editItemValueTextColor">@color/white</item>
+        <item name="editItemValueHintTextColor">@color/editLightHint</item>
+        <item name="editItemIconColor">@color/white</item>
+
+        <item name="bgHomeBottom">@android:color/transparent</item>
+
+        <item name="bgHomeChart">@color/bgRadioButtonSelect</item>
+
+
+        <item name="srcTabHistorySelected">@drawable/selector_history</item>
+        <item name="srcTabTrend">@drawable/selector_trends</item>
+        <item name="srcTabBg">@drawable/selector_bg</item>
+        <item name="srcTabEvent">@drawable/selector_event</item>
+        <item name="srcTabHome">@drawable/selector_home</item>
+        <item name="bgHomeGlucose">@color/bg_home_chart</item>
+        <item name="bgIconAccent">@color/bg_icon_accent</item>
+        <item name="bgIconBack">@color/bg_icon_back</item>
+        <item name="colorNavUnSelect">@color/color_nav_unselect</item>
+        <item name="colorLine">@color/color_line</item>
+        <item name="colorLineChart">@color/color_line</item>
+        <item name="colorChartText">@color/color_chart_text</item>
+        <item name="colorTextHomeRemain">@color/colorHomeRemain</item>
+        <item name="colorTrendDesc">@color/colorTrendDesc</item>
+        <item name="bgGuideIcon">@color/light_bgGuideIcon</item>
+        <item name="colorTrendLine">@color/gray_d8</item>
+        <item name="colorTrendChartMain">@color/colorTrendChartMain</item>
+        <item name="colorTrendChart75">@color/colorTrendChart75</item>
+        <item name="colorTrendChart90">@color/colorTrendChart90</item>
+        <item name="colorDialog">@color/colorDialog</item>
+        <item name="colorTitle">@color/colorTitle</item>
+        <item name="colorDesc">@color/colordesc</item>
+
+        <item name="colorGlucoseHigh">@color/bgGlucoseHigh</item>
+        <item name="colorGlucoseNormal">@color/bgGlucoseNormal</item>
+        <item name="colorGlucoseLow">@color/bgGlucoseLow</item>
+
+        <item name="colorbtnNormal">@color/colorbtnNormal</item>
+        <item name="colorbtnPressed">@color/bg_history</item>
+        <item name="colorFormTitle">@color/colorTitle</item>
+        <item name="dividerLine">@color/black_2c</item>
+        <item name="backgroundDarker">@color/black_11</item>
+        <item name="backgroundLighter">@color/black_23</item>
+        <item name="colorSeparate">@color/black_11</item>
+        <item name="colorHint">@color/colorTitle</item>
+
     </style>
 
     <style name="AppThemeLight" parent="AppTheme">
-        <item name="settingItemBackgroundPressed">@color/gray_f6</item>
+        <item name="bgHomeChartNew">@drawable/shape_rounded_rectangle_chart</item>
+        <item name="shadowBgCustomerService">#ffe7e7e7</item>
+        <item name="bgCustomerService">#88ffffff</item>
+        <item name="followListDialogTextColor">#1d1d1d</item>
+        <item name="trendSmallTextColor">#707070</item>
+        <item name="homeIconBgColor">@color/white</item>
+        <item name="homeIconColor">@color/black_1d</item>
+        <item name="dialogCloseIconColor">@color/black_6a</item>
+        <item name="mainTabIconColor">@color/black_33</item>
+        <item name="valueTimeTextColor">@color/green_7400</item>
+        <item name="homeChartBgColor">@color/white</item>
+        <item name="bgColorDataOwner">@color/gray_2f</item>
+        <item name="outlineColor">@color/gray_e7</item>
+        <item name="bgMainTab">@color/white</item>
+        <item name="bgTimeTabItem">@color/white</item>
+        <!-- Customize your theme here. -->
+        <item name="snTextColor">@color/green_7400</item>
+        <item name="actionbarIconColor">@color/black</item>
+        <item name="colorGlucoseHigh">@color/light_bgGlucoseHigh</item>
+        <item name="colorGlucoseNormal">@color/light_bgGlucoseNormal</item>
+        <item name="colorGlucoseLow">@color/light_bgGlucoseLow</item>
+
+        <item name="colorTitle">@color/light_colorTitle</item>
+        <item name="colorDesc">@color/light_colordesc</item>
+        <item name="colorDialog">@color/light_colorDialog</item>
+        <item name="colorTrendChart90">@color/light_colorTrendChart90</item>
+        <item name="colorTrendChart75">@color/light_colorTrendChart75</item>
+        <item name="colorTrendChartMain">@color/light_colorTrendChartMain</item>
+        <item name="colorTrendLine">@color/gray_d8</item>
+        <item name="bgGuideIcon">@color/bgGuideIcon</item>
+        <item name="colorTrendDesc">@color/light_colorTrendDesc</item>
+        <item name="colorTextHomeRemain">@color/light_colorHomeRemain</item>
+        <item name="colorChartText">@color/light_color_chart_text</item>
+        <item name="colorLineChart">@color/light_color_line</item>
+        <item name="colorLine">@color/light_color_line</item>
+        <item name="colorNavUnSelect">@color/gray_1d</item>
+        <item name="bgIconBack">@color/light_bg_icon_accent</item>
+        <item name="bgIconAccent">@color/light_bg_icon_accent</item>
+        <item name="bgHomeGlucose">@color/light_bg_home_chart</item>
+
+        <item name="bgNav">@color/light_nav_bg</item>
+        <item name="colorPrimary">@color/light_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/light_nav_bg</item>
+        <item name="android:windowBackground">@color/light_bg_history</item>
+        <item name="bgbackground">@color/light_bg_history</item>
+        <item name="containerBackground">@color/light_bg_history</item>
+        <item name="bgHomeChart">@color/light_home_chart_bg</item>
+
+        <!--        <item name="bgHistoryItem">@color/w</item>-->
+        //趋势页每一项的背景
+        <item name="bgRadioButtonUnSelect">@color/bgRadioButtonUnSelect</item>
+        //按钮未选择
+        <item name="bgRadioButtonSelect">@color/bgRadioButtonSelect</item>
+
+
+        <item name="appColorPrimary">@color/gray1</item>
+        <item name="appColorAccent">@color/light_colorAccent</item>
+        <item name="buttonPressColor">@color/light_button_press_color</item>
+        <item name="containerBackgroundLight">@color/white</item>
+        <item name="containerBackgroundDark">@color/white</item>
+        <item name="textColorPrimary">@color/black</item>
+        <item name="textColorHint">@color/gray_e6</item>
+        <item name="scanBg">@color/grayc</item>
+        <item name="colorAccent">@color/light_colorAccent</item>
+        <item name='android:textColor'>@color/black</item>
+        <item name='android:textColorHint'>@color/gray3</item>
+        <item name="actionBarBackground">?colorPrimary</item>
+        <item name="actionBarTitleTextColor">@color/light_actionbar_title</item>
+        <item name="settingItemBackground">?containerBackgroundLight</item>
+        <item name="settingItemTitleTextColor">@color/gray5</item>
+        <item name="settingItemValueTextColor">@color/gray5</item>
+        <item name="colorIconArrowNext">@color/black</item>
+        <item name="settingItemIconColor">@color/light_colorIconArrowNext</item>
+        <item name="editItemBackground">@color/transparent</item>
+        <item name="editItemValueBackground">@drawable/shape_rounded_rectangle_gray</item>
+        <item name="bgRectFunc">@drawable/shape_rounded_rectangle_gray</item>
+        <item name="bgSetting">@drawable/shape_rounded_setting</item>
+        <item name="editItemValueTextColor">@color/black</item>
+        <item name="editItemIconColor">@color/black</item>
+        <item name="bgTrendItem">@color/light_bg_trend_item</item>
+        <item name="settingItemBackgroundPressed">@color/light_bg_history</item>
+        <item name="editItemValueHintTextColor">@color/editLightHint</item>
+        <item name="bgHomeBottom">@color/light_bgHomeBottom</item>
+        <item name="colorbtnNormal">@color/white</item>
+        <item name="colorbtnPressed">@color/light_bg_history</item>
+        <item name="colorFormTitle">@color/gray_1d</item>
+        <item name="dividerLine">@color/gray_2c</item>
+        <item name="backgroundDarker">@android:color/white</item>
+        <item name="backgroundLighter">@android:color/white</item>
+        <item name="colorSeparate">@color/white_f5</item>
+        <item name="colorHint">@color/black_alpha33</item>
+
     </style>
+
+    <!--    <style name="DialogTheme" parent="AppTheme">-->
+    <!--        <item name="android:windowNoTitle">true</item>-->
+    <!--        <item name="android:windowIsFloating">true</item>-->
+    <!--        <item name="android:windowContentOverlay">@null</item>-->
+    <!--        <item name="android:windowIsTranslucent">true</item>-->
+    <!--        <item name="android:backgroundDimEnabled">true</item>-->
+    <!--        <item name="android:layout_margin">10dp</item>-->
+    <!--        <item name="android:radius">10dp</item>-->
+    <!--        <item name="android:windowAnimationStyle">@null</item>-->
+    <!--    </style>-->
+
+
+    <style name="dialogMagin">
+        <item name="android:layout_marginLeft">40dp</item>
+        <item name="android:layout_marginRight">40dp</item>
+        <item name="android:layout_marginStart">40dp</item>
+        <item name="android:layout_marginEnd">40dp</item>
+    </style>
+
+    <style name="baseMargin">
+        <item name="android:layout_marginLeft">12dp</item>
+        <item name="android:layout_marginRight">12dp</item>
+        <item name="android:layout_marginStart">12dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+    </style>
+
+    <style name="guide_magin">
+        <item name="android:layout_marginTop">30dp</item>
+        <item name="android:layout_marginLeft">38dp</item>
+        <item name="android:layout_marginRight">38dp</item>
+        <item name="android:layout_marginStart">38dp</item>
+        <item name="android:layout_marginEnd">38dp</item>
+    </style>
+
+    <style name="trend_text_LBGL">
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_marginLeft">4dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="trend_text_TIR">
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="trend_text_AGP">
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_marginLeft">3dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="trend_desc_LBGL">
+        <item name="android:textColor">?attr/colorTrendDesc</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_marginLeft">6dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+
+    <style name="trend_desc_TIR">
+        <item name="android:textColor">?attr/colorTrendDesc</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+
+    <style name="MyEditText" parent="AppTheme">
+        <item name="colorControlNormal">?containerBackgroundLight</item>
+        <item name="colorControlActivated">?appColorAccent</item>
+        <item name='android:textColor'>?textColorPrimary</item>
+        <item name='android:textColorHint'>?textColorHint</item>
+        <item name='android:textAlignment'>viewStart</item>
+        <item name='android:gravity'>start</item>
+        <item name='android:textDirection'>locale</item>
+    </style>
+
+    <style name="RadioButtonFlat" parent="AppTheme">
+        <item name="android:height">30dp</item>
+        <item name="android:button">@null</item>
+        <item name="android:textColor">@color/selector_radio_trends</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+
+    <style name="RadioButtonFlat2" parent="AppTheme">
+        <item name="android:height">50dp</item>
+        <item name="android:button">@null</item>
+        <item name="android:background">@drawable/selector_radio_background</item>
+        <item name="android:textColor">@color/selector_radio_text</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+
+    <style name="EventButtonFlat" parent="RadioButtonFlat">
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:paddingBottom">12dp</item>
+    </style>
+
+    <style name="RadioButtonFlatHome" parent="RadioButtonFlat">
+        <item name="android:height">52dp</item>
+    </style>
+
+
+    <style name="StateButtonBase" parent="AppTheme">`
+        <item name="statebutton_round">false</item>
+        <item name="statebutton_radius">10dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+
+    <style name="btnDialog">
+        <item name="android:background">@drawable/shape_button_dialog</item>
+        <item name="android:textColor">?appColorAccent</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="btnLogin" parent="StateButtonBase">
+        <item name="android:textColor">?appColorAccent</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+
+    <style name="StateButtonFlat" parent="StateButtonBase">
+        <item name="normalBackgroundColor">?colorbtnNormal</item>
+        <item name="normalTextColor">?appColorAccent</item>
+        <item name="pressedBackgroundColor">?colorbtnPressed</item>
+        <item name="pressedTextColor">?appColorAccent</item>
+    </style>
+
+
+    <style name="StateButtonTranmitter" parent="StateButtonBase">
+        <item name="normalBackgroundColor">?appColorAccent</item>
+        <item name="normalTextColor">@color/white</item>
+        <item name="pressedBackgroundColor">?attr/appColorAccent</item>
+        <item name="pressedTextColor">@color/white</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="StateButtonRaised" parent="StateButtonBase">
+        <item name="normalBackgroundColor">?appColorAccent</item>
+        <item name="normalTextColor">@color/white</item>
+        <item name="pressedBackgroundColor">?attr/buttonPressColor</item>
+        <item name="pressedTextColor">@color/white</item>
+    </style>
+
+    <style name="StateButtonSink" parent="StateButtonBase">
+        <item name="normalStrokeWidth">1dp</item>
+        <item name="normalStrokeColor">?appColorAccent</item>
+        <item name="normalTextColor">?appColorAccent</item>
+        <item name="pressedStrokeWidth">1dp</item>
+        <item name="pressedStrokeColor">?colorPrimary</item>
+        <item name="pressedTextColor">?appColorAccent</item>
+    </style>
+
+    <style name="AppThemeDark.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppThemeDark.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppThemeDark.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="LoginCheckBox">
+        <item name="android:scaleX">0.8</item>
+        <item name="android:scaleY">0.8</item>
+        <item name="colorControlNormal">@color/color</item>
+        <item name="colorControlActivated">?attr/appColorAccent</item>
+    </style>
+
+    <style name="ProgressBar_Mini" parent="@android:style/Widget.ProgressBar.Horizontal">
+        <item name="android:maxHeight">10dp</item>
+        <item name="android:minHeight">10dp</item>
+        <!--        <item name="android:indeterminateOnly">false</item>-->
+        <!--        <item name="android:indeterminateDrawable">@android:drawable/progress_indeterminate_horizontal</item>-->
+        <item name="android:progressDrawable">@drawable/progressbar_bg_update</item>
+    </style>
+
+    <style name="AdvertDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">true</item><!--半透明-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowBackground">@android:color/transparent</item><!--背景透明-->
+        <item name="android:backgroundDimEnabled">true</item><!--模糊-->
+    </style>
+
+    <style name="BaseDialog" parent="@android:style/Theme.Dialog">
+        <item name="android:windowFrame">@null</item><!--边框-->
+        <item name="android:windowIsFloating">true</item><!--是否浮现在activity之上-->
+        <item name="android:windowIsTranslucent">true</item><!--半透明-->
+        <item name="android:windowNoTitle">true</item><!--无标题-->
+        <item name="android:windowBackground">@android:color/transparent</item><!--背景透明-->
+        <item name="android:backgroundDimEnabled">true</item><!--模糊-->
+    </style>
+
+    <declare-styleable name="lib_pub_ScrollTab">
+        <attr name="lib_pub_stab_type">
+            <enum name="view" value="0" />
+            <enum name="view_group" value="1" />
+        </attr>
+        <attr name="lib_pub_stab_titles" format="string" />
+        <attr name="lib_pub_stab_avag" format="boolean" />
+        <attr name="lib_pub_stab_padding" format="dimension" />
+        <attr name="lib_pub_stab_indicatorType">
+            <enum name="trend" value="0" />
+            <enum name="translation" value="1" />
+            <enum name="none" value="2" />
+        </attr>
+        <attr name="lib_pub_stab_indicatorColor" format="color" />
+        <attr name="lib_pub_stab_indicatorWidth" format="dimension" />
+        <attr name="lib_pub_stab_indicatorWeight" format="dimension" />
+        <attr name="lib_pub_stab_indicatorRadius" format="dimension" />
+        <attr name="lib_pub_stab_indicatorPadding" format="dimension" />
+        <attr name="lib_pub_stab_duration" format="integer" />
+    </declare-styleable>
+
+    <color name="black_3a">#3a3a3a</color>
+    <color name="black_1d">#1d1d1d</color>
+    <color name="gray_23">#232323</color>
+    <color name="gray_2f">#2849662F</color>
+    <color name="black_3c">#3C393C</color>
+    <color name="black_6a">#6a6a6a</color>
+    <color name="gray_da">#dadada</color>
+    <color name="gray_96">#969696</color>
 </resources>

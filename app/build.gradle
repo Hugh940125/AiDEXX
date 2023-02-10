@@ -42,5 +42,9 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation 'com.tencent:mmkv-static:1.2.2'
+    implementation 'com.tencent:mmkv:1.2.15'
+    implementation 'io.github.jeremyliao:live-event-bus-x:1.8.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.0-alpha05'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
+    implementation "androidx.core:core-splashscreen:1.0.0"
 }
