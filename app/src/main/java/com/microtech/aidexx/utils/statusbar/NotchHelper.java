@@ -320,11 +320,11 @@ public class NotchHelper {
     private static Rect getRectInfoRotation0(Context context) {
         Rect rect = new Rect();
         if (DeviceHelper.isVivo()) {
-            // TODO vivo 显示与亮度-第三方应用显示比例
+            //vivo 显示与亮度-第三方应用显示比例
             rect.top = getNotchHeightInVivo(context);
             rect.bottom = 0;
         } else if (DeviceHelper.isOppo()) {
-            // TODO OPPO 设置-显示-应用全屏显示-凹形区域显示控制
+            //OPPO 设置-显示-应用全屏显示-凹形区域显示控制
             rect.top = StatusBarHelper.getStatusbarHeight(context);
             rect.bottom = 0;
         } else if (DeviceHelper.isHuawei()) {

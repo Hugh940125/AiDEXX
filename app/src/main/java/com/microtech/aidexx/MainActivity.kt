@@ -13,6 +13,5 @@ class MainActivity : BaseActivity<BaseViewModel,ActivityMainBinding>() {
     }
 
     override fun getViewBinding(): ActivityMainBinding {
-        TODO("Not yet implemented")
     }
 }
