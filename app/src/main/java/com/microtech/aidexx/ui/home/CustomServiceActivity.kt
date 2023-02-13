@@ -35,12 +35,12 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
 //        val givenName = UserInfoManager.instance().getGivenName()
 //        val userId = UserInfoManager.instance().getUserId()
 //        val defaultModel = TransmitterManager.instance().getDefaultModel()
-        val name =
-            if (nickName.isNotEmpty()) nickName
-            else if (surName.isNotEmpty() && givenName.isNotEmpty())
-                "${surName}${givenName}" else mobile
-        val deviceSn = defaultModel?.entity?.deviceSn
-        binding.webCustomerService.loadUrl("$SERVICE_URL&mobile=$mobile&nickName=${name}&openid=${userId}&sn=$deviceSn&SN=$deviceSn")
+//        val name =
+//            if (nickName.isNotEmpty()) nickName
+//            else if (surName.isNotEmpty() && givenName.isNotEmpty())
+//                "${surName}${givenName}" else mobile
+//        val deviceSn = defaultModel?.entity?.deviceSn
+//        binding.webCustomerService.loadUrl("$SERVICE_URL&mobile=$mobile&nickName=${name}&openid=${userId}&sn=$deviceSn&SN=$deviceSn")
     }
 
     override fun getViewBinding(): ActivityCustomServiceBinding {
