@@ -5,5 +5,6 @@ package com.microtech.aidexx.utils.eventbus
  *@desc 统一定义EventBus key值
  */
 object EventBusKey {
+    const val HOME_ORIENTATION: String = "home.orientation"
     const val EVENT_SHOW_ALERT: String = "event.show.alert"
 }

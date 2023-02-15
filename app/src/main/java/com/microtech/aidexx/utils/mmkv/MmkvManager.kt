@@ -6,6 +6,7 @@ object MmkvManager {
 
     private const val GET_USER_ID = "GET_USER_ID"
     private const val THEME = "THEME"
+    private const val GLUCOSE_UNIT = "GLUCOSE_UNIT"
 
     fun getUserId() = MmkvUtil.decodeString(GET_USER_ID, "")
 
@@ -21,4 +22,8 @@ object MmkvManager {
     fun getTheme(): Int = MmkvUtil.decodeInt(THEME, 1)
 
     fun saveTheme(index: Int) = MmkvUtil.encodeInt(THEME, index)
+
+    fun getGlucoseUnit() = MmkvUtil.decodeInt(GLUCOSE_UNIT, 1)
+
+    fun saveGlucoseUnit(index: Int) = MmkvUtil.encodeInt(GLUCOSE_UNIT, index)
 }

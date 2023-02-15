@@ -1,0 +1,44 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M21.4,11.467L23.4,8.8C23.566,8.579 23.521,8.266 23.3,8.1C23.213,8.035 23.108,8 23,8L19,8C18.724,8 18.5,8.224 18.5,8.5C18.5,8.608 18.535,8.713 18.6,8.8L20.6,11.467C20.766,11.688 21.079,11.732 21.3,11.567C21.338,11.538 21.372,11.505 21.4,11.467Z"
+      android:strokeWidth="1"
+      android:fillColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M14,2C18.667,2 21,4 21,8"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M2.6,12.533L0.6,15.2C0.434,15.421 0.479,15.734 0.7,15.9C0.787,15.965 0.892,16 1,16L5,16C5.276,16 5.5,15.776 5.5,15.5C5.5,15.392 5.465,15.287 5.4,15.2L3.4,12.533C3.234,12.312 2.921,12.268 2.7,12.433C2.662,12.462 2.628,12.495 2.6,12.533Z"
+      android:strokeWidth="1"
+      android:fillColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M10,22C5.333,22 3,20 3,16"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M8.5,6C9.881,6 11,7.119 11,8.5L11,10C11,10.552 10.552,11 10,11L2,11C1.448,11 1,10.552 1,10L1,8.5C1,7.119 2.119,6 3.5,6L8.5,6ZM6,1C7.105,1 8,1.895 8,3C8,4.105 7.105,5 6,5C4.895,5 4,4.105 4,3C4,1.895 4.895,1 6,1Z"
+      android:strokeWidth="1.5"
+      android:fillColor="#00000000"
+      android:strokeColor="?actionbarIconColor"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M20.5,18C21.881,18 23,19.119 23,20.5L23,22C23,22.552 22.552,23 22,23L14,23C13.448,23 13,22.552 13,22L13,20.5C13,19.119 14.119,18 15.5,18L20.5,18ZM18,13C19.105,13 20,13.895 20,15C20,16.105 19.105,17 18,17C16.895,17 16,16.105 16,15C16,13.895 16.895,13 18,13Z"
+      android:strokeWidth="1.5"
+      android:fillColor="#00000000"
+      android:strokeColor="?actionbarIconColor"
+      android:fillType="evenOdd"/>
+</vector>

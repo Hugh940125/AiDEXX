@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/home_root"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_actionbar"
+        android:background="@color/transparent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="50dp"
+        android:paddingBottom="5dp"
+        app:layout_constraintBottom_toTopOf="@id/layout_state"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            app:layout_constraintVertical_chainStyle="packed"
+            android:id="@+id/home_logo"
+            android:layout_width="150dp"
+            android:layout_height="24dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="20dp"
+            android:contentDescription="logo"
+            android:src="@drawable/ic_home_logo"
+            app:layout_constraintBottom_toTopOf="@id/tv_sn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/tv_sn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:letterSpacing="0.5"
+            android:textColor="?snTextColor"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="@id/home_logo"
+            app:layout_constraintTop_toBottomOf="@id/home_logo"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/user_center"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:contentDescription="user center"
+            android:padding="3dp"
+            android:src="@drawable/ic_user_center"
+            app:layout_constraintBottom_toBottomOf="@id/home_logo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/home_logo"
+            tools:ignore="HardcodedText" />
+
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/welfare_center"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="welfare center"
+            android:padding="3dp"
+            android:src="@drawable/ic_gift"
+            app:layout_constraintBottom_toBottomOf="@id/home_logo"
+            app:layout_constraintEnd_toStartOf="@id/user_center"
+            app:layout_constraintTop_toTopOf="@id/home_logo"
+            tools:ignore="HardcodedText" />
+
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/switch_user_data"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="user switch"
+            android:padding="3dp"
+            android:src="@drawable/ic_switch_user"
+            app:layout_constraintBottom_toBottomOf="@id/home_logo"
+            app:layout_constraintEnd_toStartOf="@id/welfare_center"
+            app:layout_constraintTop_toTopOf="@id/home_logo"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:visibility="gone"
+            android:background="@drawable/bg_data_owner"
+            android:id="@+id/data_owner"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:gravity="center"
+            android:layout_marginEnd="5dp"
+            android:textSize="14sp"
+            android:maxEms="8"
+            android:lines="1"
+            android:ellipsize="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/switch_user_data"
+            app:layout_constraintTop_toTopOf="@id/switch_user_data"
+            app:layout_constraintBottom_toBottomOf="@id/switch_user_data"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <RelativeLayout
+        app:layout_constraintTop_toBottomOf="@id/layout_actionbar"
+        app:layout_constraintBottom_toTopOf="@id/layout_chart"
+        android:id="@+id/layout_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="0.5">
+
+        <FrameLayout
+            android:id="@+id/layoutPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp" />
+    </RelativeLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_chart"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintTop_toBottomOf="@id/layout_state"
+        app:layout_constraintBottom_toTopOf="@id/bottom_space"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="1">
+
+        <com.microtech.aidexx.ui.home.timetab.TimeTabLayout
+            app:layout_constraintTop_toTopOf="parent"
+            android:id="@+id/home_time_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/ll_chart"
+            app:layout_constraintTop_toBottomOf="@id/home_time_tab"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="?attr/bgHomeChartNew"
+            android:gravity="bottom"
+            android:paddingBottom="8dp"
+            android:orientation="vertical">
+
+            <ImageView
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:id="@+id/iv_scale"
+                android:paddingStart="10dp"
+                android:paddingEnd="5dp"
+                android:paddingBottom="5dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="5dp"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_scale"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                tools:ignore="ContentDescription" />
+
+<!--            <TextView-->
+<!--                app:layout_constraintTop_toBottomOf="@id/iv_scale"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                android:textColor="@color/gray_d8"-->
+<!--                android:layout_marginEnd="15dp"-->
+<!--                android:id="@+id/tv_y_unit"-->
+<!--                android:layout_gravity="end"-->
+<!--                android:src="@drawable/ic_scale"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content" />-->
+
+            <com.microtechmd.cgms.chart.GlucoseChart
+                android:id="@+id/chart"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_scale"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <View
+                android:layout_marginTop="60dp"
+                app:layout_constraintBottom_toBottomOf="@id/chart"
+                app:layout_constraintTop_toTopOf="@id/chart"
+                app:layout_constraintStart_toStartOf="@id/chart"
+                app:layout_constraintEnd_toEndOf="@id/chart"
+                android:id="@+id/touchView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:clickable="true"
+                android:focusable="true" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:paddingBottom="3dp"
+            app:layout_constraintStart_toStartOf="@id/ll_chart"
+            app:layout_constraintBottom_toBottomOf="@id/ll_chart"
+            android:layout_marginStart="10dp"
+            android:textColor="?colorChartText"
+            android:id="@+id/tv_x_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:padding="10dp"
+            app:layout_constraintTop_toBottomOf="@id/home_time_tab"
+            app:layout_constraintStart_toStartOf="parent"
+            android:id="@+id/descriptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:orientation="vertical"
+            tools:ignore="RtlHardcoded">
+
+            <LinearLayout
+                android:id="@+id/ll_desc_value"
+                android:gravity="bottom"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:gravity="bottom"
+                    android:id="@+id/description_tv_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    tools:text="5.0 " />
+
+                <TextView
+                    android:textColor="@color/gray_bf"
+                    android:layout_marginStart="5dp"
+                    android:id="@+id/description_tv_unit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    tools:text="11:11" />
+
+                <TextView
+                    android:textColor="#BDC0BF"
+                    android:layout_marginStart="15dp"
+                    android:id="@+id/description_tv_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    tools:text="11:11" />
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_description"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:maxWidth="320dp"
+                    android:textColor="#BDC0BF"
+                    android:id="@+id/description_tv_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="textStart"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/go_to_history"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="0dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:layout_centerVertical="true"
+                    android:layout_toEndOf="@id/description_tv_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_arrow_right_gray"/>
+
+            </RelativeLayout>
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        app:layout_constraintTop_toBottomOf="@id/layout_chart"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/bottom_space"/>
+
+    <com.microtechmd.cgms.fragment.home.widget.CustomerServiceView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/service_view"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

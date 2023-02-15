@@ -140,7 +140,6 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(resources.configuration)
-//        MultiLanguage.setApplicationLanguage(this)
     }
 
     /**
@@ -160,7 +159,6 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
                 list.add(permission)
             }
         }
-
         return if (list.size > 0) {
             list.toTypedArray()
         } else null

@@ -1,35 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="StateButton">
-
-        <!--text color-->
-        <attr format="color|reference" name="normalTextColor"/>
-        <attr format="color|reference" name="pressedTextColor"/>
-        <attr format="color|reference" name="unableTextColor"/>
-
-        <!--stroke width and color, dash width, dash gap-->
-        <attr format="dimension|reference" name="strokeDashWidth"/>
-        <attr format="dimension|reference" name="strokeDashGap"/>
-        <attr format="dimension|reference" name="normalStrokeWidth"/>
-        <attr format="dimension|reference" name="pressedStrokeWidth"/>
-        <attr format="dimension|reference" name="unableStrokeWidth"/>
-        <attr format="color|reference" name="normalStrokeColor"/>
-        <attr format="color|reference" name="pressedStrokeColor"/>
-        <attr format="color|reference" name="unableStrokeColor"/>
-
-        <!--background color-->
-        <attr format="color|reference" name="normalBackgroundColor"/>
-        <attr format="color|reference" name="pressedBackgroundColor"/>
-        <attr format="color|reference" name="unableBackgroundColor"/>
-
-        <!--background radius-->
-        <attr format="dimension|reference" name="statebutton_radius"/>
-        <attr format="boolean|reference" name="statebutton_round"/>
-
-        <!--animation duration-->
-        <attr format="integer|reference" name="animationDuration"/>
-
-    </declare-styleable>
     <attr name="shadowBgCustomerService" format="color|reference" />
     <attr name="bgCustomerService" format="color|reference" />
     <attr name="followListDialogTextColor" format="color" />
@@ -41,7 +11,7 @@
     <attr name="homeChartBgColor" format="color" />
     <attr name="bgColorDesc" format="color" />
     <attr name="bgColorDataOwner" format="color" />
-    <attr name="actionbarIconColor" format="reference" />
+    <attr name="actionbarIconColor" format="color|reference" />
     <attr name="snTextColor" format="color" />
     <attr name="valueTimeTextColor" format="color" />
     <attr name="bgTimeTabItem" format="color" />
@@ -136,21 +106,35 @@
         <attr name="titleRightIcon" format="reference" />
     </declare-styleable>
 
-    <declare-styleable name="EditItemWidget">
-        <attr name="editItemHeight" format="dimension|reference" />
-        <attr name="editItemBackground" format="color|reference" />
-        <attr name="editItemValueBackground" format="color|reference" />
-        <attr name="editItemTitleTextSize" format="dimension|reference" />
-        <attr name="editItemTitleTextColor" format="color|reference" />
-        <attr name="editItemValueTextSize" format="dimension|reference" />
-        <attr name="editItemValueTextColor" format="color|reference" />
-        <attr name="editItemValueHintTextColor" format="color|reference" />
-        <attr name="editItemIconColor" format="color|reference" />
-        <attr name="editable" format="boolean" />
-        <attr name="title" format="string" />
-        <attr name="value" format="string" />
-        <attr name="editNum" format="integer" />
-        <attr name="editUnit" format="string" />
+    <declare-styleable name="StateButton">
+
+        <!--text color-->
+        <attr name="normalTextColor" format="color|reference" />
+        <attr name="pressedTextColor" format="color|reference" />
+        <attr name="unableTextColor" format="color|reference" />
+
+        <!--stroke width and color, dash width, dash gap-->
+        <attr name="strokeDashWidth" format="dimension|reference" />
+        <attr name="strokeDashGap" format="dimension|reference" />
+        <attr name="normalStrokeWidth" format="dimension|reference" />
+        <attr name="pressedStrokeWidth" format="dimension|reference" />
+        <attr name="unableStrokeWidth" format="dimension|reference" />
+        <attr name="normalStrokeColor" format="color|reference" />
+        <attr name="pressedStrokeColor" format="color|reference" />
+        <attr name="unableStrokeColor" format="color|reference" />
+
+        <!--background color-->
+        <attr name="normalBackgroundColor" format="color|reference" />
+        <attr name="pressedBackgroundColor" format="color|reference" />
+        <attr name="unableBackgroundColor" format="color|reference" />
+
+        <!--background radius-->
+        <attr name="statebutton_radius" format="dimension|reference" />
+        <attr name="statebutton_round" format="boolean|reference" />
+
+        <!--animation duration-->
+        <attr name="animationDuration" format="integer|reference" />
+
     </declare-styleable>
 
     <declare-styleable name="NumberPicker">
