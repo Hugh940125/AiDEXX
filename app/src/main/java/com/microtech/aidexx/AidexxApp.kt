@@ -20,7 +20,7 @@ class AidexxApp : Application() {
     }
 
     private fun initSdks() {
-        MMKV.initialize(this, this.filesDir.absolutePath + "/mmkv")
+        MMKV.initialize(this)
         ObjectBox.init(this)
     }
 }

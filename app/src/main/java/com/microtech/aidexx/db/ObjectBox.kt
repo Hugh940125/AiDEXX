@@ -1,6 +1,7 @@
 package com.microtech.aidexx.db
 
 import android.content.Context
+import com.microtech.aidexx.db.entity.MyObjectBox
 import io.objectbox.BoxStore
 
 /**

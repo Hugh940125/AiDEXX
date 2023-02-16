@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.home.timetab
+package com.microtech.aidexx.ui.main.home.timetab
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -142,17 +142,18 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
                 if (ThemeManager.isLight())
                     ContextCompat.getColor(mContext,
                         R.color.green_65) else ContextCompat.getColor(mContext, R.color.gray_e6),
-                ANIM_DURATION)
+                ANIM_DURATION
+            )
         argbAnimator.addUpdateListener {
             tvTarget?.setTextColor(it.animatedValue as Int)
         }
         animatorSet.playTogether(transAnimator, alphaAnimator, argbAnimator)
         animatorSet.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator?) {
+            override fun onAnimationStart(animation: Animator) {
                 tvTarget?.typeface = Typeface.DEFAULT_BOLD
             }
 
-            override fun onAnimationEnd(animation: Animator?) {
+            override fun onAnimationEnd(animation: Animator) {
                 if (ThemeManager.isLight()) {
                     tvTarget?.setTextColor(ContextCompat.getColor(mContext, R.color.green_65))
                 } else {
@@ -160,10 +161,10 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
                 }
             }
 
-            override fun onAnimationCancel(animation: Animator?) {
+            override fun onAnimationCancel(animation: Animator) {
             }
 
-            override fun onAnimationRepeat(animation: Animator?) {
+            override fun onAnimationRepeat(animation: Animator) {
             }
         })
         animatorSet.start()
@@ -202,25 +203,26 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
             .createArgbAnimator(if (ThemeManager.isLight())
                 ContextCompat.getColor(mContext,
                     R.color.green_65) else ContextCompat.getColor(mContext, R.color.gray_e6),
-                ContextCompat.getColor(mContext, R.color.gray_d8), ANIM_DURATION)
+                ContextCompat.getColor(mContext, R.color.gray_d8), ANIM_DURATION
+            )
         argbAnimator.addUpdateListener {
             tvTarget?.setTextColor(it.animatedValue as Int)
         }
         animatorSet.playTogether(transAnimator, alphaAnimator, argbAnimator)
         animatorSet.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator?) {
+            override fun onAnimationStart(animation: Animator) {
                 tvTarget?.typeface = Typeface.DEFAULT
             }
 
-            override fun onAnimationEnd(animation: Animator?) {
+            override fun onAnimationEnd(animation: Animator) {
                 tvTarget?.setTextColor(ContextCompat.getColor(mContext, R.color.gray_d8))
                 tvTarget?.setTextColor(ContextCompat.getColor(mContext, R.color.gray_d8))
             }
 
-            override fun onAnimationCancel(animation: Animator?) {
+            override fun onAnimationCancel(animation: Animator) {
             }
 
-            override fun onAnimationRepeat(animation: Animator?) {
+            override fun onAnimationRepeat(animation: Animator) {
             }
         })
         animatorSet.start()

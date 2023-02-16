@@ -8,7 +8,7 @@
     tools:context=".ui.main.MainActivity">
 
     <androidx.viewpager2.widget.ViewPager2
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:id="@+id/viewpager"
         android:layout_width="0dp"
         android:layout_height="0dp"

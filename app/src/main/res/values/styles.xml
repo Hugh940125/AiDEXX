@@ -44,7 +44,6 @@
         <item name="settingItemIconSize">40dp</item>
         <item name="settingItemTitleTextSize">16sp</item>
         <item name="settingItemValueTextSize">16sp</item>
-        <item name="editItemHeight">60dp</item>
         <item name="btnItemMarginRight">20dp</item>
         <item name="btnItemMarginLeft">20dp</item>
     </style>
@@ -94,7 +93,6 @@
         <item name="bgbackground">@color/bg_bg_color</item>
         //血糖背景页面
         <item name="containerBackground">@color/bg_event_color</item>
-        <item name="editItemBackground">@color/bg_trend_item</item>
         <item name="containerBackgroundLight">@color/bg_trend_item</item>
         <item name="android:windowBackground">@color/bg_history</item>
         <item name="appColorPrimary">@color/d_1</item>
@@ -115,18 +113,10 @@
         <item name="settingItemValueTextColor">@color/white</item>
         <item name="settingItemIconColor">@color/white</item>
         <item name="colorIconArrowNext">@color/white</item>
-        <item name="editItemValueBackground">@drawable/shape_rounded_rectangle_gray</item>
         <item name="bgHomeChartNew">@drawable/shape_rounded_rectangle_chart</item>
         <item name="bgSetting">@drawable/shape_rounded_setting</item>
-        <item name="editItemValueTextColor">@color/white</item>
-        <item name="editItemValueHintTextColor">@color/editLightHint</item>
-        <item name="editItemIconColor">@color/white</item>
-
         <item name="bgHomeBottom">@android:color/transparent</item>
-
         <item name="bgHomeChart">@color/bgRadioButtonSelect</item>
-
-
         <item name="srcTabHistorySelected">@drawable/selector_history</item>
         <item name="srcTabTrend">@drawable/selector_trends</item>
         <item name="srcTabBg">@drawable/selector_bg</item>
@@ -239,15 +229,10 @@
         <item name="settingItemValueTextColor">@color/gray5</item>
         <item name="colorIconArrowNext">@color/black</item>
         <item name="settingItemIconColor">@color/light_colorIconArrowNext</item>
-        <item name="editItemBackground">@color/transparent</item>
-        <item name="editItemValueBackground">@drawable/shape_rounded_rectangle_gray</item>
         <item name="bgRectFunc">@drawable/shape_rounded_rectangle_gray</item>
         <item name="bgSetting">@drawable/shape_rounded_setting</item>
-        <item name="editItemValueTextColor">@color/black</item>
-        <item name="editItemIconColor">@color/black</item>
         <item name="bgTrendItem">@color/light_bg_trend_item</item>
         <item name="settingItemBackgroundPressed">@color/light_bg_history</item>
-        <item name="editItemValueHintTextColor">@color/editLightHint</item>
         <item name="bgHomeBottom">@color/light_bgHomeBottom</item>
         <item name="colorbtnNormal">@color/white</item>
         <item name="colorbtnPressed">@color/light_bg_history</item>

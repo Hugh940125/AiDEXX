@@ -74,7 +74,7 @@ public class BaseWebView extends LinearLayout {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void init(Context context) {
-        mActivity = (Activity)context;
+        mActivity = (Activity) context;
         View.inflate(context, R.layout.view_web_progress, this);
         mWebView = findViewById(R.id.web_view);
         mProgressBar = findViewById(R.id.progress_bar);
@@ -82,7 +82,6 @@ public class BaseWebView extends LinearLayout {
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
-        settings.setAppCacheEnabled(false);
         settings.setSavePassword(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
         mWebView.setWebChromeClient(new MyWebChromeClient());
@@ -98,11 +97,12 @@ public class BaseWebView extends LinearLayout {
             }
 
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, final String url) {
+            public boolean shouldOverrideUrlLoading(WebView view, final WebResourceRequest request) {
+                String url = request.getUrl().toString();
                 if (onLoadingUrlListener != null) {
                     return onLoadingUrlListener.onLoadingUrl(url);
                 }
-                return super.shouldOverrideUrlLoading(view, url);
+                return super.shouldOverrideUrlLoading(view, request);
             }
 
             @Override

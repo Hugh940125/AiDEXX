@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.home.timetab
+package com.microtech.aidexx.ui.main.home.timetab
 
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator

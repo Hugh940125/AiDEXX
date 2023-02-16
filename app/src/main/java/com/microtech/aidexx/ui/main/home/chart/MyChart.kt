@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.home.chart
+package com.microtech.aidexx.ui.main.home.chart
 
 import android.annotation.SuppressLint
 import android.content.Context

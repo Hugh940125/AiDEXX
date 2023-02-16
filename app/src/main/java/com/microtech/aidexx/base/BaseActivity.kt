@@ -42,7 +42,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(ThemeUtil.theme.id)
+        setTheme(ThemeManager.theme.id)
         binding = getViewBinding()
         mainScope = MainScope()
         initViewModel()
@@ -71,7 +71,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (ThemeUtil.theme.index == 1) {
+        if (ThemeManager.theme.index == 1) {
             StatusBarHelper.setStatusBarLightMode(this)
         } else {
             StatusBarHelper.setStatusBarDarkMode(this)

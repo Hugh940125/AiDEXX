@@ -3,6 +3,11 @@ package com.microtech.aidexx.ui.main
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.microtech.aidexx.ui.main.bg.BgFragment
+import com.microtech.aidexx.ui.main.event.EventFragment
+import com.microtech.aidexx.ui.main.history.HistoryFragment
+import com.microtech.aidexx.ui.main.home.HomeFragment
+import com.microtech.aidexx.ui.main.trend.TrendFragment
 
 /**
  *@date 2023/2/15
@@ -11,18 +16,20 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
  */
 class MainViewPagerAdapter(fragmentActivity: FragmentActivity) :
     FragmentStateAdapter(fragmentActivity) {
-
-    private val fragments = mutableListOf<Fragment>()
-
     override fun getItemCount(): Int {
-        return fragments.size
+        return 5
     }
 
     override fun createFragment(position: Int): Fragment {
-        return fragments[position]
-    }
-
-    fun addFragment(fragment: Fragment) {
-        fragments.add(fragment)
+        return when (position) {
+            0 -> HistoryFragment.newInstance()
+            1 -> TrendFragment.newInstance()
+            2 -> HomeFragment.newInstance()
+            3 -> BgFragment.newInstance()
+            4 -> EventFragment.newInstance()
+            else -> {
+                HomeFragment.newInstance()
+            }
+        }
     }
 }

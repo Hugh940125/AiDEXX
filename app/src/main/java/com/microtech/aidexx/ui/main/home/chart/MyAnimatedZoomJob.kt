@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.home.chart
+package com.microtech.aidexx.ui.main.home.chart
 
 import android.animation.Animator
 import android.view.View
@@ -37,7 +37,8 @@ class MyAnimatedZoomJob(viewPortHandler: ViewPortHandler?,
                 MyAnimatedZoomJob(null, null, null, null,
                     0f, 0f, 0f, 0f, 0f,
                     0f, 0f, 0f, 0f,
-                    0)) as ObjectPool<MyAnimatedZoomJob>
+                    0)
+            ) as ObjectPool<MyAnimatedZoomJob>
         }
 
         fun getInstance(
@@ -76,7 +77,7 @@ class MyAnimatedZoomJob(viewPortHandler: ViewPortHandler?,
         }
     }
 
-    override fun onAnimationStart(animation: Animator?) {
+    override fun onAnimationStart(animation: Animator) {
         if (!inAnimation) {
             inAnimation = true
             animators++
@@ -84,7 +85,7 @@ class MyAnimatedZoomJob(viewPortHandler: ViewPortHandler?,
         super.onAnimationStart(animation)
     }
 
-    override fun onAnimationEnd(animation: Animator?) {
+    override fun onAnimationEnd(animation: Animator) {
         super.onAnimationEnd(animation)
         if (inAnimation) {
             inAnimation = false

@@ -6,13 +6,20 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import android.view.View.OnLayoutChangeListener
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivityMainBinding
+import com.microtech.aidexx.ui.main.bg.BgFragment
+import com.microtech.aidexx.ui.main.event.EventFragment
+import com.microtech.aidexx.ui.main.history.HistoryFragment
+import com.microtech.aidexx.ui.main.home.HomeFragment
+import com.microtech.aidexx.ui.main.trend.TrendFragment
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -30,15 +37,27 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     }
 
     private fun initView() {
-        binding.viewpager.offscreenPageLimit = 4
         val mainViewPagerAdapter = MainViewPagerAdapter(this)
-        binding.viewpager.adapter = mainViewPagerAdapter
-//        mainViewPagerAdapter.addFragment()
+        binding.viewpager.apply {
+            this.offscreenPageLimit = 2
+            this.adapter = mainViewPagerAdapter
+            this.isUserInputEnabled = false
+            this.setCurrentItem(2, false)
+            this.registerOnPageChangeCallback(object : OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    binding.mainTabView.check(position)
+                }
+            })
+        }
+        binding.mainTabView.onTabChange = {
+            binding.viewpager.setCurrentItem(it, false)
+            true
+        }
     }
 
-    fun initSDKs() {
+    private fun initSDKs() {
         //Bugly初始化
-        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
+//        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
         //Xlog初始化
         initXlog()
     }

@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.home
+package com.microtech.aidexx.ui.main.home
 
 import android.content.Intent
 import android.net.Uri
@@ -16,7 +16,7 @@ private const val SERVICE_URL =
 class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceBinding>() {
     private var uploadMessage: ValueCallback<Uri>? = null
     private var valueCallback: ValueCallback<Array<Uri>>? = null
-    private val FILE_CHOOSER_RESULT_CODE = 10000
+    private val fileChooserResultCode = 10000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +52,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == FILE_CHOOSER_RESULT_CODE) { //处理返回的图片，并进行上传
+        if (requestCode == fileChooserResultCode) { //处理返回的图片，并进行上传
             valueCallback = binding.webCustomerService.valueCallback
             valueCallback?.apply {
                 onActivityResultAboveL(requestCode, resultCode, data)
@@ -64,14 +64,14 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
 
     private fun onActivityResultAboveL(requestCode: Int, resultCode: Int, intent: Intent?) {
         valueCallback = binding.webCustomerService.valueCallback
-        if (requestCode != FILE_CHOOSER_RESULT_CODE || valueCallback == null) return
+        if (requestCode != fileChooserResultCode || valueCallback == null) return
         var results: Array<Uri>? = null
         if (resultCode == RESULT_OK) {
             if (intent != null) {
                 val dataString = intent.dataString
                 val clipData = intent.clipData
                 if (clipData != null) {
-                    results = arrayOf<Uri>()
+                    results = arrayOf()
                     for (i in 0 until clipData.itemCount) {
                         val item = clipData.getItemAt(i)
                         results.plus(item.uri)
@@ -79,7 +79,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
                 }
                 if (dataString != null) {
                     (Uri.parse(dataString))?.apply {
-                        results = arrayOf<Uri>(this)
+                        results = arrayOf(this)
                     }
                 }
             }

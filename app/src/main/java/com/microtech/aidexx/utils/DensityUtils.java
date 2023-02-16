@@ -6,6 +6,8 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.WindowManager;
 
+import com.microtech.aidexx.AidexxApp;
+
 /**
  * 常用单位转换的辅助类
  */
@@ -18,12 +20,11 @@ public class DensityUtils {
     /**
      * dp转px
      *
-     * @param context
      * @return
      */
-    public static int dp2px(Context context, float dpVal) {
+    public static int dp2px(float dpVal) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                dpVal, context.getResources().getDisplayMetrics());
+                dpVal, AidexxApp.instance.getResources().getDisplayMetrics());
     }
 
     /**
@@ -40,12 +41,11 @@ public class DensityUtils {
     /**
      * sp转px
      *
-     * @param context
      * @return
      */
-    public static int sp2px(Context context, float spVal) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
-                spVal, context.getResources().getDisplayMetrics());
+    public static float sp2px(float spVal) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                spVal, AidexxApp.instance.getResources().getDisplayMetrics());
     }
 
     /**

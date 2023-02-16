@@ -4,7 +4,10 @@
     package="com.microtech.aidexx">
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
+        android:name=".AidexxApp"
         android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|uiMode|fontScale|fontWeightAdjustment|locale|keyboard|layoutDirection|density|navigation|smallestScreenSize|mcc|mnc|touchscreen"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
