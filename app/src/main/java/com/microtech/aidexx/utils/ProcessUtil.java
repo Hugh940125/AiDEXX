@@ -3,6 +3,7 @@ package com.microtech.aidexx.utils;
 import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.webkit.WebView;
 
@@ -25,9 +26,7 @@ public class ProcessUtil {
     // 获取当前进程名
     public static String getCurrentProcessName(Context context) {
         if (context == null) return "";
-
         int pid = android.os.Process.myPid();
-
         String processName = "";
         ActivityManager manager = (ActivityManager) context.getSystemService(
                 Context.ACTIVITY_SERVICE
@@ -37,7 +36,6 @@ public class ProcessUtil {
                 processName = process.processName;
             }
         }
-
         return processName;
     }
 
@@ -47,7 +45,6 @@ public class ProcessUtil {
         if (application == null) {
             return;
         }
-
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 String processName = getProcessName(application);
@@ -77,5 +74,17 @@ public class ProcessUtil {
             }
         }
         return null;
+    }
+
+    public static boolean isInstalled(Context context, String pkg) {
+        //默认不存在
+        boolean exit = false;
+        try {
+            //不为空则存在
+            exit = context.getPackageManager().getPackageInfo(pkg, PackageManager.GET_ACTIVITIES) != null;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return exit;
     }
 }

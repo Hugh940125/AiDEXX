@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.SplashScreen.Aidex" parent="Theme.SplashScreen">
+        <item name="android:statusBarColor">@color/transparent</item>
         <!--启动画面背景颜色-->
         <item name="windowSplashScreenBackground">@android:color/black</item>
         <!-- 启动画面icon图标：这里可以是图片、帧动画等-->
@@ -20,13 +21,16 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
     </style>
+
     <style name="BottomDialog" parent="BaseDialog">
         <item name="android:windowAnimationStyle">@style/bottomMenuAnim</item>
     </style>
+
     <style name="bottomMenuAnim">
         <item name="android:windowEnterAnimation">@anim/bottom_menu_enter</item>
         <item name="android:windowExitAnimation">@anim/bottom_menu_exit</item>
     </style>
+
     <style name="DateTimePicker_BottomSheetDialog" parent="BottomDialog">
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -90,7 +94,7 @@
         //按钮未选择
         <item name="bgRadioButtonSelect">@color/bgRadioButtonSelect</item>
         //按钮未选择
-        <item name="bgbackground">@color/bg_bg_color</item>
+        <item name="bgColor">@color/bg_bg_color</item>
         //血糖背景页面
         <item name="containerBackground">@color/bg_event_color</item>
         <item name="containerBackgroundLight">@color/bg_trend_item</item>
@@ -200,7 +204,7 @@
         <item name="colorPrimary">@color/light_colorPrimary</item>
         <item name="colorPrimaryDark">@color/light_nav_bg</item>
         <item name="android:windowBackground">@color/light_bg_history</item>
-        <item name="bgbackground">@color/light_bg_history</item>
+        <item name="bgColor">@color/light_bg_history</item>
         <item name="containerBackground">@color/light_bg_history</item>
         <item name="bgHomeChart">@color/light_home_chart_bg</item>
 
@@ -257,7 +261,7 @@
     <!--    </style>-->
 
 
-    <style name="dialogMagin">
+    <style name="dialogMargin">
         <item name="android:layout_marginLeft">40dp</item>
         <item name="android:layout_marginRight">40dp</item>
         <item name="android:layout_marginStart">40dp</item>
@@ -357,8 +361,6 @@
 
 
     <style name="StateButtonBase" parent="AppTheme">`
-        <item name="statebutton_round">false</item>
-        <item name="statebutton_radius">10dp</item>
         <item name="android:minHeight">48dp</item>
         <item name="android:textSize">16sp</item>
     </style>
