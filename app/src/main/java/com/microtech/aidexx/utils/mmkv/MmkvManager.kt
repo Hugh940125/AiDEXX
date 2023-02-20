@@ -11,7 +11,10 @@ object MmkvManager {
     private const val CUSTOMER_SERVICE_ICON_TOP = "CUSTOMER_SERVICE_ICON_TOP"
     private const val CUSTOMER_SERVICE_ICON_RIGHT = "CUSTOMER_SERVICE_ICON_RIGHT"
     private const val CUSTOMER_SERVICE_ICON_BOTTOM = "CUSTOMER_SERVICE_ICON_BOTTOM"
+    private const val IS_APP_FIRST_LAUNCH = "IS_APP_FIRST_LAUNCH"
 
+    fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, true)
+    fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, false)
     fun getUserId() = MmkvUtil.decodeString(GET_USER_ID, "")
 
     fun getOnlineServiceMsgCount() = MmkvUtil.decodeInt(UserInfoManager.instance().userId(), 0)

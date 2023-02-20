@@ -29,7 +29,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
             try {
                 Thread.sleep(2000)
             } catch (e: InterruptedException) {
-            } finally {
+                e.printStackTrace()
             }
             // 退出程序
             Process.killProcess(Process.myPid())
@@ -37,7 +37,6 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
             exitProcess(1)
         }
     }
-
 
     private fun handleException(ex: Throwable?): Boolean {
         if (ex == null) {

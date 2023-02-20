@@ -186,5 +186,4 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK)
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
     }
-
 }

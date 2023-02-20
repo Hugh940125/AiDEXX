@@ -36,7 +36,7 @@
 
     <attr name="bgRadioButtonUnSelect" format="reference|color" />
     <attr name="bgRadioButtonSelect" format="reference|color" />
-    <attr name="bgbackground" format="reference|color" />
+    <attr name="bgColor" format="reference|color" />
 
     <attr name="bgHomeBottom" format="reference|color" />
     <attr name="bgHomeChart" format="reference|color" />
@@ -109,31 +109,31 @@
     <declare-styleable name="StateButton">
 
         <!--text color-->
-        <attr name="normalTextColor" format="color|reference" />
-        <attr name="pressedTextColor" format="color|reference" />
-        <attr name="unableTextColor" format="color|reference" />
+        <attr name="normalTextColor" format="color|reference"/>
+        <attr name="pressedTextColor" format="color|reference"/>
+        <attr name="unableTextColor" format="color|reference"/>
 
         <!--stroke width and color, dash width, dash gap-->
-        <attr name="strokeDashWidth" format="dimension|reference" />
-        <attr name="strokeDashGap" format="dimension|reference" />
-        <attr name="normalStrokeWidth" format="dimension|reference" />
-        <attr name="pressedStrokeWidth" format="dimension|reference" />
-        <attr name="unableStrokeWidth" format="dimension|reference" />
-        <attr name="normalStrokeColor" format="color|reference" />
-        <attr name="pressedStrokeColor" format="color|reference" />
-        <attr name="unableStrokeColor" format="color|reference" />
+        <attr name="strokeDashWidth" format="dimension|reference"/>
+        <attr name="strokeDashGap" format="dimension|reference"/>
+        <attr name="normalStrokeWidth" format="dimension|reference"/>
+        <attr name="pressedStrokeWidth" format="dimension|reference"/>
+        <attr name="unableStrokeWidth" format="dimension|reference"/>
+        <attr name="normalStrokeColor" format="color|reference"/>
+        <attr name="pressedStrokeColor" format="color|reference"/>
+        <attr name="unableStrokeColor" format="color|reference"/>
 
         <!--background color-->
-        <attr name="normalBackgroundColor" format="color|reference" />
-        <attr name="pressedBackgroundColor" format="color|reference" />
-        <attr name="unableBackgroundColor" format="color|reference" />
+        <attr name="normalBackgroundColor" format="color|reference"/>
+        <attr name="pressedBackgroundColor" format="color|reference"/>
+        <attr name="unableBackgroundColor" format="color|reference"/>
 
         <!--background radius-->
-        <attr name="statebutton_radius" format="dimension|reference" />
-        <attr name="statebutton_round" format="boolean|reference" />
+        <attr name="radius" format="dimension|reference"/>
+        <attr name="round" format="boolean|reference"/>
 
         <!--animation duration-->
-        <attr name="animationDuration" format="integer|reference" />
+        <attr name="animationDuration" format="integer|reference"/>
 
     </declare-styleable>
 

@@ -32,6 +32,21 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Log.e("onResume",this::class.java.toString())
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.e("onPause",this::class.java.toString())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e("onDestroy",this::class.java.toString())
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

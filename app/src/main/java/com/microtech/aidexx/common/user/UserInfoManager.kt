@@ -21,4 +21,8 @@ class UserInfoManager {
     fun userId(): String {
         return MmkvManager.getUserId()
     }
+
+    fun isLogin(): Boolean {
+        return true
+    }
 }
