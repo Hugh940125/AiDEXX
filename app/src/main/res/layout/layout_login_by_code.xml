@@ -26,8 +26,9 @@
             android:paddingBottom="20dp" />
 
         <TextView
+            android:textSize="14sp"
             android:layout_gravity="center_vertical"
-            android:id="@+id/btn_login_code"
+            android:id="@+id/btn_get_ver_code"
             style="@style/btnLogin"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -39,6 +40,7 @@
     <include layout="@layout/layout_line" />
 
     <LinearLayout
+        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -52,6 +54,7 @@
             android:theme="@style/LoginCheckBox" />
 
         <TextView
+            android:layout_gravity="center_vertical"
             android:id="@+id/txt_user_protocol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -23,6 +23,6 @@ class UserInfoManager {
     }
 
     fun isLogin(): Boolean {
-        return true
+        return false
     }
 }

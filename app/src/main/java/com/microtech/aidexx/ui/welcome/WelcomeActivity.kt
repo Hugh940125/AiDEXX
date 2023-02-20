@@ -6,6 +6,7 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityWelcomeBinding
+import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -40,7 +41,7 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
             ActivityUtil.toActivity(this, MainActivity::class.java)
             finish()
         } else {
-//            goActivity(bundle, LoginActivity::class.java)
+            ActivityUtil.toActivity(this, LoginActivity::class.java)
             finish()
         }
     }

@@ -13,6 +13,8 @@ import kotlin.system.exitProcess
  */
 class CrashHandler : Thread.UncaughtExceptionHandler {
     private var mDefaultHandler: Thread.UncaughtExceptionHandler? = null
+    @Volatile
+    private var isKilled = false
 
     fun init(context: Context?) {
         // 获取系统默认的UncaughtException处理类
@@ -26,6 +28,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
             // 如果用户没有处理让系统默认的来处理
             mDefaultHandler?.uncaughtException(thread, ex)
         } else {
+            isKilled = true
             try {
                 Thread.sleep(2000)
             } catch (e: InterruptedException) {
@@ -39,7 +42,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
     }
 
     private fun handleException(ex: Throwable?): Boolean {
-        if (ex == null) {
+        if (ex == null || isKilled) {
             return false
         }
         LogUtil.eAiDEX(ex.printStackTrace().toString())

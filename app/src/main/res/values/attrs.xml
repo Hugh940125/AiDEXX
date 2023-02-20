@@ -94,7 +94,6 @@
         <attr name="exampleDrawable" format="color|reference" />
     </declare-styleable>
 
-
     <declare-styleable name="ActionBarWidget">
         <attr name="actionBarBackground" format="color|reference" />
         <attr name="actionBarIconSize" format="dimension|reference" />
