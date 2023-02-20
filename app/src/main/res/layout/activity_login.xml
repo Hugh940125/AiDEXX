@@ -55,7 +55,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <include
-            android:id="@+id/login_by_code"
+            android:id="@+id/login_by_pwd"
             layout="@layout/layout_login_by_pwd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

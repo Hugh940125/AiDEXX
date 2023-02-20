@@ -105,14 +105,11 @@
         <attr name="rightIcon" format="reference" />
         <attr name="titleRightIcon" format="reference" />
     </declare-styleable>
-
     <declare-styleable name="StateButton">
-
         <!--text color-->
         <attr name="normalTextColor" format="color|reference"/>
         <attr name="pressedTextColor" format="color|reference"/>
         <attr name="unableTextColor" format="color|reference"/>
-
         <!--stroke width and color, dash width, dash gap-->
         <attr name="strokeDashWidth" format="dimension|reference"/>
         <attr name="strokeDashGap" format="dimension|reference"/>
@@ -130,7 +127,7 @@
 
         <!--background radius-->
         <attr name="radius" format="dimension|reference"/>
-        <attr name="round" format="boolean|reference"/>
+        <attr name="isRound" format="boolean"/>
 
         <!--animation duration-->
         <attr name="animationDuration" format="integer|reference"/>
