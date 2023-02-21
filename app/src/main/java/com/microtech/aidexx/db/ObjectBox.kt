@@ -1,7 +1,10 @@
 package com.microtech.aidexx.db
 
 import android.content.Context
+import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import com.microtech.aidexx.db.entity.MyObjectBox
+import io.objectbox.Box
 import io.objectbox.BoxStore
 
 /**
@@ -18,4 +21,22 @@ object ObjectBox {
             .androidContext(context.applicationContext)
             .build()
     }
+
+    var transmitterBox: Box<TransmitterEntity>? = null
+        get() {
+            if (field == null) {
+                field = store.boxFor(TransmitterEntity::class.java)
+                return field
+            }
+            return field
+        }
+
+    var cgmHistoryBox: Box<CgmHistoryEntity>? = null
+        get() {
+            if (field == null) {
+                field = store.boxFor(CgmHistoryEntity::class.java)
+                return field
+            }
+            return field
+        }
 }

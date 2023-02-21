@@ -20,6 +20,7 @@ dependencyResolutionManagement {
         maven { url 'https://jitpack.io' }
     }
 }
-rootProject.name = "AiDEXX"
+rootProject.name = "aidex-x"
 include ':app'
 include ':chartlib'
+include ':blecomm'

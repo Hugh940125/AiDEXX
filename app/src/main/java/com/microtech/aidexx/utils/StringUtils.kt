@@ -18,6 +18,22 @@ const val WELCOME = 1
 const val LOGIN = 2
 
 object StringUtils {
+    fun binaryToHexString(bytes: ByteArray?): String {
+        var result = ""
+        if (bytes == null) {
+            return result
+        }
+        var hex: String
+        for (i in bytes.indices) {
+            //字节高4位
+            hex = "0123456789ABCDEF"[bytes[i].toInt() and 0xF0 shr 4].toString()
+            //字节低4位
+            hex += "0123456789ABCDEF"[bytes[i].toInt() and 0x0F].toString()
+            result += "$hex,"
+        }
+        return result
+    }
+
     fun getPrivacyPhone(mobile: String): String {
         return mobile.substring(0, 3) + "****" + mobile.substring(
             7,

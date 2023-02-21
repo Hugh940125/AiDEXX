@@ -65,6 +65,5 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
                 }
                 return field
             }
-            private set
     }
 }

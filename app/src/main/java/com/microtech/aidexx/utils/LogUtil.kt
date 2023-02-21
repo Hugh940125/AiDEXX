@@ -9,7 +9,7 @@ import com.tencent.mars.xlog.Log
  */
 class LogUtil {
     companion object{
-        private const val tag = "AiDEX"
+        private const val tag = "AiDEX-X"
         @JvmStatic
         fun eAiDEX(msg: String) {
             Log.e(tag, msg)
