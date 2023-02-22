@@ -1,6 +1,7 @@
 package com.microtech.aidexx.utils.mmkv
 
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.utils.ThresholdManager
 
 object MmkvManager {
 
@@ -12,6 +13,16 @@ object MmkvManager {
     private const val CUSTOMER_SERVICE_ICON_RIGHT = "CUSTOMER_SERVICE_ICON_RIGHT"
     private const val CUSTOMER_SERVICE_ICON_BOTTOM = "CUSTOMER_SERVICE_ICON_BOTTOM"
     private const val IS_APP_FIRST_LAUNCH = "IS_APP_FIRST_LAUNCH"
+    private const val HYPER = "HYPER"
+    private const val HYPO = "HYPO"
+
+    fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)
+
+    fun getHypo() = MmkvUtil.decodeFloat(HYPO, ThresholdManager.DEFAULT_HYPO)
+
+    fun saveHyper(value: Float) = MmkvUtil.encodeFloat(HYPER, value)
+
+    fun getHyper() = MmkvUtil.decodeFloat(HYPER, ThresholdManager.DEFAULT_HYPER)
 
     fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, true)
     fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, false)

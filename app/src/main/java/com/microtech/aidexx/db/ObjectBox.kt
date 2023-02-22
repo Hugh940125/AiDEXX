@@ -1,11 +1,13 @@
 package com.microtech.aidexx.db
 
 import android.content.Context
+import com.microtech.aidexx.MyObjectBox
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
-import com.microtech.aidexx.db.entity.MyObjectBox
 import io.objectbox.Box
 import io.objectbox.BoxStore
+import io.objectbox.kotlin.awaitCallInTx
+import java.util.concurrent.Callable
 
 /**
  *@date 2023/2/15
@@ -20,6 +22,20 @@ object ObjectBox {
         store = MyObjectBox.builder()
             .androidContext(context.applicationContext)
             .build()
+    }
+
+    fun runAsync(
+        runnable: Runnable,
+        onSuccess: (() -> Unit)? = null,
+        onError: (() -> Unit)? = null
+    ) {
+        store.runInTxAsync(runnable) { _, error ->
+            if (error == null) {
+                onSuccess?.invoke()
+            } else {
+                onError?.invoke()
+            }
+        }
     }
 
     var transmitterBox: Box<TransmitterEntity>? = null

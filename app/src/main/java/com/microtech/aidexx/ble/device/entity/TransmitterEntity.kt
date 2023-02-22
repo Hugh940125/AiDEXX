@@ -1,7 +1,7 @@
 package com.microtech.aidexx.ble.device.entity
 
-import com.microtech.aidexx.ble.device.TransmitterModel
 import com.microtech.aidexx.utils.EncryptUtils
+import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Unique
@@ -21,7 +21,7 @@ class TransmitterEntity {
     var accessId: ByteArray? = null
     var encryptionKey: ByteArray? = null
     var sensorStartTime: Date? = null //开始时间
-    var error4TimesWithin2Hour = false // 加强版植入失败
+    var error4TimesWithin2Hours = false // 加强版植入失败
     var deviceModel: Int = 0
     var expirationTime: Int = 15
         set(value) {
@@ -32,8 +32,8 @@ class TransmitterEntity {
     var eventIndex: Int = 0
     var fullEventIndex: Int = 0
     var fullSensorIndex: Int = 0
-    var hyperThreshold: Float = TransmitterModel.DEFAULT_HYPER
-    var hypoThreshold: Float = TransmitterModel.DEFAULT_HYPO
+    var hyperThreshold: Float = ThresholdManager.DEFAULT_HYPER
+    var hypoThreshold: Float = ThresholdManager.DEFAULT_HYPO
     var deviceKey: String? = null
     var et: Int = 0
 

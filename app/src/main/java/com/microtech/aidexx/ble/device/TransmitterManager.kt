@@ -5,50 +5,46 @@ import com.microtech.aidexx.ble.device.entity.TransmitterEntity_
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
-import java.util.*
+import io.objectbox.kotlin.awaitCallInTx
+import io.objectbox.query.QueryBuilder
 
 class TransmitterManager private constructor() {
 
-    companion object {
-        private var instance: TransmitterManager? = null
-            get() {
-                if (field == null) {
-                    field = TransmitterManager()
-                }
-                return field
-            }
-
-        @Synchronized
-        fun instance(): TransmitterManager {
-            return instance!!
-        }
-    }
-
-    private var defaultModel: TransmitterModel? = null
-    private val transmitters: MutableMap<String, TransmitterModel> = HashMap()
+    private var default: TransmitterModel? = null
+    private val transmitters: HashMap<String, TransmitterModel> = hashMapOf()
 
     var cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
-        private set
-
-    var onLoadTransmitterListener: ((TransmitterModel) -> Unit)? = null
+    var onTransmitterLoaded: ((TransmitterModel) -> Unit)? = null
     var onLoadHistoriesListener: ((List<CgmHistoryEntity>) -> Unit)? = null
     var onUpdateHistoriesListener: ((List<CgmHistoryEntity>) -> Unit)? = null
 
+//    fun loadTransmitter(): TransmitterEntity? {
+//        val transmitter = transmitterBox!!.query().orderDesc(TransmitterEntity_.idx)
+//            .build()
+//            .findFirst()
+//        default = transmitter
+//        return
+//    }
 
-    fun loadTransmitter(): TransmitterEntity? {
-        return transmitterBox!!.query().orderDesc(TransmitterEntity_.idx)
-            .build()
-            .findFirst()
+    suspend fun getTransmitterFromDb(sn: String): TransmitterEntity? {
+        return ObjectBox.store.awaitCallInTx {
+            val findFirst = transmitterBox!!.query()
+                .equal(
+                    TransmitterEntity_.deviceSn, sn,
+                    QueryBuilder.StringOrder.CASE_INSENSITIVE
+                )
+                .build()
+                .findFirst()
+            findFirst
+        }
     }
 
     fun clearDb() {
-        ObjectBox.store.runInTxAsync({
+        ObjectBox.runAsync({
             transmitterBox!!.removeAll()
-        }) { _, error ->
-            if (error == null) {
-                onLoadHistoriesListener?.invoke(cgmHistories)
-            }
-        }
+        }, onSuccess = {
+            onLoadHistoriesListener?.invoke(cgmHistories)
+        })
     }
 
 //    fun loadHistory() {
@@ -79,7 +75,7 @@ class TransmitterManager private constructor() {
 
     fun getDefault(): TransmitterModel? {
         return when {
-            defaultModel != null -> defaultModel
+            default != null -> default
             transmitters.isNotEmpty() -> {
                 transmitters.values.last()
             }
@@ -89,27 +85,23 @@ class TransmitterManager private constructor() {
 
 
     fun removeDefaultModel() {
-        defaultModel = null
+        default = null
     }
 
-//    fun getModel(sn: String): CgmModel {
-//        if (sn != defaultModel?.entity?.deviceSn) {
+//    fun get(sn: String): TransmitterModel {
+//        if (sn != default?.entity?.deviceSn) {
 //            val entity = TransmitterEntity(sn)
-//            entity.hyperThreshold = Constant.hyper_value
-//            entity.hypoThreshold = Constant.hypo_value
-//            LogUtils.data("getModel HI ${entity.hyperThreshold} LO ${entity.hypoThreshold}")
-//            defaultModel = transmitters[sn] ?: CgmModel(
-//                entity
-//            )
+//            entity.hyperThreshold = ThresholdManager.hyper
+//            entity.hypoThreshold = ThresholdManager.hypo
+//            default = transmitters[sn] ?: TransmitterModel(entity)
 //        }
-//        LogUtils.data("getModel HI ${defaultModel?.entity?.hyperThreshold} LO ${defaultModel?.entity?.hypoThreshold}")
-//        return defaultModel!!
+//        return default
 //    }
 
     fun set(model: TransmitterModel) {
-        defaultModel = model
+        default = model
         model.controller.register()
-        onLoadTransmitterListener?.invoke(model)
+        onTransmitterLoaded?.invoke(model)
     }
 
     fun update(model: TransmitterModel) {
@@ -132,24 +124,18 @@ class TransmitterManager private constructor() {
         onUpdateHistoriesListener?.invoke(cgmHistories)
     }
 
-    fun getIdleTime(): Long {
-        var idleTime = 300L
-        var found = false
-        val now = Date().time / 1000
-        for (transmitter in transmitters.values) {
-            if (now - transmitter.lastAdvertiseTime < 10) {
-                found = true
+    companion object {
+        private var instance: TransmitterManager? = null
+            get() {
+                if (field == null) {
+                    field = TransmitterManager()
+                }
+                return field
             }
-            if (transmitter.nextHistoryTime - now < idleTime) {
-                idleTime = transmitter.nextHistoryTime - now
-            }
-        }
-        return if (!found) {
-            -1L
-        } else if (idleTime < 0 || idleTime > 300) {
-            0L
-        } else {
-            idleTime
+
+        @Synchronized
+        fun instance(): TransmitterManager {
+            return instance!!
         }
     }
 }

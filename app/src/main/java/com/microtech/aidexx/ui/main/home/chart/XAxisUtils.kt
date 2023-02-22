@@ -13,7 +13,7 @@ class                                                                           
         }
 
         fun secondToX(second: Long): Float {
-            return (second - timeZero).toFloat() / TimeUtils.oneHour
+            return (second - timeZero).toFloat() / TimeUtils.oneHourSeconds
         }
 
         fun xToSecond(x: Float): Long {

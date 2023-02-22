@@ -3,12 +3,15 @@ package com.microtech.aidexx.ble.device
 import android.content.Context
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.toMinutes
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.StringUtils
-import com.microtechmd.blecomm.constant.AidexXOperation
-import com.microtechmd.blecomm.constant.Glucose
+import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.controller.BleController
@@ -17,8 +20,6 @@ import com.microtechmd.blecomm.parser.*
 import com.tencent.mmkv.MMKV
 import io.objectbox.kotlin.equal
 import io.objectbox.query.QueryBuilder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
@@ -27,24 +28,14 @@ import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
 
+
 /**
  * APP-SRC-A-2-7-2
  */
 class TransmitterModel(val entity: TransmitterEntity) {
     companion object {
-        const val GLUCOSE_LOWER = 2f
-        const val GLUCOSE_UPPER = 25f
-        const val URGENT_HYPO = 3f
-        const val DEFAULT_HYPO = 3.9f
-        const val DEFAULT_HYPER = 10f
-
-        const val SUPER_FAST_DOWN = -0.17
-        const val FAST_DOWN = -0.11
-        const val SLOW_DOWN = -0.06
-        const val SLOW_UP = 0.06
-        const val FAST_UP = 0.11
-        const val SUPER_FAST_UP = 0.17
-
+        var error4TimesWithin2Hours: Boolean = false
+        var messageCallBack: ((msg: BleMessage) -> Unit)? = null
         var notify: ((time: String, type: Int) -> Unit)? = null
         var notifyNotification: (() -> Unit)? = null
     }
@@ -52,7 +43,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     enum class GlucoseLevel { LOW, NORMAL, HIGH }
     enum class GlucoseTrend { SUPER_FAST_DOWN, FAST_DOWN, DOWN, STEADY, UP, FAST_UP, SUPER_FAST_UP }
 
-    var isValid: Boolean = false
+    var isHistoryValid: Boolean = false
     private var isDeviceFault: Boolean = false
     var faultType = 0
     var recentHistory: AidexXHistoryEntity? = null
@@ -68,26 +59,23 @@ class TransmitterModel(val entity: TransmitterEntity) {
     var nextEventIndex = 0
     var nextFullEventIndex = 0
     var isNeedTipInsertErrorDialog = false //是否弹框
-    var recentAdv: AidexXBroadcastEntity? = null //记录最新收到的广播
+    var recentAdvertise: AidexXBroadcastEntity? = null //记录最新收到的广播
     var isNewSensorAd = false; //最新的广播是否新传感器的广播
     var lastAdvertiseTime = 0L
     var lastNewSenorNotifyTime = 0L
     var lastTipDeviceTimeError = 0L //上一次提示设备时间错误
     var nextHistoryTime = 0L
-    var lastHistoryDatetime: Date? = null
+    var lastHistoryTime: Date? = null
     private var lastLowUrgentTime: Date? = null
     private var lastFastUpTime: Date? = null
     private var lastFastDownTime: Date? = null
-    var minutesAgo: Long? = null
+    var minutesAgo: Int? = null
         private set
         get() {
-            if (lastHistoryDatetime == null) {
+            if (lastHistoryTime == null) {
                 field = null
             } else {
-                field = ((Date().time - lastHistoryDatetime!!.time) / 1000 / 60)
-                if (field!! < 0 && field!! > -5) {
-                    field = 0
-                }
+                field = (TimeUtils.currentTimeMillis - lastHistoryTime!!.time).toMinutes()
             }
             return field
         }
@@ -95,7 +83,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
         private set
     var primary: Int = 2  //主从设备字段
         private set
-    var expired: Boolean = false
+    var isSensorExpired: Boolean = false
         private set
     var glucose: Float? = null
         private set
@@ -129,207 +117,80 @@ class TransmitterModel(val entity: TransmitterEntity) {
         controller.setMessageCallback { operation, success, data ->
             LogUtil.eAiDEX(
                 "operation $operation , success $success message ${
-                    StringUtils.binaryToHexString(
-                        data
-                    )
+                    StringUtils.binaryToHexString(data)
                 }"
             )
             if (operation in 1..3) {
-                onMessage(BleMessage(operation, success, data))
+                messageCallBack?.invoke(BleMessage(operation, success, data))
             } else {
                 val result = ByteUtils.subByte(data, 1, data.size - 1);
-                onMessage(BleMessage(operation, success, result))
+                messageCallBack?.invoke(BleMessage(operation, success, result))
             }
         }
     }
 
-
-    private fun onMessage(message: BleMessage) {
-        LiveEventBus.get<Boolean>(EventKey.RECEIVE_BROADCAST).post(true)
-        LogUtils.error("mesage : ${message.operation}  ${message.isSuccess}")
-        when (message.operation) {
-            AidexXOperation.DISCOVER -> {
-                if (message.isSuccess) {
-                    Constant.lastAdtime = System.currentTimeMillis() / 1000
-                    handleAdvertisement(CgmsApplication.instance, message.data)
-                    //updateNotification(model)
-                }
-            }
-
-//            CgmOperation.PAIR -> if (message.isSuccess) {
-//
-//                model.savePair(0)
-//            }
-
-            AidexXOperation.GET_START_TIME -> {
-                val sensorStartTime = ByteUtils.toDate(message.data)
-                LogUtils.eAiDex("获取开始时间 :" + sensorStartTime.date2ymdhm())
-                TransmitterManager.instance().getDefaultModel()?.updateStartTime(sensorStartTime)
-            }
-
-            AidexXOperation.SET_CALIBRATION -> {
-
-                RxLifeScope().launch {
-                    withContext(Dispatchers.Main) {
-                        if (message.isSuccess) {
-                            //发送到MainActivity,弹出对话框
-                            LiveEventBus.get<Calibration>(EventKey.EVENT_CALIBRATION)
-                                .post(Calibration(true))
-                        } else {
-                            LiveEventBus.get<Calibration>(EventKey.EVENT_CALIBRATION)
-                                .post(Calibration(false))
-                        }
-                    }
-                }
-            }
-
-            AidexXOperation.GET_DEFAULT_PARAM -> {
-//                val entity = CgmParser.getDeviceConfig<CgmConfEntity>(message.data)
-//                LogUtils.data("Main Server  :$entity")
-//                val defaultModel = TransmitterManager.instance().getDefaultModel()
-//                defaultModel?.saveDeviceMode(entity.expirationTime.toInt())
-//                MMKVUtil.encodeBoolean(EventKey.not_register, true)
-//                LiveEventBus.get<Boolean>(EventKey.RE_REGISTER_DEVICE).post(true)
-            }
-
-//            CgmOperation.BOND -> if (!message.isSuccess) {
-//                LogUtils.eAiDex("BOND ERROR Controller ID :" + String(model.controller.id) + "numBondError $numBondError")
-//                numBondError++
-//                if (numBondError > 2) {
-//                    numBondError = 0
-//                    model.clearPair()
-//                }
-//            } else {
-//                numBondError = 0
-//                LogUtils.data("Controller ID :" + String(model.controller.id))
-//            }
-//            CgmOperation.UNPAIR -> if (message.isSuccess) {
-//                model.deletePair()
-//            }
-            AidexXOperation.GET_HISTORY_RANGE -> {
-                LogUtils.eAiDex("GET_HISTORY_RANGE --- ${SPUtils.binaryToHexString(message.data)}")
-                message.data.let {
-                    if (it.isNotEmpty() && it.size >= 6) {
-                        briefIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
-                        rawIndex = ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
-                        newestIndex =
-                            ((it[5].toInt() and 0xff) shl 8).plus((it[4].toInt() and 0xff))
-                        LogUtils.eAiDex("GET_HISTORY_RANGE --- $briefIndex--$rawIndex--$newestIndex")
-                    }
-                }
-            }
-            AidexXOperation.GET_HISTORIES -> {
-                if (UserManager.instance().isLogin()) {
-                    if (CgmsApplication.isCgmPairing) {
-                        saveHistoriesSimple(message.data)
-                    } else {
-                        saveHistoriesAndContinueSync(message.data)
-                        updateNotification()
-                    }
-                }
-            }
-            AidexXOperation.GET_HISTORIES_RAW -> {
-                if (UserManager.instance().isLogin()) {
-                    saveFullHistoriesAndContinueSync(message.data)
-                }
-            }
-            else -> {
-            }
-        }
-        try {
-            CgmsApplication.instance.sendBroadcast(BleIntent(controller.sn, message))
-        } catch (e: Exception) {
-        }
-    }
-
-
-    fun getDeviceID(): String? {
+    fun deviceId(): String? {
         return entity.id
     }
 
     //更新传感器状态
-    fun updateSensorStatus(sensorInsetErrorSuper: Boolean) {
-        entity.sensorInsetErrorSuper = sensorInsetErrorSuper
-        Constant.sensorInsetErrorSuper = sensorInsetErrorSuper
-        CgmsApplication.boxStore.runInTxAsync({ transmitterBox.put(entity) }) { _, _ -> }
-    }
-
-    fun addHistory(cgmHistory: CgmHistoryEntity) {
-        cgmHistories.add(cgmHistory)
-        val time = (Date().time - cgmHistory.deviceTime.time) / 1000 / 60
-        if (time in 0..25 && (cgmHistory.eventType == History.HISTORY_GLUCOSE || cgmHistory.eventType == History.HISTORY_GLUCOSE_RECOMMEND_CAL)) {
-            lastHistoryDatetime = cgmHistory.deviceTime
-            state = Glucose.STATE_OK
-            glucose = cgmHistory.eventData
-            glucoseLevel = glucoseLevel(glucose)
-            updateGlucoseTrend(cgmHistory.deviceTime, false)
-        }
+    fun updateSensorState(insetError: Boolean) {
+        entity.error4TimesWithin2Hours = insetError
+        error4TimesWithin2Hours = insetError
+        ObjectBox.runAsync({ transmitterBox?.put(entity) })
     }
 
     fun isDataValid(): Boolean {
-        return (lastHistoryDatetime != null && minutesAgo!! in 0..15 && glucose != null && !isDeviceFault && isValid)
+        return (lastHistoryTime != null && minutesAgo != null && minutesAgo in 0..15 && glucose != null && !isDeviceFault && isHistoryValid)
     }
 
     fun isDeviceFault(): Boolean {
         return isDeviceFault
     }
 
-    fun getSensorRemainingTime(): Long? {
-        val days = 15//entity.expirationTime
-        LogUtils.data("sensorStartTime : ${entity.sensorStartTime} -- $lastAdvertiseTime -- $recentAdv")
+    fun getSensorRemaining(): Int? {
+        val days = entity.expirationTime
         return when {
-            expired -> 0L
-            entity.sensorStartTime == null || lastAdvertiseTime == 0L || recentAdv == null -> null
+            isSensorExpired -> 0
+            entity.sensorStartTime == null || lastAdvertiseTime == 0L || recentAdvertise == null -> null
             else -> {
-                days * TimeUtils.oneDay - ((Date().time - entity.sensorStartTime?.time!!)) / 1000
+                (days * TimeUtils.oneDayMillis - (TimeUtils.currentTimeMillis - entity.sensorStartTime!!.time)).millisToMinutes()
             }
         }
     }
 
     fun saveDeviceMode(expirationTime: Int) {
-        LogUtils.error("数据库更新 expirationTime $expirationTime")
         entity.expirationTime = expirationTime
-        transmitterBox.put(entity)
+        transmitterBox!!.put(entity)
     }
 
     fun clearAccessId() {
         entity.accessId = null
-        transmitterBox.put(entity)
+        transmitterBox!!.put(entity)
     }
 
-    fun savePair(deviceModel: Int, version: String) {
-//        entity.encryptionKey = controller.key
+    suspend fun savePair(deviceModel: Int, version: String) {
         entity.deviceMac = controller.mac
         entity.accessId = controller.id
-        LogUtils.error("Pair Succ ${controller.mac} accessId ${controller.id}")
-        entity.updateDeviceKey()
         entity.deviceModel = deviceModel
         entity.version = version
-
-        val oldEntity = transmitterBox.query()
-            .equal(
-                TransmitterEntity_.deviceSn, entity.deviceSn,
-                QueryBuilder.StringOrder.CASE_INSENSITIVE
-            )
-            .build()
-            .findFirst()
-
-        if (oldEntity != null) {
-            entity.fullSensorIndex = oldEntity.fullSensorIndex
-            entity.sensorIndex = oldEntity.sensorIndex
-            entity.eventIndex = oldEntity.eventIndex
-            entity.fullEventIndex = oldEntity.fullEventIndex
-            entity.id = oldEntity.id
-            entity.idx = oldEntity.idx
+        entity.updateDeviceKey()
+        entity.deviceSn?.let {
+            val transmitter = TransmitterManager.instance().getTransmitterFromDb(it)
+            transmitter?.let { trans ->
+                entity.fullSensorIndex = trans.fullSensorIndex
+                entity.sensorIndex = trans.sensorIndex
+                entity.eventIndex = trans.eventIndex
+                entity.fullEventIndex = trans.fullEventIndex
+                entity.id = trans.id
+                entity.idx = trans.idx
+            }
         }
         targetSensorIndex = entity.sensorIndex
         targetEventIndex = entity.eventIndex
         nextEventIndex = entity.eventIndex + 1
         nextFullEventIndex = entity.fullEventIndex + 1
-
-        entity.accessId = null
         entity.id = null
-
         /**
          * 向服务器请求注册设备
          *
@@ -354,8 +215,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                 entity.id?.let {
                     initSensorStartTime(it)
                 }
-                LiveEventBus
-                    .get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
+                LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
                     .post(Register(true)) //匹配成功以后，发送信息到匹配页面 关闭页面
             }
 
@@ -364,8 +224,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                 LogUtils.eAiDex("配对请求失败")
 
                 TransmitterManager.instance().removeDefaultModel()
-                LiveEventBus
-                    .get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
+                LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
                     .post(Register(false)) //匹配失败以后，发送信息到匹配页面 关闭页面
             }
         })
@@ -380,21 +239,15 @@ class TransmitterModel(val entity: TransmitterEntity) {
 
     fun initSensorStartTime(deviceId: String) {
         val item = cgmHistoryBox.query().equal(
-            CgmHistoryEntity_.eventIndex,
-            1
-        ).and()
-            .equal(
-                CgmHistoryEntity_.deviceId, deviceId,
-                QueryBuilder.StringOrder.CASE_INSENSITIVE
-            )
-            .equal(
-                CgmHistoryEntity_.authorizationId,
-                UserManager.instance().getUserId(),
-                QueryBuilder.StringOrder.CASE_INSENSITIVE
-            )
-            .equal(CgmHistoryEntity_.sensorIndex, entity.sensorIndex)
-            .orderDesc(CgmHistoryEntity_.idx)
-            .build().findFirst()
+            CgmHistoryEntity_.eventIndex, 1
+        ).and().equal(
+            CgmHistoryEntity_.deviceId, deviceId, QueryBuilder.StringOrder.CASE_INSENSITIVE
+        ).equal(
+            CgmHistoryEntity_.authorizationId,
+            UserManager.instance().getUserId(),
+            QueryBuilder.StringOrder.CASE_INSENSITIVE
+        ).equal(CgmHistoryEntity_.sensorIndex, entity.sensorIndex)
+            .orderDesc(CgmHistoryEntity_.idx).build().findFirst()
         if (item != null) {
             LogUtils.data("init log deviceID ${deviceId} sensorIndex ${entity.sensorIndex} $item")
             sensorStartTime = item.deviceTime
@@ -408,13 +261,13 @@ class TransmitterModel(val entity: TransmitterEntity) {
 
         if (sensorStartTime != null) {
             LogUtils.data("NEW SENSOR，sensorStartTime 不为空")
-            if ((Date().time / 1000 - sensorStartTime!!.time / 1000 > 15 * TimeUtils.oneDay)) {
+            if ((Date().time / 1000 - sensorStartTime!!.time / 1000 > 15 * TimeUtils.oneDaySeconds)) {
                 LogUtils.data("NEW SENSOR 检测到 sensorStartTime不为空 检测到大于15天 需要按 新传感器 运行新传感器")
                 return true
             }
         } else {
             LogUtils.data("NEW SENSOR，entity sensorStartTime 为空")
-            if (entity.sensorStartTime != null && Date().time / 1000 - entity.sensorStartTime!!.time / 1000 > 15 * TimeUtils.oneDay) {
+            if (entity.sensorStartTime != null && Date().time / 1000 - entity.sensorStartTime!!.time / 1000 > 15 * TimeUtils.oneDaySeconds) {
                 LogUtils.data("NEW SENSOR 检测到 entity.sensorStartTime不为空 检测到大于15天 需要按 新传感器 运行新传感器")
                 return true
             }
@@ -464,8 +317,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                     TransmitterManager.instance().removeModel(this@TransmitterModel)
                     TransmitterManager.instance().removeDefaultModel()
                     ViseBle.getInstance().clear() //清除所有的蓝牙设备信息
-                    LiveEventBus
-                        .get<String>(EventKey.EVENT_UNPAIR_SUCCESS)
+                    LiveEventBus.get<String>(EventKey.EVENT_UNPAIR_SUCCESS)
                         .post("unPairSuccess") //解配成功
                     ChartManager.instance().clearCurrentGlucose()
                 }
@@ -522,13 +374,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
             controller.startTime
             return
         }
-        val broadcast =
-            AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
-        expired =
+        val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
+        isSensorExpired =
             (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
-        isDeviceFault = broadcast.status == History.SENSOR_MALFUNCTION
-                || broadcast.status == History.DEVICE_SPECIFIC_ALERT
-                || broadcast.status == History.GENERAL_DEVICE_FAULT
+        isDeviceFault =
+            broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
         if (broadcast.status == History.SENSOR_MALFUNCTION) {
             faultType = 1
         } else if (broadcast.status == History.GENERAL_DEVICE_FAULT) {
@@ -544,7 +394,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
         } else {
             return
         }
-        isValid = recentHistory?.isValid == 1 && recentHistory?.status == History.STATUS_OK
+        isHistoryValid = recentHistory?.isValid == 1 && recentHistory?.status == History.STATUS_OK
         for ((index, his) in histories.withIndex()) {
             LogUtils.eAiDex("${index} ----> timeOffset:${his.timeOffset} , glucose:${his.glucose}")
         }
@@ -560,7 +410,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
         lastAdvertiseTime = now
         Constant.lastAdvertiseTime = lastAdvertiseTime
         Constant.hasAdvertise = true
-        recentAdv = broadcast
+        recentAdvertise = broadcast
 //
 //        primary = broadcast.primary
         if (UserManager.shareUserEntity != null) {
@@ -683,7 +533,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
 //        state = broadcast.state
         val temp = broadcast.history[0].glucose
         glucose =
-            if (Constant.sensorInsetError || Constant.sensorInsetErrorSuper || expired || temp < 0) null else roundOffDecimal(
+            if (Constant.sensorInsetError || Constant.sensorInsetErrorSuper || isSensorExpired || temp < 0) null else roundOffDecimal(
                 temp / 18f
             )
         glucoseLevel = glucoseLevel(glucose)
@@ -695,8 +545,8 @@ class TransmitterModel(val entity: TransmitterEntity) {
         }
 //        }
         val historyDate = getHistoryDate(broadcast.history[0].timeOffset)
-        if (glucose != null && lastHistoryDatetime != historyDate) {
-            lastHistoryDatetime = historyDate
+        if (glucose != null && lastHistoryTime != historyDate) {
+            lastHistoryTime = historyDate
         }
 //
 //        targetSensorIndex = history.sensorIndex
@@ -757,7 +607,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                         if (nextEventIndex < briefIndex) {
                             nextEventIndex = briefIndex
                         }
-                        LogUtils.eAiDex("开始获取简要数据2 expired ${expired} targetIndex ${targetEventIndex} nextEventIndex ${nextEventIndex}")
+                        LogUtils.eAiDex("开始获取简要数据2 expired ${isSensorExpired} targetIndex ${targetEventIndex} nextEventIndex ${nextEventIndex}")
                         controller.getHistories(nextEventIndex)
                     } else {
                         controller.historyRange
@@ -771,9 +621,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
 //            when {
 //                //当最新的事件 大于  下一个完整数据事件 则获取下一个完整事件
 //        if (!FastUtil.isFastGet4()) {
-        if (
-            targetEventIndex >= nextFullEventIndex + numGetHistory || ((targetEventIndex >= nextFullEventIndex) && expired)
-        ) {
+        if (targetEventIndex >= nextFullEventIndex + numGetHistory || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)) {
             if (newestIndex == targetEventIndex) {
                 if (nextFullEventIndex < rawIndex) {
                     nextFullEventIndex = rawIndex
@@ -782,7 +630,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
             } else {
                 controller.historyRange
             }
-            LogUtils.data("开始获取原始数据 expired ${expired} targetIndex ${targetEventIndex} nextFullIndex ${nextFullEventIndex}")
+            LogUtils.data("开始获取原始数据 expired ${isSensorExpired} targetIndex ${targetEventIndex} nextFullIndex ${nextFullEventIndex}")
         }
 //        }
 //                expired -> {
@@ -803,8 +651,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     }
 
     fun getHistoriesFromBroadcast(
-        next: Int,
-        list: MutableList<AidexXHistoryEntity>
+        next: Int, list: MutableList<AidexXHistoryEntity>
     ): List<AidexXHistoryEntity> {
         var startIndex = 0
         for ((index, history) in list.withIndex()) {
@@ -829,14 +676,14 @@ class TransmitterModel(val entity: TransmitterEntity) {
             saveHistories(histories)
             //最新事件 大于 下一个事件  则获取
             if (targetEventIndex >= nextEventIndex) {
-                LogUtils.data("开始获取简要数据3 expired ${expired} targetIndex ${targetEventIndex} nextEventIndex ${nextEventIndex}")
+                LogUtils.data("开始获取简要数据3 expired ${isSensorExpired} targetIndex ${targetEventIndex} nextEventIndex ${nextEventIndex}")
 
                 controller.getHistories(nextEventIndex)
             } else if (targetEventIndex >= nextFullEventIndex) {
-                if (lastHistoryDatetime != null) {
-                    updateGlucoseTrend(lastHistoryDatetime!!)
+                if (lastHistoryTime != null) {
+                    updateGlucoseTrend(lastHistoryTime!!)
                 }
-                LogUtils.data("开始获取原始数据 expired ${expired} targetIndex ${targetEventIndex} nextFullIndex ${nextFullEventIndex}")
+                LogUtils.data("开始获取原始数据 expired ${isSensorExpired} targetIndex ${targetEventIndex} nextFullIndex ${nextFullEventIndex}")
                 if (nextFullEventIndex < rawIndex) {
                     nextFullEventIndex = rawIndex
                 }
@@ -904,20 +751,15 @@ class TransmitterModel(val entity: TransmitterEntity) {
             for (history in cgmHistories) {
                 val oldHistory = cgmHistoryBox.query()
                     .equal(CgmHistoryEntity_.sensorIndex, entity.sensorStartTime?.time!!.toInt())
-                    .equal(CgmHistoryEntity_.eventIndex, history.timeOffset)
-                    .equal(
+                    .equal(CgmHistoryEntity_.eventIndex, history.timeOffset).equal(
                         CgmHistoryEntity_.deviceId,
                         entity.id ?: "",
                         QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                    .equal(
+                    ).equal(
                         CgmHistoryEntity_.authorizationId,
                         UserManager.instance().getUserId(),
                         QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                    .orderDesc(CgmHistoryEntity_.idx)
-                    .build()
-                    .findFirst()
+                    ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
 
                 if (oldHistory != null) {
                     LogUtils.eAiDex("History exist,need not update ${oldHistory.recordIndex} -- ${oldHistory.deviceId}")
@@ -958,26 +800,23 @@ class TransmitterModel(val entity: TransmitterEntity) {
                             cgmHistoryEntity.eventWarning = -1
                         } else {
                             if (cgmHistoryEntity.isHighOrLowGlucose()) {
-                                val build =
-                                    cgmHistoryBox.query()
+                                val build = cgmHistoryBox.query()
 //                                        .equal(CgmHistoryEntity_.sensorIndex, entity.sensorIndex)
-                                        .equal(
-                                            CgmHistoryEntity_.deviceId, entity.id ?: "",
-                                            QueryBuilder.StringOrder.CASE_INSENSITIVE
-                                        )
-                                        .equal(
-                                            CgmHistoryEntity_.authorizationId,
-                                            UserManager.instance().getUserId(),
-                                            QueryBuilder.StringOrder.CASE_INSENSITIVE
-                                        )
+                                    .equal(
+                                        CgmHistoryEntity_.deviceId,
+                                        entity.id ?: "",
+                                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                                    ).equal(
+                                        CgmHistoryEntity_.authorizationId,
+                                        UserManager.instance().getUserId(),
+                                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                                    )
                                 when {
                                     cgmHistoryEntity.getHighOrLowGlucoseType() == 2 -> build.equal(
-                                        CgmHistoryEntity_.eventWarning,
-                                        History.HISTORY_LOCAL_HYPER
+                                        CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
                                     )
                                     cgmHistoryEntity.getHighOrLowGlucoseType() == 1 -> build.equal(
-                                        CgmHistoryEntity_.eventWarning,
-                                        History.HISTORY_LOCAL_HYPO
+                                        CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
                                     )
                                     cgmHistoryEntity.getHighOrLowGlucoseType() == 3 -> {
                                         build.equal(
@@ -993,15 +832,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                     if (abs(cgmHistoryEntity.deviceTime.time - lastAlertDeviceTime) / 1000 >= calculateFrequency(
                                             if ((cgmHistoryEntity.eventData
                                                     ?: 0F) > URGENT_HYPO
-                                            ) MMKV.defaultMMKV()
-                                                .decodeInt(
-                                                    LocalPreference.NOTICE_FREQUENCY,
-                                                    2
-                                                ) else MMKV.defaultMMKV()
-                                                .decodeInt(
-                                                    LocalPreference.URGENT_NOTICE_FREQUENCY,
-                                                    0
-                                                )
+                                            ) MMKV.defaultMMKV().decodeInt(
+                                                LocalPreference.NOTICE_FREQUENCY, 2
+                                            ) else MMKV.defaultMMKV().decodeInt(
+                                                LocalPreference.URGENT_NOTICE_FREQUENCY, 0
+                                            )
                                         )
                                     ) {
                                         cgmHistoryEntity.updateEventWarning()
@@ -1043,8 +878,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                             .decodeBool(LocalPreference.URGENT_NOTICE_ENABLE, true)
                                     ) {
                                         notify?.invoke(
-                                            "$time",
-                                            Constant.MESSAGE_TYPE_GLUCOSELOWALERT
+                                            "$time", Constant.MESSAGE_TYPE_GLUCOSELOWALERT
                                         )
                                     }
                                 }
@@ -1071,8 +905,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                     CgmsApplication.instance,
                     cgmHistoryEntity,
                     if (now - cgmHistoryEntity.deviceTime.time / 1000 < 6 * 60) glucose
-                        ?: 0f else cgmHistoryEntity.eventData
-                        ?: 0f
+                        ?: 0f else cgmHistoryEntity.eventData ?: 0f
                 )
             }
         }) { _, error ->
@@ -1097,41 +930,31 @@ class TransmitterModel(val entity: TransmitterEntity) {
             return
         }
         if (sensorStart4HourLast()) {
-            val historyLast = cgmHistoryBox.query()
-                .equal(
-                    CgmHistoryEntity_.eventIndex,
-                    1
-                ).and()
-                .equal(CgmHistoryEntity_.sensorIndex, sensorStartIndex!!)
-                .equal(
-                    CgmHistoryEntity_.deviceId, getDeviceID() ?: "",
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .equal(
-                    CgmHistoryEntity_.authorizationId,
-                    UserManager.instance().getUserId(),
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .orderDesc(CgmHistoryEntity_.deviceTime).build().findFirst()
-            val historyError = cgmHistoryBox.query()
-                .equal(CgmHistoryEntity_.sensorIndex, sensorStartIndex!!)
-                .equal(
-                    CgmHistoryEntity_.deviceId,
-                    getDeviceID() ?: "",
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .equal(
-                    CgmHistoryEntity_.eventType,
-                    History.HISTORY_SENSOR_ERROR
-                ).equal(
-                    CgmHistoryEntity_.authorizationId,
-                    UserManager.instance().getUserId(),
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .greater(CgmHistoryEntity_.idx, historyLast?.idx ?: 0L)
-                .orderDesc(CgmHistoryEntity_.idx)
-                .build()
-                .find()
+            val historyLast = cgmHistoryBox.query().equal(
+                CgmHistoryEntity_.eventIndex, 1
+            ).and().equal(CgmHistoryEntity_.sensorIndex, sensorStartIndex!!).equal(
+                CgmHistoryEntity_.deviceId,
+                getDeviceID() ?: "",
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            ).equal(
+                CgmHistoryEntity_.authorizationId,
+                UserManager.instance().getUserId(),
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            ).orderDesc(CgmHistoryEntity_.deviceTime).build().findFirst()
+            val historyError =
+                cgmHistoryBox.query().equal(CgmHistoryEntity_.sensorIndex, sensorStartIndex!!)
+                    .equal(
+                        CgmHistoryEntity_.deviceId,
+                        getDeviceID() ?: "",
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    ).equal(
+                        CgmHistoryEntity_.eventType, History.HISTORY_SENSOR_ERROR
+                    ).equal(
+                        CgmHistoryEntity_.authorizationId,
+                        UserManager.instance().getUserId(),
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    ).greater(CgmHistoryEntity_.idx, historyLast?.idx ?: 0L)
+                    .orderDesc(CgmHistoryEntity_.idx).build().find()
 
             LogUtils.data("查询传感器故障次数 ${historyError.size} ， $historyError")
             if (historyError.size >= 4) {
@@ -1140,7 +963,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                         val durationTime =
                             item.deviceTime.time - historyError[index - 3].deviceTime.time
                         if (!Constant.sensorInsetErrorSuper && abs(durationTime) <= 2 * 60 * 60 * 1000) {
-                            updateSensorStatus(true)
+                            updateSensorState(true)
                             isNeedTipInsertErrorDialog = true //需要植入失败弹框，下一次接收广播提示
                         }
                     }
@@ -1161,61 +984,45 @@ class TransmitterModel(val entity: TransmitterEntity) {
         }
         Constant.sensorInsetError = false
         CgmsApplication.boxStore.runInTxAsync({
-            val impedanceList = cgmHistoryBox.query()
-                .equal(
-                    CgmHistoryEntity_.authorizationId,
-                    UserManager.instance().getUserId(),
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                ).and()
-                .equal(
-                    CgmHistoryEntity_.deviceId,
-                    getDeviceID() ?: "",
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                ).and()
-                .equal(CgmHistoryEntity_.sensorIndex, targetSensorIndex).and()
-                .equal(CgmHistoryEntity_.eventType, History.HISTORY_IMPENDANCE)
-                .between(
+            val impedanceList = cgmHistoryBox.query().equal(
+                CgmHistoryEntity_.authorizationId,
+                UserManager.instance().getUserId(),
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            ).and().equal(
+                CgmHistoryEntity_.deviceId,
+                getDeviceID() ?: "",
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            ).and().equal(CgmHistoryEntity_.sensorIndex, targetSensorIndex).and()
+                .equal(CgmHistoryEntity_.eventType, History.HISTORY_IMPENDANCE).between(
                     CgmHistoryEntity_.deviceTime,
                     sensorStartTime!!.time + 22 * 60 * 1000,
                     sensorStartTime!!.time + 4 * 60 * 60 * 1000
-                )
-                .notNull(CgmHistoryEntity_.rawData2)
-                .greater(CgmHistoryEntity_.rawData2, 300)
+                ).notNull(CgmHistoryEntity_.rawData2).greater(CgmHistoryEntity_.rawData2, 300)
                 .order(CgmHistoryEntity_.eventIndex).build().find()
             if (impedanceList.isNotEmpty()) {
                 out@ for (entity in impedanceList) {
-                    val histories = cgmHistoryBox.query()
-                        .equal(
-                            CgmHistoryEntity_.authorizationId,
-                            UserManager.instance().getUserId(),
-                            QueryBuilder.StringOrder.CASE_INSENSITIVE
-                        )
-                        .equal(
-                            CgmHistoryEntity_.deviceId, getDeviceID() ?: "",
-                            QueryBuilder.StringOrder.CASE_INSENSITIVE
-                        )
-                        .equal(CgmHistoryEntity_.sensorIndex, targetSensorIndex)
+                    val histories = cgmHistoryBox.query().equal(
+                        CgmHistoryEntity_.authorizationId,
+                        UserManager.instance().getUserId(),
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    ).equal(
+                        CgmHistoryEntity_.deviceId,
+                        getDeviceID() ?: "",
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    ).equal(CgmHistoryEntity_.sensorIndex, targetSensorIndex)
                         .between(CgmHistoryEntity_.eventType, 7, 9)
-                        .notNull(CgmHistoryEntity_.rawData5)
-                        .less(CgmHistoryEntity_.rawData5, 3)
-                        .notNull(CgmHistoryEntity_.rawData6)
-                        .less(CgmHistoryEntity_.rawData6, 3)
-                        .notNull(CgmHistoryEntity_.rawData7)
-                        .less(CgmHistoryEntity_.rawData7, 3)
-                        .notNull(CgmHistoryEntity_.rawData8)
-                        .less(CgmHistoryEntity_.rawData8, 3)
-                        .notNull(CgmHistoryEntity_.rawData9)
-                        .less(CgmHistoryEntity_.rawData9, 3)
+                        .notNull(CgmHistoryEntity_.rawData5).less(CgmHistoryEntity_.rawData5, 3)
+                        .notNull(CgmHistoryEntity_.rawData6).less(CgmHistoryEntity_.rawData6, 3)
+                        .notNull(CgmHistoryEntity_.rawData7).less(CgmHistoryEntity_.rawData7, 3)
+                        .notNull(CgmHistoryEntity_.rawData8).less(CgmHistoryEntity_.rawData8, 3)
+                        .notNull(CgmHistoryEntity_.rawData9).less(CgmHistoryEntity_.rawData9, 3)
                         .between(
                             CgmHistoryEntity_.deviceTime,
-                            if (entity.deviceTime.time - 15 * 60 * 1000 < sensorStartTime!!.time + 22 * 60 * 1000)
-                                sensorStartTime!!.time + 22 * 60 * 1000
+                            if (entity.deviceTime.time - 15 * 60 * 1000 < sensorStartTime!!.time + 22 * 60 * 1000) sensorStartTime!!.time + 22 * 60 * 1000
                             else entity.deviceTime.time - 15 * 60 * 1000,
-                            if (entity.deviceTime.time + 15 * 60 * 1000 > sensorStartTime!!.time + 4 * 60 * 60 * 1000)
-                                sensorStartTime!!.time + 4 * 60 * 60 * 1000
+                            if (entity.deviceTime.time + 15 * 60 * 1000 > sensorStartTime!!.time + 4 * 60 * 60 * 1000) sensorStartTime!!.time + 4 * 60 * 60 * 1000
                             else entity.deviceTime.time + 15 * 60 * 1000
-                        )
-                        .order(CgmHistoryEntity_.deviceTime).build().find()
+                        ).order(CgmHistoryEntity_.deviceTime).build().find()
                     if (histories.isNotEmpty()) {
                         var lastHis = histories[0]
                         for (his in histories) {
@@ -1223,7 +1030,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                 val time = Date().dateHourMinute()
                                 //传感器植入失败
                                 Constant.sensorInsetError = true
-                                updateSensorStatus(true)
+                                updateSensorState(true)
                                 notify?.invoke("$time", Constant.MESSAGE_TYPE_SENROR_EMBEDDING)
                                 break@out
                             } else {
@@ -1240,13 +1047,13 @@ class TransmitterModel(val entity: TransmitterEntity) {
 
 
     fun errorSensorTimeRange(): Boolean {
-        LogUtils.data("$sensorStartTime  recentAdv ${recentAdv?.datetime}")
-        return sensorStartTime != null && recentAdv != null && ((recentAdv!!.datetime - sensorStartTime!!.time / 1000 >= 22 * 60) && (recentAdv!!.datetime - sensorStartTime!!.time / 1000 <= 4 * 60 * 60))
+        LogUtils.data("$sensorStartTime  recentAdv ${recentAdvertise?.datetime}")
+        return sensorStartTime != null && recentAdvertise != null && ((recentAdvertise!!.datetime - sensorStartTime!!.time / 1000 >= 22 * 60) && (recentAdvertise!!.datetime - sensorStartTime!!.time / 1000 <= 4 * 60 * 60))
     }
 
     //点击新旧传感器4小时候之后
     fun sensorStart4HourLast(): Boolean {
-        return sensorStartTime != null && recentAdv != null && (recentAdv!!.datetime - sensorStartTime!!.time / 1000 >= 4 * 60 * 60)
+        return sensorStartTime != null && recentAdvertise != null && (recentAdvertise!!.datetime - sensorStartTime!!.time / 1000 >= 4 * 60 * 60)
     }
 
     private fun saveFullHistories(cgmHistories: List<AidexXRawHistoryEntity>) {
@@ -1266,15 +1073,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
                         CgmHistoryEntity_.deviceId,
                         getDeviceID() ?: "",
                         QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                    .equal(
+                    ).equal(
                         CgmHistoryEntity_.authorizationId,
                         UserManager.instance().getUserId(),
                         QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                    .orderDesc(CgmHistoryEntity_.idx)
-                    .build()
-                    .findFirst()
+                    ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
 
                 val cgmHistoryEntity = CgmHistoryEntity()
                 cgmHistoryEntity.eventIndex = history.timeOffset
@@ -1389,12 +1192,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
             LogUtils.eAiDex("趋势 glucoseArray:${glucoseArray.contentToString()}")
             val roc = if (isEventCalibration) null else {
                 if (glucoseArray.any { it < GLUCOSE_LOWER || it > GLUCOSE_UPPER }) null else {
-                    val fn =
-                        (1 - exp(
-                            (abs(glucoseArray[0] + glucoseArray[2] - 2 * glucoseArray[1]) + abs(
-                                glucoseArray[1] + glucoseArray[3] - 2 * glucoseArray[2]
-                            ) + abs(glucoseArray[2] + glucoseArray[4] - 2 * glucoseArray[3])) / 5 - 1
-                        )) * 1.5
+                    val fn = (1 - exp(
+                        (abs(glucoseArray[0] + glucoseArray[2] - 2 * glucoseArray[1]) + abs(
+                            glucoseArray[1] + glucoseArray[3] - 2 * glucoseArray[2]
+                        ) + abs(glucoseArray[2] + glucoseArray[4] - 2 * glucoseArray[3])) / 5 - 1
+                    )) * 1.5
                     if (fn > 0) {
                         val trend =
                             (fn * (glucoseArray[0] - glucoseArray[1]) / 5 + fn * (glucoseArray[0] - glucoseArray[2]) / 10 + (glucoseArray[0] - glucoseArray[3]) / 15) / (1 + 2 * fn);

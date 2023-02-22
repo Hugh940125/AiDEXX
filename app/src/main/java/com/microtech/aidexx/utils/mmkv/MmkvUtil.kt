@@ -26,8 +26,8 @@ class MmkvUtil {
             return INSTANCE.decodeLong(key, defValue)
         }
 
-        fun encodeLong(key: String, defValue: Long) {
-            INSTANCE.encode(key, defValue)
+        fun encodeLong(key: String, value: Long) {
+            INSTANCE.encode(key, value)
         }
 
         fun decodeInt(key: String, defValue: Int): Int {
@@ -35,6 +35,14 @@ class MmkvUtil {
         }
 
         fun encodeInt(key: String, value: Int) {
+            INSTANCE.encode(key, value)
+        }
+
+        fun decodeFloat(key: String, defValue: Float): Float {
+            return INSTANCE.decodeFloat(key, defValue)
+        }
+
+        fun encodeFloat(key: String, value: Float) {
             INSTANCE.encode(key, value)
         }
     }
