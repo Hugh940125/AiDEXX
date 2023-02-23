@@ -30,6 +30,15 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+
+        debug {
+            debuggable true
+            buildConfigField("Boolean", "isPre", "false")
+            buildConfigField("Boolean", "enableEncrypt", "false")
+            buildConfigField("String", "baseUrl", "\"http://192.168.222.26:5555/backend/aidex\"")
+            buildConfigField("String", "updateUrl", "\"http://192.168.222.26:5555/backend/vcs/version/getAppConfig?project=aidex&appId=cn&os=android\"")
+            buildConfigField("String", "logUploadUrl", "\"http://192.168.222.26:5555/backend/vcs/log/uploadLog/\"")
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -69,4 +78,7 @@ dependencies {
     implementation "com.github.jokar:multi-languages:0.1.5"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.okhttp3:okhttp:4.10.0"
 }

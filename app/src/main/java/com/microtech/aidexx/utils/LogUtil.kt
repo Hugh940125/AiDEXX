@@ -9,10 +9,16 @@ import com.tencent.mars.xlog.Log
  */
 class LogUtil {
     companion object{
-        private const val tag = "AiDEX-X"
+        private const val COMMON = "AiDEX-X"
+        private const val HTTP = "Request"
         @JvmStatic
         fun eAiDEX(msg: String) {
-            Log.e(tag, msg)
+            Log.e(COMMON, msg)
+        }
+
+        @JvmStatic
+        fun dHttp(msg: String) {
+            Log.e(HTTP, msg)
         }
     }
 }

@@ -15,7 +15,10 @@ object MmkvManager {
     private const val IS_APP_FIRST_LAUNCH = "IS_APP_FIRST_LAUNCH"
     private const val HYPER = "HYPER"
     private const val HYPO = "HYPO"
+    private const val TOKEN = "TOKEN"
 
+    fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
+    fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)
 
     fun getHypo() = MmkvUtil.decodeFloat(HYPO, ThresholdManager.DEFAULT_HYPO)

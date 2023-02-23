@@ -5,6 +5,7 @@ import com.microtech.aidexx.ble.device.entity.TransmitterEntity_
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
+import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 
@@ -28,13 +29,18 @@ class TransmitterManager private constructor() {
 
     suspend fun getTransmitterFromDb(sn: String): TransmitterEntity? {
         return ObjectBox.store.awaitCallInTx {
-            val findFirst = transmitterBox!!.query()
-                .equal(
-                    TransmitterEntity_.deviceSn, sn,
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .build()
-                .findFirst()
+            var findFirst: TransmitterEntity? = null
+            try {
+                findFirst = transmitterBox!!.query()
+                    .equal(
+                        TransmitterEntity_.deviceSn, sn,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    )
+                    .build()
+                    .findFirst()
+            } catch (e: Exception) {
+                LogUtil.eAiDEX("Failed to load transmitter from db")
+            }
             findFirst
         }
     }
