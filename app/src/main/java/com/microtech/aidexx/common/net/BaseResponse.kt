@@ -8,7 +8,7 @@ data class BaseResponse<T>(
     val msg: String
 ) {
     data class Info(
-        val code: String = "",
+        val code: Int = 0,
         var msg: String = ""
     )
 }

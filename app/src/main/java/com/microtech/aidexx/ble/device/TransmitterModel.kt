@@ -4,10 +4,13 @@ import android.content.Context
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.toMinutes
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
+import com.microtech.aidexx.db.entity.CgmHistoryEntity_
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.StringUtils
@@ -50,25 +53,15 @@ class TransmitterModel(val entity: TransmitterEntity) {
     private var lastAlertDeviceTime: Long = 0L
     val controller = AidexXController()
     private val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
-
-    var fullSensorIndex = 0
     var sensorStartTime: Date? = null
-    var sensorStartIndex: Int? = null
     var targetSensorIndex = 0
     var targetEventIndex = 0
     var nextEventIndex = 0
     var nextFullEventIndex = 0
     var isNeedTipInsertErrorDialog = false //是否弹框
     var recentAdvertise: AidexXBroadcastEntity? = null //记录最新收到的广播
-    var isNewSensorAd = false; //最新的广播是否新传感器的广播
     var lastAdvertiseTime = 0L
-    var lastNewSenorNotifyTime = 0L
-    var lastTipDeviceTimeError = 0L //上一次提示设备时间错误
-    var nextHistoryTime = 0L
     var lastHistoryTime: Date? = null
-    private var lastLowUrgentTime: Date? = null
-    private var lastFastUpTime: Date? = null
-    private var lastFastDownTime: Date? = null
     var minutesAgo: Int? = null
         private set
         get() {
@@ -88,19 +81,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     var glucose: Float? = null
         private set
     var glucoseLevel: GlucoseLevel? = null
-
-    //        private set
     var glucoseTrend: GlucoseTrend? = null
-//        private set
-
-    var errTimeNum = 0 //设备时间错误的次数
-    var lastDeviceTime = 0L
-    var lastDevicUpdateTime = 0L
-
-    var lastRequestNewSensorTime = 0L //上一次请求新传感器时间
-    val REQUEST_NEWSENSOR_DUCTION = 15 * 1000// 12s
-    var lastRequestNewSensorNum = 0  //次数
-    var isNeedRequestNewSensor = false  //是否需要发起新旧传感器请求
     var briefIndex: Int = 0
     var newestIndex: Int = 0
     var rawIndex: Int = 0
@@ -191,42 +172,28 @@ class TransmitterModel(val entity: TransmitterEntity) {
         nextEventIndex = entity.eventIndex + 1
         nextFullEventIndex = entity.fullEventIndex + 1
         entity.id = null
-        /**
-         * 向服务器请求注册设备
-         *
-         * */
-        onRegisterSnDevice(Gson().toJson(entity), object : OnRegisterCallBack {
-            override fun registerSucc(it: TransmitterEntity) {
-                entity.accessId =
-                    byteArrayOf(0x01.toByte(), 0x02.toByte(), 0x03.toByte())//controller.id
-                entity.id = it.id
-                entity.sensorIndex = it.sensorIndex
-                entity.eventIndex = it.eventIndex
-                fullSensorIndex = it.fullSensorIndex
-                entity.fullEventIndex = it.fullEventIndex
-                entity.deviceSn = it.deviceSn
-                TransmitterManager.instance().add(this@TransmitterModel)
-                transmitterBox.put(entity)
-                targetSensorIndex = entity.sensorIndex
-                targetEventIndex = entity.eventIndex
-                nextEventIndex = entity.eventIndex + 1
-                nextFullEventIndex = entity.fullEventIndex + 1
-
-                entity.id?.let {
-                    initSensorStartTime(it)
-                }
-                LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
-                    .post(Register(true)) //匹配成功以后，发送信息到匹配页面 关闭页面
-            }
-
-            override fun error() {
-
-                LogUtils.eAiDex("配对请求失败")
-
-                TransmitterManager.instance().removeDefaultModel()
-                LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
-                    .post(Register(false)) //匹配失败以后，发送信息到匹配页面 关闭页面
-            }
+        //向服务器请求注册设备
+        DeviceApi.pairRegister(entity, success = { it ->
+            entity.accessId = controller.id
+            entity.id = it.id
+            entity.sensorIndex = it.sensorIndex
+            entity.eventIndex = it.eventIndex
+            fullSensorIndex = it.fullSensorIndex
+            entity.fullEventIndex = it.fullEventIndex
+            entity.deviceSn = it.deviceSn
+            targetSensorIndex = entity.sensorIndex
+            targetEventIndex = entity.eventIndex
+            nextEventIndex = entity.eventIndex + 1
+            nextFullEventIndex = entity.fullEventIndex + 1
+            initSensorStartTime(entity.id)
+            ObjectBox.runAsync({transmitterBox!!.put(entity)})
+            TransmitterManager.instance().set(this@TransmitterModel)
+            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
+                .post(Register(true)) //匹配成功以后，发送信息到匹配页面 关闭页面
+        }, failure = {
+            TransmitterManager.instance().removeDefaultModel()
+            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
+                .post(Register(false)) //匹配失败以后，发送信息到匹配页面 关闭页面
         })
     }
 
@@ -237,43 +204,38 @@ class TransmitterModel(val entity: TransmitterEntity) {
         nextFullEventIndex = entity.fullEventIndex + 1
     }
 
-    fun initSensorStartTime(deviceId: String) {
-        val item = cgmHistoryBox.query().equal(
+    fun initSensorStartTime(deviceId: String?) {
+        if (deviceId.isNullOrEmpty()){
+            return
+        }
+        val item = cgmHistoryBox!!.query().equal(
             CgmHistoryEntity_.eventIndex, 1
         ).and().equal(
             CgmHistoryEntity_.deviceId, deviceId, QueryBuilder.StringOrder.CASE_INSENSITIVE
         ).equal(
             CgmHistoryEntity_.authorizationId,
-            UserManager.instance().getUserId(),
+            UserInfoManager.instance().userId(),
             QueryBuilder.StringOrder.CASE_INSENSITIVE
         ).equal(CgmHistoryEntity_.sensorIndex, entity.sensorIndex)
             .orderDesc(CgmHistoryEntity_.idx).build().findFirst()
         if (item != null) {
-            LogUtils.data("init log deviceID ${deviceId} sensorIndex ${entity.sensorIndex} $item")
             sensorStartTime = item.deviceTime
-            sensorStartIndex = item.sensorIndex
         }
     }
 
     //是否第一次植入传感器
     fun isFirstInsertSensor(): Boolean {
-        LogUtils.data("NEW SENSOR，sensorStartTime $sensorStartTime entity.sensorStartTime ${entity.sensorStartTime}")
-
         if (sensorStartTime != null) {
-            LogUtils.data("NEW SENSOR，sensorStartTime 不为空")
-            if ((Date().time / 1000 - sensorStartTime!!.time / 1000 > 15 * TimeUtils.oneDaySeconds)) {
-                LogUtils.data("NEW SENSOR 检测到 sensorStartTime不为空 检测到大于15天 需要按 新传感器 运行新传感器")
+            if ((TimeUtils.currentTimeMillis.millisToSeconds() - sensorStartTime!!.time.millisToSeconds() > 15 * TimeUtils.oneDaySeconds)) {
                 return true
             }
         } else {
-            LogUtils.data("NEW SENSOR，entity sensorStartTime 为空")
-            if (entity.sensorStartTime != null && Date().time / 1000 - entity.sensorStartTime!!.time / 1000 > 15 * TimeUtils.oneDaySeconds) {
-                LogUtils.data("NEW SENSOR 检测到 entity.sensorStartTime不为空 检测到大于15天 需要按 新传感器 运行新传感器")
+            if (entity.sensorStartTime != null
+                && TimeUtils.currentTimeMillis.millisToSeconds() - entity.sensorStartTime!!.time.millisToSeconds() > 15 * TimeUtils.oneDaySeconds
+            ) {
                 return true
             }
         }
-
-        LogUtils.data("NEW SENSOR 检测到按 新旧传感器 逻辑使用")
         return false
     }
 

@@ -11,6 +11,7 @@ import com.microtech.aidexx.common.net.interceptors.EncryptInterceptor
 import com.microtech.aidexx.common.net.interceptors.HeaderInterceptor
 import com.microtech.aidexx.common.net.interceptors.LogInterceptor
 import com.microtech.aidexx.common.net.interceptors.TokenInterceptor
+import com.microtech.aidexx.utils.LogUtil
 import com.microtechmd.cgms.data.api.interceptors.DecryptInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.http.*
@@ -25,29 +26,30 @@ const val API_DEVICE_REGISTER = "/cgm-device/register" //注册设备
 
 interface ApiService {
 
-    @GET(API_DEVICE_REGISTER)
-    suspend fun fetchExerciseSysPresetVersion(@Query("current") current: Long): ApiResult<TransmitterEntity>
+    @POST(API_DEVICE_REGISTER)
+    suspend fun pairRegister(@Body entity: TransmitterEntity): ApiResult<TransmitterEntity>
 
     companion object {
         private val okClient by lazy { getOkHttpClient() }
         private val gson by lazy { Gson() }
 
-        val api: ApiService by lazy {
+        val instance: ApiService by lazy {
             buildRetrofit(
                 "${BuildConfig.baseUrl}/api/",
                 GsonConverterFactory.create(createGson(), checkBizCodeIsSuccess = {
                     val baseResponse = gson.fromJson(it, BaseResponse::class.java)
-                    var ret: Throwable? = null
-                    baseResponse.info.let { brInfo ->
-                        brInfo.code.let { code ->
-                            // 业务code 失败状态就抛biz异常 在RetrofitBase中捕获 进而在ApiResult中做业务成功失败的状态区分
-
-                            // todo 这里可以全局控制弹出业务错误码
-
-                            ret = if (code != "100000") BizException(
-                                code,
-                                message = brInfo.msg
-                            ) else null
+                    var ret: Throwable?
+                    baseResponse.info.let { info ->
+                        info.code.let { code ->
+                            when (code) {
+                                in 800..806 -> {
+                                    LogUtil.eAiDEX("token expired,need login")
+//                                    TODO("跳转到登录")
+                                    ret = null
+                                }
+                                100000 -> ret = BizException(code, message = info.msg)
+                                else -> ret = null
+                            }
                         }
                     }
                     ret
