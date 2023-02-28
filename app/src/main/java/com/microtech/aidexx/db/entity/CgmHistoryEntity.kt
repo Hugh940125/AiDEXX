@@ -1,9 +1,13 @@
 package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
+import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.widget.dialog.x.util.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
 import io.objectbox.annotation.Entity
@@ -14,16 +18,13 @@ import java.util.*
 class CgmHistoryEntity : EventEntity,
     CgmHistoryEntity {
     var eventWarning: Int? = null
+
     @Id
     override var idx: Long? = null
     override var state: Int = 0
     override var id: String? = null
     var deviceSn: String? = null
     var deviceTime = Date()
-        set(value) {
-            field = value
-            deviceTimeLong = deviceTime.time / 1000
-        }
     var eventIndex = 0
     var sensorIndex = 0
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
@@ -33,13 +34,12 @@ class CgmHistoryEntity : EventEntity,
     var eventData: Float? = null
     var deviceId: String? = null
     var type = 0 // type为0正常数据，1代表占位数据
-    var deviceTimeLong: Long? = null
     override var authorizationId: String? = null
     var recordUuid: String? = null
 
     fun updateRecordUUID() {
         val userID = UserInfoManager.instance().userId()
-        val deviceId = TransmitterManager.instance().getDefaultModel()?.getDeviceID();
+        val deviceId = TransmitterManager.instance().getDefault().deviceId();
         val uuidStr = StringBuffer();
         uuidStr.append(userID)
             .append(deviceId)
@@ -152,12 +152,11 @@ class CgmHistoryEntity : EventEntity,
         }
     }
 
-    fun isHighOrLowGlucose(): Boolean {
-        val model = TransmitterManager.instance().getDefaultModel()
-        if (model != null) {
-            if (eventData!! > ThresholdManager.hyperThreshold) {
+    fun isHighOrLow(): Boolean {
+        eventData?.let {
+            if (it > ThresholdManager.hyper) {
                 return true
-            } else if (eventData!! < ThresholdManager.hypoThreshold) {
+            } else if (it < ThresholdManager.hypo) {
                 return true
             }
         }
@@ -166,13 +165,12 @@ class CgmHistoryEntity : EventEntity,
 
 
     fun getHighOrLowGlucoseType(): Int {
-        val model = TransmitterManager.instance().getDefaultModel()
-        if (model != null) {
-            if (eventData!! > ThresholdManager.hyperThreshold) {
+        eventData?.let {
+            if (it > ThresholdManager.hyper) {
                 return 2
-            } else if (eventData!! < ThresholdManager.hypoThreshold && eventData!! >= CgmModel.URGENT_HYPO) {
+            } else if (it < ThresholdManager.hypo && it >= ThresholdManager.URGENT_HYPO) {
                 return 1
-            } else if (eventData!! < CgmModel.URGENT_HYPO) {
+            } else if (it < ThresholdManager.URGENT_HYPO) {
                 return 3
             }
         }
@@ -181,14 +179,13 @@ class CgmHistoryEntity : EventEntity,
 
 
     fun updateEventWarning() {
-        val model = TransmitterManager.instance().getDefaultModel()
-        eventWarning = History.HISTORY_LOCAL_NORMAL
-        if (model != null) {
-            if (eventData!! > ThresholdManager.hyperThreshold) {
+        eventData?.let {
+            eventWarning = History.HISTORY_LOCAL_NORMAL
+            if (it > ThresholdManager.hyper) {
                 eventWarning = History.HISTORY_LOCAL_HYPER
-            } else if (eventData!! < ThresholdManager.hypoThreshold && eventData!! >= CgmModel.URGENT_HYPO) {
+            } else if (it < ThresholdManager.hypo && it >= ThresholdManager.URGENT_HYPO) {
                 eventWarning = History.HISTORY_LOCAL_HYPO
-            } else if (eventData!! < CgmModel.URGENT_HYPO) {
+            } else if (it < ThresholdManager.URGENT_HYPO) {
                 eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
             }
         }

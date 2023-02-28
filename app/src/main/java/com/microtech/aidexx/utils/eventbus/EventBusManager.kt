@@ -9,17 +9,14 @@ import com.jeremyliao.liveeventbus.LiveEventBus
  */
 object EventBusManager {
 
-    fun <T : Any?> send(key: String, clazz: Class<T>, value: T) {
-        LiveEventBus.get(key, clazz).post(value)
+    fun <T> send(key: String, value: T) {
+        LiveEventBus.get<T>(key).post(value)
     }
 
     fun <T : Any?> onReceive(
-        key: String,
-        clazz: Class<T>,
-        owner: LifecycleOwner,
-        callback: ((it: T) -> Unit)
+        key: String, owner: LifecycleOwner, callback: ((it: T) -> Unit)
     ) {
-        LiveEventBus.get(key, clazz).observe(owner) {
+        LiveEventBus.get<T>(key).observe(owner) {
             callback.invoke(it)
         }
     }

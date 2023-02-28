@@ -13,12 +13,12 @@ import kotlinx.coroutines.withContext
  */
 object DeviceApi : BaseApi() {
 
-    suspend fun pairRegister(
+    suspend fun deviceRegister(
         entity: TransmitterEntity,
         success: ((entity: TransmitterEntity) -> Unit)? = null,
         failure: (() -> Unit)? = null
     ) = withContext(dispatcher) {
-        when (val apiResult = ApiService.instance.pairRegister(entity)) {
+        when (val apiResult = ApiService.instance.deviceRegister(entity)) {
             is ApiResult.Success -> {
                 apiResult.result.run {
                     success?.invoke(this)
@@ -26,6 +26,25 @@ object DeviceApi : BaseApi() {
             }
             is ApiResult.Failure -> {
                 failure?.invoke()
+            }
+        }
+    }
+
+    suspend fun deviceUnregister(
+        map: HashMap<String, String>,
+        success: ((entity: TransmitterEntity) -> Unit)? = null,
+        failure: ((msg:String) -> Unit)? = null
+    ) = withContext(dispatcher) {
+        when (val apiResult = ApiService.instance.deviceUnregister(map)) {
+            is ApiResult.Success -> {
+                apiResult.result.run {
+                    success?.invoke(this)
+                }
+            }
+            is ApiResult.Failure -> {
+                apiResult.msg.run {
+                    failure?.invoke(this)
+                }
             }
         }
     }

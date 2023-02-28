@@ -16,7 +16,11 @@ object MmkvManager {
     private const val HYPER = "HYPER"
     private const val HYPO = "HYPO"
     private const val TOKEN = "TOKEN"
+    private const val NOTICE_FREQUENCY = "NOTICE_FREQUENCY"
+    private const val URGENT_NOTICE_FREQUENCY = "NOTICE_FREQUENCY"
 
+    fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY,0)
+    fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY,2)
     fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
     fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)
@@ -70,4 +74,5 @@ object MmkvManager {
 
     fun getCustomerServiceIconBottom() =
         MmkvUtil.decodeInt(CUSTOMER_SERVICE_ICON_BOTTOM, 0)
+
 }

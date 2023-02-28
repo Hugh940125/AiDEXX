@@ -188,7 +188,7 @@
     },
     {
       "id": "3:3796110624465004345",
-      "lastPropertyId": "19:447591097257801659",
+      "lastPropertyId": "20:1028032693408740370",
       "name": "TransmitterEntity",
       "properties": [
         {
@@ -233,11 +233,6 @@
           "id": "8:8212578717869999465",
           "name": "sensorStartTime",
           "type": 10
-        },
-        {
-          "id": "9:3845290576315079042",
-          "name": "error4TimesWithin2Hour",
-          "type": 1
         },
         {
           "id": "10:2698228261372473191",
@@ -288,6 +283,11 @@
           "id": "19:447591097257801659",
           "name": "et",
           "type": 5
+        },
+        {
+          "id": "20:1028032693408740370",
+          "name": "error4TimesWithin2Hours",
+          "type": 1
         }
       ],
       "relations": []
@@ -301,7 +301,9 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    3845290576315079042
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

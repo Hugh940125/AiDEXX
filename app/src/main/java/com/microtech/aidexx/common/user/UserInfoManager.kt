@@ -1,7 +1,7 @@
 package com.microtech.aidexx.common.user
 
+import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.tencent.mmkv.MMKV
 
 /**
  *@date 2023/2/9
@@ -9,8 +9,10 @@ import com.tencent.mmkv.MMKV
  *@desc 用户信息管理
  */
 class UserInfoManager {
-
     companion object {
+
+        var shareUserInfo: ShareUserEntity? = null
+
         private val INSTANCE = UserInfoManager()
 
         fun instance(): UserInfoManager {

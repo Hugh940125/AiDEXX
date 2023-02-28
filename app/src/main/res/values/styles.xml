@@ -22,6 +22,10 @@
         <item name="android:windowIsFloating">true</item>
     </style>
 
+    <style name="DialogXCompatThemeDark" parent="Theme.AppCompat.NoActionBar"/>
+
+    <style name="DialogXCompatThemeLight" parent="Theme.AppCompat.Light.NoActionBar"/>
+
     <style name="BottomDialog" parent="BaseDialog">
         <item name="android:windowAnimationStyle">@style/bottomMenuAnim</item>
     </style>

@@ -23,11 +23,15 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 
 const val API_DEVICE_REGISTER = "/cgm-device/register" //注册设备
+const val API_DEVICE_UNREGISTER = "/cgm-device/unregister" //注销设备
 
 interface ApiService {
 
     @POST(API_DEVICE_REGISTER)
-    suspend fun pairRegister(@Body entity: TransmitterEntity): ApiResult<TransmitterEntity>
+    suspend fun deviceRegister(@Body entity: TransmitterEntity): ApiResult<TransmitterEntity>
+
+    @POST(API_DEVICE_UNREGISTER)
+    suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>
 
     companion object {
         private val okClient by lazy { getOkHttpClient() }

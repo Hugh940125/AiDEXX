@@ -1,6 +1,6 @@
 package com.microtech.aidexx.ble.device
 
-import android.content.Context
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity_
 import com.microtech.aidexx.db.ObjectBox
@@ -10,6 +10,8 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TransmitterManager private constructor() {
     private var default: TransmitterModel? = null
@@ -25,13 +27,10 @@ class TransmitterManager private constructor() {
                 val query = transmitterBox!!.query()
                 sn?.apply {
                     query.equal(
-                        TransmitterEntity_.deviceSn, this,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                        TransmitterEntity_.deviceSn, this, QueryBuilder.StringOrder.CASE_INSENSITIVE
                     )
                 }
-                findFirst = query.orderDesc(TransmitterEntity_.idx)
-                    .build()
-                    .findFirst()
+                findFirst = query.orderDesc(TransmitterEntity_.idx).build().findFirst()
             } catch (e: Exception) {
                 LogUtil.eAiDEX("Failed to load transmitter from db")
             }
@@ -57,11 +56,13 @@ class TransmitterManager private constructor() {
         return default!!
     }
 
-    suspend fun getDefault(context: Context): TransmitterModel {
+    fun getDefault(): TransmitterModel {
         if (default == null) {
-            val loadTransmitterFromDb = loadTransmitterFromDb()
-            loadTransmitterFromDb?.let {
-                set(TransmitterModel(it))
+            AidexxApp.mainScope.launch(Dispatchers.IO) {
+                val loadTransmitterFromDb = loadTransmitterFromDb()
+                loadTransmitterFromDb?.let {
+                    set(TransmitterModel(it))
+                }
             }
         }
         return default!!

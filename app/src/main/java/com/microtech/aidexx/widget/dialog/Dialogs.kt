@@ -2,6 +2,8 @@ package com.microtech.aidexx.widget.dialog
 
 import androidx.appcompat.app.AppCompatActivity
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
+import com.microtech.aidexx.widget.dialog.x.TipDialog
+import com.microtech.aidexx.widget.dialog.x.WaitDialog
 
 /**
  *@date 2023/2/9
@@ -67,5 +69,29 @@ object Dialogs {
                 dialog.dismiss()
                 cancel?.invoke()
             }.create().show()
+    }
+
+    fun showWait(
+        content: String? = null,
+    ) {
+        WaitDialog.show(content)
+    }
+
+    fun showSuccess(
+        content: String? = null,
+    ) {
+        TipDialog.show(content, WaitDialog.TYPE.SUCCESS)
+    }
+
+    fun showError(
+        content: String? = null,
+    ) {
+        TipDialog.show(content, WaitDialog.TYPE.ERROR)
+    }
+
+    fun dismissWait(
+        content: String? = null,
+    ) {
+        WaitDialog.dismiss()
     }
 }

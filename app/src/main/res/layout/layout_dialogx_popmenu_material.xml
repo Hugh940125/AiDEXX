@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.microtech.aidexx.widget.dialog.x.views.DialogXBaseRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/box_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blackAlpha20"
+    android:orientation="vertical"
+    app:autoSafeArea="false"
+    app:baseFocusable="true">
+
+    <com.microtech.aidexx.widget.dialog.x.views.MaxRelativeLayout
+        android:id="@+id/box_body"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rect_dialogx_material_poptip_bkg"
+        android:elevation="5dp"
+        android:clickable="true"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:focusable="true">
+
+        <RelativeLayout
+            android:id="@+id/box_custom"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_height="wrap_content" />
+
+        <com.microtech.aidexx.widget.dialog.x.views.PopMenuListView
+            android:id="@+id/listMenu"
+            android:layout_below="@+id/box_custom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.microtech.aidexx.widget.dialog.x.views.MaxRelativeLayout>
+
+</com.microtech.aidexx.widget.dialog.x.views.DialogXBaseRelativeLayout>

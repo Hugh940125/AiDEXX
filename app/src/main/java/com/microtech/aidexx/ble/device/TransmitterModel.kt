@@ -1,20 +1,15 @@
 package com.microtech.aidexx.ble.device
 
 import android.content.Context
-import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
-import com.microtech.aidexx.common.toMinutes
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity_
-import com.microtech.aidexx.utils.ByteUtils
-import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.StringUtils
-import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.*
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.controller.BleController
@@ -37,9 +32,11 @@ import kotlin.math.roundToInt
  */
 class TransmitterModel(val entity: TransmitterEntity) {
     companion object {
+        const val devicePrimary = 2  //主设备
+        const val deviceOther = 1  //从设备
         var error4TimesWithin2Hours: Boolean = false
         var messageCallBack: ((msg: BleMessage) -> Unit)? = null
-        var notify: ((time: String, type: Int) -> Unit)? = null
+        var alert: ((time: String, type: Int) -> Unit)? = null
         var notifyNotification: (() -> Unit)? = null
     }
 
@@ -47,9 +44,9 @@ class TransmitterModel(val entity: TransmitterEntity) {
     enum class GlucoseTrend { SUPER_FAST_DOWN, FAST_DOWN, DOWN, STEADY, UP, FAST_UP, SUPER_FAST_UP }
 
     var isHistoryValid: Boolean = false
-    private var isDeviceFault: Boolean = false
-    var faultType = 0
-    var recentHistory: AidexXHistoryEntity? = null
+    var isDeviceFault: Boolean = false
+    var faultType = 0 // 1.异常状态，可恢复 2.需要更换
+    var latestHistory: AidexXHistoryEntity? = null
     private var lastAlertDeviceTime: Long = 0L
     val controller = AidexXController()
     private val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
@@ -60,7 +57,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     var nextFullEventIndex = 0
     var isNeedTipInsertErrorDialog = false //是否弹框
     var recentAdvertise: AidexXBroadcastEntity? = null //记录最新收到的广播
-    var lastAdvertiseTime = 0L
+    var latestAdTime = 0L
     var lastHistoryTime: Date? = null
     var minutesAgo: Int? = null
         private set
@@ -68,7 +65,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
             if (lastHistoryTime == null) {
                 field = null
             } else {
-                field = (TimeUtils.currentTimeMillis - lastHistoryTime!!.time).toMinutes()
+                field = (TimeUtils.currentTimeMillis - lastHistoryTime!!.time).millisToMinutes()
             }
             return field
         }
@@ -77,9 +74,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     var primary: Int = 2  //主从设备字段
         private set
     var isSensorExpired: Boolean = false
-        private set
     var glucose: Float? = null
-        private set
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
     var briefIndex: Int = 0
@@ -133,7 +128,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
         val days = entity.expirationTime
         return when {
             isSensorExpired -> 0
-            entity.sensorStartTime == null || lastAdvertiseTime == 0L || recentAdvertise == null -> null
+            entity.sensorStartTime == null || latestAdTime == 0L || recentAdvertise == null -> null
             else -> {
                 (days * TimeUtils.oneDayMillis - (TimeUtils.currentTimeMillis - entity.sensorStartTime!!.time)).millisToMinutes()
             }
@@ -157,7 +152,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
         entity.version = version
         entity.updateDeviceKey()
         entity.deviceSn?.let {
-            val transmitter = TransmitterManager.instance().getTransmitterFromDb(it)
+            val transmitter = TransmitterManager.instance().loadTransmitterFromDb(it)
             transmitter?.let { trans ->
                 entity.fullSensorIndex = trans.fullSensorIndex
                 entity.sensorIndex = trans.sensorIndex
@@ -173,12 +168,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
         nextFullEventIndex = entity.fullEventIndex + 1
         entity.id = null
         //向服务器请求注册设备
-        DeviceApi.pairRegister(entity, success = { it ->
+        DeviceApi.deviceRegister(entity, success = { it ->
             entity.accessId = controller.id
             entity.id = it.id
             entity.sensorIndex = it.sensorIndex
             entity.eventIndex = it.eventIndex
-            fullSensorIndex = it.fullSensorIndex
             entity.fullEventIndex = it.fullEventIndex
             entity.deviceSn = it.deviceSn
             targetSensorIndex = entity.sensorIndex
@@ -186,14 +180,14 @@ class TransmitterModel(val entity: TransmitterEntity) {
             nextEventIndex = entity.eventIndex + 1
             nextFullEventIndex = entity.fullEventIndex + 1
             initSensorStartTime(entity.id)
-            ObjectBox.runAsync({transmitterBox!!.put(entity)})
+            ObjectBox.runAsync({ transmitterBox!!.put(entity) })
             TransmitterManager.instance().set(this@TransmitterModel)
-            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
-                .post(Register(true)) //匹配成功以后，发送信息到匹配页面 关闭页面
+//            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
+//                .post(Register(true)) //匹配成功以后，发送信息到匹配页面 关闭页面
         }, failure = {
-            TransmitterManager.instance().removeDefaultModel()
-            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
-                .post(Register(false)) //匹配失败以后，发送信息到匹配页面 关闭页面
+            TransmitterManager.instance().removeDefault()
+//            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
+//                .post(Register(false)) //匹配失败以后，发送信息到匹配页面 关闭页面
         })
     }
 
@@ -205,7 +199,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     }
 
     fun initSensorStartTime(deviceId: String?) {
-        if (deviceId.isNullOrEmpty()){
+        if (deviceId.isNullOrEmpty()) {
             return
         }
         val item = cgmHistoryBox!!.query().equal(
@@ -239,61 +233,37 @@ class TransmitterModel(val entity: TransmitterEntity) {
         return false
     }
 
-    fun clearPair() {
-        /***
-         * 请求服务器 ，解除设备
-         * */
-        LogUtils.data("解除配对中，状态不可用  ：")
-        WaitDialog.dismiss()
+    suspend fun deletePair() {
         entity.accessId = null
-        controller.id = null
-        transmitterBox.put(entity)
         controller.unregister()
-    }
-
-    fun deletePair() {
-        /***
-         * 请求服务器 ，解除设备
-         * */
-        LogUtils.debug("本地解配成功device id :" + entity.id)
-
-        entity.id?.let {
-            val map = linkedMapOf(
-                "id" to it
-            )
-            unRegisterSnDevice(Gson().toJson(map), object : OnUnRegisterCallBack {
-                override fun unRegisterSucc(e: String) {
-                    LogUtils.data("服务器解除配对成功：${e}")
-                    EventKey.EVENT_WAMING_UP = false
-                    EventKey.EVENT_NEW_SENSOR = false
-                    entity.accessId = null
-                    controller.sn = null
-                    controller.mac = null
-                    controller.id = null
-//                    controller.disconnect() //断开连接
-                    BleController.stopScan() //停止扫描
-                    LogUtils.eAiDex("unPair stopScan")
-                    CgmsApplication.boxStore.runInTxAsync({
-                        transmitterBox.removeAll()
-                    }) { _, _ -> }
-                    TransmitterManager.instance().removeModel(this@TransmitterModel)
-                    TransmitterManager.instance().removeDefaultModel()
-                    ViseBle.getInstance().clear() //清除所有的蓝牙设备信息
-                    LiveEventBus.get<String>(EventKey.EVENT_UNPAIR_SUCCESS)
-                        .post("unPairSuccess") //解配成功
-                    ChartManager.instance().clearCurrentGlucose()
+        ObjectBox.runAsync({
+            transmitterBox!!.put(entity)
+        }, onSuccess = {
+            entity.id?.let {
+                val map = hashMapOf("id" to it)
+                suspend {
+                    DeviceApi.deviceUnregister(map,
+                        success = {
+                            controller.sn = null
+                            controller.mac = null
+                            controller.id = null
+                            BleController.stopScan() //停止扫描
+                            ObjectBox.runAsync({
+                                transmitterBox!!.removeAll()
+                            })
+                            TransmitterManager.instance().removeTransmitterFromDb()
+                            TransmitterManager.instance().removeDefault()
+//                    LiveEventBus.get<String>(EventKey.EVENT_UNPAIR_SUCCESS)
+//                        .post("unPairSuccess") //解配成功
+                        },
+                        failure = {
+                            ToastUtil.showShort(it)
+                        })
                 }
+            }
+        }, onError = {
 
-                override fun error() {
-                    LogUtils.data("服务器解除配对错误")
-                    ToastUtil.show(CgmsApplication.instance.getString(R.string.net_error))
-                }
-            })
-        }
-        LogUtils.data("配对信息置空")
-        entity.accessId = null
-        CgmsApplication.boxStore.runInTxAsync({ transmitterBox.put(entity) }) { _, _ -> }
-        controller.unregister()
+        })
     }
 
 
@@ -302,26 +272,13 @@ class TransmitterModel(val entity: TransmitterEntity) {
      * 是否为主设备
      *
      * **/
-    fun isMainDevice(): Boolean {
-        return primary == Constant.DEVICE_MAIN
-    }
-
-    /**
-     * 是否新旧传感器页面
-     *
-     * **/
-    fun isNewSensor(historyEntity: CgmHistoryEntity): Boolean {
-        return historyEntity.eventType == History.HISTORY_SENSOR_NEW && historyEntity.eventData!! == -1f
+    fun isPrimary(): Boolean {
+        return primary == devicePrimary
     }
 
     fun getHistoryDate(timeOffset: Int): Date {
         val timeLong = entity.sensorStartTime?.time?.plus(timeOffset * 60 * 1000)
-        LogUtils.eAiDex("startTime " + entity.sensorStartTime?.date2ymdhm() + "--recordTime " + timeLong?.let {
-            Date(
-                it
-            ).date2ymdhm()
-        })
-        return timeLong?.let { Date(it) }!!
+        return Date(timeLong!!)
     }
 
     fun handleAdvertisement(context: Context, data: ByteArray) {
@@ -352,11 +309,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
         LogUtils.eAiDex("收到广播----> $broadcast")
         if (histories.isNotEmpty()) {
             history = histories[0]
-            recentHistory = histories[0]
+            latestHistory = histories[0]
         } else {
             return
         }
-        isHistoryValid = recentHistory?.isValid == 1 && recentHistory?.status == History.STATUS_OK
+        isHistoryValid = latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
         for ((index, his) in histories.withIndex()) {
             LogUtils.eAiDex("${index} ----> timeOffset:${his.timeOffset} , glucose:${his.glucose}")
         }
@@ -369,8 +326,8 @@ class TransmitterModel(val entity: TransmitterEntity) {
 //            return
 //        }
         val now = Date().time / 1000
-        lastAdvertiseTime = now
-        Constant.lastAdvertiseTime = lastAdvertiseTime
+        latestAdTime = now
+        Constant.lastAdvertiseTime = latestAdTime
         Constant.hasAdvertise = true
         recentAdvertise = broadcast
 //
@@ -819,7 +776,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                     if (MMKV.defaultMMKV()
                                             .decodeBool(LocalPreference.HIGH_NOTICE_ENABLE, true)
                                     ) {
-                                        notify?.invoke(
+                                        alert?.invoke(
                                             "$time", Constant.MESSAGE_TYPE_GLUCOSEHIGH
                                         )
                                     }
@@ -829,7 +786,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                     if (MMKV.defaultMMKV()
                                             .decodeBool(LocalPreference.LOW_NOTICE_ENABLE, true)
                                     ) {
-                                        notify?.invoke(
+                                        alert?.invoke(
                                             "$time", Constant.MESSAGE_TYPE_GLUCOSELOW
                                         )
                                     }
@@ -839,7 +796,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                     if (MMKV.defaultMMKV()
                                             .decodeBool(LocalPreference.URGENT_NOTICE_ENABLE, true)
                                     ) {
-                                        notify?.invoke(
+                                        alert?.invoke(
                                             "$time", Constant.MESSAGE_TYPE_GLUCOSELOWALERT
                                         )
                                     }
@@ -853,7 +810,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                     //传感器故障
                     History.HISTORY_SENSOR_ERROR -> {
                         if (now - cgmHistoryEntity.deviceTime.time / 1000 < 60 * 30 && (Constant.sensorInsetError || Constant.sensorInsetErrorSuper)) {
-                            notify?.invoke(
+                            alert?.invoke(
                                 "$time", Constant.MESSAGE_TYPE_SENRORERROR
                             )
                         }
@@ -993,7 +950,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                 //传感器植入失败
                                 Constant.sensorInsetError = true
                                 updateSensorState(true)
-                                notify?.invoke("$time", Constant.MESSAGE_TYPE_SENROR_EMBEDDING)
+                                alert?.invoke("$time", Constant.MESSAGE_TYPE_SENROR_EMBEDDING)
                                 break@out
                             } else {
                                 lastHis = his
@@ -1079,17 +1036,17 @@ class TransmitterModel(val entity: TransmitterEntity) {
         }
     }
 
-    private fun glucoseLevel(glucose: Float?): GlucoseLevel? {
+    fun getGlucoseLevel(glucose: Float?): GlucoseLevel? {
         return when {
             glucose == null -> null
-            glucose > ThresholdManager.hyperThreshold -> GlucoseLevel.HIGH
-            glucose < ThresholdManager.hypoThreshold -> GlucoseLevel.LOW
+            glucose > ThresholdManager.hyper -> GlucoseLevel.HIGH
+            glucose < ThresholdManager.hypo -> GlucoseLevel.LOW
             else -> GlucoseLevel.NORMAL
         }
     }
 
     //"5分钟", "15分钟", "30分钟", "45分钟", "60分钟"
-    private fun calculateFrequency(index: Int): Long {
+    fun calculateFrequency(index: Int): Long {
         return when (index) {
             0 -> 5 * 60
             1 -> 15 * 60
@@ -1200,11 +1157,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                             .decodeInt(LocalPreference.NOTICE_FREQUENCY, 2)
                                     )
                                 ) {
-                                    notify?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEDOWN)
+                                    alert?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEDOWN)
                                     MMKVUtil.encodeLong(EventKey.LAST_FAST_DOWN_TIME, dateTime.time)
                                 }
                             } else {
-                                notify?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEDOWN)
+                                alert?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEDOWN)
                                 MMKVUtil.encodeLong(EventKey.LAST_FAST_DOWN_TIME, dateTime.time)
                             }
                         }
@@ -1219,11 +1176,11 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                             .decodeInt(LocalPreference.NOTICE_FREQUENCY, 2)
                                     )
                                 ) {
-                                    notify?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEUP)
+                                    alert?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEUP)
                                     MMKVUtil.encodeLong(EventKey.LAST_FAST_UP_TIME, dateTime.time)
                                 }
                             } else {
-                                notify?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEUP)
+                                alert?.invoke("$time", Constant.MESSAGE_TYPE_GLUCOSEUP)
                                 MMKVUtil.encodeLong(EventKey.LAST_FAST_UP_TIME, dateTime.time)
                             }
                         }
@@ -1246,7 +1203,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     fun messageLoss(context: Context) {
         if (MMKV.defaultMMKV().decodeBool(LocalPreference.LOSS_ALERT, true)) {
             val time = Date().dateHourMinute()
-            notify?.invoke("${time}", Constant.MESSAGE_TYPE_SIGNLOST)
+            alert?.invoke("${time}", Constant.MESSAGE_TYPE_SIGNLOST)
         }
     }
 

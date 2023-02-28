@@ -125,7 +125,7 @@
         <attr name="unableBackgroundColor" format="color|reference"/>
 
         <!--background radius-->
-        <attr name="radius" format="dimension|reference"/>
+        <attr name="bgRadius" format="dimension|reference"/>
         <attr name="isRound" format="boolean"/>
 
         <!--animation duration-->
@@ -256,5 +256,32 @@
         <attr name="has_line" format="boolean" />
         <attr name="has_switch" format="boolean" />
         <attr name="colorLine" format="reference|color" />
+    </declare-styleable>
+
+    <declare-styleable name="DialogXBaseRelativeLayout">
+        <attr name="baseFocusable" format="boolean"/>
+        <attr name="autoSafeArea" format="boolean"/>
+        <attr name="interceptBack" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="DialogXMaxLayout">
+        <attr name="maxLayoutWidth" format="dimension"/>
+        <attr name="maxLayoutHeight" format="dimension"/>
+        <attr name="minLayoutWidth" format="dimension"/>
+        <attr name="minLayoutHeight" format="dimension"/>
+        <attr name="lockWidth" format="boolean"/>
+        <attr name="interceptTouch" format="boolean"/>
+    </declare-styleable>
+
+    <declare-styleable name="RealtimeBlurView">
+        <attr name="realtimeBlurRadius" format="dimension"/>
+        <attr name="realtimeDownsampleFactor" format="float"/>
+        <attr name="realtimeOverlayColor" format="color"/>
+        <attr name="radius" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="ProgressView">
+        <attr name="progressStrokeWidth" format="dimension"/>
+        <attr name="progressStrokeColor" format="color"/>
     </declare-styleable>
 </resources>

@@ -1,6 +1,5 @@
 package com.microtech.aidexx.common.net
 
-import android.text.TextUtils
 import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -87,7 +86,7 @@ internal class ApiCall<T>(private val delegate: Call<T>) : Call<ApiResult<T>> {
                 when (t) {
                     is BizException -> callback.onResponse(
                         this@ApiCall,
-                        Response.success(ApiResult.Failure(t.code, t.message ?: ""))
+                        Response.success(ApiResult.Failure(t.code.toString(), t.message ?: ""))
                     )
                     else -> callback.onResponse(
                         this@ApiCall,

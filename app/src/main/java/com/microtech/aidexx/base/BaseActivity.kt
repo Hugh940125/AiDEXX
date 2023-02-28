@@ -50,7 +50,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
     }
 
     private fun initEvent() {
-        EventBusManager.onReceive(EventBusKey.EVENT_SHOW_ALERT, AlertInfo::class.java, this) {
+        EventBusManager.onReceive<AlertInfo>(EventBusKey.EVENT_SHOW_ALERT, this) {
             if (ActivityUtil.isForeground(this) && it.content.isNotBlank()) {
                 mainScope.launch {
                     Dialogs.showAlert(this@BaseActivity, null, it.content) {

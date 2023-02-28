@@ -6,8 +6,6 @@ import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import io.objectbox.Box
 import io.objectbox.BoxStore
-import io.objectbox.kotlin.awaitCallInTx
-import java.util.concurrent.Callable
 
 /**
  *@date 2023/2/15
