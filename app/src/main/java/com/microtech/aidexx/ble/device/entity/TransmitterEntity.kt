@@ -21,7 +21,7 @@ class TransmitterEntity {
     var accessId: ByteArray? = null
     var encryptionKey: ByteArray? = null
     var sensorStartTime: Date? = null //开始时间
-    var error4TimesWithin2Hours = false // 加强版植入失败
+    var needReplace = false
     var deviceModel: Int = 0
     var expirationTime: Int = 15
         set(value) {

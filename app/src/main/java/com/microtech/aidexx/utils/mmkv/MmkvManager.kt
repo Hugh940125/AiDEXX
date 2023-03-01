@@ -18,13 +18,18 @@ object MmkvManager {
     private const val TOKEN = "TOKEN"
     private const val NOTICE_FREQUENCY = "NOTICE_FREQUENCY"
     private const val URGENT_NOTICE_FREQUENCY = "NOTICE_FREQUENCY"
+    private const val HIGH_NOTICE_ENABLE = "HIGH_NOTICE_ENABLE"
+    private const val LOW_NOTICE_ENABLE = "LOW_NOTICE_ENABLE"
+    private const val URGENT_NOTICE_ENABLE = "URGENT_NOTICE_ENABLE"
 
+    fun isUrgentAlertEnable() = MmkvUtil.decodeBoolean(URGENT_NOTICE_ENABLE,true)
+    fun isHypoAlertEnable() = MmkvUtil.decodeBoolean(LOW_NOTICE_ENABLE,true)
+    fun isHyperAlertEnable() = MmkvUtil.decodeBoolean(HIGH_NOTICE_ENABLE,true)
     fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY,0)
     fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY,2)
     fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
     fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)
-
     fun getHypo() = MmkvUtil.decodeFloat(HYPO, ThresholdManager.DEFAULT_HYPO)
 
     fun saveHyper(value: Float) = MmkvUtil.encodeFloat(HYPER, value)

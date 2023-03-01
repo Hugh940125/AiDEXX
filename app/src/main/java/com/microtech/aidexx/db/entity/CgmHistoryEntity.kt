@@ -47,7 +47,6 @@ class CgmHistoryEntity : EventEntity,
             .append(sensorIndex)
             .append(eventIndex)
             .append(eventType)
-
         recordUuid = EncryptUtils.md5(uuidStr.toString())
     }
 
