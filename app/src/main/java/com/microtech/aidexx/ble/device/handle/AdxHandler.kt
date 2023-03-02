@@ -47,7 +47,7 @@ class AdxHandler {
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
         model.isSensorExpired =
             (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
-        model.isDeviceFault =
+        model.isMalfunction =
             broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
         if (broadcast.status == History.SENSOR_MALFUNCTION) {
             model.faultType = 1
@@ -69,7 +69,7 @@ class AdxHandler {
             return
         }
         val temp = broadcast.history[0].glucose
-        model.glucose = if (model.isDeviceFault || model.isSensorExpired || temp < 0) null
+        model.glucose = if (model.isMalfunction || model.isSensorExpired || temp < 0) null
         else roundOffDecimal(temp / 18f)
         model.glucoseLevel = model.getGlucoseLevel(model.glucose)
         model.latestHistory?.let {
@@ -135,7 +135,7 @@ class AdxHandler {
     private fun saveHistories(histories: List<AidexXHistoryEntity>) {
         tempList.clear()
         val entity = transmitterModel.entity
-        val deviceId = TransmitterManager.instance().getDefault().deviceId() ?: return
+        val deviceId = TransmitterManager.instance().getDefault()?.deviceId() ?: return
         val userId = UserInfoManager.instance().userId()
         if (userId.isEmpty()) {
             return
@@ -190,7 +190,7 @@ class AdxHandler {
                 when (historyEntity.eventType) {
                     History.HISTORY_GLUCOSE,
                     -> {
-                        if (transmitterModel.isDeviceFault || historyEntity.eventWarning == -1) {
+                        if (transmitterModel.isMalfunction || historyEntity.eventWarning == -1) {
                             historyEntity.eventWarning = -1
                         } else {
                             if (historyEntity.isHighOrLow()) {
@@ -255,8 +255,8 @@ class AdxHandler {
                         }
                     }
                 }
-                historyEntity.updateRecordUUID()
                 historyEntity.authorizationId = userId
+                historyEntity.updateRecordUUID()
                 ObjectBox.cgmHistoryBox!!.put(historyEntity)
                 tempList.add(historyEntity)
             }

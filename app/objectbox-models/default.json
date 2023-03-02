@@ -124,11 +124,6 @@
           "type": 5
         },
         {
-          "id": "16:932814438297404264",
-          "name": "deviceTimeLong",
-          "type": 6
-        },
-        {
           "id": "17:2130109171350114973",
           "name": "authorizationId",
           "type": 9
@@ -188,7 +183,7 @@
     },
     {
       "id": "3:3796110624465004345",
-      "lastPropertyId": "20:1028032693408740370",
+      "lastPropertyId": "21:5554186718738981798",
       "name": "TransmitterEntity",
       "properties": [
         {
@@ -285,8 +280,8 @@
           "type": 5
         },
         {
-          "id": "20:1028032693408740370",
-          "name": "error4TimesWithin2Hours",
+          "id": "21:5554186718738981798",
+          "name": "needReplace",
           "type": 1
         }
       ],
@@ -302,7 +297,9 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    3845290576315079042
+    3845290576315079042,
+    1028032693408740370,
+    932814438297404264
   ],
   "retiredRelationUids": [],
   "version": 1

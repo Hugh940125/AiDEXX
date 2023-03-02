@@ -283,7 +283,7 @@
     <string name="Transmitter_Force_Delete_Title">强制删除</string>
     <string name="Transmitter_Force_Delete_Detail">强制删除发射器可能造成发射器永久不可用。</string>
     <string name="BG_Title">血糖</string>
-    <string name="bt_retry">%s 重试</string>
+    <string name="bt_retry">%s重试</string>
     <string name="TabBarItemTitle_History">历史</string>
     <string name="Mobile_Number">手机号</string>
     <string name="Guide_Insert_Back">背面:\n上臂</string>

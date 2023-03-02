@@ -29,7 +29,12 @@ import androidx.work.WorkManager;
 
 import com.jeremyliao.liveeventbus.LiveEventBus;
 import com.microtech.aidexx.AidexxApp;
+import com.microtech.aidexx.ble.device.TransmitterManager;
+import com.microtech.aidexx.ble.device.TransmitterModel;
+import com.microtech.aidexx.ble.device.work.StartScanWorker;
+import com.microtech.aidexx.ble.device.work.StopScanWorker;
 import com.microtech.aidexx.utils.LogUtil;
+import com.microtech.aidexx.utils.TimeUtils;
 import com.microtechmd.blecomm.BleAdapter;
 
 import java.lang.reflect.Field;
@@ -38,7 +43,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -55,8 +59,6 @@ public class AidexBleAdapter extends BleAdapter {
     private static final UUID UUID_SERVICE = UUID.fromString("0000181F-0000-1000-8000-00805F9B34FB");
 
     private static final UUID UUID_CHARACTERISTIC = UUID.fromString("00002AFF-0000-1000-8000-00805F9B34FB");
-    private String TAG = "BLE";
-
     //蓝牙特征值
     BluetoothGattCharacteristic mWriteGattCharacteristic;
 
@@ -94,10 +96,12 @@ public class AidexBleAdapter extends BleAdapter {
     private final BluetoothDeviceStore bluetoothDeviceStore = new BluetoothDeviceStore();
 
     boolean isScaning;
-    long TIME_BETWEEN_CONNECT = 3L; //断开到连接的时间间隔
+    long TIME_BETWEEN_CONNECT = 2L; //断开到连接的时间间隔
 
     PendingIntent pendingIntent;
     private boolean isOnConnectState = false;
+
+    private TimerTask timerTask;
 
     public static void init(Context context) {
         if (instance == null) {
@@ -247,8 +251,6 @@ public class AidexBleAdapter extends BleAdapter {
         }
     }
 
-    TimerTask timerTask;
-
     private void sleep(long time) {
         try {
             Thread.sleep(time);
@@ -349,12 +351,11 @@ public class AidexBleAdapter extends BleAdapter {
             }
         }
         bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), scanCallback);
-        LogUtil.eAiDEX("start scan");
         if (!isOnConnectState) {
             WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(STOP_SCAN));
-            if (TransmitterManager.instance().getDefaultModel() != null) {
-                OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(BleStopScanWorker.class).setInitialDelay(30, TimeUnit.SECONDS).addTag(String.valueOf(STOP_SCAN)).build(); //30s以后停止扫描
-                WorkManager.getInstance(CgmsApplication.instance).enqueue(scanWorker);
+            if (TransmitterManager.Companion.instance().getDefault() != null) {
+                OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(StopScanWorker.class).setInitialDelay(30, TimeUnit.SECONDS).addTag(String.valueOf(STOP_SCAN)).build(); //30s以后停止扫描
+                WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker);
             }
         }
     }
@@ -363,71 +364,58 @@ public class AidexBleAdapter extends BleAdapter {
         BluetoothLeScanner bluetoothLeScanner = getBluetoothAdapter().getBluetoothLeScanner();
         if (bluetoothLeScanner != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (ActivityCompat.checkSelfPermission(CgmsApplication.instance, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
-                    LogUtils.eAiDex("缺少权限---->Manifest.permission.BLUETOOTH_SCAN");
+                if (ActivityCompat.checkSelfPermission(AidexxApp.instance, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                    LogUtil.eAiDEX("permission denied---->Manifest.permission.BLUETOOTH_SCAN");
                     return;
                 }
             }
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                if (pendingIntent != null) {
-//                    bluetoothLeScanner.stopScan(pendingIntent);
-//                    pendingIntent.cancel();
-//                    pendingIntent = null;
-//                }
-//            } else {
             bluetoothLeScanner.stopScan(scanCallback);
-//            }
         }
-        WorkManager.getInstance(CgmsApplication.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
-        if (TransmitterManager.instance().getDefaultModel() != null && Objects.requireNonNull(TransmitterManager.instance().getDefaultModel()).getEntity().getAccessId() != null && !isOnConnectState) {
-            LogUtils.debug("2S后开启扫描");
-            OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(BleScanWorker.class).setInitialDelay(2, TimeUnit.SECONDS).addTag(String.valueOf(START_SCAN)).build(); //2S后开启扫描
-            WorkManager.getInstance(CgmsApplication.instance).enqueue(scanWorker);
+        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
+        TransmitterModel aDefault = TransmitterManager.Companion.instance().getDefault();
+        if (aDefault != null && aDefault.getEntity().getAccessId() != null && !isOnConnectState) {
+            OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(StartScanWorker.class).setInitialDelay(2, TimeUnit.SECONDS).addTag(String.valueOf(START_SCAN)).build(); //2S后开启扫描
+            WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker);
         }
     }
 
 
     @Override
     public void executeStopScan() {
-        LogUtils.error("BLE", "停止扫描");
-        WorkManager.getInstance(CgmsApplication.instance).cancelAllWorkByTag(String.valueOf(STOP_SCAN));
-        WorkManager.getInstance(CgmsApplication.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
+        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(STOP_SCAN));
+        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
         stopScan();
     }
 
     @Override
     public boolean isReadyToConnect(String mac) {
-        BluetoothDevice bluetoothLeDevice = bluetoothLeDeviceStore.getDeviceMap().get(mac);
-        LogUtils.error("BLE" + mac, "BLE isReadyToConnect :" + (bluetoothLeDevice != null) + "--" + bluetoothLeDeviceStore.toString());
+        BluetoothDevice bluetoothLeDevice = bluetoothDeviceStore.getDeviceMap().get(mac);
+        LogUtil.eAiDEX("Device:" + mac + " isReadyToConnect :" + (bluetoothLeDevice != null));
         return bluetoothLeDevice != null;
     }
 
     @Override
     public void executeConnect(String mac) {
         isOnConnectState = true;
-        LogUtils.eAiDex(" 开始连接: " + mac);
-        WorkManager.getInstance(CgmsApplication.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
-        mBluetoothDevice = bluetoothLeDeviceStore.getDeviceMap().get(mac);
-        long duration = new Date().getTime() / 1000 - lastDisConnectTime;
-
+        LogUtil.eAiDEX("Connecting to:" + mac);
+        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
+        mBluetoothDevice = bluetoothDeviceStore.getDeviceMap().get(mac);
+        long duration = TimeUtils.INSTANCE.getCurrentTimeMillis() / 1000 - lastDisConnectTime;
         if (duration >= TIME_BETWEEN_CONNECT) {
             mWorkHandler.sendEmptyMessage(CONNECT_GATT);
         } else {
-            LogUtils.error("延长发送消息 " + (TIME_BETWEEN_CONNECT - duration) * 1000);
             mWorkHandler.sendEmptyMessageDelayed(CONNECT_GATT, (TIME_BETWEEN_CONNECT - duration) * 1000);
         }
     }
 
     @Override
     public void executeDisconnect() {
-
-        LogUtils.error("BLE", "BLE executeDisconnect");
-
+        LogUtil.eAiDEX("Disconnecting");
         if (mBluetoothGatt != null) {
             mWorkHandler.sendEmptyMessage(DISCONNECT_GATT);
         } else {
-            LogUtils.error("BLE executeDisconnect  mBluetoothGatt NULL");
-            onConnectFailure();
+            LogUtil.eAiDEX("Gatt is null,call onDisconnected directly");
+            onDisconnected();
         }
     }
 
@@ -447,44 +435,32 @@ public class AidexBleAdapter extends BleAdapter {
         @Override
         public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
             super.onPhyUpdate(gatt, txPhy, rxPhy, status);
-            Log.d(TAG, "onPhyUpdate");
         }
 
         @Override
         public void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
             super.onPhyRead(gatt, txPhy, rxPhy, status);
-            Log.d(TAG, "onPhyRead");
         }
 
-        //
-//status-->操作是否成功，如连接成功这个操作是否成功。会返回异常码
-//newState-->新的连接的状态。共四种：STATE_DISCONNECTED，STATE_CONNECTING，STATE_CONNECTED，STATE_DISCONNECTING
+        //status-->操作是否成功，如连接成功这个操作是否成功。会返回异常码
+        //newState-->新的连接的状态。共四种：STATE_DISCONNECTED，STATE_CONNECTING，STATE_CONNECTED，STATE_DISCONNECTING
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 switch (newState) {
                     case BluetoothProfile.STATE_DISCONNECTED:
-                        Log.e(TAG, "BluetoothGattCallback：onConnectionStateChange-->" + "status：" + status + "操作成功；" + " newState：" + newState + " 已断开连接状态");
-//                        workHandler.sendEmptyMessage(DISCONNECT_GATT);
                         mWorkHandler.sendEmptyMessage(CLOSE_GATT);
-
-                        LogUtils.eAiDex("断开连接成功...");
-                        lastDisConnectTime = new Date().getTime() / 1000;
+                        lastDisConnectTime = TimeUtils.INSTANCE.getCurrentTimeMillis() / 1000;
                         mWorkHandler.sendEmptyMessageDelayed(CONNECT_DISCONNECTED, 2000);
-
                         break;
                     case BluetoothProfile.STATE_CONNECTED:
-                        Log.d(TAG, "BluetoothGattCallback：onConnectionStateChange-->" + "status：" + status + "操作成功；" + " newState：" + newState + " 已连接状态，可进行发现服务");
-                        //发现服务
                         mWorkHandler.sendEmptyMessage(DISCOVER_SERVICES);
                         break;
                 }
                 retryNum = 0;
                 return;
             }
-
-
             if (status == 257) {
                 LogUtils.error("蓝牙超过连接次数了,需要重启");
                 mWorkHandler.sendEmptyMessage(CLOSE_GATT);
@@ -523,9 +499,7 @@ public class AidexBleAdapter extends BleAdapter {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-
             mBluetoothGatt = gatt;
-
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 Message message = Message.obtain();
                 message.what = FOUND_SERVER;
@@ -534,7 +508,6 @@ public class AidexBleAdapter extends BleAdapter {
             } else {
                 mWorkHandler.sendEmptyMessage(CONNECT_FAILURE);
             }
-
         }
 
 

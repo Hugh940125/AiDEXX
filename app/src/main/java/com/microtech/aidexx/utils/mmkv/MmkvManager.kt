@@ -21,12 +21,22 @@ object MmkvManager {
     private const val HIGH_NOTICE_ENABLE = "HIGH_NOTICE_ENABLE"
     private const val LOW_NOTICE_ENABLE = "LOW_NOTICE_ENABLE"
     private const val URGENT_NOTICE_ENABLE = "URGENT_NOTICE_ENABLE"
+    private const val FAST_DOWN_ALERT_ENABLE = "FALL_ALERT"
+    private const val FAST_UP_ALERT_ENABLE = "RAISE_ALERT"
+    private const val LAST_FAST_UP_ALERT_TIME = "LAST_FAST_UP_ALERT_TIME"
+    private const val LAST_FAST_DOWN_ALERT_TIME = "LAST_FAST_DOWN_ALERT_TIME"
 
-    fun isUrgentAlertEnable() = MmkvUtil.decodeBoolean(URGENT_NOTICE_ENABLE,true)
-    fun isHypoAlertEnable() = MmkvUtil.decodeBoolean(LOW_NOTICE_ENABLE,true)
-    fun isHyperAlertEnable() = MmkvUtil.decodeBoolean(HIGH_NOTICE_ENABLE,true)
-    fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY,0)
-    fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY,2)
+    fun saveFastUpAlertTime(time: Long) = MmkvUtil.encodeLong(LAST_FAST_UP_ALERT_TIME, time)
+    fun saveFastDownAlertTime(time: Long) = MmkvUtil.encodeLong(LAST_FAST_DOWN_ALERT_TIME, time)
+    fun getLastFastDownAlertTime() = MmkvUtil.decodeLong(LAST_FAST_DOWN_ALERT_TIME, 0)
+    fun getLastFastUpAlertTime() = MmkvUtil.decodeLong(LAST_FAST_UP_ALERT_TIME, 0)
+    fun isFastUpAlertEnable() = MmkvUtil.decodeBoolean(FAST_UP_ALERT_ENABLE, true)
+    fun isFastDownAlertEnable() = MmkvUtil.decodeBoolean(FAST_DOWN_ALERT_ENABLE, true)
+    fun isUrgentAlertEnable() = MmkvUtil.decodeBoolean(URGENT_NOTICE_ENABLE, true)
+    fun isHypoAlertEnable() = MmkvUtil.decodeBoolean(LOW_NOTICE_ENABLE, true)
+    fun isHyperAlertEnable() = MmkvUtil.decodeBoolean(HIGH_NOTICE_ENABLE, true)
+    fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY, 0)
+    fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY, 2)
     fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
     fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)

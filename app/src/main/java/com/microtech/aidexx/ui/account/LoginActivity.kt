@@ -7,6 +7,7 @@ import android.view.View
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.databinding.ActivityLoginBinding
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LOGIN
 import com.microtech.aidexx.utils.StringUtils
 
@@ -22,24 +23,27 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
 
     private fun initView() {
         binding.loginActionBar.getLeftIcon().setOnClickListener {
-            finish()
+            ActivityUtil.toSystemHome(this)
         }
         binding.tvExchange.setOnClickListener(this)
         binding.loginByCode.btnGetVerCode.setOnClickListener(this)
+        binding.btnLogin.setOnClickListener(this)
         viewModel.timeLeft.observe(this) {
             if (it.first) {
+                binding.loginByCode.btnGetVerCode.alpha = 0.5f
                 binding.loginByCode.btnGetVerCode.isClickable = false
                 binding.loginByCode.btnGetVerCode.text =
-                    resources.getString(R.string.bt_retry, "${it.second}s ")
+                        resources.getString(R.string.bt_retry, "${it.second}s ")
             } else {
+                binding.loginByCode.btnGetVerCode.alpha = 1f
                 binding.loginByCode.btnGetVerCode.isClickable = true
                 binding.loginByCode.btnGetVerCode.text =
-                    resources.getString(R.string.bt_retry, "")
+                        resources.getString(R.string.bt_retry, "")
             }
         }
         binding.loginByCode.txtUserProtocol.text = StringUtils.initProtocol(
-            this, LOGIN,
-            SpannableStringBuilder()
+                this, LOGIN,
+                SpannableStringBuilder()
         )
         binding.loginByCode.txtUserProtocol.movementMethod = LinkMovementMethod.getInstance()
     }
@@ -55,6 +59,9 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
             }
             binding.loginByCode.btnGetVerCode -> {
                 viewModel.startCountDown()
+            }
+            binding.btnLogin -> {
+
             }
         }
     }

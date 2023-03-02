@@ -27,7 +27,7 @@ class TransmitterManager private constructor() {
                 val query = transmitterBox!!.query()
                 sn?.apply {
                     query.equal(
-                        TransmitterEntity_.deviceSn, this, QueryBuilder.StringOrder.CASE_INSENSITIVE
+                            TransmitterEntity_.deviceSn, this, QueryBuilder.StringOrder.CASE_INSENSITIVE
                     )
                 }
                 findFirst = query.orderDesc(TransmitterEntity_.idx).build().findFirst()
@@ -56,7 +56,7 @@ class TransmitterManager private constructor() {
         return default!!
     }
 
-    fun getDefault(): TransmitterModel {
+    fun getDefault(): TransmitterModel? {
         if (default == null) {
             AidexxApp.mainScope.launch(Dispatchers.IO) {
                 val loadTransmitterFromDb = loadTransmitterFromDb()
@@ -65,7 +65,7 @@ class TransmitterManager private constructor() {
                 }
             }
         }
-        return default!!
+        return default
     }
 
     fun removeDefault() {
@@ -99,7 +99,7 @@ class TransmitterManager private constructor() {
     }
 
     companion object {
-        private var instance: TransmitterManager? = null
+        private var INSTANCE: TransmitterManager? = null
             get() {
                 if (field == null) {
                     field = TransmitterManager()
@@ -109,7 +109,7 @@ class TransmitterManager private constructor() {
 
         @Synchronized
         fun instance(): TransmitterManager {
-            return instance!!
+            return INSTANCE!!
         }
     }
 }

@@ -38,10 +38,8 @@ class CgmHistoryEntity : EventEntity,
     var recordUuid: String? = null
 
     fun updateRecordUUID() {
-        val userID = UserInfoManager.instance().userId()
-        val deviceId = TransmitterManager.instance().getDefault().deviceId();
-        val uuidStr = StringBuffer();
-        uuidStr.append(userID)
+        val uuidStr = StringBuffer()
+        uuidStr.append(authorizationId)
             .append(deviceId)
             .append(deviceTime.time / 1000)
             .append(sensorIndex)

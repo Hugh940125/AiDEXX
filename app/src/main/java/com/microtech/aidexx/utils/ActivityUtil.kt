@@ -89,4 +89,10 @@ object ActivityUtil {
         val intent = Intent(context, cls)
         context.startActivity(intent)
     }
+
+    fun toSystemHome(context: Context) {
+        val home = Intent(Intent.ACTION_MAIN)
+        home.addCategory(Intent.CATEGORY_HOME)
+        context.startActivity(home)
+    }
 }
