@@ -278,7 +278,7 @@ class CustomerServiceView : LinearLayout {
     }
 
 
-    fun store() {
+    private fun store() {
         if (this.child.right >= right || child.left < left) {
             return
         }
@@ -355,7 +355,7 @@ class CustomerServiceView : LinearLayout {
     }
 
     private fun getSavedRight(): Int {
-        return MmkvManager.getCustomerServiceIconTop()
+        return MmkvManager.getCustomerServiceIconRight()
     }
 
     private fun getSavedBottom(): Int {

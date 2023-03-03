@@ -18,7 +18,7 @@ import com.microtech.aidexx.ui.main.home.CustomServiceActivity
 import com.microtech.aidexx.utils.DensityUtils
 import com.microtech.aidexx.utils.PermissionsUtil
 import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.utils.permission.Permissions
+import com.microtech.aidexx.utils.permission.PermissionGroups
 
 class CustomerServiceDialog : Dialog {
     constructor(context: Context) : super(context)
@@ -71,8 +71,7 @@ class CustomerServiceDialog : Dialog {
                     EnquireManager.instance()
                         .showEnquireOrNot(it, it.getString(R.string.want_call_phone),
                             it.getString(R.string.use_phone_call_for_service), {
-                                PermissionsUtil.instance()
-                                    .checkPermissions(activity, Permissions.CallPhone, {
+                                PermissionsUtil.checkPermissions(activity, PermissionGroups.CallPhone, {
                                         val phone = "4000811831"
                                         val intent = Intent()
                                         intent.action = Intent.ACTION_DIAL

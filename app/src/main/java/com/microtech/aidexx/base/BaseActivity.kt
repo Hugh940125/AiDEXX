@@ -61,6 +61,9 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
                 }
             }
         }
+        EventBusManager.onReceive<Nothing>(EventBusKey.EVENT_RESTART_BLUETOOTH, this) {
+
+        }
     }
 
     abstract fun getViewBinding(): VB
@@ -84,8 +87,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        PermissionsUtil.instance()
-            .onRequestPermissionsResult(this, requestCode, permissions, grantResults)
+        PermissionsUtil.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
     }
 
     override fun getResources(): Resources {

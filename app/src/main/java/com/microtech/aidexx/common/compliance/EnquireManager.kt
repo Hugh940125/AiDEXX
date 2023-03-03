@@ -22,10 +22,10 @@ class EnquireManager private constructor() {
         title: String,
         content: String,
         onPositive: (() -> Unit)?,
-        onNegative: (() -> Unit)?,
-        flag: String
+        onNegative: (() -> Unit)? = null,
+        flag: String? = null
     ) {
-        if (!MmkvManager.getEnquireFlag(flag)) {
+        if ((flag != null && MmkvManager.getEnquireFlag(flag)) || flag == null) {
             if (enquireList.isNotEmpty()) {
                 enquireList.forEach {
                     it.dismiss()
@@ -38,7 +38,9 @@ class EnquireManager private constructor() {
                 .setPositive(
                     context.getString(R.string.allow)
                 ) { dialog, _ ->
-                    MmkvManager.saveEnquireFlag(flag, true)
+                    flag?.let {
+                        MmkvManager.saveEnquireFlag(flag, true)
+                    }
                     onPositive?.invoke()
                     dialog.dismiss()
                 }.setCancel(

@@ -1,7 +1,6 @@
 package com.microtech.aidexx.utils
 
 import android.app.Activity
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -9,15 +8,14 @@ import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import com.microtech.aidexx.R
-import com.microtech.aidexx.utils.permission.Permissions
+import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 
 
-class PermissionsUtil private constructor() {
+object PermissionsUtil {
     private lateinit var permissions: Array<String>
-    private val mRequestCode = 100 //权限请求码
+    private val mRequestCode = 10000 //权限请求码
     private var onAllow: (() -> Unit)? = null
     private var onDeny: (() -> Unit)? = null
     var mPermissionDialog: AlertDialog? = null
@@ -25,7 +23,7 @@ class PermissionsUtil private constructor() {
     fun checkPermissions(
         context: Activity,
         permissions: Array<String>,
-        allow: (() -> Unit)?,
+        allow: (() -> Unit)? = null,
         deny: (() -> Unit)? = null
     ) {
         onAllow = allow
@@ -57,8 +55,11 @@ class PermissionsUtil private constructor() {
     //参数： permissions  是我们请求的权限名称数组
     //参数： grantResults 是我们在弹出页面后是否允许权限的标识数组，数组的长度对应的是权限名称数组的长度，数组的数据0表示允许权限，-1表示我们点击了禁止权限
     fun onRequestPermissionsResult(
-        context: Activity, requestCode: Int, permissions: Array<String>,
-        grantResults: IntArray
+        context: Activity,
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray,
+        showSystemSetting: Boolean = true
     ) {
         this.permissions = permissions
         var hasPermissionDismiss = false //有权限没有通过
@@ -93,7 +94,7 @@ class PermissionsUtil private constructor() {
                     String.format(
                         context.getString(
                             R.string.permission_open_manual,
-                        ), Permissions.getFuncToPermission(context, permissions)
+                        ), PermissionGroups.getFuncToPermission(context, permissions)
                     )
                 )
                 .setPositive(
@@ -123,15 +124,6 @@ class PermissionsUtil private constructor() {
         if (mPermissionDialog != null) {
             mPermissionDialog?.cancel()
             mPermissionDialog = null
-        }
-    }
-
-    companion object {
-        var showSystemSetting = true
-        private var permissionsUtil: PermissionsUtil = PermissionsUtil()
-
-        fun instance(): PermissionsUtil {
-            return permissionsUtil
         }
     }
 }

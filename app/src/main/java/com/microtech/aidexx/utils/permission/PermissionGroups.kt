@@ -10,7 +10,7 @@ import com.microtech.aidexx.R
  *@author Hugh
  *@desc 权限组定义
  */
-object Permissions {
+object PermissionGroups {
 
     val CallPhone = arrayOf(Manifest.permission.CALL_PHONE)
 
@@ -20,7 +20,9 @@ object Permissions {
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )
 
-    val Storage = arrayOf(
+    val Storage = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) arrayOf(
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+    ) else arrayOf(
         Manifest.permission.READ_EXTERNAL_STORAGE,
         Manifest.permission.WRITE_EXTERNAL_STORAGE
     )

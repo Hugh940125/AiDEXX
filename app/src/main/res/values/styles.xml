@@ -166,7 +166,7 @@
     <style name="AppThemeLight" parent="AppTheme">
         <item name="bgHomeChartNew">@drawable/shape_rounded_rectangle_chart</item>
         <item name="shadowBgCustomerService">#ffe7e7e7</item>
-        <item name="bgCustomerService">#88ffffff</item>
+        <item name="bgCustomerService">#66ffffff</item>
         <item name="followListDialogTextColor">#1d1d1d</item>
         <item name="trendSmallTextColor">#707070</item>
         <item name="homeIconBgColor">@color/white</item>

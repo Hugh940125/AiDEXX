@@ -84,7 +84,7 @@ object MmkvManager {
     fun getCustomerServiceIconTop() =
         MmkvUtil.decodeInt(CUSTOMER_SERVICE_ICON_TOP, 0)
 
-    fun getCustomerServiceIconRight(right: Int) =
+    fun getCustomerServiceIconRight() =
         MmkvUtil.decodeInt(CUSTOMER_SERVICE_ICON_RIGHT, 0)
 
     fun getCustomerServiceIconBottom() =

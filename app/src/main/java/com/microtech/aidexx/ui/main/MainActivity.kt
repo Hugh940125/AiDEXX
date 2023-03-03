@@ -2,30 +2,51 @@ package com.microtech.aidexx.ui.main
 
 import android.content.res.Configuration
 import android.graphics.Color
-import android.os.Build
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.BuildConfig
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
+import com.microtech.aidexx.utils.PermissionsUtil
 import com.microtech.aidexx.utils.ProcessUtil
-import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
 
 class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
+    var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
+    private lateinit var mHandler: Handler
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        android.util.Log.e("OnCreate", "MAIN")
         setContentView(binding.root)
+        mHandler = Handler(Looper.getMainLooper())
         initSDKs()
-        fitWindow()
+        fitOrientation()
         initView()
+        requestPermission()
+    }
+
+    private fun requestPermission() {
+        mHandler.postDelayed({
+            if (!this.isFinishing) {
+                EnquireManager.instance()
+                    .showEnquireOrNot(
+                        this,
+                        getString(R.string.need_storage),
+                        getString(R.string.storage_use_for), {
+                            PermissionsUtil.checkPermissions(this, PermissionGroups.Storage)
+                        }, flag = null
+                    )
+            }
+        }, TimeUtils.oneMinuteMillis)
     }
 
     private fun initView() {
@@ -54,56 +75,54 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         initXlog()
     }
 
-    private fun fitWindow() {
+    fun fitOrientation() {
         binding.container.setOnApplyWindowInsetsListener { _, insets ->
             val navigationBarHeight =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        insets.getInsets(WindowInsets.Type.navigationBars()).bottom
-                    } else {
-                        insets.systemWindowInsetBottom
-                    }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    insets.getInsets(WindowInsets.Type.navigationBars()).bottom
+                } else {
+                    insets.systemWindowInsetBottom
+                }
             binding.container.setPadding(0, 0, 0, navigationBarHeight)
             insets
         }
-        EventBusManager.onReceive<Int>(EventBusKey.HOME_ORIENTATION, this) {
-            val window = this.window
-            val decorView = window.decorView
-            if (it == Configuration.ORIENTATION_LANDSCAPE) {
-                binding.mainTabView.visibility = View.GONE
-                binding.bottomSpace.visibility = View.GONE
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    window.insetsController?.also { controller ->
-                        controller.hide(WindowInsets.Type.statusBars())
-                        controller.hide(WindowInsets.Type.navigationBars())
-                        controller.systemBarsBehavior =
-                                WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                    }
-                } else if (it == Configuration.ORIENTATION_PORTRAIT) {
-                    decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            or View.SYSTEM_UI_FLAG_FULLSCREEN
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+        val window = this.window
+        val decorView = window.decorView
+        if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            binding.mainTabView.visibility = View.GONE
+            binding.bottomSpace.visibility = View.GONE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.insetsController?.also { controller ->
+                    controller.hide(WindowInsets.Type.statusBars())
+                    controller.hide(WindowInsets.Type.navigationBars())
+                    controller.systemBarsBehavior =
+                        WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            } else if (mCurrentOrientation == Configuration.ORIENTATION_PORTRAIT) {
+                decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+            }
+        } else {
+            binding.mainTabView.visibility = View.VISIBLE
+            binding.bottomSpace.visibility = View.VISIBLE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                window.setDecorFitsSystemWindows(false)
+                window.statusBarColor = Color.TRANSPARENT
+                window.insetsController?.also { controller ->
+                    controller.show(WindowInsets.Type.statusBars())
+                    controller.show(WindowInsets.Type.navigationBars())
                 }
             } else {
-                binding.mainTabView.visibility = View.VISIBLE
-                binding.bottomSpace.visibility = View.VISIBLE
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    window.setDecorFitsSystemWindows(false)
-                    window.statusBarColor = Color.TRANSPARENT
-                    window.insetsController?.also { controller ->
-                        controller.show(WindowInsets.Type.statusBars())
-                        controller.show(WindowInsets.Type.navigationBars())
-                    }
-                } else {
-                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                    window.statusBarColor = Color.TRANSPARENT
-                    window.decorView.apply {
-                        // 设置状态栏系统栏覆盖在应用内容上
-                        systemUiVisibility =
-                                systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    }
+                decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                window.statusBarColor = Color.TRANSPARENT
+                window.decorView.apply {
+                    // 设置状态栏系统栏覆盖在应用内容上
+                    systemUiVisibility =
+                        systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 }
             }
         }
@@ -141,22 +160,22 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
             if (BuildConfig.DEBUG) {
                 Log.setConsoleLogOpen(true)
                 Log.appenderOpen(
-                        Xlog.LEVEL_DEBUG,
-                        Xlog.AppednerModeAsync,
-                        "",
-                        logPath,
-                        namePrefix,
-                        0
+                    Xlog.LEVEL_DEBUG,
+                    Xlog.AppednerModeAsync,
+                    "",
+                    logPath,
+                    namePrefix,
+                    0
                 )
             } else {
                 Log.setConsoleLogOpen(false)
                 Log.appenderOpen(
-                        Xlog.LEVEL_DEBUG,
-                        Xlog.AppednerModeAsync,
-                        "",
-                        logPath,
-                        namePrefix,
-                        cacheDays
+                    Xlog.LEVEL_DEBUG,
+                    Xlog.AppednerModeAsync,
+                    "",
+                    logPath,
+                    namePrefix,
+                    cacheDays
                 )
             }
         }

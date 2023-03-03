@@ -26,7 +26,7 @@
             android:visibility="visible"
             tools:text="这个是标题" />
 
-        <TextView
+        <com.microtech.aidexx.widget.JustifyTextView
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

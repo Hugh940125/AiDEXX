@@ -21,27 +21,24 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelUuid;
-import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
-import com.jeremyliao.liveeventbus.LiveEventBus;
 import com.microtech.aidexx.AidexxApp;
 import com.microtech.aidexx.ble.device.TransmitterManager;
 import com.microtech.aidexx.ble.device.TransmitterModel;
 import com.microtech.aidexx.ble.device.work.StartScanWorker;
 import com.microtech.aidexx.ble.device.work.StopScanWorker;
 import com.microtech.aidexx.utils.LogUtil;
+import com.microtech.aidexx.utils.StringUtils;
 import com.microtech.aidexx.utils.TimeUtils;
+import com.microtech.aidexx.utils.eventbus.EventBusKey;
+import com.microtech.aidexx.utils.eventbus.EventBusManager;
 import com.microtechmd.blecomm.BleAdapter;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -100,6 +97,8 @@ public class AidexBleAdapter extends BleAdapter {
 
     PendingIntent pendingIntent;
     private boolean isOnConnectState = false;
+
+    int retryNum = 0;
 
     private TimerTask timerTask;
 
@@ -206,7 +205,7 @@ public class AidexBleAdapter extends BleAdapter {
                         }
                         if (status == 133) {//需要清除Gatt缓存并断开连接和关闭Gatt，然后重新连接
                             mWorkHandler.sendEmptyMessage(CLOSE_GATT);
-                            gattError133("onServicesDiscovered");
+                            retry();
                         }
                         break;
                     case CONNECT_GATT:
@@ -251,9 +250,9 @@ public class AidexBleAdapter extends BleAdapter {
         }
     }
 
-    private void sleep(long time) {
+    private void sleep() {
         try {
-            Thread.sleep(time);
+            Thread.sleep(20);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -271,7 +270,7 @@ public class AidexBleAdapter extends BleAdapter {
                     LogUtil.eAiDEX("send data error ----> gatt is null");
                     return;
                 }
-                sleep(20);
+                sleep();
                 mWriteGattCharacteristic.setValue(data);
                 mBluetoothGatt.writeCharacteristic(mWriteGattCharacteristic);
                 if (timerTask != null) {
@@ -462,23 +461,14 @@ public class AidexBleAdapter extends BleAdapter {
                 return;
             }
             if (status == 257) {
-                LogUtils.error("蓝牙超过连接次数了,需要重启");
                 mWorkHandler.sendEmptyMessage(CLOSE_GATT);
                 mWorkHandler.sendEmptyMessage(CONNECT_DISCONNECTED);
-                LiveEventBus.get(EventKey.MESSAGE_COME).post(new com.microtechmd.cgms.entity.Message(ERROR_BLE, Constant.MESSAGE_BLE_ERROR));
+                EventBusManager.INSTANCE.send(EventBusKey.EVENT_RESTART_BLUETOOTH, true);
             }
-
-            if ((status != 133) && newState == 0) {
-                LogUtils.error("status 59 自然断开");
-                mWorkHandler.sendEmptyMessage(CLOSE_GATT);
-                mWorkHandler.sendEmptyMessage(CONNECT_FAILURE);
-                return;
-            }
-
             if (status == 133) {
                 if (retryNum < 2) {//需要清除Gatt缓存并断开连接和关闭Gatt，然后重新连接
                     mWorkHandler.sendEmptyMessage(CLOSE_GATT);
-                    gattError133("onConnectionStateChange");
+                    retry();
                 } else {
                     retryNum = 0;
                     mWorkHandler.sendEmptyMessage(CLOSE_GATT);
@@ -486,12 +476,8 @@ public class AidexBleAdapter extends BleAdapter {
                 }
                 return;
             }
-
-            if (status != 0) {
-                mWorkHandler.sendEmptyMessage(CLOSE_GATT);
-                mWorkHandler.sendEmptyMessage(CONNECT_FAILURE);
-            }
-
+            mWorkHandler.sendEmptyMessage(CLOSE_GATT);
+            mWorkHandler.sendEmptyMessage(CONNECT_FAILURE);
         }
 
 
@@ -510,30 +496,27 @@ public class AidexBleAdapter extends BleAdapter {
             }
         }
 
-
-        //接收到的数据，不一定会回调该方法
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicRead(gatt, characteristic, status);
-            Log.d(TAG, "onCharacteristicRead-->" + characteristic.getValue().toString());
+            LogUtil.eAiDEX("onCharacteristicRead -->" + StringUtils.INSTANCE.binaryToHexString(characteristic.getValue()));
         }
 
-        //发送数据后的回调，可以在此检测发送的数据包是否有异常
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                LogUtils.eAiDex("onCharacteristicWrite:发送数据成功：" + binaryToHexString(characteristic.getValue()));
-            } else LogUtils.eAiDex("onCharacteristicWrite:发送数据失败");
+                LogUtil.eAiDEX("Send data success -->" + StringUtils.INSTANCE.binaryToHexString(characteristic.getValue()));
+            } else LogUtil.eAiDEX("Send data failure");
         }
 
         //设备的值有变化时会主动返回
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-            LogUtils.error(TAG, "onCharacteristicChanged-->" + binaryToHexString(characteristic.getValue()));
+            LogUtil.eAiDEX("onCharacteristicChanged -->" + StringUtils.INSTANCE.binaryToHexString(characteristic.getValue()));
             if (mBluetoothGatt == null) {
-                Log.d(TAG, "收到数据包-->mBluetoothGatt为null 不处理数据" + binaryToHexString(characteristic.getValue()));
+                LogUtil.eAiDEX("onCharacteristicChanged --> Gatt is null");
                 return;
             }
             Message message = Message.obtain();
@@ -545,7 +528,7 @@ public class AidexBleAdapter extends BleAdapter {
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
-            LogUtils.debug("onDescriptorRead-->" + "status:" + status + descriptor.getUuid());
+            LogUtil.eAiDEX("onDescriptorRead -->" + "status:" + status + " uuid" + descriptor.getUuid());
         }
 
         //设置Descriptor后回调
@@ -553,225 +536,35 @@ public class AidexBleAdapter extends BleAdapter {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                LogUtils.debug("onDescriptorWrite-->" + "描述符写入操作成功，蓝牙连接成功并可以通信成功！！！" + descriptor.getUuid());
+                LogUtil.eAiDEX("onDescriptorWrite -->" + "Descriptor enable success. uuid:" + descriptor.getUuid());
                 mWorkHandler.sendEmptyMessage(CONNECT_SUCCESS);
             } else {
-
                 mWorkHandler.sendEmptyMessage(CLOSE_GATT);
                 mWorkHandler.sendEmptyMessage(CONNECT_FAILURE);
-                LogUtils.debug("onDescriptorWrite-->" + "描述符写入操作失败，蓝牙通信失败...");
+                LogUtil.eAiDEX("onDescriptorWrite -->" + "Descriptor enable fail");
             }
         }
 
         @Override
         public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
             super.onReliableWriteCompleted(gatt, status);
-            Log.d(TAG, "onReliableWriteCompleted");
         }
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
             super.onReadRemoteRssi(gatt, rssi, status);
-            Log.d(TAG, "onReadRemoteRssi");
         }
 
         @Override
         public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
             super.onMtuChanged(gatt, mtu, status);
-            Log.d(TAG, "onMtuChanged");
         }
     };
 
-
-    int retryNum = 0;
-
-    //Gatt操作失败status为133时
-    private void gattError133(String method) {
-        LogUtils.error("BluetoothGattCallback：" + method + "--> 因status=133，所以将关闭Gatt重新连接...");
+    private void retry() {
         retryNum++;
         mWorkHandler.sendEmptyMessage(CONNECT_GATT);
     }
-
-    /**
-     * 断开连接
-     *
-     * @param isNeedClose 执行mBluetoothGatt.disconnect方法后是否需要执行mBluetoothGatt.close方法
-     *                    执行
-     */
-    public void disConnect(boolean isNeedClose) {
-
-
-    }
-
-
-    /**
-     * @param bytes
-     * @return 将二进制转换为十六进制字符输出
-     * new byte[]{0b01111111}-->"7F" ;  new byte[]{0x2F}-->"2F"
-     */
-    public static String binaryToHexString(byte[] bytes) {
-        String result = "";
-        if (bytes == null) {
-            return result;
-        }
-        String hex = "";
-        for (int i = 0; i < bytes.length; i++) {
-            //字节高4位
-            hex = String.valueOf("0123456789ABCDEF".charAt((bytes[i] & 0xF0) >> 4));
-            //字节低4位
-            hex += String.valueOf("0123456789ABCDEF".charAt(bytes[i] & 0x0F));
-            result += hex + ",";
-        }
-        return result;
-    }
-
-
-    /**
-     * Clears the internal cache and forces a refresh of the services from the
-     * remote device.
-     */
-    public boolean refreshDeviceCache() {
-        if (mBluetoothGatt != null) {
-            try {
-                BluetoothGatt localBluetoothGatt = mBluetoothGatt;
-                Method localMethod = localBluetoothGatt.getClass().getMethod("refresh", new Class[0]);
-                if (localMethod != null) {
-                    boolean bool = ((Boolean) localMethod.invoke(localBluetoothGatt, new Object[0])).booleanValue();
-                    LogUtils.error("refreshDeviceCache-->" + "清理本地的BluetoothGatt 的缓存 " + bool);
-                    return bool;
-                }
-            } catch (Exception localException) {
-                Log.i(TAG, "An exception occured while refreshing device");
-            }
-        }
-        return false;
-    }
-
-
-    public static boolean releaseAllScanClient() {
-        try {
-            Object mIBluetoothManager = getIBluetoothManager(BluetoothAdapter.getDefaultAdapter());
-            if (mIBluetoothManager == null) return false;
-            Object iGatt = getIBluetoothGatt(mIBluetoothManager);
-            if (iGatt == null) return false;
-
-            Method unregisterClient = getDeclaredMethod(iGatt, "unregisterClient", int.class);
-            Method stopScan;
-            int type;
-            try {
-                type = 0;
-                stopScan = getDeclaredMethod(iGatt, "stopScan", int.class, boolean.class);
-            } catch (Exception e) {
-                type = 1;
-                stopScan = getDeclaredMethod(iGatt, "stopScan", int.class);
-            }
-
-            for (int mClientIf = 0; mClientIf <= 40; mClientIf++) {
-                if (type == 0) {
-                    try {
-                        stopScan.invoke(iGatt, mClientIf, false);
-                    } catch (Exception ignored) {
-                    }
-                }
-                if (type == 1) {
-                    try {
-                        stopScan.invoke(iGatt, mClientIf);
-                    } catch (Exception ignored) {
-                    }
-                }
-                try {
-                    unregisterClient.invoke(iGatt, mClientIf);
-                } catch (Exception ignored) {
-                }
-            }
-            stopScan.setAccessible(false);
-            unregisterClient.setAccessible(false);
-//            BLESupport.getDeclaredMethod(iGatt, "unregAll").invoke(iGatt);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    @SuppressLint("PrivateApi")
-    public static Object getIBluetoothGatt(Object mIBluetoothManager) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method getBluetoothGatt = getDeclaredMethod(mIBluetoothManager, "getBluetoothGatt");
-        Object object = new Object();
-        try {
-            object = getBluetoothGatt.invoke(mIBluetoothManager);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return object;
-    }
-
-
-    @SuppressLint("PrivateApi")
-    public static Object getIBluetoothManager(BluetoothAdapter adapter) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method getBluetoothManager = getDeclaredMethod(BluetoothAdapter.class, "getBluetoothManager");
-        return getBluetoothManager.invoke(adapter);
-    }
-
-
-    public static Field getDeclaredField(Class<?> clazz, String name) throws NoSuchFieldException {
-        Field declaredField = clazz.getDeclaredField(name);
-        declaredField.setAccessible(true);
-        return declaredField;
-    }
-
-
-    public static Method getDeclaredMethod(Class<?> clazz, String name, Class<?>... parameterTypes) throws NoSuchMethodException {
-        Method declaredMethod = clazz.getDeclaredMethod(name, parameterTypes);
-        declaredMethod.setAccessible(true);
-        return declaredMethod;
-    }
-
-
-    public static Field getDeclaredField(Object obj, String name) throws NoSuchFieldException {
-        Field declaredField = obj.getClass().getDeclaredField(name);
-        declaredField.setAccessible(true);
-        return declaredField;
-    }
-
-
-    public static Method getDeclaredMethod(Object obj, String name, Class<?>... parameterTypes) throws NoSuchMethodException {
-        Method declaredMethod = obj.getClass().getDeclaredMethod(name, parameterTypes);
-        declaredMethod.setAccessible(true);
-        return declaredMethod;
-    }
-
-
-    /**
-     * 清理本地的BluetoothGatt 的缓存，以保证在蓝牙连接设备的时候，设备的服务、特征是最新的
-     */
-    private boolean refreshDeviceCache(BluetoothGatt gatt) {
-        Method refreshtMethod = null;
-        if (null != gatt) {
-            try {
-                for (Method methodSub : gatt.getClass().getDeclaredMethods()) {
-                    if ("connect".equalsIgnoreCase(methodSub.getName())) {
-                        Class<?>[] types = methodSub.getParameterTypes();
-                        if (types.length > 0) {
-                            if ("int".equalsIgnoreCase(types[0].getName())) {
-                                refreshtMethod = methodSub;
-                            }
-                        }
-                    }
-                }
-                if (refreshtMethod != null) {
-                    refreshtMethod.invoke(gatt);
-                }
-                LogUtils.eAiDex("refreshDeviceCache-->" + "清理本地的BluetoothGatt 的缓存成功");
-                return true;
-            } catch (Exception localException) {
-                localException.printStackTrace();
-            }
-        }
-        LogUtils.eAiDex("refreshDeviceCache-->" + "清理本地清理本地的BluetoothGatt缓存失败");
-        return false;
-    }
-
 }
 
 

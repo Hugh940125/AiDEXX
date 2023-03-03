@@ -7,4 +7,5 @@ package com.microtech.aidexx.utils.eventbus
 object EventBusKey {
     const val HOME_ORIENTATION: String = "home.orientation"
     const val EVENT_SHOW_ALERT: String = "event.show.alert"
+    const val EVENT_RESTART_BLUETOOTH: String = "event.restart.bluetooth"
 }

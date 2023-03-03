@@ -4,9 +4,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object TimeUtils {
-    const val oneHourSeconds = 3600
+    const val oneHourSeconds = 3600L
     const val oneDaySeconds = oneHourSeconds * 24
     const val oneDayMillis = oneDaySeconds * 1000
+    const val oneMinuteMillis = 60 * 1000L
     var currentTimeMillis: Long = 0
         get() {
             field = Date().time

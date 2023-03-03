@@ -117,7 +117,7 @@ public class StateButton extends androidx.appcompat.widget.AppCompatTextView {
             mUnableBackground.setColor(mUnableBackgroundColor);
 
             //set radius
-            mRadius = typedArray.getDimensionPixelSize(R.styleable.StateButton_radius, 0);
+            mRadius = typedArray.getDimensionPixelSize(R.styleable.StateButton_bgRadius, 0);
             mRound = typedArray.getBoolean(R.styleable.StateButton_isRound, false);
             mNormalBackground.setCornerRadius(mRadius);
             mPressedBackground.setCornerRadius(mRadius);
