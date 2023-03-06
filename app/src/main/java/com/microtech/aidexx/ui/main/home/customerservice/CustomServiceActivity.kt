@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home
+package com.microtech.aidexx.ui.main.home.customerservice
 
 import android.content.Intent
 import android.net.Uri
@@ -9,14 +9,12 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivityCustomServiceBinding
 
-
-private const val SERVICE_URL =
-    "http://kf.microtechmd.com/api/mobileweb/home?channel_id=35267&channel_key=352675f3u&wechatapp_id=349445&key=79201r2ok"
-
 class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceBinding>() {
     private var uploadMessage: ValueCallback<Uri>? = null
     private var valueCallback: ValueCallback<Array<Uri>>? = null
     private val fileChooserResultCode = 10000
+    private val serviceUrl =
+        "http://kf.microtechmd.com/api/mobileweb/home?channel_id=35267&channel_key=352675f3u&wechatapp_id=349445&key=79201r2ok"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +36,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
 //            else if (surName.isNotEmpty() && givenName.isNotEmpty())
 //                "${surName}${givenName}" else mobile
 //        val deviceSn = defaultModel?.entity?.deviceSn
-//        binding.webCustomerService.loadUrl("$SERVICE_URL&mobile=$mobile&nickName=${name}&openid=${userId}&sn=$deviceSn&SN=$deviceSn")
+//        binding.webCustomerService.loadUrl("serviceUrl&mobile=$mobile&nickName=${name}&openid=${userId}&sn=$deviceSn&SN=$deviceSn")
     }
 
     override fun getViewBinding(): ActivityCustomServiceBinding {

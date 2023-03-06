@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home
+package com.microtech.aidexx.ui.main.home.customerservice
 
 import android.animation.Animator
 import android.animation.AnimatorSet
@@ -7,17 +7,14 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Rect
 import android.os.*
-import android.os.VibrationEffect.DEFAULT_AMPLITUDE
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
-import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.DensityUtils
 import com.microtech.aidexx.utils.ThemeManager
@@ -27,7 +24,6 @@ import java.util.*
 import kotlin.math.abs
 
 private const val MIN_DELAY_TIME = 1000
-
 class CustomerServiceView : LinearLayout {
     private lateinit var mFrameRect: Rect
     private var isMoving: Boolean = false
@@ -195,7 +191,7 @@ class CustomerServiceView : LinearLayout {
                                         defaultVibrator.vibrate(
                                             VibrationEffect.createOneShot(
                                                 100,
-                                                DEFAULT_AMPLITUDE
+                                                VibrationEffect.DEFAULT_AMPLITUDE
                                             )
                                         )
                                     } else {
@@ -368,18 +364,18 @@ class CustomerServiceView : LinearLayout {
             tvMessageCount.visibility = INVISIBLE
         } else {
             tvMessageCount.text = messageCountStr
-            tvMessageCount.visibility = View.VISIBLE
+            tvMessageCount.visibility = VISIBLE
         }
         mHandler.removeCallbacksAndMessages(null)
         mHandler.postDelayed(layoutRunnable, 2000)
     }
 
     fun hide() {
-        child.visibility = View.GONE
+        child.visibility = GONE
     }
 
     fun show() {
-        child.visibility = View.VISIBLE
+        child.visibility = VISIBLE
     }
 
     companion object {
