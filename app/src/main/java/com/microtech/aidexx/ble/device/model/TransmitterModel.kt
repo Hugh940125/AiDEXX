@@ -1,7 +1,8 @@
-package com.microtech.aidexx.ble.device
+package com.microtech.aidexx.ble.device.model
 
+import com.microtech.aidexx.ble.device.DeviceApi
+import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
-import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
@@ -37,62 +38,43 @@ import kotlin.math.roundToInt
 /**
  * APP-SRC-A-2-7-2
  */
-class TransmitterModel(val entity: TransmitterEntity) {
+class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceModel(entity) {
     companion object {
-        const val devicePrimary = 2  //主设备
-        const val deviceOther = 1  //从设备
-        var error4TimesWithin2Hours: Boolean = false
+        var notifyNotification: (() -> Unit)? = null
         var messageCallBack: ((msg: BleMessage) -> Unit)? = null
         var alert: ((time: String, type: Int) -> Unit)? = null
-        var notifyNotification: (() -> Unit)? = null
+        private var INSTANCE: TransmitterModel? = null
+
+        @Synchronized
+        fun instance(entity: TransmitterEntity): TransmitterModel {
+            if (INSTANCE == null) {
+                INSTANCE = TransmitterModel(entity)
+            }
+            return INSTANCE!!
+        }
     }
 
+    var faultType = 0 // 1.异常状态，可恢复 2.需要更换
+    var glucose: Float? = null
     private val typeHyperAlert = 1
     private val typeHypoAlert = 2
     private val typeUrgentAlert = 3
+    private var newestIndex: Int = 0
+    var isSensorExpired: Boolean = false
+    private var rawRangeStartIndex: Int = 0
+    private var briefRangeStartIndex: Int = 0
     private var lastHyperAlertTime: Long? = null
     private var lastHypoAlertTime: Long? = null
     private var lastUrgentAlertTime: Long? = null
-
-    enum class GlucoseLevel { LOW, NORMAL, HIGH }
-    enum class GlucoseTrend { SUPER_FAST_DOWN, FAST_DOWN, DOWN, STEADY, UP, FAST_UP, SUPER_FAST_UP }
-
+    var latestHistory: AidexXHistoryEntity? = null
+    val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<CgmHistoryEntity>()
     private val tempRawList = mutableListOf<CgmHistoryEntity>()
-    private var briefRangeStartIndex: Int = 0
-    private var newestIndex: Int = 0
-    private var rawRangeStartIndex: Int = 0
-    var isHistoryValid: Boolean = false
-    var isMalfunction: Boolean = false
-    var faultType = 0 // 1.异常状态，可恢复 2.需要更换
-    var latestHistory: AidexXHistoryEntity? = null
-    val controller = AidexXController()
-    val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
-    var sensorStartTime: Date? = null
-    var targetSensorIndex = 0
-    var targetEventIndex = 0
-    var nextEventIndex = 0
-    var nextFullEventIndex = 0
-    var latestAdTime = 0L
-    var lastHistoryTime: Date? = null
-    var minutesAgo: Int? = null
-        private set
-        get() {
-            if (lastHistoryTime == null) {
-                field = null
-            } else {
-                field = (TimeUtils.currentTimeMillis - lastHistoryTime!!.time).millisToMinutes()
-            }
-            return field
-        }
-    var state: Int? = null
-        private set
-    var primary: Int = 2  //主从设备字段
-        private set
-    var isSensorExpired: Boolean = false
-    var glucose: Float? = null
-    var glucoseLevel: GlucoseLevel? = null
-    var glucoseTrend: GlucoseTrend? = null
+    override var controller: BleController = AidexXController()
+
+    fun getController(): AidexXController {
+        return controller as AidexXController
+    }
 
     init {
         controller.mac = entity.deviceMac
@@ -105,27 +87,34 @@ class TransmitterModel(val entity: TransmitterEntity) {
         controller.key = entity.encryptionKey
         controller.setMessageCallback { operation, success, data ->
             LogUtil.eAiDEX(
-                    "operation $operation , success $success message ${
-                        StringUtils.binaryToHexString(data)
-                    }"
+                "operation $operation , success $success message ${
+                    StringUtils.binaryToHexString(data)
+                }"
             )
             if (operation in 1..3) {
-                messageCallBack?.invoke(BleMessage(operation, success, data))
+                messageCallBack?.invoke(
+                    BleMessage(
+                        operation,
+                        success,
+                        data
+                    )
+                )
             } else {
                 val result = ByteUtils.subByte(data, 1, data.size - 1);
-                messageCallBack?.invoke(BleMessage(operation, success, result))
+                messageCallBack?.invoke(
+                    BleMessage(
+                        operation,
+                        success,
+                        result
+                    )
+                )
             }
         }
-    }
-
-    fun deviceId(): String? {
-        return entity.id
     }
 
     //更新传感器状态
     fun updateSensorState(insetError: Boolean) {
         entity.needReplace = insetError
-        error4TimesWithin2Hours = insetError
         ObjectBox.runAsync({ transmitterBox?.put(entity) })
     }
 
@@ -207,7 +196,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
             }
         } else {
             if (entity.sensorStartTime != null
-                    && TimeUtils.currentTimeMillis.millisToSeconds() - entity.sensorStartTime!!.time.millisToSeconds() > 15 * TimeUtils.oneDaySeconds
+                && TimeUtils.currentTimeMillis.millisToSeconds() - entity.sensorStartTime!!.time.millisToSeconds() > 15 * TimeUtils.oneDaySeconds
             ) {
                 return true
             }
@@ -225,22 +214,22 @@ class TransmitterModel(val entity: TransmitterEntity) {
                 val map = hashMapOf("id" to it)
                 suspend {
                     DeviceApi.deviceUnregister(map,
-                            success = {
-                                controller.sn = null
-                                controller.mac = null
-                                controller.id = null
-                                BleController.stopScan() //停止扫描
-                                ObjectBox.runAsync({
-                                    transmitterBox!!.removeAll()
-                                })
-                                TransmitterManager.instance().removeTransmitterFromDb()
-                                TransmitterManager.instance().removeDefault()
+                        success = {
+                            controller.sn = null
+                            controller.mac = null
+                            controller.id = null
+                            BleController.stopScan() //停止扫描
+                            ObjectBox.runAsync({
+                                transmitterBox!!.removeAll()
+                            })
+                            TransmitterManager.instance().removeAllFromDb()
+                            TransmitterManager.instance().removeDefault()
 //                    LiveEventBus.get<String>(EventKey.EVENT_UNPAIR_SUCCESS)
 //                        .post("unPairSuccess") //解配成功
-                            },
-                            failure = {
-                                ToastUtil.showShort(it)
-                            })
+                        },
+                        failure = {
+                            ToastUtil.showShort(it)
+                        })
                 }
             }
         }, onError = {
@@ -248,31 +237,22 @@ class TransmitterModel(val entity: TransmitterEntity) {
         })
     }
 
-
-    /***
-     *
-     * 是否为主设备
-     *
-     * **/
-    fun isPrimary(): Boolean {
-        return primary == devicePrimary
-    }
-
-    fun getHistoryDate(timeOffset: Int): Date {
+    private fun getHistoryDate(timeOffset: Int): Date {
         val timeLong = entity.sensorStartTime?.time?.plus(timeOffset * 60 * 1000)
         return Date(timeLong!!)
     }
 
+    override
     fun handleAdvertisement(data: ByteArray) {
         if (entity.sensorStartTime == null) {
-            controller.startTime
+            getController().startTime
             return
         }
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
         isSensorExpired =
-                (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
+            (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
         isMalfunction =
-                broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
+            broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
         if (broadcast.status == History.SENSOR_MALFUNCTION) {
             faultType = 1
         } else if (broadcast.status == History.GENERAL_DEVICE_FAULT) {
@@ -285,7 +265,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
             return
         }
         isHistoryValid =
-                latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
+            latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
         val now = TimeUtils.currentTimeMillis
         latestAdTime = now
         if (UserInfoManager.shareUserInfo != null) {
@@ -307,7 +287,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
             val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
             if (broadcastContainsNext) {
                 val historiesFromBroadcast =
-                        getHistoriesFromBroadcast(nextEventIndex, adHistories)
+                    getHistoriesFromBroadcast(nextEventIndex, adHistories)
                 saveBriefHistory(historiesFromBroadcast.reversed())
             } else {
                 latestHistory?.let {
@@ -316,9 +296,9 @@ class TransmitterModel(val entity: TransmitterEntity) {
                             if (nextEventIndex < briefRangeStartIndex) {
                                 nextEventIndex = briefRangeStartIndex
                             }
-                            controller.getHistories(nextEventIndex)
+                            getController().getHistories(nextEventIndex)
                         } else {
-                            controller.historyRange
+                            getController().historyRange
                         }
                     }
                 }
@@ -327,15 +307,15 @@ class TransmitterModel(val entity: TransmitterEntity) {
         }
         val numGetHistory = 40
         if (targetEventIndex >= nextFullEventIndex + numGetHistory
-                || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
+            || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
         ) {
             if (newestIndex == targetEventIndex) {
                 if (nextFullEventIndex < rawRangeStartIndex) {
                     nextFullEventIndex = rawRangeStartIndex
                 }
-                controller.getRawHistories(nextFullEventIndex)
+                getController().getRawHistories(nextFullEventIndex)
             } else {
-                controller.historyRange
+                getController().historyRange
             }
         }
     }
@@ -345,7 +325,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
     }
 
     private fun getHistoriesFromBroadcast(
-            next: Int, list: MutableList<AidexXHistoryEntity>
+        next: Int, list: MutableList<AidexXHistoryEntity>
     ): List<AidexXHistoryEntity> {
         var startIndex = 0
         for ((index, history) in list.withIndex()) {
@@ -391,16 +371,16 @@ class TransmitterModel(val entity: TransmitterEntity) {
             val now = TimeUtils.currentTimeMillis
             for (history in histories) {
                 val oldHistory = cgmHistoryBox!!.query().equal(
-                        CgmHistoryEntity_.sensorIndex,
-                        entity.sensorStartTime!!.time.toInt()
+                    CgmHistoryEntity_.sensorIndex,
+                    entity.sensorStartTime!!.time.toInt()
                 ).equal(CgmHistoryEntity_.eventIndex, history.timeOffset).equal(
-                        CgmHistoryEntity_.deviceId,
-                        deviceId,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    CgmHistoryEntity_.deviceId,
+                    deviceId,
+                    QueryBuilder.StringOrder.CASE_INSENSITIVE
                 ).equal(
-                        CgmHistoryEntity_.authorizationId,
-                        userId,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    CgmHistoryEntity_.authorizationId,
+                    userId,
+                    QueryBuilder.StringOrder.CASE_INSENSITIVE
                 ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
 
                 if (oldHistory != null) {
@@ -426,12 +406,12 @@ class TransmitterModel(val entity: TransmitterEntity) {
                     }
                 }
                 historyEntity.eventData =
-                        com.microtech.aidexx.widget.dialog.x.util.roundOffDecimal(history.glucose / 18f)
+                    com.microtech.aidexx.widget.dialog.x.util.roundOffDecimal(history.glucose / 18f)
                 historyEntity.eventIndex = history.timeOffset
                 historyEntity.time = getHistoryDate(history.timeOffset)
                 historyEntity.deviceTime = getHistoryDate(history.timeOffset)
                 historyEntity.sensorIndex =
-                        (entity.sensorStartTime?.time!!).toInt()
+                    (entity.sensorStartTime?.time!!).toInt()
                 if (history.timeOffset <= 60) {
                     historyEntity.eventWarning = -1
                 }
@@ -445,48 +425,48 @@ class TransmitterModel(val entity: TransmitterEntity) {
                                 when {
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
                                         if (MmkvManager.isHyperAlertEnable()) if (lastHyperAlertTime == null) {
-                                            lastHyperAlertTime = getLastAlert(
-                                                    deviceId, userId, typeHyperAlert
+                                            lastHyperAlertTime = getLastAlertTime(
+                                                deviceId, userId, typeHyperAlert
                                             )
                                         }
                                         if (lastHyperAlertTime == null || historyEntity.deviceTime.time - lastHyperAlertTime!!
-                                                > AlertManager.calculateFrequency(MmkvManager.getAlertFrequency())
+                                            > AlertManager.calculateFrequency(MmkvManager.getAlertFrequency())
                                         ) {
                                             historyEntity.updateEventWarning()
-                                            TransmitterModel.alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
+                                            alert?.invoke(
+                                                "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
                                             )
                                             lastHyperAlertTime = historyEntity.deviceTime.time
                                         }
                                     }
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPO -> {
                                         if (MmkvManager.isHypoAlertEnable()) if (lastHypoAlertTime == null) {
-                                            lastHypoAlertTime = getLastAlert(
-                                                    deviceId, userId, typeHypoAlert
+                                            lastHypoAlertTime = getLastAlertTime(
+                                                deviceId, userId, typeHypoAlert
                                             )
                                         }
                                         if (lastHypoAlertTime == null || historyEntity.deviceTime.time - lastHypoAlertTime!!
-                                                > AlertManager.calculateFrequency(MmkvManager.getAlertFrequency())
+                                            > AlertManager.calculateFrequency(MmkvManager.getAlertFrequency())
                                         ) {
                                             historyEntity.updateEventWarning()
-                                            TransmitterModel.alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
+                                            alert?.invoke(
+                                                "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
                                             )
                                             lastHypoAlertTime = historyEntity.deviceTime.time
                                         }
                                     }
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_URGENT_HYPO -> {
                                         if (MmkvManager.isHypoAlertEnable()) if (lastUrgentAlertTime == null) {
-                                            lastUrgentAlertTime = getLastAlert(
-                                                    deviceId, userId, typeUrgentAlert
+                                            lastUrgentAlertTime = getLastAlertTime(
+                                                deviceId, userId, typeUrgentAlert
                                             )
                                         }
                                         if (lastUrgentAlertTime == null || historyEntity.deviceTime.time - lastUrgentAlertTime!!
-                                                > AlertManager.calculateFrequency(MmkvManager.getUrgentAlertFrequency())
+                                            > AlertManager.calculateFrequency(MmkvManager.getUrgentAlertFrequency())
                                         ) {
                                             historyEntity.updateEventWarning()
-                                            TransmitterModel.alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
+                                            alert?.invoke(
+                                                "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
                                             )
                                             lastUrgentAlertTime = historyEntity.deviceTime.time
                                         }
@@ -497,8 +477,8 @@ class TransmitterModel(val entity: TransmitterEntity) {
                     }
                     History.HISTORY_SENSOR_ERROR -> {
                         if (now - historyEntity.deviceTime.time < 1000 * 60 * 30 && entity.needReplace) {
-                            TransmitterModel.alert?.invoke(
-                                    "$time", AlertType.MESSAGE_TYPE_SENRORERROR
+                            alert?.invoke(
+                                "$time", AlertType.MESSAGE_TYPE_SENRORERROR
                             )
                         }
                     }
@@ -532,12 +512,12 @@ class TransmitterModel(val entity: TransmitterEntity) {
             if (nextEventIndex < briefRangeStartIndex) {
                 nextEventIndex = briefRangeStartIndex
             }
-            controller.getHistories(nextEventIndex)
+            getController().getHistories(nextEventIndex)
         } else if (targetEventIndex >= nextFullEventIndex) {
             if (nextFullEventIndex < rawRangeStartIndex) {
                 nextFullEventIndex = rawRangeStartIndex
             }
-            controller.getRawHistories(nextFullEventIndex)
+            getController().getRawHistories(nextFullEventIndex)
         } else {
             controller.disconnect()
         }
@@ -545,29 +525,29 @@ class TransmitterModel(val entity: TransmitterEntity) {
 
     private fun continueRawFetch() {
         if (targetEventIndex > nextFullEventIndex) {
-            controller.getRawHistories(nextFullEventIndex)
+            getController().getRawHistories(nextFullEventIndex)
         } else {
             controller.disconnect()
         }
     }
 
-    private fun getLastAlert(deviceId: String, userId: String, type: Int): Long? {
+    private fun getLastAlertTime(deviceId: String, userId: String, type: Int): Long? {
         val build = cgmHistoryBox!!.query().equal(
-                CgmHistoryEntity_.sensorIndex, entity.sensorIndex
+            CgmHistoryEntity_.sensorIndex, entity.sensorIndex
         ).equal(
-                CgmHistoryEntity_.deviceId, deviceId, QueryBuilder.StringOrder.CASE_INSENSITIVE
+            CgmHistoryEntity_.deviceId, deviceId, QueryBuilder.StringOrder.CASE_INSENSITIVE
         ).equal(
-                CgmHistoryEntity_.authorizationId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
+            CgmHistoryEntity_.authorizationId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
         )
         when (type) {
             History.HISTORY_LOCAL_HYPER -> build.equal(
-                    CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
+                CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
             )
             History.HISTORY_LOCAL_HYPO -> build.equal(
-                    CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
+                CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
             )
             History.HISTORY_LOCAL_URGENT_HYPO -> build.equal(
-                    CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_URGENT_HYPO
+                CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_URGENT_HYPO
             )
         }
         val lastAlert = build.orderDesc(CgmHistoryEntity_.idx).build().findFirst()
@@ -584,16 +564,16 @@ class TransmitterModel(val entity: TransmitterEntity) {
         ObjectBox.runAsync({
             for (rawHistory in rawHistories) {
                 val existHistory = cgmHistoryBox!!.query()
-                        .equal(CgmHistoryEntity_.eventIndex, rawHistory.timeOffset)
-                        .equal(
-                                CgmHistoryEntity_.deviceId,
-                                deviceId,
-                                QueryBuilder.StringOrder.CASE_INSENSITIVE
-                        ).equal(
-                                CgmHistoryEntity_.authorizationId,
-                                userId,
-                                QueryBuilder.StringOrder.CASE_INSENSITIVE
-                        ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
+                    .equal(CgmHistoryEntity_.eventIndex, rawHistory.timeOffset)
+                    .equal(
+                        CgmHistoryEntity_.deviceId,
+                        deviceId,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    ).equal(
+                        CgmHistoryEntity_.authorizationId,
+                        userId,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
                 val historyEntity = CgmHistoryEntity()
 
                 historyEntity.eventIndex = rawHistory.timeOffset
@@ -650,7 +630,7 @@ class TransmitterModel(val entity: TransmitterEntity) {
                     continue@loop
                 }
                 val i =
-                        ((dateTime.time - history.deviceTime.time).toDouble() / 1000 / 300f).roundToInt()
+                    ((dateTime.time - history.deviceTime.time).toDouble() / 1000 / 300f).roundToInt()
                 val glu = history.eventData ?: 0f
                 if (i < 0) {
                     continue@loop
@@ -668,13 +648,13 @@ class TransmitterModel(val entity: TransmitterEntity) {
             val roc = if (isEventCalibration) null else {
                 if (glucoseArray.any { it < ThresholdManager.hypo || it > ThresholdManager.hyper }) null else {
                     val fn = (1 - exp(
-                            (abs(glucoseArray[0] + glucoseArray[2] - 2 * glucoseArray[1]) + abs(
-                                    glucoseArray[1] + glucoseArray[3] - 2 * glucoseArray[2]
-                            ) + abs(glucoseArray[2] + glucoseArray[4] - 2 * glucoseArray[3])) / 5 - 1
+                        (abs(glucoseArray[0] + glucoseArray[2] - 2 * glucoseArray[1]) + abs(
+                            glucoseArray[1] + glucoseArray[3] - 2 * glucoseArray[2]
+                        ) + abs(glucoseArray[2] + glucoseArray[4] - 2 * glucoseArray[3])) / 5 - 1
                     )) * 1.5
                     if (fn > 0) {
                         val trend =
-                                (fn * (glucoseArray[0] - glucoseArray[1]) / 5 + fn * (glucoseArray[0] - glucoseArray[2]) / 10 + (glucoseArray[0] - glucoseArray[3]) / 15) / (1 + 2 * fn);
+                            (fn * (glucoseArray[0] - glucoseArray[1]) / 5 + fn * (glucoseArray[0] - glucoseArray[2]) / 10 + (glucoseArray[0] - glucoseArray[3]) / 15) / (1 + 2 * fn);
                         if ((trend > 0.06 && (glucoseArray[0] - glucoseArray[1]) / 5 <= 0) || (trend < -0.06 && (glucoseArray[0] - glucoseArray[1]) / 5 >= 0)) {
                             null
                         } else trend
@@ -704,7 +684,8 @@ class TransmitterModel(val entity: TransmitterEntity) {
                         if (MmkvManager.isFastDownAlertEnable()) {
                             val lastFastDown: Long = MmkvManager.getLastFastDownAlertTime()
                             if (lastFastDown != 0L
-                                    && (dateTime.time - lastFastDown).millisToSeconds() < frequency) {
+                                && (dateTime.time - lastFastDown).millisToSeconds() < frequency
+                            ) {
                                 return@runAsync
                             }
                             alert?.invoke("$time", AlertType.MESSAGE_TYPE_GLUCOSEDOWN)
@@ -715,7 +696,8 @@ class TransmitterModel(val entity: TransmitterEntity) {
                         if (MmkvManager.isFastUpAlertEnable()) {
                             val lastFastUp: Long = MmkvManager.getLastFastUpAlertTime()
                             if (lastFastUp != 0L
-                                    && (dateTime.time - lastFastUp).millisToSeconds() < frequency) {
+                                && (dateTime.time - lastFastUp).millisToSeconds() < frequency
+                            ) {
                                 return@runAsync
                             }
                             alert?.invoke("$time", AlertType.MESSAGE_TYPE_GLUCOSEUP)

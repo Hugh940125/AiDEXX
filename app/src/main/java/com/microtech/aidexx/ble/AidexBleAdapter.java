@@ -27,8 +27,9 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.microtech.aidexx.AidexxApp;
+import com.microtech.aidexx.ble.device.BluetoothDeviceStore;
 import com.microtech.aidexx.ble.device.TransmitterManager;
-import com.microtech.aidexx.ble.device.TransmitterModel;
+import com.microtech.aidexx.ble.device.model.DeviceModel;
 import com.microtech.aidexx.ble.device.work.StartScanWorker;
 import com.microtech.aidexx.ble.device.work.StopScanWorker;
 import com.microtech.aidexx.utils.LogUtil;
@@ -371,7 +372,7 @@ public class AidexBleAdapter extends BleAdapter {
             bluetoothLeScanner.stopScan(scanCallback);
         }
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
-        TransmitterModel aDefault = TransmitterManager.Companion.instance().getDefault();
+        DeviceModel aDefault = TransmitterManager.Companion.instance().getDefault();
         if (aDefault != null && aDefault.getEntity().getAccessId() != null && !isOnConnectState) {
             OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(StartScanWorker.class).setInitialDelay(2, TimeUnit.SECONDS).addTag(String.valueOf(START_SCAN)).build(); //2S后开启扫描
             WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker);

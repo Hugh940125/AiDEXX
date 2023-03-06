@@ -1,4 +1,4 @@
-package com.microtech.aidexx.utils
+package com.microtech.aidexx.utils.permission
 
 import android.app.Activity
 import android.content.Intent
@@ -9,25 +9,52 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.microtech.aidexx.R
-import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
+import java.util.concurrent.atomic.AtomicInteger
 
 
 object PermissionsUtil {
     private lateinit var permissions: Array<String>
-    private val mRequestCode = 10000 //权限请求码
-    private var onAllow: (() -> Unit)? = null
-    private var onDeny: (() -> Unit)? = null
+    private var mRequestCode = AtomicInteger(100000) //权限请求码
     var mPermissionDialog: AlertDialog? = null
+    private val callBackMap = mutableMapOf<Int, (() -> Unit)?>()
 
     fun checkPermissions(
         context: Activity,
         permissions: Array<String>,
-        allow: (() -> Unit)? = null,
-        deny: (() -> Unit)? = null
+        needRequest: (() -> Unit)? = null
     ) {
-        onAllow = allow
-        onDeny = deny
+        val mPermissionList: MutableList<String> = ArrayList()
+        //逐个判断你要的权限是否已经通过
+        for (i in permissions.indices) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    permissions[i]
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                mPermissionList.add(permissions[i]) //添加还未授予的权限
+            }
+        }
+        if (mPermissionList.size > 0) { //有权限没有通过，需要申请
+            needRequest?.invoke()
+        }
+    }
+
+    fun requestPermissions(
+        context: Activity,
+        permissions: Array<String>,
+        allow: (() -> Unit)? = null
+    ) {
+        val andIncrement = mRequestCode.getAndIncrement()
+        callBackMap[andIncrement] = allow
+        ActivityCompat.requestPermissions(context, permissions, andIncrement)
+    }
+
+    fun checkAndRequestPermissions(
+        context: Activity,
+        permissions: Array<String>,
+        allow: (() -> Unit)? = null,
+    ) {
         //创建一个mPermissionList，逐个判断哪些权限未授予，未授予的权限存储到mPerrrmissionList中
         val mPermissionList: MutableList<String> = ArrayList()
         //逐个判断你要的权限是否已经通过
@@ -42,7 +69,9 @@ object PermissionsUtil {
         }
         //申请权限
         if (mPermissionList.size > 0) { //有权限没有通过，需要申请
-            ActivityCompat.requestPermissions(context, permissions, mRequestCode)
+            val andIncrement = mRequestCode.getAndIncrement()
+            callBackMap[andIncrement] = allow
+            ActivityCompat.requestPermissions(context, permissions, andIncrement)
         } else {
             //说明权限都已经通过
             allow?.invoke()
@@ -61,25 +90,22 @@ object PermissionsUtil {
         grantResults: IntArray,
         showSystemSetting: Boolean = true
     ) {
-        this.permissions = permissions
-        var hasPermissionDismiss = false //有权限没有通过
-        if (mRequestCode == requestCode) {
+        PermissionsUtil.permissions = permissions
+        val missedPermissions = mutableListOf<String>()
+        if (callBackMap.containsKey(requestCode)) {
             for (i in grantResults.indices) {
                 if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-                    hasPermissionDismiss = true
+                    missedPermissions.add(permissions[i])
                 }
             }
             //如果有权限没有被允许
-            if (hasPermissionDismiss) {
+            if (missedPermissions.isNotEmpty() && context.shouldShowRequestPermissionRationale(missedPermissions[0])) {
                 //跳转到系统设置权限页面，或者直接关闭页面，不让他继续访问
                 if (showSystemSetting) {
                     showSystemPermissionsSettingDialog(context)
-                } else {
-                    onDeny?.invoke()
                 }
             } else {
-                //全部权限通过，可以进行下一步操作。。。
-                onAllow?.invoke()
+                callBackMap[requestCode]?.invoke()
             }
         }
     }
@@ -113,7 +139,6 @@ object PermissionsUtil {
                     context.getString(R.string.btn_cancel)
                 ) { _, _ ->
                     cancelPermissionDialog()
-                    onDeny?.invoke()
                 }.create()
         }
         mPermissionDialog?.show()

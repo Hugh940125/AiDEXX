@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ble;
+package com.microtech.aidexx.ble.device;
 
 import android.bluetooth.BluetoothDevice;
 

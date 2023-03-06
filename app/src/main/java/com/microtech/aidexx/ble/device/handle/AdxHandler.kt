@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ble.device.handle
 
 import com.microtech.aidexx.ble.device.*
+import com.microtech.aidexx.ble.device.model.TransmitterModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity

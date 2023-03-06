@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,9 +12,10 @@ import androidx.core.content.ContextCompat
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
-import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.LogUtil
 
 /**
  *@date 2023/2/15
@@ -33,11 +32,15 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private var param1: String? = null
     private var param2: String? = null
     private var mainActivity: MainActivity? = null
+    private var lastPageTag: String? = null
+    private val needPair = "needPair"
+    private val glucosePanel = "glucosePanel"
+    private val newOrUsedSensor = "newOrUsedSensor"
+    private val warmingUp = "warmingUp"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
-        Log.e("OnCreate", "Home")
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -47,17 +50,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
-        Log.e("onResume", this::class.java.toString())
     }
 
     override fun onPause() {
         super.onPause()
-        Log.e("onPause", this::class.java.toString())
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("onDestroy", this::class.java.toString())
     }
 
     override fun onCreateView(
@@ -70,8 +70,45 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun initView() {
+        judgeState()
         binding.ivScale.setOnClickListener {
             orientation(switchOrientation)
+        }
+
+    }
+
+    private fun judgeState() {
+
+    }
+
+    private fun replaceFragment(pageTag: String) {
+        if (lastPageTag == glucosePanel && pageTag != glucosePanel) {
+            binding.homeRoot.setBackgroundResource(0)
+        }
+        if (pageTag != needPair
+            && (TransmitterManager.instance().getDefault() == null
+                    || TransmitterManager.instance().getDefault()?.isPaired() == false)
+        ) {
+            replaceFragment(needPair)
+            return
+        }
+        val fragment = when (pageTag) {
+            needPair -> NeedPairFragment.newInstance()
+            glucosePanel -> GlucosePanelFragment.newInstance()
+            warmingUp -> WarmingUpFragment.newInstance()
+            newOrUsedSensor -> NewOrUsedSensorFragment.newInstance()
+            else -> return
+        }
+        if (pageTag == lastPageTag) return
+        if (childFragmentManager.findFragmentByTag(tag) == null) {
+            lastPageTag = pageTag
+            try {
+                val transaction = childFragmentManager.beginTransaction()
+                transaction.replace(R.id.fcv_panel, fragment, pageTag)
+                transaction.commitAllowingStateLoss()
+            } catch (e: Exception) {
+                LogUtil.eAiDEX("Transaction commitAllowingStateLoss error")
+            }
         }
     }
 

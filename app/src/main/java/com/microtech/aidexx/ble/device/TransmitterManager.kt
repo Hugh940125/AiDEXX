@@ -3,6 +3,8 @@ package com.microtech.aidexx.ble.device
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity_
+import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.ble.device.model.TransmitterModel
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
@@ -38,7 +40,7 @@ class TransmitterManager private constructor() {
         }
     }
 
-    fun removeTransmitterFromDb() {
+    fun removeAllFromDb() {
         ObjectBox.runAsync({
             transmitterBox!!.removeAll()
         }, onSuccess = {
@@ -51,17 +53,17 @@ class TransmitterManager private constructor() {
             val entity = TransmitterEntity(sn)
             entity.hyperThreshold = ThresholdManager.hyper
             entity.hypoThreshold = ThresholdManager.hypo
-            default = TransmitterModel(entity)
+            default = TransmitterModel.instance(entity)
         }
         return default!!
     }
 
-    fun getDefault(): TransmitterModel? {
+    fun getDefault(): DeviceModel? {
         if (default == null) {
             AidexxApp.mainScope.launch(Dispatchers.IO) {
                 val loadTransmitterFromDb = loadTransmitterFromDb()
                 loadTransmitterFromDb?.let {
-                    set(TransmitterModel(it))
+                    set(TransmitterModel.instance(it))
                 }
             }
         }

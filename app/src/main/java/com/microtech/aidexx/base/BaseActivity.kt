@@ -24,6 +24,7 @@ import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.customerservice.CustomerServiceDialog
@@ -42,6 +43,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LogUtil.eAiDEX("onCreate ----> ${this::class.java.name}")
         setTheme(ThemeManager.theme.id)
         binding = getViewBinding()
         mainScope = MainScope()
@@ -70,6 +72,12 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onResume() {
         super.onResume()
+        LogUtil.eAiDEX("onResume ----> ${this::class.java.name}")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        LogUtil.eAiDEX("onPause ----> ${this::class.java.name}")
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -102,6 +110,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onDestroy() {
         super.onDestroy()
+        LogUtil.eAiDEX("onDestroy ----> ${this::class.java.name}")
         mainScope.cancel()
     }
 

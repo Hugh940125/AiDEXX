@@ -13,10 +13,10 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
-import com.microtech.aidexx.utils.PermissionsUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.permission.PermissionGroups
+import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
 
@@ -25,7 +25,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     private lateinit var mHandler: Handler
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        android.util.Log.e("OnCreate", "MAIN")
         setContentView(binding.root)
         mHandler = Handler(Looper.getMainLooper())
         initSDKs()
@@ -35,18 +34,20 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     }
 
     private fun requestPermission() {
-        mHandler.postDelayed({
-            if (!this.isFinishing) {
-                EnquireManager.instance()
-                    .showEnquireOrNot(
-                        this,
-                        getString(R.string.need_storage),
-                        getString(R.string.storage_use_for), {
-                            PermissionsUtil.checkPermissions(this, PermissionGroups.Storage)
-                        }, flag = null
-                    )
-            }
-        }, TimeUtils.oneMinuteMillis)
+        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
+            mHandler.postDelayed({
+                if (!this.isFinishing) {
+                    EnquireManager.instance()
+                        .showEnquireOrNot(
+                            this,
+                            getString(R.string.need_storage),
+                            getString(R.string.storage_use_for), {
+                                PermissionsUtil.checkPermissions(this, PermissionGroups.Storage)
+                            }, flag = null
+                        )
+                }
+            }, TimeUtils.oneMinuteMillis)
+        }
     }
 
     private fun initView() {

@@ -18,7 +18,6 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.e("OnCreate","history")
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
@@ -27,17 +26,14 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
 
     override fun onResume() {
         super.onResume()
-        Log.e("onResume",this::class.java.toString())
     }
 
     override fun onPause() {
         super.onPause()
-        Log.e("onPause",this::class.java.toString())
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("onDestroy",this::class.java.toString())
     }
 
     override fun onCreateView(

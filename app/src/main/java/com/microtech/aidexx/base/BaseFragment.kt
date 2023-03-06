@@ -6,6 +6,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
+import com.microtech.aidexx.utils.LogUtil
 import java.lang.reflect.ParameterizedType
 
 abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment() {
@@ -14,7 +15,23 @@ abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LogUtil.eAiDEX("onCreate ----> ${this::class.java.name}")
         initViewModel()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        LogUtil.eAiDEX("onResume ----> ${this::class.java.name}")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        LogUtil.eAiDEX("onPause ----> ${this::class.java.name}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LogUtil.eAiDEX("onDestroy ----> ${this::class.java.name}")
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

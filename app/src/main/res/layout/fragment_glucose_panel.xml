@@ -20,8 +20,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/guide_line"
         app:layout_constraintBottom_toBottomOf="@id/guide_line"
-        android:layout_width="170dp"
-        android:layout_height="170dp">
+        app:layout_constraintDimensionRatio="1:1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintVertical_weight="1">
 
         <View
             android:background="@drawable/bg_panel_blank"
@@ -41,7 +45,7 @@
             android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="--"
+            android:text="@string/data_place_holder"
             android:textSize="35sp"/>
 
         <TextView

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:layout_constraintVertical_weight="1"
+    android:id="@+id/layout_panel"
+    app:layout_constraintTop_toBottomOf="@id/layout_actionbar"
+    app:layout_constraintBottom_toTopOf="@id/layout_chart"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/guide_line"
+        app:layout_constraintGuide_percent="0.5"/>
+
+    <LinearLayout
+        android:id="@+id/ll_panel"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/bg_panel_blank"
+        android:layout_marginStart="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/guide_line"
+        app:layout_constraintBottom_toBottomOf="@id/guide_line"
+        android:layout_width="0dp"
+        app:layout_constraintDimensionRatio="1:1"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp">
+
+        <TextView
+            android:textColor="@color/black_33"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--"
+            android:textSize="35sp"/>
+
+        <TextView
+            android:id="@+id/tv_unit"
+            android:textColor="@color/black_33"
+            android:textSize="14sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="mmol/L"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:gravity="end"
+        android:layout_marginEnd="20dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="@id/guide_line"
+        app:layout_constraintBottom_toBottomOf="@id/guide_line"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ll_panel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:maxEms="10"
+            android:textAlignment="viewEnd"
+            android:id="@+id/txt_sn"
+            android:layout_gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="@string/tap_to_pair" />
+
+        <TextView
+            android:background="@drawable/bg_bt_pair"
+            android:textColor="@color/green_65"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:paddingStart="45dp"
+            android:paddingEnd="45dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:id="@+id/bt_confirm"
+            android:text="@string/Pair" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

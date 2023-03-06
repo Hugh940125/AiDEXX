@@ -16,7 +16,7 @@ import com.microtech.aidexx.common.compliance.EnquireFlags
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.ui.main.home.customerservice.CustomServiceActivity
 import com.microtech.aidexx.utils.DensityUtils
-import com.microtech.aidexx.utils.PermissionsUtil
+import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 
