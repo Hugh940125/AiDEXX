@@ -19,7 +19,7 @@ class AidexxApp : Application() {
         instance = this
         mainScope = MainScope()
         //全局捕捉错误
-        CrashHandler.instance?.init(this)
+        CrashHandler.instance?.init()
         initSdks()
     }
 

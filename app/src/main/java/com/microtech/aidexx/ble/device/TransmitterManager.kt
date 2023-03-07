@@ -22,7 +22,7 @@ class TransmitterManager private constructor() {
     var onLoadHistoriesListener: ((List<CgmHistoryEntity>) -> Unit)? = null
     var onUpdateHistoriesListener: ((List<CgmHistoryEntity>) -> Unit)? = null
 
-    suspend fun loadTransmitterFromDb(sn: String? = null): TransmitterEntity? {
+    suspend fun loadTransmitter(sn: String? = null): TransmitterEntity? {
         return ObjectBox.store.awaitCallInTx {
             var findFirst: TransmitterEntity? = null
             try {
@@ -61,7 +61,7 @@ class TransmitterManager private constructor() {
     fun getDefault(): DeviceModel? {
         if (default == null) {
             AidexxApp.mainScope.launch(Dispatchers.IO) {
-                val loadTransmitterFromDb = loadTransmitterFromDb()
+                val loadTransmitterFromDb = loadTransmitter()
                 loadTransmitterFromDb?.let {
                     set(TransmitterModel.instance(it))
                 }
@@ -76,7 +76,7 @@ class TransmitterManager private constructor() {
 
     fun set(model: TransmitterModel) {
         default = model
-        model.controller.register()
+        model.mController.register()
         onTransmitterLoaded?.invoke(model)
     }
 

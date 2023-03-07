@@ -113,6 +113,14 @@ public class AidexBleAdapter extends BleAdapter {
         super();
     }
 
+    public void onScanBack(ScanResult result) {
+        byte[] scanRecord = result.getScanRecord().getBytes();
+        bluetoothDeviceStore.add(result.getDevice());
+        String address = result.getDevice().getAddress();
+        int rssi = result.getRssi() + 130;
+        onScanRespond(address, rssi, scanRecord);
+        onAdvertise(address, rssi, scanRecord);
+    }
 
     final android.bluetooth.le.ScanCallback scanCallback = new android.bluetooth.le.ScanCallback() {
         @Override

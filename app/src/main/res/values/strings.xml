@@ -592,4 +592,8 @@
     <string name="txt_slogan">日夜常守护，动静皆泰然</string>
     <string name="data_place_holder">--</string>
     <string name="sensor_confirm">自动确认中</string>
+    <string name="transmitter">发射器</string>
+    <string name="my_trans">我的发射器</string>
+    <string name="pls_select_trans">请选择发射器</string>
+    <string name="other_trans">其他发射器</string>
 </resources>

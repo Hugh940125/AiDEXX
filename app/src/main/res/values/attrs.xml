@@ -73,7 +73,7 @@
     <attr name="colorGlucoseNormal" format="reference" />
     <attr name="colorGlucoseLow" format="reference" />
     <attr name="colorbtnNormal" format="reference" />
-    <attr name="colorbtnPressed" format="reference" />
+    <attr name="colorBtnPressed" format="reference" />
     <attr name="colorFormTitle" format="color" />
     <attr name="colorHint" format="color" />
 
@@ -283,5 +283,11 @@
     <declare-styleable name="ProgressView">
         <attr name="progressStrokeWidth" format="dimension"/>
         <attr name="progressStrokeColor" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="SwipeMenuLayout">
+        <attr name="swipeEnable" format="boolean"/>
+        <attr name="ios" format="boolean"/>
+        <attr name="leftSwipe" format="boolean"/>
     </declare-styleable>
 </resources>

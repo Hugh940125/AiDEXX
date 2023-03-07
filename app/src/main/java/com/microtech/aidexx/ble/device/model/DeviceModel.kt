@@ -13,7 +13,7 @@ import java.util.*
  *@desc
  */
 abstract class DeviceModel(val entity: TransmitterEntity) {
-    open lateinit var controller: BleController
+    open lateinit var mController: BleController
     var messageCallBack: ((msg: BleMessage) -> Unit)? = null
     var isHistoryValid: Boolean = false
     var isMalfunction: Boolean = false
@@ -50,7 +50,9 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun handleAdvertisement(data: ByteArray)
 
+    abstract fun getController():BleController
+
     fun disconnect() {
-        TODO("Not yet implemented")
+        mController.disconnect()
     }
 }

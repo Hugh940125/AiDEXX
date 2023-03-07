@@ -10,9 +10,9 @@ import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import com.microtech.aidexx.db.entity.CgmHistoryEntity_
-import com.microtech.aidexx.ui.alert.AlertManager
-import com.microtech.aidexx.ui.alert.AlertManager.Companion.calculateFrequency
-import com.microtech.aidexx.ui.alert.AlertType
+import com.microtech.aidexx.ui.setting.alert.AlertManager
+import com.microtech.aidexx.ui.setting.alert.AlertManager.Companion.calculateFrequency
+import com.microtech.aidexx.ui.setting.alert.AlertType
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -70,22 +70,22 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<CgmHistoryEntity>()
     private val tempRawList = mutableListOf<CgmHistoryEntity>()
-    override var controller: BleController = AidexXController()
+    override var mController: BleController = AidexXController()
 
-    fun getController(): AidexXController {
-        return controller as AidexXController
+    override fun getController(): AidexXController {
+        return mController as AidexXController
     }
 
     init {
-        controller.mac = entity.deviceMac
-        controller.sn = entity.deviceSn
-        controller.name = "AiDEX X-${entity.deviceSn}"
+        mController.mac = entity.deviceMac
+        mController.sn = entity.deviceSn
+        mController.name = "AiDEX X-${entity.deviceSn}"
         val userId = UserInfoManager.instance().userId()
         val getBytes = userId.toByteArray(Charset.forName("UTF-8"))
-        controller.hostAddress = getBytes
-        controller.id = entity.accessId
-        controller.key = entity.encryptionKey
-        controller.setMessageCallback { operation, success, data ->
+        mController.hostAddress = getBytes
+        mController.id = entity.accessId
+        mController.key = entity.encryptionKey
+        mController.setMessageCallback { operation, success, data ->
             LogUtil.eAiDEX(
                 "operation $operation , success $success message ${
                     StringUtils.binaryToHexString(data)
@@ -137,13 +137,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     suspend fun savePair(deviceModel: Int, version: String) {
-        entity.deviceMac = controller.mac
-        entity.accessId = controller.id
+        entity.deviceMac = mController.mac
+        entity.accessId = mController.id
         entity.deviceModel = deviceModel
         entity.version = version
         entity.updateDeviceKey()
         entity.deviceSn?.let {
-            val transmitter = TransmitterManager.instance().loadTransmitterFromDb(it)
+            val transmitter = TransmitterManager.instance().loadTransmitter(it)
             transmitter?.let { trans ->
                 entity.fullSensorIndex = trans.fullSensorIndex
                 entity.sensorIndex = trans.sensorIndex
@@ -159,8 +159,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         nextFullEventIndex = entity.fullEventIndex + 1
         entity.id = null
         //向服务器请求注册设备
-        DeviceApi.deviceRegister(entity, success = { it ->
-            entity.accessId = controller.id
+        DeviceApi.deviceRegister(entity, success = {
+            entity.accessId = mController.id
             entity.id = it.id
             entity.sensorIndex = it.sensorIndex
             entity.eventIndex = it.eventIndex
@@ -206,7 +206,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     suspend fun deletePair() {
         entity.accessId = null
-        controller.unregister()
+        mController.unregister()
         ObjectBox.runAsync({
             transmitterBox!!.put(entity)
         }, onSuccess = {
@@ -215,9 +215,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 suspend {
                     DeviceApi.deviceUnregister(map,
                         success = {
-                            controller.sn = null
-                            controller.mac = null
-                            controller.id = null
+                            mController.sn = null
+                            mController.mac = null
+                            mController.id = null
                             BleController.stopScan() //停止扫描
                             ObjectBox.runAsync({
                                 transmitterBox!!.removeAll()
@@ -519,7 +519,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             getController().getRawHistories(nextFullEventIndex)
         } else {
-            controller.disconnect()
+            mController.disconnect()
         }
     }
 
@@ -527,7 +527,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (targetEventIndex > nextFullEventIndex) {
             getController().getRawHistories(nextFullEventIndex)
         } else {
-            controller.disconnect()
+            mController.disconnect()
         }
     }
 

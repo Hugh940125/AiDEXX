@@ -38,7 +38,7 @@ abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment() {
         super.onConfigurationChanged(resources.configuration)
     }
 
-    open fun initViewModel() {
+    private fun initViewModel() {
         @Suppress("UNCHECKED_CAST")
         val clazz =
             (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<VM>

@@ -89,9 +89,7 @@ object Dialogs {
         TipDialog.show(content, WaitDialog.TYPE.ERROR)
     }
 
-    fun dismissWait(
-        content: String? = null,
-    ) {
+    fun dismissWait() {
         WaitDialog.dismiss()
     }
 }

@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.alert
+package com.microtech.aidexx.ui.setting.alert
 
 /**
  *@date 2023/2/28

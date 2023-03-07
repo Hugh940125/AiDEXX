@@ -50,7 +50,7 @@ fun Double.fromGlucoseValue(): Double {
     }
 }
 
-fun Float.toGlucoseString(context: Resources): String {
+fun Float.toGlucoseString(): String {
     return UnitManager.unitFormat().format(this.toGlucoseValue())
 }
 
@@ -83,8 +83,8 @@ fun Double.toGlucoseString(context: Resources): String {
     }
 }
 
-fun Float.toGlucoseStringWithUnit(context: Resources): String {
-    return this.toGlucoseString(context) + " " + UnitManager.glucoseUnit.text
+fun Float.toGlucoseStringWithUnit(): String {
+    return this.toGlucoseString() + " " + UnitManager.glucoseUnit.text
 }
 
 fun Double.toGlucoseStringWithUnit(context: Resources): String {

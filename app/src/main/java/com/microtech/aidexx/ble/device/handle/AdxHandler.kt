@@ -6,8 +6,8 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import com.microtech.aidexx.db.entity.CgmHistoryEntity_
-import com.microtech.aidexx.ui.alert.AlertManager
-import com.microtech.aidexx.ui.alert.AlertType
+import com.microtech.aidexx.ui.setting.alert.AlertManager
+import com.microtech.aidexx.ui.setting.alert.AlertType
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
@@ -42,7 +42,7 @@ class AdxHandler {
     fun handleAdvertise(model: TransmitterModel, data: ByteArray) {
         transmitterModel = model
         if (model.entity.sensorStartTime == null) {
-            model.controller.startTime
+            model.getController().startTime
             return
         }
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
@@ -93,9 +93,9 @@ class AdxHandler {
                             if (model.nextEventIndex < briefRangeStartIndex) {
                                 model.nextEventIndex = briefRangeStartIndex
                             }
-                            model.controller.getHistories(model.nextEventIndex)
+                            model.getController().getHistories(model.nextEventIndex)
                         } else {
-                            model.controller.historyRange
+                            model.getController().historyRange
                         }
                     }
                 }
@@ -109,9 +109,9 @@ class AdxHandler {
                 if (model.nextFullEventIndex < rawRangeStartIndex) {
                     model.nextFullEventIndex = rawRangeStartIndex
                 }
-                model.controller.getRawHistories(model.nextFullEventIndex)
+                model.getController().getRawHistories(model.nextFullEventIndex)
             } else {
-                model.controller.historyRange
+                model.getController().historyRange
             }
         }
     }

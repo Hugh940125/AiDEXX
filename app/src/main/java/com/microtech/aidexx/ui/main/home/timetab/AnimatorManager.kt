@@ -23,7 +23,7 @@ class AnimatorManager private constructor() {
         return transAnimator
     }
 
-    fun createAlphaAnimator(target: View?, from: Float, to: Float, duration: Long): ObjectAnimator {
+    fun createAlphaAnimator(target: View?, from: Float, to: Float): ObjectAnimator {
         val alphaAnimator = ObjectAnimator.ofFloat(target, "alpha", from, to)
         alphaAnimator?.duration = 50
         return alphaAnimator

@@ -74,7 +74,7 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
         val transAnimator =
             AnimatorManager.instance().createTransAnimator(layoutSix, -upLiftPx, 50)
         val alphaAnimator =
-            AnimatorManager.instance().createAlphaAnimator(bgSix, 0F, 1F, 50)
+            AnimatorManager.instance().createAlphaAnimator(bgSix, 0F, 1F)
         animatorSet.playTogether(transAnimator, alphaAnimator)
         animatorSet.start()
         tvSix?.typeface = Typeface.DEFAULT_BOLD
@@ -136,7 +136,7 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
         val transAnimator =
             AnimatorManager.instance().createTransAnimator(layoutTarget, -upLiftPx, ANIM_DURATION)
         val alphaAnimator =
-            AnimatorManager.instance().createAlphaAnimator(bgTarget, 0F, 1F, ANIM_DURATION)
+            AnimatorManager.instance().createAlphaAnimator(bgTarget, 0F, 1F)
         val argbAnimator = AnimatorManager.instance()
             .createArgbAnimator(ContextCompat.getColor(mContext, R.color.gray_d8),
                 if (ThemeManager.isLight())
@@ -198,7 +198,7 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
         val transAnimator =
             AnimatorManager.instance().createTransAnimator(layoutTarget, 0F, ANIM_DURATION)
         val alphaAnimator =
-            AnimatorManager.instance().createAlphaAnimator(bgTarget, 1F, 0F, ANIM_DURATION)
+            AnimatorManager.instance().createAlphaAnimator(bgTarget, 1F, 0F)
         val argbAnimator = AnimatorManager.instance()
             .createArgbAnimator(if (ThemeManager.isLight())
                 ContextCompat.getColor(mContext,

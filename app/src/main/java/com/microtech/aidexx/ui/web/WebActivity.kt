@@ -1,8 +1,6 @@
 package com.microtech.aidexx.ui.web
 
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -51,7 +49,7 @@ class WebActivity : BaseActivity<BaseViewModel, ActivityWebBinding>() {
                         intercept = loadWeb(it)
                     }
                     scheme.equals("weixin") -> {
-                        if (wxAvailable(this)){
+                        if (wxAvailable()){
                             val intent = Intent(Intent.ACTION_VIEW, uri)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             startActivity(intent)
@@ -66,7 +64,7 @@ class WebActivity : BaseActivity<BaseViewModel, ActivityWebBinding>() {
         }
     }
 
-    fun wxAvailable(context: Context): Boolean {
+    private fun wxAvailable(): Boolean {
         return ProcessUtil.isInstalled(this,"com.tencent.mm")
     }
 

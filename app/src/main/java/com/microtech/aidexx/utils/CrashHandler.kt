@@ -16,7 +16,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
     @Volatile
     private var isKilled = false
 
-    fun init(context: Context?) {
+    fun init() {
         // 获取系统默认的UncaughtException处理类
         mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         // 设置 CrashHandler为系统默认的处理器

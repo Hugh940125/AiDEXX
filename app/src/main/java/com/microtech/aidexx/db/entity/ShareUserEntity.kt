@@ -41,7 +41,11 @@ class ShareUserEntity(type: Int) : Parcelable {
                 UserEntity::javaClass.javaClass.classLoader, UserEntity::class.java
             )
         } else {
-            user = parcel.readParcelable(UserEntity::javaClass.javaClass.classLoader)
+            user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                parcel.readParcelable(UserEntity::javaClass.javaClass.classLoader,UserEntity::class.java)
+            }else{
+                parcel.readParcelable(UserEntity::javaClass.javaClass.classLoader)
+            }
         }
     }
 

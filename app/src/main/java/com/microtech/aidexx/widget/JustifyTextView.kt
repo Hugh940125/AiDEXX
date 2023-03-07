@@ -134,7 +134,7 @@ class JustifyTextView : AppCompatTextView {
         mLineY = 0f
         val textSize = textSize
         mLineY += textSize + mPaddingTop
-        val layout = layout ?: return
+        //val layout = layout ?: return
         textGravity = getTextGravity()
         adjust(canvas, paint)
     }
@@ -151,9 +151,9 @@ class JustifyTextView : AppCompatTextView {
             ArrayList()
         val lineList: MutableList<String> =
             ArrayList()
-        var width = 0f
+        var width: Float
         var temp = ""
-        var front = ""
+        var front: String
         for (i in frontList.indices) {
             front = frontList[i]
             if (!TextUtils.isEmpty(temp)) {
@@ -192,13 +192,13 @@ class JustifyTextView : AppCompatTextView {
                     val substring = sb.substring(0, sb.length - lastWord.length - 1)
                     sb.delete(0, sb.toString().length)
                     sb.append(substring).append(BLANK)
-                    var tempLastWord = ""
+                    var tempLastWord: String
                     val length = lastWord.length
                     if (length <= 3) {
                         addLines(lineLists, lineList)
                         lastTemp = lastWord
                     } else {
-                        var cutoffIndex = 0
+                        var cutoffIndex: Int
                         for (j in 0 until length) {
                             tempLastWord = lastWord[j].toString()
                             sb.append(tempLastWord)
@@ -286,7 +286,7 @@ class JustifyTextView : AppCompatTextView {
      * 获取段落
      */
     private val paragraphList: Unit
-        private get() {
+        get() {
             val text =
                 text.toString().replace("  ".toRegex(), "").replace("   ".toRegex(), "")
                     .replace("\\r".toRegex(), "").trim { it <= ' ' }
@@ -460,8 +460,7 @@ class JustifyTextView : AppCompatTextView {
             sb.append(aSplit)
         }
         val lineWidth = StaticLayout.getDesiredWidth(sb, getPaint())
-        var cw = 0f
-        cw = if (GRAVITY_START == textGravity) {
+        var cw: Float = if (GRAVITY_START == textGravity) {
             mPaddingStart.toFloat()
         } else if (GRAVITY_END == textGravity) {
             mPaddingEnd.toFloat()
