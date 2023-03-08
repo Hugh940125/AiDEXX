@@ -1,10 +1,12 @@
 package com.microtech.aidexx.ble
 
 import com.microtechmd.blecomm.entity.BleMessage
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 
 /**
  *@date 2023/3/7
@@ -27,13 +29,17 @@ class MessageDispatcher {
         }
     }
 
-    suspend fun dispatch(message: BleMessage) {
-        mutableSharedFlow.emit(message)
+    fun dispatch(scope: CoroutineScope, message: BleMessage) {
+        scope.launch {
+            mutableSharedFlow.emit(message)
+        }
     }
 
-    suspend fun Obsever(onReceive: ((message: BleMessage) -> Unit)) {
-        mutableSharedFlow.buffer(10).flowOn(Dispatchers.IO).collect {
-            onReceive.invoke(it)
+    fun observer(scope: CoroutineScope, onReceive: ((message: BleMessage) -> Unit)) {
+        scope.launch {
+            mutableSharedFlow.buffer(10).flowOn(Dispatchers.IO).collect {
+                onReceive.invoke(it)
+            }
         }
     }
 }

@@ -42,4 +42,7 @@ public abstract class BleAdapter {
     public native void onConnectFailure();
     public native void onDisconnected();
     public native void onReceiveData(byte[] data);
+    public abstract void startBtScan(Boolean isPeriodic);
+    public abstract void stopBtScan(Boolean isPeriodic);
+    public abstract BluetoothDeviceStore getDeviceStore();
 }

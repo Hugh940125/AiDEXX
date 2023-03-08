@@ -54,7 +54,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
                 Looper.loop()
             }
         }.start()
-        return true
+        return false
     }
 
     companion object {

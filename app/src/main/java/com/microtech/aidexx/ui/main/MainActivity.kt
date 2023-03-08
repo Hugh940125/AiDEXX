@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.main
 
+import android.app.Activity
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.*
@@ -13,40 +14,82 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
+import com.microtech.aidexx.utils.LocationUtils
 import com.microtech.aidexx.utils.ProcessUtil
-import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
+import java.lang.ref.WeakReference
+
+private const val REQUEST_STORAGE_PERMISSION = 2000
+private const val REQUEST_BLUETOOTH_PERMISSION = 2001
 
 class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
+
+    class MainHandler(val activity: Activity) : Handler(Looper.getMainLooper()) {
+        private val reference = WeakReference(activity)
+        override fun handleMessage(msg: Message) {
+            reference.get()?.let {
+                if (!it.isFinishing) {
+                    when (msg.what) {
+                        REQUEST_STORAGE_PERMISSION -> {
+                            EnquireManager.instance()
+                                .showEnquireOrNot(
+                                    it,
+                                    it.getString(R.string.need_storage),
+                                    it.getString(R.string.storage_use_for), {
+                                        PermissionsUtil.requestPermissions(it, PermissionGroups.Storage)
+                                    }, flag = null
+                                )
+                        }
+                        REQUEST_BLUETOOTH_PERMISSION -> {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                PermissionsUtil.requestPermissions(it, PermissionGroups.Bluetooth)
+                            } else {
+                                PermissionsUtil.requestPermissions(it, PermissionGroups.Location)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        mHandler = Handler(Looper.getMainLooper())
+        mHandler = MainHandler(this)
         initSDKs()
         fitOrientation()
         initView()
+    }
+
+    override fun onResume() {
+        super.onResume()
         requestPermission()
     }
 
     private fun requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
+                mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
+                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
+            }
+        } else {
+            PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
+                mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
+                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
+            }
+        }
         PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
-            mHandler.postDelayed({
-                if (!this.isFinishing) {
-                    EnquireManager.instance()
-                        .showEnquireOrNot(
-                            this,
-                            getString(R.string.need_storage),
-                            getString(R.string.storage_use_for), {
-                                PermissionsUtil.checkPermissions(this, PermissionGroups.Storage)
-                            }, flag = null
-                        )
-                }
-            }, TimeUtils.oneMinuteMillis)
+            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
+            mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 15 * 1000)
+        }
+        if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            enableLocation()
         }
     }
 
@@ -135,6 +178,7 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mHandler.removeCallbacksAndMessages(null)
         Log.appenderClose()
     }
 

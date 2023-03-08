@@ -1,59 +1,178 @@
 package com.microtech.aidexx.ui.pair
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
-import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
-import android.os.Build
-import android.os.Bundle
-import android.os.ParcelUuid
+import android.os.*
 import android.view.View
 import android.view.View.OnClickListener
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
+import com.microtech.aidexx.ble.MessageDispatcher
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
-import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.StringUtils
+import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
+import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.ref.WeakReference
+
+private const val DISMISS_LOADING = 2002
+private const val REFRESH_TRANS_LIST = 2003
 
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(), OnClickListener {
-    private lateinit var transmitterListAdapter: FindTransmitterAdapter
+    private var scanStarted = false
+    private lateinit var transmitterHandler: TransmitterHandler
+    private lateinit var transmitterAdapter: TransmitterAdapter
     private var transmitter: TransmitterEntity? = null
-    private val mutableSharedFlow = MutableSharedFlow<Boolean>()
     private val transmitterList = mutableListOf<BleControllerInfo>()
 
-    @OptIn(FlowPreview::class)
+    class TransmitterHandler(val activity: TransmitterActivity) : Handler(Looper.getMainLooper()) {
+        private val reference = WeakReference(activity)
+        override fun handleMessage(msg: Message) {
+            reference.get()?.let {
+                if (!it.isFinishing) {
+                    when (msg.what) {
+                        DISMISS_LOADING -> {
+                            Dialogs.dismissWait()
+                        }
+                        REFRESH_TRANS_LIST -> {
+                            activity.refreshList()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun refreshList() {
+        val deviceStore = AidexBleAdapter.getInstance().deviceStore
+        for (result in deviceStore.deviceMap.values) {
+            val sn = AdvertisingParser.getSN(result.scanRecord?.bytes)
+            val name = AdvertisingParser.getName(result.scanRecord?.bytes)
+            val device = result.device
+            if (name.contains("AiDEX X")) {
+                LogUtil.eAiDEX(
+                    "Find device" + result.device.address + "--$name - $sn--" + StringUtils.binaryToHexString(
+                        result.scanRecord?.bytes!!
+                    )
+                )
+                val bleControllerInfo = BleControllerInfo(device.address, name, sn, result.rssi + 130)
+                if (transmitter != null && sn == transmitter?.deviceSn) {
+                    continue
+                }
+                if (!transmitterList.contains(bleControllerInfo)) {
+                    transmitterList.add(bleControllerInfo)
+                }
+            }
+        }
+        transmitterAdapter.setList(transmitterList)
+        transmitterHandler.sendEmptyMessageDelayed(REFRESH_TRANS_LIST, 1000)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        transmitterListAdapter = FindTransmitterAdapter()
-        lifecycleScope.launch {
-            mutableSharedFlow.debounce(1500).collect {
-                transmitterListAdapter.setList(transmitterList)
+        transmitterHandler = TransmitterHandler(this)
+        loadSavedTransmitter()
+        if (transmitter == null || transmitter?.accessId == null) {
+            AidexBleAdapter.getInstance().startBtScan(false)
+            scanStarted = true
+            Dialogs.showWait(getString(R.string.loading))
+            transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 2 * 1000)
+        }
+        initView()
+        observeMessage()
+    }
+
+    fun pair() {
+        if (!BleUtil.isBleEnable(this)) {
+            enableBluetooth()
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
+                requestPermission()
+                return@checkPermissions
+            }
+        } else {
+            PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
+                requestPermission()
+                return@checkPermissions
             }
         }
+        if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            enableLocation()
+        }
+        if (!NetUtil.isNetAvailable(this)) {
+            Dialogs.showError(getString(R.string.net_error))
+            return
+        }
+    }
+
+    private fun requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PermissionsUtil.requestPermissions(this, PermissionGroups.Bluetooth)
+        } else {
+            PermissionsUtil.requestPermissions(this, PermissionGroups.Location)
+        }
+    }
+
+    private fun observeMessage() {
+        MessageDispatcher.instance().observer(lifecycleScope) {
+            val success = it.isSuccess
+            when (it.operation) {
+                AidexXOperation.DISCOVER -> {
+                    LogUtil.eAiDEX("Pair ----> scan:$success")
+                    if (success) {
+                        Dialogs.showWait(resources.getString(R.string.Connecting))
+                    } else {
+                        Dialogs.showError(resources.getString(R.string.Search_Timeout))
+                    }
+                }
+                AidexXOperation.CONNECT -> {
+                    LogUtil.eAiDEX("Pair ----> connect:$success")
+                    if (success) {
+                        Dialogs.showWait(resources.getString(R.string.Pairing))
+                    } else {
+                        Dialogs.showError(resources.getString(R.string.Connecting_Failed))
+                    }
+                }
+                AidexXOperation.DISCONNECT -> {
+                    LogUtil.eAiDEX("Pair ----> disconnect:$success")
+                    Dialogs.dismissWait()
+                }
+            }
+        }
+    }
+
+    private fun initView() {
+        binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
+        transmitterAdapter = TransmitterAdapter()
+        binding.rvOtherTrans.adapter = transmitterAdapter
+        transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (scanStarted) {
+            AidexBleAdapter.getInstance().stopBtScan(false)
+        }
+        transmitterHandler.removeCallbacksAndMessages(null)
     }
 
     override fun getViewBinding(): ActivityTransmitterBinding {
         return ActivityTransmitterBinding.inflate(layoutInflater)
     }
 
-    fun loadSavedTransmitter() {
+    private fun loadSavedTransmitter() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 transmitter = TransmitterManager.instance().loadTransmitter()
@@ -83,94 +202,5 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
             }
         }
-    }
-
-    private val scanCallback: ScanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult) {
-            super.onScanResult(callbackType, result)
-            //将扫描到的广播，传入处理数据。
-            result.scanRecord?.let {
-                val sn = AdvertisingParser.getSN(result.scanRecord?.bytes)
-                val name = AdvertisingParser.getName(result.scanRecord?.bytes)
-                LogUtil.eAiDEX(
-                    "Find device" + result.device.address + "--$name--$sn--" + StringUtils.binaryToHexString(
-                        result.scanRecord?.bytes!!
-                    )
-                )
-                val device = result.device
-                if (name.contains("AiDEX X")) {
-                    val adapter = AidexBleAdapter.getInstance() as AidexBleAdapter
-                    adapter.onScanBack(result)
-                    val bleControllerInfo = BleControllerInfo(device.address, name, sn, result.rssi + 130)
-                    if (sn != transmitter?.deviceSn && transmitterList.contains(bleControllerInfo)) {
-                        transmitterList.add(bleControllerInfo)
-                    }
-                    lifecycleScope.launch {
-                        mutableSharedFlow.emit(true)
-                    }
-                }
-            }
-        }
-
-        override fun onScanFailed(errorCode: Int) {
-            super.onScanFailed(errorCode)
-//            LogUtils.e("扫描开启失败 errorCode :$errorCode")
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    fun startScan() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PermissionsUtil.checkAndRequestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_SCAN)) {
-                getBleAdapter().bluetoothLeScanner?.startScan(
-                    buildScanFilters(),
-                    buildScanSettings(),
-                    scanCallback
-                )
-            }
-        } else {
-            getBleAdapter().bluetoothLeScanner?.startScan(
-                buildScanFilters(),
-                buildScanSettings(),
-                scanCallback
-            )
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    fun stopScan() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PermissionsUtil.checkAndRequestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_SCAN)) {
-                getBleAdapter().bluetoothLeScanner?.stopScan(scanCallback)
-            }
-        } else {
-            getBleAdapter().bluetoothLeScanner?.stopScan(scanCallback)
-        }
-    }
-
-    private fun getBleAdapter(): BluetoothAdapter {
-        val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
-        return bluetoothManager.adapter
-    }
-
-    private fun buildScanFilters(): List<ScanFilter> {
-        val scanFilterList: MutableList<ScanFilter> = ArrayList()
-        val scanFilterBuilder = ScanFilter.Builder()
-        val parcelUuidMask = ParcelUuid.fromString("0000181F-0000-1000-8000-00805F9B34FB")
-        val parcelUuid = ParcelUuid.fromString("00002AFE-0000-1000-8000-00805F9B34FB")
-//        scanFilterBuilder.setServiceUuid(parcelUuid, parcelUuidMask)
-        scanFilterList.add(scanFilterBuilder.build())
-        return scanFilterList
-    }
-
-    private fun buildScanSettings(): ScanSettings? {
-        val scanSettingBuilder = ScanSettings.Builder()
-        scanSettingBuilder.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-        scanSettingBuilder.setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE)
-        if (getBleAdapter().isOffloadedScanBatchingSupported) {
-            scanSettingBuilder.setReportDelay(0L)
-        }
-        scanSettingBuilder.setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
-        return scanSettingBuilder.build()
     }
 }

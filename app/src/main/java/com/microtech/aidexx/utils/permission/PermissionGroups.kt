@@ -3,6 +3,7 @@ package com.microtech.aidexx.utils.permission
 import android.Manifest
 import android.app.Activity
 import android.os.Build
+import androidx.annotation.RequiresApi
 import com.microtech.aidexx.R
 
 /**
@@ -31,17 +32,21 @@ object PermissionGroups {
         Manifest.permission.CAMERA
     )
 
-    val Bluetooth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        arrayOf(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_CONNECT,
-        )
-    } else {
-        arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-        )
-    }
+    @RequiresApi(Build.VERSION_CODES.S)
+    val Bluetooth = arrayOf(
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.BLUETOOTH_CONNECT,
+    )
+
+    val Location = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) arrayOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+    ) else arrayOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+    )
+
 
     /**
      * 获取权限对应的功能描述，需要维护更新
@@ -57,7 +62,7 @@ object PermissionGroups {
             return context.getString(R.string.camera) + context.getString(R.string.txt_protocal_and) + context.getString(
                 R.string.album_features
             )
-        } else if (Bluetooth.contentEquals(permissions)) {
+        } else if (Location.contentEquals(permissions)) {
             return context.getString(R.string.location)
         }
         return ""

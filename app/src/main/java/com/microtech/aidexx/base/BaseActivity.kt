@@ -9,7 +9,6 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
@@ -122,31 +121,24 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
     }
 
     protected fun enableBluetooth() {
-        if (!BleUtil.isBleEnable(this)) {
-            Dialogs.showWhether(
-                this,
-                resources.getString(R.string.Bluetooth),
-                resources.getString(R.string.guide_ble),
-                {
-                    BleUtil.enableBluetooth(this, 1)
-                }
-            )
-        }
+        Dialogs.showWhether(
+            this,
+            resources.getString(R.string.Bluetooth),
+            resources.getString(R.string.guide_ble),
+            {
+                BleUtil.enableBluetooth(this, 1)
+            }
+        )
     }
 
     protected fun enableLocation() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S && !LocationUtils.isLocationServiceEnable(
-                this
-            )
-        ) {
-            Dialogs.showWhether(
-                this,
-                content = resources.getString(R.string.location_service),
-                confirm = {
-                    LocationUtils.enableLocationService(this)
-                }
-            )
-        }
+        Dialogs.showWhether(
+            this,
+            content = resources.getString(R.string.location_service),
+            confirm = {
+                LocationUtils.enableLocationService(this)
+            }
+        )
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

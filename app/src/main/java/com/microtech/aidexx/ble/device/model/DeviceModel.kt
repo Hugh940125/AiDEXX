@@ -52,6 +52,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun getController():BleController
 
+    abstract fun saveBriefHistoryFromConnect(data: ByteArray)
+
+    abstract fun saveRawHistoryFromConnect(data: ByteArray)
+
     fun disconnect() {
         mController.disconnect()
     }

@@ -337,7 +337,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         return list.subList(0, startIndex)
     }
 
-    fun saveBriefHistoryFromConnect(data: ByteArray) {
+    override fun saveBriefHistoryFromConnect(data: ByteArray) {
         val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
         if (histories.isNullOrEmpty()) return
         if (histories.first().timeOffset == nextEventIndex) {
@@ -345,7 +345,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    fun saveRawHistoryFromConnect(data: ByteArray) {
+    override fun saveRawHistoryFromConnect(data: ByteArray) {
         val histories = AidexXParser.getRawHistory<AidexXRawHistoryEntity>(data)
         if (histories.isEmpty()) return
         if (histories.first().timeOffset == nextFullEventIndex) {

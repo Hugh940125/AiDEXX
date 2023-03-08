@@ -1,5 +1,7 @@
 package com.microtech.aidexx.ble;
 
+import static com.microtech.aidexx.ble.PendingIntentReceiver.REQUEST_CODE;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -16,6 +18,7 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
@@ -27,7 +30,6 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.microtech.aidexx.AidexxApp;
-import com.microtech.aidexx.ble.device.BluetoothDeviceStore;
 import com.microtech.aidexx.ble.device.TransmitterManager;
 import com.microtech.aidexx.ble.device.model.DeviceModel;
 import com.microtech.aidexx.ble.device.work.StartScanWorker;
@@ -38,6 +40,7 @@ import com.microtech.aidexx.utils.TimeUtils;
 import com.microtech.aidexx.utils.eventbus.EventBusKey;
 import com.microtech.aidexx.utils.eventbus.EventBusManager;
 import com.microtechmd.blecomm.BleAdapter;
+import com.microtechmd.blecomm.BluetoothDeviceStore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,16 +53,12 @@ import java.util.concurrent.TimeUnit;
  * APP-SRC-A-105
  */
 public class AidexBleAdapter extends BleAdapter {
-
     private static final int DISCOVER_TIME_OUT_SECONDS = 30;
     Handler mWorkHandler;
-
     private static final UUID UUID_SERVICE = UUID.fromString("0000181F-0000-1000-8000-00805F9B34FB");
-
     private static final UUID UUID_CHARACTERISTIC = UUID.fromString("00002AFF-0000-1000-8000-00805F9B34FB");
     //蓝牙特征值
     BluetoothGattCharacteristic mWriteGattCharacteristic;
-
     //蓝牙设备
     private BluetoothDevice mBluetoothDevice;
 
@@ -109,13 +108,18 @@ public class AidexBleAdapter extends BleAdapter {
         }
     }
 
+    @Override
+    public BluetoothDeviceStore getDeviceStore() {
+        return bluetoothDeviceStore;
+    }
+
     protected AidexBleAdapter() {
         super();
     }
 
     public void onScanBack(ScanResult result) {
         byte[] scanRecord = result.getScanRecord().getBytes();
-        bluetoothDeviceStore.add(result.getDevice());
+        bluetoothDeviceStore.add(result);
         String address = result.getDevice().getAddress();
         int rssi = result.getRssi() + 130;
         onScanRespond(address, rssi, scanRecord);
@@ -126,7 +130,7 @@ public class AidexBleAdapter extends BleAdapter {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            bluetoothDeviceStore.add(result.getDevice());
+            bluetoothDeviceStore.add(result);
             byte[] scanRecord = result.getScanRecord().getBytes();
             String address = result.getDevice().getAddress();
             int rssi = result.getRssi() + 130;
@@ -184,7 +188,7 @@ public class AidexBleAdapter extends BleAdapter {
                         onConnectSuccess();
                         break;
                     case START_SCAN:
-                        startScan();
+                        startBtScan(true);
                         break;
                     case FOUND_SERVER:
                         int status = (int) msg.obj;
@@ -344,10 +348,11 @@ public class AidexBleAdapter extends BleAdapter {
 
     @Override
     public void executeStartScan() {
-        startScan();
+        startBtScan(true);
     }
 
-    private void startScan() {
+    @Override
+    public void startBtScan(Boolean isPeriodic) {
         BluetoothAdapter bluetoothAdapter = getBluetoothAdapter();
         if (bluetoothAdapter == null || bluetoothAdapter.getBluetoothLeScanner() == null) {
             return;
@@ -358,8 +363,15 @@ public class AidexBleAdapter extends BleAdapter {
                 return;
             }
         }
-        bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), scanCallback);
-        if (!isOnConnectState) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            Intent intent = new Intent(AidexxApp.instance, PendingIntentReceiver.class);
+//            intent.setAction(PendingIntentReceiver.ACTION);
+//            pendingIntent = PendingIntent.getBroadcast(AidexxApp.instance, REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+//            bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), pendingIntent);
+//        } else {
+            bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), scanCallback);
+//        }
+        if (!isOnConnectState && isPeriodic) {
             WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(STOP_SCAN));
             if (TransmitterManager.Companion.instance().getDefault() != null) {
                 OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(StopScanWorker.class).setInitialDelay(30, TimeUnit.SECONDS).addTag(String.valueOf(STOP_SCAN)).build(); //30s以后停止扫描
@@ -368,7 +380,8 @@ public class AidexBleAdapter extends BleAdapter {
         }
     }
 
-    private void stopScan() {
+    @Override
+    public void stopBtScan(Boolean isPeriodic) {
         BluetoothLeScanner bluetoothLeScanner = getBluetoothAdapter().getBluetoothLeScanner();
         if (bluetoothLeScanner != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -381,7 +394,7 @@ public class AidexBleAdapter extends BleAdapter {
         }
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
         DeviceModel aDefault = TransmitterManager.Companion.instance().getDefault();
-        if (aDefault != null && aDefault.getEntity().getAccessId() != null && !isOnConnectState) {
+        if (aDefault != null && aDefault.getEntity().getAccessId() != null && !isOnConnectState && isPeriodic) {
             OneTimeWorkRequest scanWorker = new OneTimeWorkRequest.Builder(StartScanWorker.class).setInitialDelay(2, TimeUnit.SECONDS).addTag(String.valueOf(START_SCAN)).build(); //2S后开启扫描
             WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker);
         }
@@ -392,22 +405,29 @@ public class AidexBleAdapter extends BleAdapter {
     public void executeStopScan() {
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(STOP_SCAN));
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
-        stopScan();
+        stopBtScan(true);
     }
 
     @Override
     public boolean isReadyToConnect(String mac) {
-        BluetoothDevice bluetoothLeDevice = bluetoothDeviceStore.getDeviceMap().get(mac);
+        ScanResult result = bluetoothDeviceStore.getDeviceMap().get(mac);
+        BluetoothDevice bluetoothLeDevice = null;
+        if (result != null) {
+            bluetoothLeDevice = result.getDevice();
+        }
         LogUtil.eAiDEX("Device:" + mac + " isReadyToConnect :" + (bluetoothLeDevice != null));
         return bluetoothLeDevice != null;
     }
 
     @Override
     public void executeConnect(String mac) {
-        isOnConnectState = true;
+        refreshConnectState(true);
         LogUtil.eAiDEX("Connecting to:" + mac);
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(START_SCAN));
-        mBluetoothDevice = bluetoothDeviceStore.getDeviceMap().get(mac);
+        ScanResult result = bluetoothDeviceStore.getDeviceMap().get(mac);
+        if (result != null) {
+            mBluetoothDevice = result.getDevice();
+        }
         long duration = TimeUtils.INSTANCE.getCurrentTimeMillis() / 1000 - lastDisConnectTime;
         if (duration >= TIME_BETWEEN_CONNECT) {
             mWorkHandler.sendEmptyMessage(CONNECT_GATT);

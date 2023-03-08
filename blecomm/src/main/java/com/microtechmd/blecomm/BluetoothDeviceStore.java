@@ -1,30 +1,29 @@
-package com.microtech.aidexx.ble.device;
+package com.microtechmd.blecomm;
 
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanResult;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * @Description: 设备信息集合
  */
 public class BluetoothDeviceStore {
-    private final Map<String, BluetoothDevice> mDeviceMap;
+    private final Map<String, ScanResult> mDeviceMap;
 
     public BluetoothDeviceStore() {
         mDeviceMap = new HashMap<>();
     }
 
-    public void add(BluetoothDevice device) {
-        if (device == null) {
+    public void add(ScanResult result) {
+        if (result == null) {
             return;
         }
-        if (!mDeviceMap.containsKey(device.getAddress())) {
-            mDeviceMap.put(device.getAddress(), device);
+        if (!mDeviceMap.containsKey(result.getDevice().getAddress())) {
+            mDeviceMap.put(result.getDevice().getAddress(), result);
         }
     }
 
@@ -39,15 +38,15 @@ public class BluetoothDeviceStore {
         mDeviceMap.clear();
     }
 
-    public Map<String, BluetoothDevice> getDeviceMap() {
+    public Map<String, ScanResult> getDeviceMap() {
         return mDeviceMap;
     }
 
-    public List<BluetoothDevice> getDeviceList() {
-        final List<BluetoothDevice> methodResult = new ArrayList<>(mDeviceMap.values());
-        methodResult.sort((arg0, arg1) -> arg0.getAddress().compareToIgnoreCase(arg1.getAddress()));
-        return methodResult;
-    }
+//    public List<BluetoothDevice> getDeviceList() {
+//        final List<BluetoothDevice> methodResult = new ArrayList<>(mDeviceMap.values());
+//        methodResult.sort((arg0, arg1) -> arg0.getAddress().compareToIgnoreCase(arg1.getAddress()));
+//        return methodResult;
+//    }
 
     @NonNull
     @Override
