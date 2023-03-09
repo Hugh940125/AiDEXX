@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".ui.main.home.GlucosePanelFragment">
+    tools:context=".ui.main.home.panel.GlucosePanelFragment">
 
     <androidx.constraintlayout.widget.Guideline
         android:layout_width="wrap_content"

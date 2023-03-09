@@ -14,6 +14,10 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
+import com.microtech.aidexx.ui.main.home.panel.GlucosePanelFragment
+import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
+import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
+import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.utils.LogUtil
 
 /**
@@ -21,9 +25,10 @@ import com.microtech.aidexx.utils.LogUtil
  *@author Hugh
  *@desc
  */
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
+const val needPair = "needPair"
+const val glucosePanel = "glucosePanel"
+const val newOrUsedSensor = "newOrUsedSensor"
+const val warmingUp = "warmingUp"
 class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private val initOrientation: Int = 0
@@ -32,18 +37,10 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private var param2: String? = null
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
-    private val needPair = "needPair"
-    private val glucosePanel = "glucosePanel"
-    private val newOrUsedSensor = "newOrUsedSensor"
-    private val warmingUp = "warmingUp"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
     override fun onResume() {
@@ -80,13 +77,11 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun replaceFragment(pageTag: String) {
+        val default = TransmitterManager.instance().getDefault()
         if (lastPageTag == glucosePanel && pageTag != glucosePanel) {
             binding.homeRoot.setBackgroundResource(0)
         }
-        if (pageTag != needPair
-            && (TransmitterManager.instance().getDefault() == null
-                    || TransmitterManager.instance().getDefault()?.isPaired() == false)
-        ) {
+        if ((default == null || !default.isPaired()) && pageTag != needPair) {
             replaceFragment(needPair)
             return
         }

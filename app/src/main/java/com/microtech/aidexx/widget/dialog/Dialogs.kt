@@ -1,5 +1,6 @@
 package com.microtech.aidexx.widget.dialog
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.dialog.x.TipDialog
@@ -53,7 +54,7 @@ object Dialogs {
     }
 
     fun showWhether(
-        context: AppCompatActivity,
+        context: Context,
         title: String? = null,
         content: String?,
         confirm: (() -> Unit)?,

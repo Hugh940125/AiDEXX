@@ -1,9 +1,12 @@
 package com.microtech.aidexx.ui.main
 
-import android.app.Activity
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
+import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -15,21 +18,25 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.utils.LocationUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
+import com.microtech.aidexx.widget.dialog.Dialogs
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
 import java.lang.ref.WeakReference
 
 private const val REQUEST_STORAGE_PERMISSION = 2000
 private const val REQUEST_BLUETOOTH_PERMISSION = 2001
+private const val REQUEST_ENABLE_LOCATION_SERVICE = 2002
+private const val REQUEST_IGNORE_BATTERY_OPTIMIZATIONS = 2003
 
 class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
 
-    class MainHandler(val activity: Activity) : Handler(Looper.getMainLooper()) {
+    class MainHandler(val activity: MainActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
         override fun handleMessage(msg: Message) {
             reference.get()?.let {
@@ -52,6 +59,17 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                                 PermissionsUtil.requestPermissions(it, PermissionGroups.Location)
                             }
                         }
+                        REQUEST_ENABLE_LOCATION_SERVICE -> {
+                            activity.enableLocation()
+                        }
+                        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
+                            Dialogs.showWhether(
+                                activity,
+                                content = activity.getString(R.string.content_ignore_battery),
+                                confirm = {
+                                    activity.ignoreBatteryOptimization()
+                                })
+                        }
                     }
                 }
             }
@@ -72,24 +90,35 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         requestPermission()
     }
 
+    override fun onPause() {
+        super.onPause()
+        mHandler.removeCallbacksAndMessages(null)
+    }
+
     private fun requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
-                mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
                 mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
+                return@checkPermissions
             }
         } else {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
-                mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
                 mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
+                return@checkPermissions
             }
         }
-        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
-            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
-            mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 15 * 1000)
-        }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            enableLocation()
+            mHandler.sendEmptyMessageDelayed(REQUEST_ENABLE_LOCATION_SERVICE, 2 * 1000)
+            return
+        }
+        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
+            mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 5 * 1000)
+            return@checkPermissions
+        }
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        val hasIgnored = powerManager.isIgnoringBatteryOptimizations(this@MainActivity.packageName)
+        if (!hasIgnored) {
+            mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, 15 * 1000)
         }
     }
 
@@ -178,7 +207,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mHandler.removeCallbacksAndMessages(null)
         Log.appenderClose()
     }
 
@@ -187,8 +215,8 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         val namePrefix = "AiDEX"
         System.loadLibrary("c++_shared")
         System.loadLibrary("marsxlog")
-        val sdCard = Environment.getExternalStorageDirectory().getAbsolutePath()
-        val logPath = "$sdCard/aidex/log"
+        val root = externalCacheDir?.absolutePath
+        val logPath = "$root/aidex/log"
         val cachePath = "${this.filesDir}/xlog"
         val logConfig = Xlog.XLogConfig()
         logConfig.mode = Xlog.AppednerModeAsync
@@ -223,6 +251,17 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                     cacheDays
                 )
             }
+        }
+    }
+
+    @SuppressLint("BatteryLife")
+    fun ignoreBatteryOptimization() {
+        try {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            intent.data = Uri.parse("package:" + this.packageName)
+            startActivity(intent)
+        } catch (e: Exception) {
+            LogUtil.eAiDEX("Set ignore battery optimizations failed:${e.printStackTrace()}")
         }
     }
 }

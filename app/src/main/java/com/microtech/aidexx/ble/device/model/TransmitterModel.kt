@@ -43,14 +43,15 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         var notifyNotification: (() -> Unit)? = null
         var messageCallBack: ((msg: BleMessage) -> Unit)? = null
         var alert: ((time: String, type: Int) -> Unit)? = null
-        private var INSTANCE: TransmitterModel? = null
+
+        private var instance: TransmitterModel? = null
 
         @Synchronized
         fun instance(entity: TransmitterEntity): TransmitterModel {
-            if (INSTANCE == null) {
-                INSTANCE = TransmitterModel(entity)
+            if (instance == null) {
+                instance = TransmitterModel(entity)
             }
-            return INSTANCE!!
+            return instance!!
         }
     }
 

@@ -9,7 +9,9 @@ import com.microtech.aidexx.databinding.ActivityWelcomeBinding
 import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtech.aidexx.widget.dialog.x.DialogX
 
 class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 
@@ -20,6 +22,10 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        when (ThemeManager.theme.id) {
+            0 -> DialogX.globalTheme = DialogX.THEME.DARK
+            1 -> DialogX.globalTheme = DialogX.THEME.LIGHT
+        }
         initView()
     }
 

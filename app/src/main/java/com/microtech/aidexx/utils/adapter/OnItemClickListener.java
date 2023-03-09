@@ -4,12 +4,6 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-/**
- * @author: limuyang
- * @date: 2019-12-03
- * @Description: Interface definition for a callback to be invoked when an item in this
- * RecyclerView itemView has been clicked.
- */
 public interface OnItemClickListener {
     /**
      * Callback method to be invoked when an item in this RecyclerView has

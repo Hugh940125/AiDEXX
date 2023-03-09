@@ -1,6 +1,7 @@
 package com.microtechmd.blecomm.controller;
 
 import com.microtechmd.blecomm.entity.AidexXDatetimeEntity;
+import com.microtechmd.blecomm.entity.NewSensorEntity;
 
 public class AidexXController extends BleController {
     static {
@@ -59,4 +60,23 @@ public class AidexXController extends BleController {
 
     public native int setGcImeasTrimming(int zero, int scale);
 
+    @Override
+    public void getTransInfo() {
+        getDeviceInfo();
+    }
+
+    @Override
+    public void getDefaultParam() {
+        getDefaultParamData();
+    }
+
+    @Override
+    public void newSensor(NewSensorEntity newSensorEntity) {
+        newSensor(newSensorEntity.getAidexXDatetimeEntity());
+    }
+
+    @Override
+    public void startTime() {
+        getStartTime();
+    }
 }

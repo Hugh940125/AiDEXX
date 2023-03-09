@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home
+package com.microtech.aidexx.ui.main.home.panel
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +9,6 @@ import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.databinding.FragmentGlucosePanelBinding
 import com.microtech.aidexx.databinding.FragmentWarmingUpBinding
 
 class WarmingUpFragment: BaseFragment<BaseViewModel, FragmentWarmingUpBinding>() {

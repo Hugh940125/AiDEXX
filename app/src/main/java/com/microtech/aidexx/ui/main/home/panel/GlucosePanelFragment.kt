@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home
+package com.microtech.aidexx.ui.main.home.panel
 
 import android.os.Bundle
 import android.view.LayoutInflater

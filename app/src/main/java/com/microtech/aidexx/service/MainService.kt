@@ -3,10 +3,13 @@ package com.microtech.aidexx.service
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.ble.MessageDispatcher
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.utils.ByteUtils
+import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
@@ -36,10 +39,17 @@ class MainService : Service() {
     }
 
     private fun onMessage(model: DeviceModel, message: BleMessage) {
+        val data = message.data
         when (message.operation) {
             CgmOperation.DISCOVER -> {
                 if (message.isSuccess) {
                     model.handleAdvertisement(message.data)
+                }
+            }
+            AidexXOperation.GET_START_TIME -> {
+                if (!AidexxApp.isPairing) {
+                    val sensorStartTime = ByteUtils.toDate(data)
+                    model.updateStartTime(sensorStartTime)
                 }
             }
             CgmOperation.GET_DATETIME -> {

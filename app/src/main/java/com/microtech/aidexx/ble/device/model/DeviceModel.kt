@@ -2,6 +2,7 @@ package com.microtech.aidexx.ble.device.model
 
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
 import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.entity.BleMessage
@@ -50,7 +51,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun handleAdvertisement(data: ByteArray)
 
-    abstract fun getController():BleController
+    abstract fun getController(): BleController
 
     abstract fun saveBriefHistoryFromConnect(data: ByteArray)
 
@@ -58,5 +59,16 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     fun disconnect() {
         mController.disconnect()
+    }
+
+    fun updateStartTime(sensorStartTime: Date?, callback: ((Boolean) -> Unit)? = null) {
+        ObjectBox.runAsync({
+            entity.sensorStartTime = sensorStartTime
+            ObjectBox.transmitterBox!!.put(entity)
+        }, onSuccess = {
+            callback?.invoke(true)
+        }, onError = {
+            callback?.invoke(false)
+        })
     }
 }

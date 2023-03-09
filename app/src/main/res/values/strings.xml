@@ -7,7 +7,7 @@
         <item>重度</item>
     </string-array>
 
-    <string name="app_name">微泰动泰</string>
+    <string name="app_name">微泰动态</string>
     <string name="title_home">首页</string>
     <string name="title_history">历史</string>
     <string name="title_trends">趋势</string>
@@ -220,10 +220,10 @@
     <string name="Pairing_Succeed">配对成功</string>
     <string name="Pairing_Failed">配对失败</string>
     <string name="Connecting_Failed">连接失败</string>
-    <string name="Pairing">配对</string>
+    <string name="Pairing">配对…</string>
     <string name="Search_Timeout">搜索超时</string>
-    <string name="Searching">搜索中</string>
-    <string name="Connecting">连接中</string>
+    <string name="Searching">搜索中…</string>
+    <string name="Connecting">连接中…</string>
     <string name="sensor_expired">传感器过期</string>
     <string name="Rising">上升</string>
     <string name="Rising_Fast">快速上升</string>
@@ -302,7 +302,7 @@
     <string name="Alert_Set_Hypo">设置低血糖提醒</string>
     <string name="Glucose_High">高</string>
     <string name="Glucose_Low">低</string>
-    <string name="Button_Reset">重设序列号</string>
+    <string name="bt_cancel">重设序列号</string>
     <string name="Button_Skip">跳过</string>
     <string name="Home_Warming_Minutes">分钟</string>
     <string name="transmitter_stableing">传感器稳定中，请等待恢复</string>
@@ -398,7 +398,7 @@
     <string name="title_natification_foreground">前台通知</string>
     <string name="alert_error_embedding">传感器植入异常，请取下传感器和发射器，并更换新传感器。</string>
     <string name="insert_sensor_error">请更换传感器</string>
-    <string name="content_ignore_battery">为保证“微泰动泰”可以在后台持续获取数据，请允许应用始终在后台运行并忽略电池优化。</string>
+    <string name="content_ignore_battery">为保证“微泰动态”可以在后台持续获取数据，请允许应用始终在后台运行并忽略电池优化。</string>
     <string name="content_follow_tip">点击可以切换关注用户的信息</string>
     <string name="content_hospital_update">检测到发射器为医院版，需要激活为个人版。</string>
     <string name="txt_update_phone">[更换]</string>
@@ -596,4 +596,6 @@
     <string name="my_trans">我的发射器</string>
     <string name="pls_select_trans">请选择发射器</string>
     <string name="other_trans">其他发射器</string>
+    <string name="Button_Reset">重设序列号</string>
+    <string name="content_new_sensor">确认选择新传感器？</string>
 </resources>
