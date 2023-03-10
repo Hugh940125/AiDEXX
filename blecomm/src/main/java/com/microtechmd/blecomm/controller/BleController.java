@@ -67,9 +67,4 @@ public abstract class BleController {
     public native int pair();
 
     public native int unpair();
-
-    public abstract void getTransInfo();
-    public abstract void getDefaultParam();
-    public abstract void newSensor(NewSensorEntity newSensorEntity);
-    public abstract void startTime();
 }

@@ -10,6 +10,10 @@ import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import com.microtech.aidexx.db.entity.CgmHistoryEntity_
+import com.microtech.aidexx.ui.main.home.HomeStateManager
+import com.microtech.aidexx.ui.main.home.glucosePanel
+import com.microtech.aidexx.ui.main.home.newOrUsedSensor
+import com.microtech.aidexx.ui.main.home.warmingUp
 import com.microtech.aidexx.ui.setting.alert.AlertManager
 import com.microtech.aidexx.ui.setting.alert.AlertManager.Companion.calculateFrequency
 import com.microtech.aidexx.ui.setting.alert.AlertType
@@ -250,6 +254,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             return
         }
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
+        broadcast?.let {
+            refreshState(broadcast)
+        }
         isSensorExpired =
             (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
         isMalfunction =
@@ -318,6 +325,16 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             } else {
                 getController().historyRange
             }
+        }
+    }
+
+    private fun refreshState(broadcast: AidexXBroadcastEntity) {
+        if (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
+            HomeStateManager.instance().setState(newOrUsedSensor)
+        } else if (broadcast.timeOffset < 60) {
+            HomeStateManager.instance().setState(warmingUp)
+        } else {
+            HomeStateManager.instance().setState(glucosePanel)
         }
     }
 
@@ -413,7 +430,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 historyEntity.deviceTime = getHistoryDate(history.timeOffset)
                 historyEntity.sensorIndex =
                     (entity.sensorStartTime?.time!!).toInt()
-                if (history.timeOffset <= 60) {
+                if (history.timeOffset < 60) {
                     historyEntity.eventWarning = -1
                 }
                 when (historyEntity.eventType) {

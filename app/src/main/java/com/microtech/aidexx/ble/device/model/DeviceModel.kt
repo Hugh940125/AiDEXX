@@ -5,6 +5,7 @@ import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
+import com.microtechmd.blecomm.controller.BleControllerProxy
 import com.microtechmd.blecomm.entity.BleMessage
 import java.util.*
 
@@ -30,10 +31,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var minutesAgo: Int? = null
         private set
         get() {
-            if (lastHistoryTime == null) {
-                field = null
+            field = if (lastHistoryTime == null) {
+                null
             } else {
-                field = (TimeUtils.currentTimeMillis - lastHistoryTime!!.time).millisToMinutes()
+                (TimeUtils.currentTimeMillis - lastHistoryTime!!.time).millisToMinutes()
             }
             return field
         }
@@ -51,7 +52,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun handleAdvertisement(data: ByteArray)
 
-    abstract fun getController(): BleController
+    abstract fun getController(): BleControllerProxy
 
     abstract fun saveBriefHistoryFromConnect(data: ByteArray)
 

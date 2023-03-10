@@ -43,4 +43,9 @@ class HomeStateManager private constructor() {
         timer = Timer()
         timer?.schedule(timeTask, 5 * 60 * 1000)
     }
+
+    fun cancel() {
+        timer?.cancel()
+        timer = null
+    }
 }

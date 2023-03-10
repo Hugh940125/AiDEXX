@@ -3,7 +3,7 @@ package com.microtechmd.blecomm.controller;
 import com.microtechmd.blecomm.entity.AidexXDatetimeEntity;
 import com.microtechmd.blecomm.entity.NewSensorEntity;
 
-public class AidexXController extends BleController {
+public class AidexXController extends BleControllerProxy {
     static {
         System.loadLibrary("blecomm-lib");
     }

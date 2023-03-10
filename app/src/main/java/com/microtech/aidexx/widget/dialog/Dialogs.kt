@@ -56,7 +56,7 @@ object Dialogs {
     fun showWhether(
         context: Context,
         title: String? = null,
-        content: String?,
+        content: String? = null,
         confirm: (() -> Unit)?,
         cancel: (() -> Unit)? = null
     ) {

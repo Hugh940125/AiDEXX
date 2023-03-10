@@ -29,6 +29,7 @@ const val needPair = "needPair"
 const val glucosePanel = "glucosePanel"
 const val newOrUsedSensor = "newOrUsedSensor"
 const val warmingUp = "warmingUp"
+
 class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private val initOrientation: Int = 0
@@ -41,6 +42,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
+        HomeStateManager.onHomeStateChange = {
+            replaceFragment(it)
+        }
     }
 
     override fun onResume() {
@@ -54,6 +58,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     override fun onDestroy() {
         super.onDestroy()
+        HomeStateManager.instance().cancel()
     }
 
     override fun onCreateView(

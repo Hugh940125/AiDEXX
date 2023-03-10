@@ -94,7 +94,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             AidexBleAdapter.getInstance().startBtScan(false)
             scanStarted = true
             Dialogs.showWait(getString(R.string.loading))
-            transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 2 * 1000)
+            transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
         }
         initView()
         observeMessage()
@@ -137,6 +137,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     private fun observeMessage() {
         MessageDispatcher.instance().observer(lifecycleScope) { msg ->
+            LogUtil.eAiDEX("Pair ----> $msg")
             val success = msg.isSuccess
             val default = TransmitterManager.instance().getDefault()
             when (msg.operation) {

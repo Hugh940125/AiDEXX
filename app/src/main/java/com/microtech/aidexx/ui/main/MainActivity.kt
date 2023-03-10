@@ -17,6 +17,7 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
+import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.utils.LocationUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
@@ -48,7 +49,10 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                                     it,
                                     it.getString(R.string.need_storage),
                                     it.getString(R.string.storage_use_for), {
-                                        PermissionsUtil.requestPermissions(it, PermissionGroups.Storage)
+                                        PermissionsUtil.requestPermissions(
+                                            it,
+                                            PermissionGroups.Storage
+                                        )
                                     }, flag = null
                                 )
                         }
@@ -79,6 +83,7 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        startService(Intent(this, MainService::class.java))
         mHandler = MainHandler(this)
         initSDKs()
         fitOrientation()
@@ -98,26 +103,31 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     private fun requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
+                mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
                 mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
                 return@checkPermissions
             }
         } else {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
+                mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
                 mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
                 return@checkPermissions
             }
         }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            mHandler.removeMessages(REQUEST_ENABLE_LOCATION_SERVICE)
             mHandler.sendEmptyMessageDelayed(REQUEST_ENABLE_LOCATION_SERVICE, 2 * 1000)
             return
         }
         PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
+            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
             mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 5 * 1000)
             return@checkPermissions
         }
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         val hasIgnored = powerManager.isIgnoringBatteryOptimizations(this@MainActivity.packageName)
         if (!hasIgnored) {
+            mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
             mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, 15 * 1000)
         }
     }

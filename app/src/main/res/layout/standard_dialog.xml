@@ -14,27 +14,28 @@
         android:paddingTop="30dp">
 
         <TextView
+            android:layout_gravity="center"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:id="@+id/title"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:gravity="center"
             android:textSize="16sp"
+            android:textStyle="bold"
             android:visibility="visible"
             tools:text="这是标题" />
 
         <TextView
+            android:layout_gravity="center"
             android:id="@+id/content"
-            android:textAlignment="center"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
-            tools:text="这里内容"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 

@@ -15,6 +15,8 @@ import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
+import java.util.Timer
+import java.util.TimerTask
 
 /**
  *@date 2023/3/6
@@ -82,7 +84,13 @@ class MainService : Service() {
             else -> {
             }
         }
-        MessageDispatcher.instance().dispatch(serviceMainScope, message)
+        val timer = Timer()
+        timer.schedule(object : TimerTask(){
+            override fun run() {
+                val message = BleMessage(0,true, byteArrayOf())
+                MessageDispatcher.instance().dispatch(serviceMainScope, message)
+            }
+        },0,20)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
