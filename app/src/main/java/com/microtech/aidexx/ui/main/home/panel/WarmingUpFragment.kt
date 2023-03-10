@@ -10,8 +10,9 @@ import android.view.animation.RotateAnimation
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.FragmentWarmingUpBinding
+import com.microtech.aidexx.ui.main.home.HomeStateManager
 
-class WarmingUpFragment: BaseFragment<BaseViewModel, FragmentWarmingUpBinding>() {
+class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>() {
 
     var rotateAnimation: RotateAnimation? = null
 
@@ -22,6 +23,9 @@ class WarmingUpFragment: BaseFragment<BaseViewModel, FragmentWarmingUpBinding>()
     ): View {
         binding = FragmentWarmingUpBinding.inflate(layoutInflater)
         initAnim()
+        HomeStateManager.onWarmingUpTimeLeftListener = {
+            binding.tvRemain.text = it?.toString() ?: "--"
+        }
         return binding.root
     }
 

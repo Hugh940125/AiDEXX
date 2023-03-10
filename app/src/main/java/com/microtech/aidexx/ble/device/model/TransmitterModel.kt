@@ -3,6 +3,8 @@ package com.microtech.aidexx.ble.device.model
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.common.millisToHours
+import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
@@ -59,8 +61,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    var faultType = 0 // 1.异常状态，可恢复 2.需要更换
-    var glucose: Float? = null
     private val typeHyperAlert = 1
     private val typeHypoAlert = 2
     private val typeUrgentAlert = 3
@@ -71,26 +71,25 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private var lastHyperAlertTime: Long? = null
     private var lastHypoAlertTime: Long? = null
     private var lastUrgentAlertTime: Long? = null
-    var latestHistory: AidexXHistoryEntity? = null
-    val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
+    private val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<CgmHistoryEntity>()
     private val tempRawList = mutableListOf<CgmHistoryEntity>()
-    override var mController: BleController = AidexXController()
 
     override fun getController(): AidexXController {
-        return mController as AidexXController
+        return controller as AidexXController
     }
 
     init {
-        mController.mac = entity.deviceMac
-        mController.sn = entity.deviceSn
-        mController.name = "AiDEX X-${entity.deviceSn}"
+        controller = AidexXController()
+        controller.mac = entity.deviceMac
+        controller.sn = entity.deviceSn
+        controller.name = "AiDEX X-${entity.deviceSn}"
         val userId = UserInfoManager.instance().userId()
         val getBytes = userId.toByteArray(Charset.forName("UTF-8"))
-        mController.hostAddress = getBytes
-        mController.id = entity.accessId
-        mController.key = entity.encryptionKey
-        mController.setMessageCallback { operation, success, data ->
+        controller.hostAddress = getBytes
+        controller.id = entity.accessId
+        controller.key = entity.encryptionKey
+        controller.setMessageCallback { operation, success, data ->
             LogUtil.eAiDEX(
                 "operation $operation , success $success message ${
                     StringUtils.binaryToHexString(data)
@@ -123,7 +122,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({ transmitterBox?.put(entity) })
     }
 
-    fun isDataValid(): Boolean {
+    override fun isDataValid(): Boolean {
         return (lastHistoryTime != null && minutesAgo != null && minutesAgo in 0..15 && glucose != null && !isMalfunction && isHistoryValid)
     }
 
@@ -142,8 +141,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     suspend fun savePair(deviceModel: Int, version: String) {
-        entity.deviceMac = mController.mac
-        entity.accessId = mController.id
+        entity.deviceMac = controller.mac
+        entity.accessId = controller.id
         entity.deviceModel = deviceModel
         entity.version = version
         entity.updateDeviceKey()
@@ -165,7 +164,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         entity.id = null
         //向服务器请求注册设备
         DeviceApi.deviceRegister(entity, success = {
-            entity.accessId = mController.id
+            entity.accessId = controller.id
             entity.id = it.id
             entity.sensorIndex = it.sensorIndex
             entity.eventIndex = it.eventIndex
@@ -211,7 +210,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     suspend fun deletePair() {
         entity.accessId = null
-        mController.unregister()
+        controller.unregister()
         ObjectBox.runAsync({
             transmitterBox!!.put(entity)
         }, onSuccess = {
@@ -220,9 +219,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 suspend {
                     DeviceApi.deviceUnregister(map,
                         success = {
-                            mController.sn = null
-                            mController.mac = null
-                            mController.id = null
+                            controller.sn = null
+                            controller.mac = null
+                            controller.id = null
                             BleController.stopScan() //停止扫描
                             ObjectBox.runAsync({
                                 transmitterBox!!.removeAll()
@@ -328,11 +327,23 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
+    override fun getSensorRemainingTime(): Int? {
+        val days = entity.expirationTime
+        return when {
+            isSensorExpired -> 0
+            entity.sensorStartTime == null || latestAdTime == 0L || (TimeUtils.currentTimeMillis - latestAdTime).millisToMinutes() > 15 -> null
+            else -> {
+                (days * TimeUtils.oneDaySeconds - (TimeUtils.currentTimeMillis - entity.sensorStartTime?.time!!).millisToSeconds()).millisToHours()
+            }
+        }
+    }
+
     private fun refreshState(broadcast: AidexXBroadcastEntity) {
         if (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
             HomeStateManager.instance().setState(newOrUsedSensor)
         } else if (broadcast.timeOffset < 60) {
             HomeStateManager.instance().setState(warmingUp)
+            HomeStateManager.instance().setWarmingUpTimeLeft(broadcast.timeOffset)
         } else {
             HomeStateManager.instance().setState(glucosePanel)
         }
@@ -537,7 +548,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             getController().getRawHistories(nextFullEventIndex)
         } else {
-            mController.disconnect()
+            controller.disconnect()
         }
     }
 
@@ -545,7 +556,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (targetEventIndex > nextFullEventIndex) {
             getController().getRawHistories(nextFullEventIndex)
         } else {
-            mController.disconnect()
+            controller.disconnect()
         }
     }
 

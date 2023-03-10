@@ -76,7 +76,7 @@ class TransmitterManager private constructor() {
 
     fun set(model: TransmitterModel) {
         default = model
-        model.mController.register()
+        model.getController().register()
         onTransmitterLoaded?.invoke(model)
     }
 

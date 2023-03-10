@@ -1,12 +1,8 @@
 package com.microtech.aidexx.ble
 
 import com.microtechmd.blecomm.entity.BleMessage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 
 /**
  *@date 2023/3/7
@@ -14,7 +10,7 @@ import kotlinx.coroutines.launch
  *@desc
  */
 class MessageDispatcher {
-
+    private var needSend = true
     private val mutableSharedFlow = MutableSharedFlow<BleMessage>()
 
     companion object {
@@ -29,15 +25,30 @@ class MessageDispatcher {
         }
     }
 
+    fun observeLifecycle(scope: CoroutineScope) {
+        mutableSharedFlow.subscriptionCount
+            .map { count -> count > 0 }
+            .distinctUntilChanged()
+            .onEach { isActive ->
+                if (isActive != needSend) {
+                    needSend = isActive
+                }
+            }
+            .launchIn(scope)
+    }
+
     fun dispatch(scope: CoroutineScope, message: BleMessage) {
-        scope.launch {
-            mutableSharedFlow.emit(message)
+        if (needSend) {
+            scope.launch {
+                mutableSharedFlow.emit(message)
+            }
         }
     }
 
+    @OptIn(FlowPreview::class)
     fun observer(scope: CoroutineScope, onReceive: ((message: BleMessage) -> Unit)) {
         scope.launch {
-            mutableSharedFlow.buffer(10).flowOn(Dispatchers.IO).collect {
+            mutableSharedFlow.sample(2000).buffer(10).flowOn(Dispatchers.IO).collect {
                 onReceive.invoke(it)
             }
         }

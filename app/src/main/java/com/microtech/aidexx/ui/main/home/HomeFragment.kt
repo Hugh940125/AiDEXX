@@ -8,9 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.MessageDispatcher
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
@@ -19,6 +21,7 @@ import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.utils.LogUtil
+import kotlinx.coroutines.delay
 
 /**
  *@date 2023/2/15

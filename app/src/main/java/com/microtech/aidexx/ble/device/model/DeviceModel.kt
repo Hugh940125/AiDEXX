@@ -7,6 +7,7 @@ import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerProxy
 import com.microtechmd.blecomm.entity.BleMessage
+import com.microtechmd.blecomm.parser.AidexXHistoryEntity
 import java.util.*
 
 /**
@@ -15,7 +16,8 @@ import java.util.*
  *@desc
  */
 abstract class DeviceModel(val entity: TransmitterEntity) {
-    open lateinit var mController: BleController
+    lateinit var controller: BleController
+    var faultType = 0 // 1.异常状态，可恢复 2.需要更换
     var messageCallBack: ((msg: BleMessage) -> Unit)? = null
     var isHistoryValid: Boolean = false
     var isMalfunction: Boolean = false
@@ -25,8 +27,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var nextEventIndex = 0
     var nextFullEventIndex = 0
     var latestAdTime = 0L
+    var glucose: Float? = null
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
+    var latestHistory: AidexXHistoryEntity? = null
     var lastHistoryTime: Date? = null
     var minutesAgo: Int? = null
         private set
@@ -58,8 +62,12 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun saveRawHistoryFromConnect(data: ByteArray)
 
+    abstract fun isDataValid(): Boolean
+
+    abstract fun getSensorRemainingTime(): Int?
+
     fun disconnect() {
-        mController.disconnect()
+        controller.disconnect()
     }
 
     fun updateStartTime(sensorStartTime: Date?, callback: ((Boolean) -> Unit)? = null) {

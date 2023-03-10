@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object TimeUtils {
+    const val oneDayHour = 24
     const val oneHourSeconds = 3600L
     const val oneDaySeconds = oneHourSeconds * 24
     const val oneDayMillis = oneDaySeconds * 1000

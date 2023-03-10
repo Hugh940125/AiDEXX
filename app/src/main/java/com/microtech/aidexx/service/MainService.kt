@@ -9,14 +9,14 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.ByteUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import java.util.Timer
-import java.util.TimerTask
+import java.util.*
 
 /**
  *@date 2023/3/6
@@ -32,6 +32,7 @@ class MainService : Service() {
         super.onCreate()
         serviceMainScope = MainScope()
         transmitterManager = TransmitterManager.instance()
+        MessageDispatcher.instance().observeLifecycle(serviceMainScope)
         val model = transmitterManager.getDefault()
         model?.let {
             model.messageCallBack = {
@@ -84,13 +85,7 @@ class MainService : Service() {
             else -> {
             }
         }
-        val timer = Timer()
-        timer.schedule(object : TimerTask(){
-            override fun run() {
-                val message = BleMessage(0,true, byteArrayOf())
-                MessageDispatcher.instance().dispatch(serviceMainScope, message)
-            }
-        },0,20)
+        MessageDispatcher.instance().dispatch(serviceMainScope, message)
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -98,7 +93,7 @@ class MainService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onDestroy() {

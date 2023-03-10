@@ -56,7 +56,7 @@ fun Float.toGlucoseString(): String {
 
 fun Float.toGlucoseStringWithLowAndHigh(context: Resources): String {
     return when {
-        this <= ThresholdManager.GLUCOSE_LOW_LIMIT -> context.getString(R.string.Glucose_Low)
+        this < ThresholdManager.GLUCOSE_LOW_LIMIT -> context.getString(R.string.Glucose_Low)
         this > ThresholdManager.GLUCOSE_UP_LIMIT -> context.getString(R.string.Glucose_High)
         else -> UnitManager.unitFormat().format(this.toGlucoseValue())
     }

@@ -8,8 +8,8 @@ import java.util.*
  *@desc
  */
 class HomeStateManager private constructor() {
-
     private var timer: Timer? = null
+    private var timeLeft: Int? = null
     private var currentState = glucosePanel
     private val timeTask = object : TimerTask() {
         override fun run() {
@@ -18,6 +18,7 @@ class HomeStateManager private constructor() {
     }
 
     companion object {
+        var onWarmingUpTimeLeftListener: ((timeLeft: Int?) -> Unit)? = null
         var onHomeStateChange: ((tag: String) -> Unit)? = null
         private var homeStateManager: HomeStateManager? = null
 
@@ -34,8 +35,19 @@ class HomeStateManager private constructor() {
         if (tag != glucosePanel) {
             countDownToReset()
         }
+        if (tag == warmingUp) {
+            timeLeft = null
+        }
         currentState = tag
         onHomeStateChange?.invoke(tag)
+    }
+
+    fun setWarmingUpTimeLeft(time: Int) {
+        if (timeLeft == time) {
+            return
+        }
+        timeLeft = time
+        onWarmingUpTimeLeftListener?.invoke(timeLeft)
     }
 
     private fun countDownToReset() {

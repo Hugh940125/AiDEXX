@@ -100,7 +100,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         observeMessage()
     }
 
-    fun pair() {
+    private fun checkEnvironment() {
         if (!BleUtil.isBleEnable(this)) {
             enableBluetooth()
             return
@@ -124,7 +124,14 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             Dialogs.showError(getString(R.string.net_error))
             return
         }
+        startPair()
+    }
+
+    private fun startPair() {
         Dialogs.showWait(getString(R.string.Searching))
+        if (transmitter != null && transmitter?.accessId != null) {
+
+        }
     }
 
     private fun requestPermission() {
@@ -216,6 +223,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     private fun initView() {
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
+        transmitterAdapter.onPairClick = {
+            checkEnvironment()
+        }
         binding.rvOtherTrans.adapter = transmitterAdapter
         transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)
     }

@@ -67,12 +67,16 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                             activity.enableLocation()
                         }
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
-                            Dialogs.showWhether(
-                                activity,
-                                content = activity.getString(R.string.content_ignore_battery),
-                                confirm = {
-                                    activity.ignoreBatteryOptimization()
-                                })
+                            val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
+                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
+                            if (!hasIgnored) {
+                                Dialogs.showWhether(
+                                    activity,
+                                    content = activity.getString(R.string.content_ignore_battery),
+                                    confirm = {
+                                        activity.ignoreBatteryOptimization()
+                                    })
+                            }
                         }
                     }
                 }
@@ -124,12 +128,8 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
             mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 5 * 1000)
             return@checkPermissions
         }
-        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
-        val hasIgnored = powerManager.isIgnoringBatteryOptimizations(this@MainActivity.packageName)
-        if (!hasIgnored) {
-            mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-            mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, 15 * 1000)
-        }
+        mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+        mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, 15 * 1000)
     }
 
     private fun initView() {
