@@ -37,6 +37,9 @@
 AidexXController::AidexXController() : BleController()
 {
     authenticated = true;
+#if ENABLE_ENCRYPTION
+    authenticated = false;
+#endif
     frameEnable = false;
     acknowledgement = false;
     autoDisconnect = false;
@@ -55,7 +58,7 @@ void AidexXController::setSn(const string &sn)
     if (!sn.size())
         return;
 
-    int snLen = sn.length();
+    int snLen = (int)sn.length();
     uint8 snChar[snLen];
     for (int i = 0; i < snLen; i++)
         snChar[i] = *(sn.data() + i);
@@ -68,8 +71,18 @@ void AidexXController::setSn(const string &sn)
         snChar1[i] = snChar[i] * 13 + 61;
         snChar2[i] = snChar[i] * 17 + 19;
     }
-    MD5::digest(snChar1, snLen, (unsigned char *)snSecret1);
-    MD5::digest(snChar2, snLen, (unsigned char *)snSecret2);
+//    MD5::digest(snChar1, snLen, (unsigned char *)snSecret1);
+//    MD5::digest(snChar2, snLen, (unsigned char *)snSecret2);
+    
+    //TODO 临时采用crc16方式
+    uint16 crc16_1 = LibChecksum_GetChecksum16Bit_CCITT(snChar1, snLen);
+    uint16 crc16_2 = LibChecksum_GetChecksum16Bit_CCITT(snChar2, snLen);
+
+    snSecret1[0] = crc16_1 & 0xff;
+    snSecret1[1] = (crc16_1 >> 8) & 0xff;
+
+    snSecret2[0] = crc16_2 & 0xff;
+    snSecret2[1] = (crc16_2 >> 8) & 0xff;
 }
 
 bool AidexXController::startEncryption(const uint8 *key)
@@ -86,7 +99,19 @@ bool AidexXController::startEncryption(const uint8 *key)
     if (newKey[KEY_LENGTH] != LibChecksum_GetChecksum8Bit(newKey, KEY_LENGTH))
         return false;
     DevComm::getInstance()->getEncryptor()->setKey(newKey);
+    
+#if ENABLE_ENCRYPTION
+    authenticated = true;
+#endif
     return true;
+}
+
+uint16 AidexXController::pair() {
+    if (getSecret() == NULL) {
+        return BleOperation::BUSY;
+    }
+    
+    return BleController::pair();
 }
 
 uint16 AidexXController::getDeviceInfo() {
@@ -269,6 +294,27 @@ bool AidexXController::sendCommand(uint8 op, uint8 *data, uint16 length, bool in
 }
 
 bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length) {
+    if (port == 0xFF && op == 0xFF) {
+        if (length == 1) {
+            autoSending = true;
+            onReceive(AidexXOperation::SET_SN, true, data, length);
+            return true;
+        }
+        if (length == SECRET_LENGTH) {
+            //TODO 如果全0则配对失败？？？
+            autoSending = true;
+            setKey((const char *)data);
+            onReceive(BleOperation::PAIR, true, data, length);
+            return true;
+        }
+        if (length == SECRET_LENGTH + 1) {
+            autoSending = true;
+            bool success = startEncryption(data);
+            onReceive(BleOperation::BOND, success, data, length);
+            return success;
+        }
+    }
+    
     int aidexXOp = BleOperation::UNKNOWN;
     autoSending = false;
 

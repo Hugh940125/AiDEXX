@@ -3,7 +3,7 @@
 #include "../../controller/pump/pumpcontroller.h"
 #include "../../constant/pump/pumpconstants.h"
 
-static const uint32 HOURS_PER_DAY = 24;
+//static const uint32 HOURS_PER_DAY = 24;
 
 const float32 *PumpBolusProfileParser::getBolusProfile() {
     try {

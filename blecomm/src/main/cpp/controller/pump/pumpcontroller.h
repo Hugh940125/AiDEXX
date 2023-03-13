@@ -65,6 +65,7 @@ public:
 protected:
     uint16 getServiceUUID() const { return SERVICE_UUID; }
     uint16 getCharacteristicUUID() const { return CHARACTERISTIC_UUID; }
+    uint16 getPrivateCharacteristicUUID() const { return  0; };
     uint8 getPacketLength() const { return PACKET_LENGTH; }
     uint getCommPort() const { return PumpPort::PORT_COMM; }
     uint getHostAddressLength() const {return HOST_ADDRESS_LENGTH;}

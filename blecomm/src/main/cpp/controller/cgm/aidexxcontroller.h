@@ -12,6 +12,7 @@ class AidexXController : public BleController
 public:
     static const uint16 SERVICE_UUID = 0x181F;
     static const uint16 CHARACTERISTIC_UUID = 0x2AFF;
+    static const uint16 PRIVATE_CHARACTERISTIC_UUID = 0x2AFE;
     static const uint HOST_ADDRESS_LENGTH = 6;
     static const uint SECRET_LENGTH = 16;
     static const uint KEY_LENGTH = 16;
@@ -20,12 +21,15 @@ public:
     ~AidexXController();
 
     // getter
-    const uint8 *getSecret() const { return sn.size() ? snSecret1 : NULL; }
+    const uint8 *getSecret() const override { return sn.size() ? snSecret1 : NULL; }
+    bool isPaired() const override { return accessKey.size(); }
 
     // setter
     void setSn(const string &sn) override;
 
     bool startEncryption(const uint8 *key);
+
+    uint16 pair();
 
     // CGM命令
     uint16 getDeviceInfo();
@@ -55,17 +59,18 @@ protected:
     uint8 snSecret1[SECRET_LENGTH] = {0};
     uint8 snSecret2[SECRET_LENGTH] = {0};
 
-    uint16 getServiceUUID() const { return SERVICE_UUID; }
-    uint16 getCharacteristicUUID() const { return CHARACTERISTIC_UUID; }
-    uint8 getPacketLength() const { return 0; }
-    uint getCommPort() const { return 0xFF; }
-    uint getHostAddressLength() const {return HOST_ADDRESS_LENGTH;}
-    uint getIdLength() const {return 0;}
-    uint getKeyLength() const {return KEY_LENGTH;}
-    uint getDevCommType() const {return DEV_COMM_TYPE_1; }
+    uint16 getServiceUUID() const override { return SERVICE_UUID; }
+    uint16 getCharacteristicUUID() const override { return CHARACTERISTIC_UUID; }
+    uint16 getPrivateCharacteristicUUID() const override { return  PRIVATE_CHARACTERISTIC_UUID; };
+    uint8 getPacketLength() const override { return 0; }
+    uint getCommPort() const override { return 0xFF; }
+    uint getHostAddressLength() const override {return HOST_ADDRESS_LENGTH;}
+    uint getIdLength() const override {return 0;}
+    uint getKeyLength() const override {return KEY_LENGTH;}
+    uint getDevCommType() const override {return DEV_COMM_TYPE_1; }
 
-    bool isEncryptionEnabled() const { return false; }
-    bool isBufferEnabled() const { return false; }
+    bool isEncryptionEnabled() const override { return false; }
+    bool isBufferEnabled() const override { return false; }
     bool isAuthenticated() const { return authenticated; }
 	bool isFrameEnabled() const { return frameEnable; }
 	bool isAcknowledgement() const { return acknowledgement; }

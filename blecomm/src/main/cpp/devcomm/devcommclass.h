@@ -4,7 +4,7 @@
 #include "CLibrary/global.h"
 
 #define ENABLE_CRC16_CCITT  1
-#define ENABLE_ENCRYPTION   0
+#define ENABLE_ENCRYPTION   1
 
 #define DEV_COMM_TYPE_0         0
 #define DEV_COMM_TYPE_1         1

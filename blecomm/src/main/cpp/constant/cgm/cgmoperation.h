@@ -27,6 +27,11 @@ public:
     static const uint16 SET_GC_IMEAS_TRIMMING = 0x2311;
     
     static const uint16 GET_BROADCAST_DATA = 0x1105;
+    
+    static const uint16 GET_SINGLE_HISTORY = 0xF001;
+
+    static const uint16 EXT_FORCE_UNPAIR = 0xFF01;
+    static const uint16 EXT_FORCE_REBOOT = 0xFF02;
 };
 
 #endif // CGMOPERATION_H

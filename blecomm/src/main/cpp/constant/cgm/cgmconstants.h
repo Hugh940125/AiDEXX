@@ -118,6 +118,15 @@ public:
     static const int32 BATTERY_BASE = 100;
 };
 
+class CgmParamExt
+{
+public:
+    static const uint8 PARAM_EXT_FORCE_UNPAIR = 0;
+    static const uint8 PARAM_EXT_FORCE_REBOOT = 1;
+    static const uint8 PARAM_EXT_FORCE_UNPAIR_AND_PAIR = 2;
+    static const uint8 COUNT_PARAM = 3;
+};
+
 class CgmDefaultParam
 {
 public:

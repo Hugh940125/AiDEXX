@@ -67,8 +67,20 @@ void BleController::connect() {
     ble->connect(this);
 }
 
-void BleController::disconnect() {
+void BleController::disconnect() {    
+    if (ble->controller == NULL || ble->controller != this) {
+        return;
+    }
+    
     ble->disconnect();
+}
+
+void BleController::destroy() {
+    if (ble->controller == NULL || ble->controller != this) {
+        return;
+    }
+    
+    ble->controller = NULL;
 }
 
 BleController::BleController() {

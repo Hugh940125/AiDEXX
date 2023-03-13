@@ -31,6 +31,8 @@ protected:
     virtual void executeConnect(string mac) = 0;
     virtual void executeDisconnect() = 0;
     virtual void executeWrite(const char *data, uint16 length) = 0;
+    virtual void executeWriteCharacteristic(uint16 uuid, const char *data, uint16 length) = 0;
+    virtual void executeReadCharacteristic(uint16 uuid) = 0;
 
     // 服务UUID
     uint16 getServiceUUID();
@@ -49,6 +51,7 @@ protected:
     void onConnectFailure();
     void onDisconnected();
     void onReceiveData(const char *data, uint16 length);
+    void onReceiveData(uint16 uuid, const char *data, uint16 length);
 
 private:
     friend class BleController;
@@ -116,6 +119,7 @@ private:
     void handleEvent(uint8 event);
     void handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length);
     void write(const uint8 *data, uint16 length);
+    void write(uint16 uuid, const uint8 *data, uint16 length);
     void continueSending();
 };
 

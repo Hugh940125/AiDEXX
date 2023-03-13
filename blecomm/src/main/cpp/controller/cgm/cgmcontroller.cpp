@@ -15,6 +15,7 @@ CgmController::CgmController() : BleController()
 
     hypo = 0;
     hyper = 0;
+    sensorIndex = 0;
 }
 
 void CgmController::initialSettings(float32 hypo, float32 hyper) {
@@ -42,7 +43,25 @@ uint16 CgmController::getDeviceInfo() {
     }
 }
 
+uint16 CgmController::getSingleHistory(uint16 index) {
+    uint8 data[2];
+    LittleEndianByteUtils::unsignedShortToBytes(index, data);
+    if (send(CgmPort::PORT_MONITOR,
+             Global::OPERATION_GET,
+             CgmMonitor::PARAM_HISTORY,
+             data,
+             2)) {
+        return CgmOperation::GET_SINGLE_HISTORY;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
 uint16 CgmController::getHistories(uint16 index) {
+    if (sensorIndex <= 0 && getSingleHistory(1) == BleOperation::BUSY) {
+        return BleOperation::BUSY;
+    }
+    
     uint8 data[2];
     LittleEndianByteUtils::unsignedShortToBytes(index, data);
     if (send(CgmPort::PORT_MONITOR,
@@ -57,6 +76,10 @@ uint16 CgmController::getHistories(uint16 index) {
 }
 
 uint16 CgmController::getFullHistories(uint16 index) {
+    if (sensorIndex <= 0 && getSingleHistory(1) == BleOperation::BUSY) {
+        return BleOperation::BUSY;
+    }
+    
     uint8 data[2];
     LittleEndianByteUtils::unsignedShortToBytes(index, data);
     if (send(CgmPort::PORT_MONITOR,
@@ -263,6 +286,48 @@ uint16 CgmController::getBroadcastData() {
     }
 }
 
+uint16 CgmController::forceUnpair() {
+    char data[] = "force unpair all";
+    uint16 length = sizeof(data) - 1;
+    if (send(0xFF,
+             0xFF,
+             CgmParamExt::PARAM_EXT_FORCE_UNPAIR,
+             (const uint8 *)data,
+             length)) {
+        return CgmOperation::EXT_FORCE_UNPAIR;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
+uint16 CgmController::forceReboot() {
+    char data[] = "force reboot all";
+    uint16 length = sizeof(data) - 1;
+    if (send(0xFF,
+             0xFF,
+             CgmParamExt::PARAM_EXT_FORCE_REBOOT,
+             (const uint8 *)data,
+             length)) {
+        return CgmOperation::EXT_FORCE_REBOOT;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
+uint16 CgmController::pairWithForceUnpair() {
+    char data[] = "force unpair all";
+    uint16 length = sizeof(data) - 1;
+    if (send(0xFF,
+             0xFF,
+             CgmParamExt::PARAM_EXT_FORCE_UNPAIR_AND_PAIR,
+             (const uint8 *)data,
+             length)) {
+        return CgmOperation::EXT_FORCE_UNPAIR;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
 void CgmController::setInfo(const BleControllerInfo &info) {
     BleController::setInfo(info);
     int size = (int)info.params.size();
@@ -275,6 +340,22 @@ void CgmController::setInfo(const BleControllerInfo &info) {
 }
 
 bool CgmController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length) {
+    if (port == 0xFF && op == 0xFF) {
+        if (param == CgmParamExt::PARAM_EXT_FORCE_UNPAIR) {
+            onReceive(CgmOperation::EXT_FORCE_UNPAIR, true, data, length);
+            return true;
+        }
+        if (param == CgmParamExt::PARAM_EXT_FORCE_REBOOT) {
+            onReceive(CgmOperation::EXT_FORCE_REBOOT, true, data, length);
+            return true;
+        }
+        if (param == CgmParamExt::PARAM_EXT_FORCE_UNPAIR_AND_PAIR) {
+            onReceive(CgmOperation::EXT_FORCE_UNPAIR, true, data, length);
+            this->pair();
+            return true;
+        }
+    }
+    
     int cgmOp = CgmOperation::UNKNOWN;
     bool success = (op==Global::OPERATION_ACKNOWLEDGE) || (op==Global::OPERATION_NOTIFY);
     switch (port) {
@@ -289,6 +370,7 @@ bool CgmController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8
         else if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmMonitor::PARAM_DATE_TIME) cgmOp = CgmOperation::SET_DATETIME;
         else if (op==Global::OPERATION_NOTIFY && param==CgmMonitor::PARAM_HISTORIES) cgmOp = CgmOperation::GET_HISTORIES;
         else if (op==Global::OPERATION_NOTIFY && param==CgmMonitor::PARAM_HISTORIES_FULL) cgmOp = CgmOperation::GET_HISTORIES_FULL;
+        else if (op==Global::OPERATION_NOTIFY && param==CgmMonitor::PARAM_HISTORY) cgmOp = CgmOperation::GET_SINGLE_HISTORY;
         break;
     case CgmPort::PORT_GLUCOSE:
         if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmGlucose::PARAM_NEW_SENSOR) cgmOp = CgmOperation::SET_NEW_SENSOR;
@@ -308,11 +390,37 @@ bool CgmController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8
         break;
     }
     
+    LOGD("CgmOperation: %04X; success: %d", cgmOp, success);
+    
+    if (success && cgmOp == CgmOperation::GET_SINGLE_HISTORY) {
+        sensorIndex = data[6];
+        startUp = LittleEndianByteUtils::byteToUnsignedInt(data);
+
+        LOGD("GET_SINGLE_HISTORY: %d - %d", startUp, sensorIndex);
+        return success;
+    }
+    if (success && (cgmOp == CgmOperation::GET_HISTORIES || cgmOp == CgmOperation::GET_HISTORIES_FULL)) {
+        uint8 buffer[length + 6];
+        buffer[0] = sensorIndex;
+        buffer[1] = 0xFF;
+        
+        uint8 timestamp[4];
+        LittleEndianByteUtils::unsignedIntToBytes(startUp, timestamp);
+        
+        ByteUtils::copy((char*)buffer + 2, (const char*)timestamp, 4);
+        ByteUtils::copy((char*)buffer + 6, (const char*)data, length);
+        
+        onReceive(cgmOp, success, buffer, length + 6);
+
+        return success;
+    }
+    
     if (success && cgmOp == CgmOperation::GET_BROADCAST_DATA && length == CgmBroadcastParser::MIN_BYTES_LENGTH - 2) {
         uint16 broadcastLength = CgmBroadcastParser::MIN_BYTES_LENGTH;
 
         uint8 broadcast[broadcastLength];
-        memcpy(broadcast, data, length);
+        ByteUtils::copy((char*)broadcast, (const char*)data, length);
+
         broadcast[broadcastLength - 2] = 0xFF;
         broadcast[broadcastLength - 1] = LibChecksum_GetChecksum8Bit(broadcast, broadcastLength - 1);
         
@@ -327,13 +435,21 @@ bool CgmController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8
 
 void CgmController::onReceive(uint16 op, bool success, const uint8 *data, uint16 length) {
     switch (op) {
-    case BleOperation::CONNECT:
-    case BleOperation::DISCONNECT:
-        authenticated = false;
-        break;
-    case BleOperation::BOND:
-        authenticated = success;
-        break;
+        case BleOperation::CONNECT:
+        case BleOperation::DISCONNECT:
+        {
+            authenticated = false;
+            sensorIndex = 0;
+            startUp = 0;
+        }
+            break;
+        case BleOperation::BOND:
+        {
+            authenticated = success;
+            sensorIndex = 0;
+            startUp = 0;
+        }
+            break;
     }
     BleController::onReceive(op, success, data, length);
 }

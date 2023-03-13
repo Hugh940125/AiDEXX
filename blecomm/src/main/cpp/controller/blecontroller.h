@@ -32,6 +32,7 @@ public:
 
     virtual uint16 getServiceUUID() const = 0;
     virtual uint16 getCharacteristicUUID() const = 0;
+    virtual uint16 getPrivateCharacteristicUUID() const = 0;
     virtual uint8 getPacketLength() const = 0;
     virtual uint getCommPort() const = 0;
     virtual uint getHostAddressLength() const = 0;
@@ -39,6 +40,8 @@ public:
     virtual uint getKeyLength() const = 0;
     virtual uint getDevCommType() const { return 0; }
 
+    virtual const uint8 *getSecret() const { return NULL; }
+    
     // getter
     const string &getMac() const { return mac; }
     const string &getName() const { return name; }
@@ -46,7 +49,7 @@ public:
     const char *getHostAddress() const { return hostAddress.size() ? (char*)hostAddress.data() : NULL; }
     const char *getId() const { return accessId.size() ? (char*)accessId.data() : NULL; }
     const char *getKey() const { return accessKey.size() ? (char*)accessKey.data() : NULL; }
-    bool isPaired() const { return accessId.size() && accessKey.size(); }
+    virtual bool isPaired() const { return accessId.size() && accessKey.size(); }
     const vector<uint8> &getPairParameters() const { return pairParameter; }
     uint16 getMtu() const { return this->mtu; }
     uint8 getRxRate() const { return rxRate; }
@@ -82,6 +85,9 @@ public:
 	// 蓝牙操作
 	void connect();
     void disconnect();
+    
+    //对象销毁
+    void destroy();
 	
 	//CGM命令
     uint16 pair();

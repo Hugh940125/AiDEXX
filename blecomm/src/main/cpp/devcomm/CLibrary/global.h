@@ -11,13 +11,21 @@
 #define LOG_E(fmt, args...) __android_log_print(ANDROID_LOG_ERROR, __FUNCTION__, fmt, ##args)
 #define LOG_I(fmt, args...) __android_log_print(ANDROID_LOG_INFO,  __FUNCTION__, fmt, ##args)
 #define LOG_D(fmt, args...) __android_log_print(ANDROID_LOG_DEBUG, __FUNCTION__, fmt, ##args)
+#elif __APPLE__
+#include <TargetConditionals.h>
+#ifdef TARGET_OS_IPHONE
+#include "MTKitBridgeC.h"
+#endif
 #else
 #define LOG_E(fmt, args...)   {printf("[ERROR] %s: ",__FILE__);printf(fmt,##args);printf("\n");fflush(stdout);}
 #define LOG_I(fmt, args...)   {printf("[INFO] %s: ",__FILE__);printf(fmt,##args);printf("\n");fflush(stdout);}
 #define LOG_D(fmt, args...)   {printf("[DEBUG] %s: ",__FILE__);printf(fmt,##args);printf("\n");fflush(stdout);}
 #endif
 
+#ifndef LOG_LEVEL
 #define LOG_LEVEL	3
+#endif
+
 #if LOG_LEVEL <= 3
 #define LOGE(fmt, args...)		LOG_E(fmt, ##args)
 #else
