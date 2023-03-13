@@ -19,7 +19,7 @@
     <attr name="outlineColor" format="color" />
     <attr name="appColorPrimary" format="reference" />
     <attr name="appColorAccent" format="reference" />
-
+    <attr name="bgBackground" format="reference|color" />
     <attr name="containerBackground" format="reference" />
     <attr name="containerBackgroundLight" format="reference" />
     <attr name="containerBackgroundDark" format="reference" />

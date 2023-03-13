@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ble.device.entity
 
+import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.annotation.Entity
@@ -49,6 +50,10 @@ class TransmitterEntity {
                 EncryptUtils.encodeBase64(accessId!! + encryptionKey!!)
             else
                 null
+    }
+
+    fun startTimeToIndex(): Int {
+        return sensorStartTime?.time?.millisToMinutes()!!
     }
 
     override fun toString(): String {

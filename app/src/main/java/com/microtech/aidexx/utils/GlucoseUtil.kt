@@ -3,7 +3,7 @@ package com.microtech.aidexx.widget.dialog.x.util
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.ThresholdManager
-import com.microtech.aidexx.utils.unit.UnitManager
+import com.microtech.aidexx.utils.UnitManager
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat

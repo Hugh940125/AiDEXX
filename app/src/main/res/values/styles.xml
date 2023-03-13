@@ -67,6 +67,7 @@
 
 
     <style name="AppThemeDark" parent="AppTheme">
+        <item name="bgBackground">@color/bg_bg_color</item>
         <item name="shadowBgCustomerService">@color/black_3a</item>
         <item name="bgCustomerService">@color/black_3a</item>
         <item name="followListDialogTextColor">#ffffff</item>
@@ -164,6 +165,7 @@
     </style>
 
     <style name="AppThemeLight" parent="AppTheme">
+        <item name="bgBackground">@color/light_bg_history</item>
         <item name="bgHomeChartNew">@drawable/shape_rounded_rectangle_chart</item>
         <item name="shadowBgCustomerService">#ffe7e7e7</item>
         <item name="bgCustomerService">#66ffffff</item>
@@ -394,7 +396,7 @@
     <style name="StateButtonTransmitter" parent="StateButtonBase">
         <item name="normalBackgroundColor">?appColorAccent</item>
         <item name="normalTextColor">@color/white</item>
-        <item name="pressedBackgroundColor">@color/green_7400</item>
+        <item name="pressedBackgroundColor">?attr/buttonPressColor</item>
         <item name="pressedTextColor">@color/white</item>
         <item name="android:textSize">14sp</item>
         <item name="corner_radius">2dp</item>
@@ -402,6 +404,8 @@
     </style>
 
     <style name="StateButtonRaised" parent="StateButtonBase">
+        <item name="android:textSize">18sp</item>
+        <item name="isRound">false</item>
         <item name="normalBackgroundColor">?appColorAccent</item>
         <item name="normalTextColor">@color/white</item>
         <item name="pressedBackgroundColor">?attr/buttonPressColor</item>

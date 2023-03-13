@@ -286,9 +286,68 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "4:7116906528857590846",
+      "lastPropertyId": "10:7151475468233497463",
+      "name": "BloodGlucoseEntity",
+      "properties": [
+        {
+          "id": "1:5737262863795469179",
+          "name": "authorizationId",
+          "type": 9
+        },
+        {
+          "id": "2:324322888439702757",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:6461785506365098040",
+          "name": "state",
+          "type": 5
+        },
+        {
+          "id": "4:5396717982101607991",
+          "name": "recordIndex",
+          "type": 6
+        },
+        {
+          "id": "5:3721668872414463863",
+          "name": "deleteStatus",
+          "type": 5
+        },
+        {
+          "id": "6:6876861544542339919",
+          "name": "recordUuid",
+          "type": 9
+        },
+        {
+          "id": "7:4551503887741775503",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "8:1541188748157959309",
+          "name": "testTime",
+          "type": 10
+        },
+        {
+          "id": "9:5257956851629987892",
+          "name": "testTag",
+          "type": 5
+        },
+        {
+          "id": "10:7151475468233497463",
+          "name": "bloodGlucose",
+          "type": 7
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "3:3796110624465004345",
+  "lastEntityId": "4:7116906528857590846",
   "lastIndexId": "1:5011674403519970320",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

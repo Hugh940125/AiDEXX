@@ -1,6 +1,5 @@
 package com.microtech.aidexx.utils
 
-import android.content.Context
 import android.os.Looper
 import android.os.Process
 import kotlin.system.exitProcess
@@ -50,7 +49,7 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
         object : Thread() {
             override fun run() {
                 Looper.prepare()
-                ToastUtil.showShort("程序出现异常，即将退出！")
+                ToastUtil.showShort("程序出现异常")
                 Looper.loop()
             }
         }.start()

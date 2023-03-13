@@ -3,6 +3,7 @@ package com.microtech.aidexx.db
 import android.content.Context
 import com.microtech.aidexx.MyObjectBox
 import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import io.objectbox.Box
 import io.objectbox.BoxStore
@@ -49,6 +50,15 @@ object ObjectBox {
         get() {
             if (field == null) {
                 field = store.boxFor(CgmHistoryEntity::class.java)
+                return field
+            }
+            return field
+        }
+
+    var bgHistoryBox: Box<BloodGlucoseEntity>? = null
+        get() {
+            if (field == null) {
+                field = store.boxFor(BloodGlucoseEntity::class.java)
                 return field
             }
             return field

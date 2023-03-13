@@ -8,6 +8,7 @@ import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.ObjectBox.bgHistoryBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
@@ -399,9 +400,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({
             val now = TimeUtils.currentTimeMillis
             for (history in histories) {
-                val oldHistory = cgmHistoryBox!!.query().equal(
+                val oldHistory = ObjectBox.cgmHistoryBox!!.query().equal(
                     CgmHistoryEntity_.sensorIndex,
-                    entity.sensorStartTime!!.time.toInt()
+                    entity.startTimeToIndex()
                 ).equal(CgmHistoryEntity_.eventIndex, history.timeOffset).equal(
                     CgmHistoryEntity_.deviceId,
                     deviceId,

@@ -29,6 +29,7 @@ public abstract class BleAdapter {
     public abstract void executeConnect(String mac);
     public abstract void executeDisconnect();
     public abstract void executeWrite(byte[] data);
+    public abstract BluetoothDeviceStore getDeviceStore();
 
     private native void constructor();
     private native void destructor();
@@ -44,5 +45,4 @@ public abstract class BleAdapter {
     public native void onReceiveData(byte[] data);
     public abstract void startBtScan(Boolean isPeriodic);
     public abstract void stopBtScan(Boolean isPeriodic);
-    public abstract BluetoothDeviceStore getDeviceStore();
 }

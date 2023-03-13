@@ -1,8 +1,6 @@
 package com.microtech.aidexx.utils
 
-import android.content.Context
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.tencent.mmkv.MMKV
 import java.text.DecimalFormat
 
 object UnitManager {
@@ -34,6 +32,22 @@ object UnitManager {
 
     fun formatterUnitByIndex(): DecimalFormat {
         return when (glucoseUnit.index) {
+            1 -> DecimalFormat("0.0")
+            2 -> DecimalFormat("0")
+            else -> DecimalFormat("0")
+        }
+    }
+
+    fun getUnitByIndex(index: Int): UnitManager.GlucoseUnit {
+        return when (index) {
+            UnitManager.GlucoseUnit.MMOL_PER_L.index -> UnitManager.GlucoseUnit.MMOL_PER_L
+            UnitManager.GlucoseUnit.MG_PER_DL.index -> UnitManager.GlucoseUnit.MG_PER_DL
+            else -> UnitManager.GlucoseUnit.MMOL_PER_L
+        }
+    }
+
+    fun unitFormat(): DecimalFormat {
+        return when (UnitManager.glucoseUnit.index) {
             1 -> DecimalFormat("0.0")
             2 -> DecimalFormat("0")
             else -> DecimalFormat("0")
