@@ -79,7 +79,10 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
         (JNIEnv *, jobject, jint);
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_setGcImeasTrimming
-        (JNIEnv *, jobject, jint);
+        (JNIEnv *, jobject, jint, jint);
+
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_pair
+        (JNIEnv *, jobject);
 
 
 #ifdef __cplusplus

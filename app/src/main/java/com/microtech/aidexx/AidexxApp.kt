@@ -5,6 +5,7 @@ import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.utils.CrashHandler
 import com.microtech.aidexx.widget.dialog.x.DialogX
+import com.microtechmd.blecomm.controller.BleController
 import com.tencent.mmkv.MMKV
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -30,5 +31,6 @@ class AidexxApp : Application() {
         ObjectBox.init(this)
         DialogX.init(this)
         AidexBleAdapter.init(this)
+        BleController.setBleAdapter(AidexBleAdapter.getInstance())
     }
 }

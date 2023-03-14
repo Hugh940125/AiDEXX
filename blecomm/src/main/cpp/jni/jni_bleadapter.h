@@ -23,6 +23,8 @@ protected:
     void executeConnect(string mac);
     void executeDisconnect();
     void executeWrite(const char *data, uint16 length);
+    void executeWriteCharacteristic(uint16 uuid, const char *data, uint16 length);
+    void executeReadCharacteristic(uint16 uuid);
 };
 
 #endif //JNIBLEADAPTER_H

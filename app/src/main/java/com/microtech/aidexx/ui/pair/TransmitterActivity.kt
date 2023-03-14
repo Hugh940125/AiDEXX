@@ -62,16 +62,21 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     fun refreshList() {
         val deviceStore = AidexBleAdapter.getInstance().deviceStore
         for (result in deviceStore.deviceMap.values) {
-            val sn = AdvertisingParser.getSN(result.scanRecord?.bytes)
             val name = AdvertisingParser.getName(result.scanRecord?.bytes)
             val device = result.device
             if (name.contains("AiDEX X")) {
-                LogUtil.eAiDEX(
-                    "Find device" + result.device.address + "--$name - $sn--" + StringUtils.binaryToHexString(
-                        result.scanRecord?.bytes!!
-                    )
-                )
-                val bleControllerInfo = BleControllerInfo(device.address, name, sn, result.rssi + 130)
+//                LogUtil.eAiDEX(
+//                    "Find device" + result.device.address + "--$name - $sn--" + StringUtils.binaryToHexString(
+//                        result.scanRecord?.bytes!!
+//                    )
+//                )
+                if (name.length < 6) {
+                    LogUtil.eAiDEX("Device name length less than 6")
+                    return
+                }
+                val sn = name.substring(name.length - 6)
+                val bleControllerInfo =
+                    BleControllerInfo(device.address, name, sn, result.rssi + 130)
                 if (transmitter != null && sn == transmitter?.deviceSn) {
                     continue
                 }
@@ -100,7 +105,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         observeMessage()
     }
 
-    private fun checkEnvironment() {
+    private fun checkEnvironment(controllerInfo: BleControllerInfo) {
         if (!BleUtil.isBleEnable(this)) {
             enableBluetooth()
             return
@@ -124,14 +129,22 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             Dialogs.showError(getString(R.string.net_error))
             return
         }
-        startPair()
+        startPair(controllerInfo)
     }
 
-    private fun startPair() {
+    private fun startPair(controllerInfo: BleControllerInfo) {
         Dialogs.showWait(getString(R.string.Searching))
         if (transmitter != null && transmitter?.accessId != null) {
-
+            unpairOld()
+        } else {
+            val buildModel = TransmitterManager.instance().buildModel(controllerInfo.sn)
+            buildModel.controller.mac = controllerInfo.address
+            buildModel.getController().pair()
         }
+    }
+
+    private fun unpairOld() {
+        TODO("Not yet implemented")
     }
 
     private fun requestPermission() {
@@ -144,7 +157,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     private fun observeMessage() {
         MessageDispatcher.instance().observer(lifecycleScope) { msg ->
-            LogUtil.eAiDEX("Pair ----> $msg")
             val success = msg.isSuccess
             val default = TransmitterManager.instance().getDefault()
             when (msg.operation) {
@@ -224,7 +236,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
         transmitterAdapter.onPairClick = {
-            checkEnvironment()
+            checkEnvironment(it)
         }
         binding.rvOtherTrans.adapter = transmitterAdapter
         transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)

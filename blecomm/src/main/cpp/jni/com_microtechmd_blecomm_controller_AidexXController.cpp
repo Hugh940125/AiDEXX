@@ -23,14 +23,34 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
     env->SetLongField(obj, fieldBleControllerPtr, reinterpret_cast<jlong>(nullptr));
 }
 
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_pair
+        (JNIEnv *env, jobject obj) {
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->pair();
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_unpair
+        (JNIEnv *env, jobject obj) {
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->unpair();
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
+}
+
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_getDeviceInfo
         (JNIEnv *env, jobject obj) {
-     AidexXController *ptr = getPtr(env, obj);
-     if (ptr) {
-       return ptr->getDeviceInfo();
-     } else {
-      return AidexXOperation::UNKNOWN;
-     }
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->getDeviceInfo();
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
 }
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_getBroadcastData
@@ -44,7 +64,7 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 }
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_newSensor
-        (JNIEnv *env, jobject obj, jobject date){
+        (JNIEnv *env, jobject obj, jobject date) {
 
     AidexXController *ptr = getPtr(env, obj);
     jclass date_cls = env->GetObjectClass(date);
@@ -97,9 +117,8 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 }
 
 
-
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_getHistories
-        (JNIEnv *env, jobject obj,jint index) {
+        (JNIEnv *env, jobject obj, jint index) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         return ptr->getHistories(index);
@@ -110,7 +129,7 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_getRawHistories
-        (JNIEnv *env, jobject obj,jint index) {
+        (JNIEnv *env, jobject obj, jint index) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         return ptr->getRawHistories(index);
@@ -118,15 +137,17 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
         return AidexXOperation::UNKNOWN;
     }
 }
+
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_calibration
-        (JNIEnv *env, jobject obj,jint glucose, jint timeOffset) {
+        (JNIEnv *env, jobject obj, jint glucose, jint timeOffset) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
-        return ptr->calibration(glucose,timeOffset);
+        return ptr->calibration(glucose, timeOffset);
     } else {
         return AidexXOperation::UNKNOWN;
     }
 }
+
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_getCalibrationRange
         (JNIEnv *env, jobject obj) {
     AidexXController *ptr = getPtr(env, obj);
@@ -138,7 +159,7 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 }
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_getCalibration
-        (JNIEnv *env, jobject obj,jint index) {
+        (JNIEnv *env, jobject obj, jint index) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         return ptr->getCalibration(index);
@@ -159,7 +180,7 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_setDefaultParamData
-        (JNIEnv *env, jobject obj,jfloatArray array) {
+        (JNIEnv *env, jobject obj, jfloatArray array) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         jfloat *chost = env->GetFloatArrayElements(array, JNI_FALSE);
@@ -225,7 +246,7 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 }
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_setGcBiasTrimming
-        (JNIEnv *env, jobject obj,jint value) {
+        (JNIEnv *env, jobject obj, jint value) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         return ptr->setGcBiasTrimming(value);
@@ -235,10 +256,10 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 }
 
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_setGcImeasTrimming
-        (JNIEnv *env, jobject obj,jint zero, jint scale) {
+        (JNIEnv *env, jobject obj, jint zero, jint scale) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
-        return ptr->setGcImeasTrimming(zero,scale);
+        return ptr->setGcImeasTrimming(zero, scale);
     } else {
         return AidexXOperation::UNKNOWN;
     }

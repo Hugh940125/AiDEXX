@@ -8,7 +8,6 @@ import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
-import com.microtech.aidexx.db.ObjectBox.bgHistoryBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CgmHistoryEntity
@@ -55,7 +54,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
         @Synchronized
         fun instance(entity: TransmitterEntity): TransmitterModel {
-            if (instance == null) {
+            if (instance == null || instance?.entity?.deviceSn != entity.deviceSn) {
                 instance = TransmitterModel(entity)
             }
             return instance!!

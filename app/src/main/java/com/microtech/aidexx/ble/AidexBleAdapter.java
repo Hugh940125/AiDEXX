@@ -1,7 +1,5 @@
 package com.microtech.aidexx.ble;
 
-import static com.microtech.aidexx.ble.PendingIntentReceiver.REQUEST_CODE;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.PendingIntent;
@@ -18,7 +16,6 @@ import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
@@ -117,25 +114,16 @@ public class AidexBleAdapter extends BleAdapter {
         super();
     }
 
-    public void onScanBack(ScanResult result) {
-        byte[] scanRecord = result.getScanRecord().getBytes();
-        bluetoothDeviceStore.add(result);
-        String address = result.getDevice().getAddress();
-        int rssi = result.getRssi() + 130;
-        onScanRespond(address, rssi, scanRecord);
-        onAdvertise(address, rssi, scanRecord);
-    }
-
     final android.bluetooth.le.ScanCallback scanCallback = new android.bluetooth.le.ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             super.onScanResult(callbackType, result);
-            bluetoothDeviceStore.add(result);
             byte[] scanRecord = result.getScanRecord().getBytes();
             String address = result.getDevice().getAddress();
             int rssi = result.getRssi() + 130;
             onScanRespond(address, rssi, scanRecord);
             onAdvertise(address, rssi, scanRecord);
+            bluetoothDeviceStore.add(result);
         }
 
         @Override
@@ -159,6 +147,7 @@ public class AidexBleAdapter extends BleAdapter {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
+                int arg1 = msg.arg1;
                 switch (msg.what) {
                     case BLE_CONNECT_TIME_OUT:
 
@@ -244,9 +233,10 @@ public class AidexBleAdapter extends BleAdapter {
                         closeGatt();
                         break;
                     case SEND_DATA:
-                        sendData((byte[]) msg.obj);
+                        sendData(arg1, (byte[]) msg.obj);
                         break;
                     case RECEIVER_DATA:
+                        if (arg1 == 0)
                         onReceiveData((byte[]) msg.obj);
                         break;
                 }
@@ -272,7 +262,7 @@ public class AidexBleAdapter extends BleAdapter {
     }
 
     @SuppressLint("MissingPermission")
-    private synchronized void sendData(byte[] data) {
+    private synchronized void sendData(int arg1, byte[] data) {
         try {
             if (data.length <= 20) {
                 if (mWriteGattCharacteristic == null) {
@@ -303,8 +293,8 @@ public class AidexBleAdapter extends BleAdapter {
                 byte[] b2 = new byte[data.length - 20];
                 System.arraycopy(data, 0, b1, 0, 20);
                 System.arraycopy(data, 20, b2, 0, data.length - 20);
-                sendData(b1);
-                sendData(b2);
+                sendData(arg1, b1);
+                sendData(arg1, b2);
             }
         } catch (Exception e) {
             LogUtil.eAiDEX("send data error ----> " + e);
@@ -369,7 +359,7 @@ public class AidexBleAdapter extends BleAdapter {
 //            pendingIntent = PendingIntent.getBroadcast(AidexxApp.instance, REQUEST_CODE, intent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 //            bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), pendingIntent);
 //        } else {
-            bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), scanCallback);
+        bluetoothAdapter.getBluetoothLeScanner().startScan(buildScanFilters(), buildScanSettings(), scanCallback);
 //        }
         if (!isOnConnectState && isPeriodic) {
             WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(String.valueOf(STOP_SCAN));
@@ -453,6 +443,20 @@ public class AidexBleAdapter extends BleAdapter {
         message.what = SEND_DATA;
         message.obj = data;
         mWorkHandler.sendMessage(message);
+    }
+
+    @Override
+    public void executeWriteCharacteristic(int uuid, byte[] data) {
+        Message message = Message.obtain();
+        message.what = SEND_DATA;
+        message.obj = data;
+        message.arg1 = uuid;
+        mWorkHandler.sendMessage(message);
+    }
+
+    @Override
+    public void executeReadCharacteristic(int uuid) {
+
     }
 
 
@@ -551,6 +555,7 @@ public class AidexBleAdapter extends BleAdapter {
             Message message = Message.obtain();
             message.what = RECEIVER_DATA;
             message.obj = characteristic.getValue();
+            message.arg1 = StringUtils.INSTANCE.uuidToInt(characteristic.getUuid());
             mWorkHandler.sendMessage(message);
         }
 

@@ -48,7 +48,7 @@ class TransmitterManager private constructor() {
         })
     }
 
-    fun buildModel(sn: String): TransmitterModel {
+    fun buildModel(sn: String): DeviceModel {
         if (sn != default?.entity?.deviceSn) {
             val entity = TransmitterEntity(sn)
             entity.hyperThreshold = ThresholdManager.hyper

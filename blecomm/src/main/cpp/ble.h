@@ -23,6 +23,9 @@ public:
     explicit Ble();
     virtual ~Ble();
 
+// 服务UUID
+uint16 getServiceUUID();
+
 protected:
     // 需实现以下蓝牙操作
     virtual void executeStartScan() = 0;
@@ -34,9 +37,6 @@ protected:
     virtual void executeWriteCharacteristic(uint16 uuid, const char *data, uint16 length) = 0;
     virtual void executeReadCharacteristic(uint16 uuid) = 0;
 
-    // 服务UUID
-    uint16 getServiceUUID();
-    
     // 特征UUID
     uint16 getCharacteristicUUID();
     // 第一次连接前的扫描超时设置
