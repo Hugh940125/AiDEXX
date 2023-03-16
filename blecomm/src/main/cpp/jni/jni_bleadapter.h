@@ -7,6 +7,8 @@ class JniBleAdapter : public Ble {
 public:
     JniBleAdapter() : Ble() {}
 
+    using Ble::getServiceUUID;
+    using Ble::getPrivateCharacteristicUUID;
     using Ble::getCharacteristicUUID;
     using Ble::setDiscoverTimeoutSeconds;
     using Ble::onScanRespond;
@@ -18,12 +20,19 @@ public:
 
 protected:
     void executeStartScan();
+
     void executeStopScan();
+
     bool isReadyToConnect(string mac);
+
     void executeConnect(string mac);
+
     void executeDisconnect();
+
     void executeWrite(const char *data, uint16 length);
+
     void executeWriteCharacteristic(uint16 uuid, const char *data, uint16 length);
+
     void executeReadCharacteristic(uint16 uuid);
 };
 

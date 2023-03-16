@@ -17,7 +17,7 @@ class LogUtil {
         }
 
         @JvmStatic
-        fun dHttp(msg: String) {
+        fun eHttp(msg: String) {
             Log.e(HTTP, msg)
         }
     }

@@ -15,19 +15,23 @@ import com.google.android.flexbox.JustifyContent
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.date2ymdhm
+import com.microtech.aidexx.common.toColor
 import com.microtech.aidexx.databinding.FragmentBgBinding
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.clickFlow
-import com.microtech.aidexx.utils.statusbar.Log
 import com.microtech.aidexx.utils.throttle
 import com.microtech.aidexx.widget.dialog.x.util.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.selector.time.TimePicker
+import com.microtechmd.blecomm.constant.History
+import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
@@ -35,15 +39,26 @@ import java.util.*
 
 class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>() {
     private var timeSlot: Int? = null
-    private var timeSlopAdapter: TimeSlopAdapter? = null
     private var selectDate: Date? = null
-
+    private var defaultMode: DeviceModel? = null
+    private var calibrationAllowed: Boolean = false
+    private var timeSlopAdapter: TimeSlopAdapter? = null
+    private val appColorAccent = ThemeManager.getTypeValue(requireContext(), R.attr.appColorAccent)
+    private val buttonPressColor = ThemeManager.getTypeValue(requireContext(), R.attr.buttonPressColor)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
     override fun onResume() {
         super.onResume()
+        defaultMode = TransmitterManager.instance().getDefault()
+        calibrationAllowed = if (defaultMode?.latestHistory == null) {
+            false
+        } else {
+            val aidexXBroadcastEntity = defaultMode?.latestAd as? AidexXBroadcastEntity
+            aidexXBroadcastEntity?.calTemp != History.CALIBRATION_NOT_ALLOWED
+                    && aidexXBroadcastEntity?.timeOffset!! > 60
+        }
         refreshView()
         Throttle().input().throttle(3000).onEach {
             updateLastRecord()
@@ -51,8 +66,24 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>() {
     }
 
     private fun refreshView() {
+        refreshBtnState()
         binding.tvTime.text = Date().date2ymdhm()
         binding.tvGlucoseUnit.text = UnitManager.glucoseUnit.text
+    }
+
+    private fun refreshBtnState() {
+        binding.buttonCalibration.setNormalBackgroundColor(
+            if (calibrationAllowed) appColorAccent
+            else R.color.button_unclick_color.toColor(requireContext())
+        )
+        binding.buttonCalibration.setPressedBackgroundColor(
+            if (calibrationAllowed) buttonPressColor
+            else R.color.button_unclick_color.toColor(requireContext())
+        )
+        binding.buttonCalibration.setTextColor(
+            if (calibrationAllowed) R.color.white.toColor(requireContext())
+            else R.color.whiteAlpha30.toColor(requireContext())
+        )
     }
 
     override fun onPause() {

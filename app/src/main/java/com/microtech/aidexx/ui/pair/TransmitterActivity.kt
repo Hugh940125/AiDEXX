@@ -11,8 +11,9 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDispatcher
+import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.databinding.DialogWithOneBtnBinding
@@ -189,7 +190,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 }
                 CgmOperation.PAIR -> {
                     LogUtil.eAiDEX("Pair ----> pair:$success")
-                    if (!success) {
+                    if (success) {
+                        default?.getController()?.startTime()
+                    } else {
                         pairFailedTips()
                     }
                 }
@@ -199,7 +202,21 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                     LogUtil.eAiDEX("Pair ----> Start time :" + sensorStartTime.date2ymdhm())
                     default?.updateStartTime(sensorStartTime) {
                         if (it) {
-                            default.getController().getTransInfo()
+                            lifecycleScope.launch {
+                                default.savePair({
+                                    this.launch {
+                                        DeviceApi.deviceRegister(default.entity, {
+                                            Dialogs.showSuccess(resources.getString(R.string.Pairing_Succeed))
+                                        }, {
+                                            Dialogs.showError(resources.getString(R.string.Pairing_Failed))
+                                        })
+                                    }
+                                }, {
+                                    this.launch {
+                                        Dialogs.showError(resources.getString(R.string.Pairing_Failed))
+                                    }
+                                })
+                            }
                         } else {
                             Dialogs.showError(resources.getString(R.string.Pairing_Failed))
                         }
@@ -210,7 +227,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 }
                 AidexXOperation.DISCONNECT -> {
                     LogUtil.eAiDEX("Pair ----> disconnect:$success")
-                    Dialogs.dismissWait()
+//                    Dialogs.dismissWait()
                 }
             }
         }

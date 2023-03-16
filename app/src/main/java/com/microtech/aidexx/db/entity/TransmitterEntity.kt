@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ble.device.entity
+package com.microtech.aidexx.db.entity
 
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.utils.EncryptUtils

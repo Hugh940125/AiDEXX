@@ -4,7 +4,7 @@ package com.microtech.aidexx.common.net
 import com.google.gson.*
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
-import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.interceptors.EncryptInterceptor

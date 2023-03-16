@@ -13,13 +13,11 @@ import android.view.View
 import com.microtech.aidexx.IntentKey
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.web.WebActivity
-import java.util.*
 
 const val WELCOME = 1
 const val LOGIN = 2
 
 object StringUtils {
-    fun uuidToInt(uuid: UUID): Int = Integer.parseInt(uuid.toString().substring(5, 9), 16)
 
     fun binaryToHexString(bytes: ByteArray?): String {
         var result = ""
@@ -34,7 +32,7 @@ object StringUtils {
             hex += "0123456789ABCDEF"[bytes[i].toInt() and 0x0F].toString()
             result += "$hex,"
         }
-        return result
+        return result.drop(result.length - 1)
     }
 
     fun getPrivacyPhone(mobile: String): String {

@@ -161,7 +161,7 @@ void JniBleAdapter::executeWriteCharacteristic(uint16 uuid, const char *data, ui
 
     jbyteArray dataBytes = env->NewByteArray(length);
     env->SetByteArrayRegion(dataBytes, 0, length, (const jbyte *) data);
-    if (m_obj != NULL && m_executeWrite != NULL) {
+    if (m_obj != NULL && m_executeWriteCharacteristic != NULL) {
         env->CallVoidMethod(m_obj, m_executeWriteCharacteristic, uuid, dataBytes);
     }
     if (isAttached)
@@ -225,6 +225,16 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_BleAdapter_getCharacteristic
     jint ret = 0;
     if (ptr) {
         ret = ptr->getCharacteristicUUID();
+    }
+    return ret;
+}
+
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_BleAdapter_getPrivateCharacteristicUUID
+        (JNIEnv *env, jobject obj) {
+    JniBleAdapter *ptr = getPtr(env, obj);
+    jint ret = 0;
+    if (ptr) {
+        ret = ptr->getPrivateCharacteristicUUID();
     }
     return ret;
 }
@@ -311,12 +321,10 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData___3
         (JNIEnv *env, jobject obj, jbyteArray data) {
     JniBleAdapter *ptr = getPtr(env, obj);
     if (ptr) {
-
         jbyte *cdata = env->GetByteArrayElements(data, JNI_FALSE);
         jint length = env->GetArrayLength(data);
         ptr->onReceiveData((const char *) cdata, length);
         env->ReleaseByteArrayElements(data, cdata, JNI_FALSE);
-
     }
 }
 
@@ -324,7 +332,6 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData__I_
         (JNIEnv *env, jobject obj, jint uuid, jbyteArray data) {
     JniBleAdapter *ptr = getPtr(env, obj);
     if (ptr) {
-
         jbyte *cdata = env->GetByteArrayElements(data, JNI_FALSE);
         jint length = env->GetArrayLength(data);
         ptr->onReceiveData(uuid, (const char *) cdata, length);

@@ -13,7 +13,7 @@ extern "C" {
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_constructor
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -21,7 +21,7 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_constructor
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_destructor
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -29,7 +29,23 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_destructor
  * Signature: ()I
  */
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_BleAdapter_getCharacteristicUUID
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
+
+/*
+ * Class:     com_microtechmd_blecomm_BleAdapter
+ * Method:    getServiceUUID
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_BleAdapter_getServiceUUID
+        (JNIEnv *, jobject);
+
+/*
+ * Class:     com_microtechmd_blecomm_BleAdapter
+ * Method:    getPrivateCharacteristicUUID
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_BleAdapter_getPrivateCharacteristicUUID
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -37,7 +53,7 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_BleAdapter_getCharacteristic
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_setDiscoverTimeoutSeconds
-  (JNIEnv *, jobject, jint);
+        (JNIEnv *, jobject, jint);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -45,7 +61,7 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_setDiscoverTimeou
  * Signature: (Ljava/lang/String;I[B)V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onScanRespond
-  (JNIEnv *, jobject, jstring, jint, jbyteArray);
+        (JNIEnv *, jobject, jstring, jint, jbyteArray);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -53,7 +69,7 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onScanRespond
  * Signature: (Ljava/lang/String;I[B)V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertise
-  (JNIEnv *, jobject, jstring, jint, jbyteArray);
+        (JNIEnv *, jobject, jstring, jint, jbyteArray);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -61,7 +77,7 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertise
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onConnectSuccess
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -69,7 +85,7 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onConnectSuccess
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onConnectFailure
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
@@ -77,15 +93,23 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onConnectFailure
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onDisconnected
-  (JNIEnv *, jobject);
+        (JNIEnv *, jobject);
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
  * Method:    onReceiveData
  * Signature: ([B)V
  */
-JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData
-  (JNIEnv *, jobject, jbyteArray);
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData___3B
+        (JNIEnv *, jobject, jbyteArray);
+
+/*
+ * Class:     com_microtechmd_blecomm_BleAdapter
+ * Method:    onReceiveData
+ * Signature: ([B)V
+ */
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData__I_3B
+        (JNIEnv *, jobject, jint, jbyteArray);
 
 #ifdef __cplusplus
 }

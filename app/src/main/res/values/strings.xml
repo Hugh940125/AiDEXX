@@ -220,10 +220,10 @@
     <string name="Pairing_Succeed">配对成功</string>
     <string name="Pairing_Failed">配对失败</string>
     <string name="Connecting_Failed">连接失败</string>
-    <string name="Pairing">配对…</string>
+    <string name="Pairing">配对中</string>
     <string name="Search_Timeout">搜索超时</string>
-    <string name="Searching">搜索中…</string>
-    <string name="Connecting">连接中…</string>
+    <string name="Searching">搜索中</string>
+    <string name="Connecting">连接中</string>
     <string name="sensor_expired">传感器过期</string>
     <string name="Rising">上升</string>
     <string name="Rising_Fast">快速上升</string>
@@ -598,4 +598,5 @@
     <string name="other_trans">其他发射器</string>
     <string name="Button_Reset">重设序列号</string>
     <string name="content_new_sensor">确认选择新传感器？</string>
+    <string name="register_device">注册设备</string>
 </resources>

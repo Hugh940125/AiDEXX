@@ -1,7 +1,7 @@
 package com.microtech.aidexx.ble.device
 
 import com.microtech.aidexx.base.BaseApi
-import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import kotlinx.coroutines.withContext

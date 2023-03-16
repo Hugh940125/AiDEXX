@@ -2,8 +2,6 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
@@ -15,7 +13,7 @@ import io.objectbox.annotation.Id
 import java.util.*
 
 @Entity
-class CgmHistoryEntity : EventEntity,
+class RealCgmHistoryEntity : EventEntity,
     CgmHistoryEntity {
     var eventWarning: Int? = null
 

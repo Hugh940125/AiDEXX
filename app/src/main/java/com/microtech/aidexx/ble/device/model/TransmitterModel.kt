@@ -2,7 +2,7 @@ package com.microtech.aidexx.ble.device.model
 
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.millisToHours
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
@@ -10,8 +10,8 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.CgmHistoryEntity
-import com.microtech.aidexx.db.entity.CgmHistoryEntity_
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
@@ -71,9 +71,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private var lastHyperAlertTime: Long? = null
     private var lastHypoAlertTime: Long? = null
     private var lastUrgentAlertTime: Long? = null
-    private val cgmHistories: MutableList<CgmHistoryEntity> = ArrayList()
-    private val tempBriefList = mutableListOf<CgmHistoryEntity>()
-    private val tempRawList = mutableListOf<CgmHistoryEntity>()
+    private val cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
+    private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
+    private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
 
     override fun getController(): AidexXController {
         return controller as AidexXController
@@ -91,7 +91,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         controller.key = entity.encryptionKey
         controller.setMessageCallback { operation, success, data ->
             LogUtil.eAiDEX(
-                "operation $operation , success $success message ${
+                "operation: $operation, success: $success, message: ${
                     StringUtils.binaryToHexString(data)
                 }"
             )
@@ -140,48 +140,25 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         transmitterBox!!.put(entity)
     }
 
-    suspend fun savePair(deviceModel: Int, version: String) {
+    override suspend fun savePair(success: (() -> Unit)?, fail: (() -> Unit)?) {
         entity.deviceMac = controller.mac
-        entity.accessId = controller.id
-        entity.deviceModel = deviceModel
-        entity.version = version
-        entity.updateDeviceKey()
-        entity.deviceSn?.let {
-            val transmitter = TransmitterManager.instance().loadTransmitter(it)
-            transmitter?.let { trans ->
-                entity.fullSensorIndex = trans.fullSensorIndex
-                entity.sensorIndex = trans.sensorIndex
-                entity.eventIndex = trans.eventIndex
-                entity.fullEventIndex = trans.fullEventIndex
-                entity.id = trans.id
-                entity.idx = trans.idx
-            }
-        }
-        targetSensorIndex = entity.sensorIndex
-        targetEventIndex = entity.eventIndex
-        nextEventIndex = entity.eventIndex + 1
-        nextFullEventIndex = entity.fullEventIndex + 1
-        entity.id = null
         //向服务器请求注册设备
         DeviceApi.deviceRegister(entity, success = {
-            entity.accessId = controller.id
             entity.id = it.id
-            entity.sensorIndex = it.sensorIndex
+            entity.deviceSn = it.deviceSn
+            entity.accessId = controller.id
             entity.eventIndex = it.eventIndex
             entity.fullEventIndex = it.fullEventIndex
-            entity.deviceSn = it.deviceSn
-            targetSensorIndex = entity.sensorIndex
             targetEventIndex = entity.eventIndex
             nextEventIndex = entity.eventIndex + 1
             nextFullEventIndex = entity.fullEventIndex + 1
-            ObjectBox.runAsync({ transmitterBox!!.put(entity) })
-            TransmitterManager.instance().set(this@TransmitterModel)
-//            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
-//                .post(Register(true)) //匹配成功以后，发送信息到匹配页面 关闭页面
+            ObjectBox.runAsync({ transmitterBox!!.put(entity) },{
+                TransmitterManager.instance().set(this@TransmitterModel)
+                success?.invoke()
+            })
         }, failure = {
             TransmitterManager.instance().removeDefault()
-//            LiveEventBus.get<Register>(EventKey.EVENT_REGISTER_SUCCESS)
-//                .post(Register(false)) //匹配失败以后，发送信息到匹配页面 关闭页面
+            fail?.invoke()
         })
     }
 
@@ -274,6 +251,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         isHistoryValid =
             latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
         val now = TimeUtils.currentTimeMillis
+        latestAd = broadcast
         latestAdTime = now
         if (UserInfoManager.shareUserInfo != null) {
             LogUtil.eAiDEX("view sharing")
@@ -400,24 +378,24 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             val now = TimeUtils.currentTimeMillis
             for (history in histories) {
                 val oldHistory = ObjectBox.cgmHistoryBox!!.query().equal(
-                    CgmHistoryEntity_.sensorIndex,
+                    RealCgmHistoryEntity_.sensorIndex,
                     entity.startTimeToIndex()
-                ).equal(CgmHistoryEntity_.eventIndex, history.timeOffset).equal(
-                    CgmHistoryEntity_.deviceId,
+                ).equal(RealCgmHistoryEntity_.eventIndex, history.timeOffset).equal(
+                    RealCgmHistoryEntity_.deviceId,
                     deviceId,
                     QueryBuilder.StringOrder.CASE_INSENSITIVE
                 ).equal(
-                    CgmHistoryEntity_.authorizationId,
+                    RealCgmHistoryEntity_.authorizationId,
                     userId,
                     QueryBuilder.StringOrder.CASE_INSENSITIVE
-                ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
+                ).orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
 
                 if (oldHistory != null) {
                     LogUtil.eAiDEX("History exist,need not update}")
                     continue
                 }
                 val time = getHistoryDate(history.timeOffset).dateHourMinute()
-                val historyEntity = com.microtech.aidexx.db.entity.CgmHistoryEntity()
+                val historyEntity = com.microtech.aidexx.db.entity.RealCgmHistoryEntity()
                 historyEntity.deviceId = deviceId
                 if (history.isValid == 0) {
                     historyEntity.eventType = History.HISTORY_INVALID
@@ -562,24 +540,24 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     private fun getLastAlertTime(deviceId: String, userId: String, type: Int): Long? {
         val build = cgmHistoryBox!!.query().equal(
-            CgmHistoryEntity_.sensorIndex, entity.sensorIndex
+            RealCgmHistoryEntity_.sensorIndex, entity.sensorIndex
         ).equal(
-            CgmHistoryEntity_.deviceId, deviceId, QueryBuilder.StringOrder.CASE_INSENSITIVE
+            RealCgmHistoryEntity_.deviceId, deviceId, QueryBuilder.StringOrder.CASE_INSENSITIVE
         ).equal(
-            CgmHistoryEntity_.authorizationId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
+            RealCgmHistoryEntity_.authorizationId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
         )
         when (type) {
             History.HISTORY_LOCAL_HYPER -> build.equal(
-                CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
+                RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
             )
             History.HISTORY_LOCAL_HYPO -> build.equal(
-                CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
+                RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
             )
             History.HISTORY_LOCAL_URGENT_HYPO -> build.equal(
-                CgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_URGENT_HYPO
+                RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_URGENT_HYPO
             )
         }
-        val lastAlert = build.orderDesc(CgmHistoryEntity_.idx).build().findFirst()
+        val lastAlert = build.orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
         return lastAlert?.deviceTime?.time
     }
 
@@ -593,17 +571,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({
             for (rawHistory in rawHistories) {
                 val existHistory = cgmHistoryBox!!.query()
-                    .equal(CgmHistoryEntity_.eventIndex, rawHistory.timeOffset)
+                    .equal(RealCgmHistoryEntity_.eventIndex, rawHistory.timeOffset)
                     .equal(
-                        CgmHistoryEntity_.deviceId,
+                        RealCgmHistoryEntity_.deviceId,
                         deviceId,
                         QueryBuilder.StringOrder.CASE_INSENSITIVE
                     ).equal(
-                        CgmHistoryEntity_.authorizationId,
+                        RealCgmHistoryEntity_.authorizationId,
                         userId,
                         QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    ).orderDesc(CgmHistoryEntity_.idx).build().findFirst()
-                val historyEntity = CgmHistoryEntity()
+                    ).orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
+                val historyEntity = RealCgmHistoryEntity()
 
                 historyEntity.eventIndex = rawHistory.timeOffset
                 historyEntity.deviceTime = getHistoryDate(rawHistory.timeOffset)

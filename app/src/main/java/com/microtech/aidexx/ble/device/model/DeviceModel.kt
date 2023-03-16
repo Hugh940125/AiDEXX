@@ -1,6 +1,6 @@
 package com.microtech.aidexx.ble.device.model
 
-import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.utils.TimeUtils
@@ -22,11 +22,11 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var isHistoryValid: Boolean = false
     var isMalfunction: Boolean = false
     var sensorStartTime: Date? = null
-    var targetSensorIndex = 0
     var targetEventIndex = 0
     var nextEventIndex = 0
     var nextFullEventIndex = 0
     var latestAdTime = 0L
+    var latestAd: Any? = null
     var glucose: Float? = null
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
@@ -65,6 +65,8 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     abstract fun isDataValid(): Boolean
 
     abstract fun getSensorRemainingTime(): Int?
+
+    abstract suspend fun savePair(success: (() -> Unit)?, fail: (() -> Unit)?)
 
     fun disconnect() {
         controller.disconnect()

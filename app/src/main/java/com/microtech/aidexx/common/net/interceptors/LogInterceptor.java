@@ -23,40 +23,41 @@ public class LogInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         long startTime = System.currentTimeMillis();
-        Response response = chain.proceed(chain.request());
-        long endTime = System.currentTimeMillis();
-        long duration = endTime - startTime;
-        okhttp3.MediaType mediaType = Objects.requireNonNull(response.body()).contentType();
-        String content = response.body().string();
+        try (Response response = chain.proceed(chain.request())) {
+            long endTime = System.currentTimeMillis();
+            long duration = endTime - startTime;
+            okhttp3.MediaType mediaType = Objects.requireNonNull(response.body()).contentType();
+            String content = response.body().string();
 
-        LogUtil.dHttp("\n");
-        LogUtil.dHttp("----------------Start----------------");
-        LogUtil.dHttp("| " + request);
-        String method = request.method();
-        Headers headers = request.headers();
-        for (int i = 0, count = headers.size(); i < count; i++) {
-            String name = headers.name(i);
-            // Skip headers from the request body as they are explicitly logged above.
-            if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
-                LogUtil.dHttp(name + ": " + headers.value(i));
-            }
-        }
-        if (method.equalsIgnoreCase("POST")) {
-            StringBuilder sb = new StringBuilder();
-            if (request.body() instanceof FormBody) {
-                FormBody body = (FormBody) request.body();
-                for (int i = 0; i < body.size(); i++) {
-                    sb.append(body.encodedName(i)).append("=").append(body.encodedValue(i)).append(",");
+            LogUtil.eHttp("\n");
+            LogUtil.eHttp("----------------Start----------------");
+            LogUtil.eHttp("| " + request);
+            String method = request.method();
+            Headers headers = request.headers();
+            for (int i = 0, count = headers.size(); i < count; i++) {
+                String name = headers.name(i);
+                // Skip headers from the request body as they are explicitly logged above.
+                if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
+                    LogUtil.eHttp(name + ": " + headers.value(i));
                 }
-                sb.delete(sb.length() - 1, sb.length());
-                LogUtil.dHttp("| RequestParams:{" + sb + "}");
             }
+            if (method.equalsIgnoreCase("POST")) {
+                StringBuilder sb = new StringBuilder();
+                if (request.body() instanceof FormBody) {
+                    FormBody body = (FormBody) request.body();
+                    for (int i = 0; i < body.size(); i++) {
+                        sb.append(body.encodedName(i)).append("=").append(body.encodedValue(i)).append(",");
+                    }
+                    sb.delete(sb.length() - 1, sb.length());
+                    LogUtil.eHttp("| RequestParams:{" + sb + "}");
+                }
+            }
+            LogUtil.eHttp("| Response:" + content);
+            LogUtil.eHttp("----------End:" + duration + "millis----------");
+            return response.newBuilder()
+                    .body(okhttp3.ResponseBody.create(mediaType, content))
+                    .build();
         }
-        LogUtil.dHttp("| Response:" + content);
-        LogUtil.dHttp("----------End:" + duration + "millis----------");
-        return response.newBuilder()
-                .body(okhttp3.ResponseBody.create(mediaType, content))
-                .build();
     }
 
 

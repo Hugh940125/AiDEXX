@@ -46,7 +46,11 @@ public abstract class BleAdapter {
 
     private native void destructor();
 
+    public native int getServiceUUID();
+
     public native int getCharacteristicUUID();
+
+    public native int getPrivateCharacteristicUUID();
 
     public native void setDiscoverTimeoutSeconds(int seconds);
 

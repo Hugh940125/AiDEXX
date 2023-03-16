@@ -1,10 +1,10 @@
 package com.microtech.aidexx.db
 
 import android.content.Context
-import com.microtech.aidexx.MyObjectBox
-import com.microtech.aidexx.ble.device.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
-import com.microtech.aidexx.db.entity.CgmHistoryEntity
+import com.microtech.aidexx.db.entity.MyObjectBox
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import io.objectbox.Box
 import io.objectbox.BoxStore
 
@@ -46,10 +46,10 @@ object ObjectBox {
             return field
         }
 
-    var cgmHistoryBox: Box<CgmHistoryEntity>? = null
+    var cgmHistoryBox: Box<RealCgmHistoryEntity>? = null
         get() {
             if (field == null) {
-                field = store.boxFor(CgmHistoryEntity::class.java)
+                field = store.boxFor(RealCgmHistoryEntity::class.java)
                 return field
             }
             return field

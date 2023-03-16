@@ -16,7 +16,6 @@ import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import java.util.*
 
 /**
  *@date 2023/3/6
@@ -33,12 +32,6 @@ class MainService : Service() {
         serviceMainScope = MainScope()
         transmitterManager = TransmitterManager.instance()
         MessageDispatcher.instance().observeLifecycle(serviceMainScope)
-        val model = transmitterManager.getDefault()
-        model?.let {
-            model.messageCallBack = {
-                onMessage(model, it)
-            }
-        }
     }
 
     private fun onMessage(model: DeviceModel, message: BleMessage) {
@@ -93,6 +86,13 @@ class MainService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        TransmitterManager.onModelChange = {
+            it.let {
+                it.messageCallBack = { msg ->
+                    onMessage(it, msg)
+                }
+            }
+        }
         return START_STICKY
     }
 

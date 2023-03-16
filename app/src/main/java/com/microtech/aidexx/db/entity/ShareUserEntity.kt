@@ -6,7 +6,7 @@ import android.os.Parcelable
 
 class ShareUserEntity(type: Int) : Parcelable {
 
-    var lastData: CgmHistoryEntity? = null
+    var lastData: RealCgmHistoryEntity? = null
     var itemType = 1
 
     var authorizedUser: UserEntity? = null
