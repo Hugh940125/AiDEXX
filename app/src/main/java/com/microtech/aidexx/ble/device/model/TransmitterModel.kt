@@ -2,7 +2,7 @@ package com.microtech.aidexx.ble.device.model
 
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.common.millisToHours
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
@@ -12,6 +12,7 @@ import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
@@ -152,7 +153,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             targetEventIndex = entity.eventIndex
             nextEventIndex = entity.eventIndex + 1
             nextFullEventIndex = entity.fullEventIndex + 1
-            ObjectBox.runAsync({ transmitterBox!!.put(entity) },{
+            ObjectBox.runAsync({ transmitterBox!!.put(entity) }, {
                 TransmitterManager.instance().set(this@TransmitterModel)
                 success?.invoke()
             })
@@ -231,7 +232,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
         broadcast?.let {
-            refreshState(broadcast)
+            refreshSensorState(broadcast)
+        }
+        if (broadcast.calTemp == 0 || broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.timeOffset < 60 * 6) {
+            onCalibrationPermitChange?.invoke(false)
+        } else {
+            onCalibrationPermitChange?.invoke(true)
         }
         isSensorExpired =
             (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
@@ -316,7 +322,16 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    private fun refreshState(broadcast: AidexXBroadcastEntity) {
+    override fun calibration(info: CalibrationInfo) {
+        getController().calibration(info.intValue, info.timeOffset)
+    }
+
+    override fun isAllowCalibration(): Boolean {
+        val entity = latestAd as AidexXBroadcastEntity
+        return entity.calTemp == 0 || entity.calTemp == History.CALIBRATION_NOT_ALLOWED || entity.timeOffset < 60 * 6
+    }
+
+    private fun refreshSensorState(broadcast: AidexXBroadcastEntity) {
         if (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
             HomeStateManager.instance().setState(newOrUsedSensor)
         } else if (broadcast.timeOffset < 60) {

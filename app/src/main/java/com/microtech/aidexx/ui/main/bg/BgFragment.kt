@@ -15,59 +15,100 @@ import com.google.android.flexbox.JustifyContent
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.MessageDispatcher
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.common.toColor
 import com.microtech.aidexx.databinding.FragmentBgBinding
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.utils.Throttle
+import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.throttle
+import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.x.util.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.selector.time.TimePicker
-import com.microtechmd.blecomm.constant.History
-import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
+import com.microtechmd.blecomm.constant.AidexXOperation
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 import java.util.*
+import kotlin.math.roundToInt
 
-class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>() {
+private const val ANTI_FAST_RESUME = 1
+
+class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClickListener {
+    private var observerJob: Job? = null
     private var timeSlot: Int? = null
-    private var selectDate: Date? = null
+    private lateinit var selectDate: Date
     private var defaultMode: DeviceModel? = null
     private var calibrationAllowed: Boolean = false
     private var timeSlopAdapter: TimeSlopAdapter? = null
-    private val appColorAccent = ThemeManager.getTypeValue(requireContext(), R.attr.appColorAccent)
-    private val buttonPressColor = ThemeManager.getTypeValue(requireContext(), R.attr.buttonPressColor)
+    private var appColorAccent: Int = 0
+    private var buttonPressColor: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        appColorAccent = ThemeManager.getTypeValue(requireContext(), R.attr.appColorAccent)
+        buttonPressColor = ThemeManager.getTypeValue(requireContext(), R.attr.buttonPressColor)
     }
 
     override fun onResume() {
         super.onResume()
         defaultMode = TransmitterManager.instance().getDefault()
-        calibrationAllowed = if (defaultMode?.latestHistory == null) {
-            false
-        } else {
-            val aidexXBroadcastEntity = defaultMode?.latestAd as? AidexXBroadcastEntity
-            aidexXBroadcastEntity?.calTemp != History.CALIBRATION_NOT_ALLOWED
-                    && aidexXBroadcastEntity?.timeOffset!! > 60
+        defaultMode?.onCalibrationPermitChange = {
+            calibrationAllowed = it
         }
+        calibrationAllowed = defaultMode?.isAllowCalibration() == true
         refreshView()
-        Throttle().input().throttle(3000).onEach {
+        throttle.emit(3000, ANTI_FAST_RESUME) {
             updateLastRecord()
-        }.launchIn(lifecycleScope)
+        }
+        observeMessage()
+    }
+
+    private fun observeMessage() {
+        observerJob = MessageDispatcher.instance().observer(lifecycleScope) {
+            when (it.operation) {
+                AidexXOperation.DISCONNECT -> {
+                    Dialogs.dismissWait()
+                }
+                AidexXOperation.DISCOVER -> {
+                    if (!it.isSuccess) {
+                        Dialogs.showError(getString(R.string.Search_Timeout))
+                    }
+                }
+                AidexXOperation.BOND -> {
+                    if (!it.isSuccess) {
+                        Dialogs.showError(getString(R.string.Connecting_Failed))
+                    }
+                }
+                AidexXOperation.CONNECT -> {
+                    if (!it.isSuccess) {
+                        Dialogs.showError(getString(R.string.Connecting_Failed))
+                    } else {
+                        Dialogs.showWait(getString(R.string.Connecting))
+                    }
+                }
+
+                AidexXOperation.SET_CALIBRATION -> {
+                    if (it.isSuccess) {
+                        Dialogs.showSuccess(getString(R.string.calibration_success))
+                    } else {
+                        Dialogs.showSuccess(getString(R.string.calibration_fail))
+                    }
+                }
+            }
+        }
     }
 
     private fun refreshView() {
         refreshBtnState()
-        binding.tvTime.text = Date().date2ymdhm()
+        binding.tvTime.text = TimeUtils.currentDate.date2ymdhm()
+        selectDate = TimeUtils.currentDate
         binding.tvGlucoseUnit.text = UnitManager.glucoseUnit.text
     }
 
@@ -88,6 +129,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>() {
 
     override fun onPause() {
         super.onPause()
+        observerJob?.cancel()
     }
 
     override fun onDestroy() {
@@ -104,6 +146,8 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>() {
     }
 
     private fun initView() {
+        binding.buttonCalibration.setOnClickListener(this)
+        binding.buttonRecord.setOnClickListener(this)
         initGlucoseValueEditor()
         val layoutManager = FlexboxLayoutManager(context)
         layoutManager.justifyContent = JustifyContent.FLEX_START
@@ -222,5 +266,53 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>() {
     companion object {
         @JvmStatic
         fun newInstance() = BgFragment()
+    }
+
+    override fun onClick(v: View?) {
+        when (v) {
+            binding.buttonCalibration -> {
+                val model = TransmitterManager.instance().getDefault()
+                if (model != null && model.entity.accessId != null) {
+                    if (calibrationAllowed) {
+                        val glucoseValue = binding.etGlucoseValue.text.toString().toFloatOrNull()
+                        if (!isBgExpired() && isBgFilled(glucoseValue)) {
+                            Dialogs.showWhether(
+                                requireContext(), content = String.format(
+                                    getString(R.string.content_format_calibrate),
+                                    "$glucoseValue" + UnitManager.glucoseUnit.text
+                                ), confirm = {
+                                    Dialogs.showWait()
+                                    val value =
+                                        (if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L)
+                                            (glucoseValue!! * 18)
+                                        else glucoseValue!!).roundToInt()
+                                    model.calibration(CalibrationInfo(value, model.latestHistory!!.timeOffset))
+                                    model.onCalibrationCallback = {
+                                        if (it) Dialogs.showSuccess("")
+                                    }
+                                })
+                        }
+                    }
+                } else {
+                    Dialogs.showMessage(requireContext(), content = getString(R.string.bg_pair))
+                }
+            }
+        }
+    }
+
+    private fun isBgExpired(): Boolean {
+        if (TimeUtils.currentTimeMillis - selectDate.time > 5 * 60 * 1000) {
+            Dialogs.showMessage(requireContext(), content = getString(R.string.calibration_with_in_notice))
+            return true
+        }
+        return false
+    }
+
+    private fun isBgFilled(glucoseValue: Float?): Boolean {
+        if (null == glucoseValue) {
+            Dialogs.showMessage(requireContext(), content = binding.etGlucoseValue.hint.toString())
+            return false
+        }
+        return true
     }
 }

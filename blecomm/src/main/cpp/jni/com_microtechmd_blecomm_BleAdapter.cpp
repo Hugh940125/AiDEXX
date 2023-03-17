@@ -191,6 +191,7 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_constructor
     m_isReadyToConnect = env->GetMethodID(cls, "isReadyToConnect", "(Ljava/lang/String;)Z");
     m_executeConnect = env->GetMethodID(cls, "executeConnect", "(Ljava/lang/String;)V");
     m_executeDisconnect = env->GetMethodID(cls, "executeDisconnect", "()V");
+    m_executeWrite = env->GetMethodID(cls, "executeWrite", "([B)V");
     m_executeWriteCharacteristic = env->GetMethodID(cls, "executeWriteCharacteristic", "(I[B)V");
     m_executeReadCharacteristic = env->GetMethodID(cls, "executeReadCharacteristic", "(I)V");
 

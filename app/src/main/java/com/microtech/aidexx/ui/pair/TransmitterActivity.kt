@@ -13,10 +13,10 @@ import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDispatcher
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.databinding.DialogWithOneBtnBinding
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
@@ -141,6 +141,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             val buildModel = TransmitterManager.instance().buildModel(controllerInfo.sn)
             buildModel.controller.mac = controllerInfo.address
             buildModel.getController().pair()
+            buildModel.getController().startTime()
         }
     }
 
@@ -180,10 +181,10 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 CgmOperation.BOND -> {
                     LogUtil.eAiDEX("Pair ----> bond:$success")
                     if (success) {
-                        default?.run {
-                            this.getController().getDefaultParam()
-                            this.getController().getTransInfo()
-                        }
+//                        default?.run {
+//                            this.getController().getDefaultParam()
+//                            this.getController().getTransInfo()
+//                        }
                     } else {
                         Dialogs.showError(resources.getString(R.string.Pairing_Failed))
                     }
@@ -227,7 +228,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 }
                 AidexXOperation.DISCONNECT -> {
                     LogUtil.eAiDEX("Pair ----> disconnect:$success")
-//                    Dialogs.dismissWait()
+                    Dialogs.dismissWait()
                 }
             }
         }
@@ -255,6 +256,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         transmitterAdapter.onPairClick = {
             checkEnvironment(it)
         }
+        binding.layoutMyTrans.buttonPair.setOnClickListener(this)
         binding.rvOtherTrans.adapter = transmitterAdapter
         transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)
     }
@@ -300,6 +302,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         when (v) {
             binding.layoutMyTrans.buttonDelete -> {
 
+            }
+            binding.layoutMyTrans.buttonPair -> {
+                checkEnvironment(BleControllerInfo(transmitter?.deviceMac, "", transmitter?.deviceSn, 130))
             }
         }
     }

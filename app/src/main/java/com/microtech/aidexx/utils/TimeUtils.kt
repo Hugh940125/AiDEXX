@@ -15,6 +15,12 @@ object TimeUtils {
             return field
         }
 
+    var currentDate: Date = Date()
+        get() {
+            field = Date()
+            return field
+        }
+
     fun zeroOfDay(second: Long): Long {
         val offset =
             timeZoneOffsetSeconds()

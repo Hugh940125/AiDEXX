@@ -159,12 +159,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                                         mCharacteristic = characteristic
                                         continue
                                     }
-                                    eAiDEX("enable notify ----> ${characteristic.uuid}")
                                     setNotify(characteristic)
-                                }
-                                mCharacteristic?.let {
-                                    eAiDEX("enable notify ----> ${mCharacteristic?.uuid}")
-//                                    setNotify(mCharacteristic!!)
                                 }
                             }
                             return
@@ -254,10 +249,11 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     @SuppressLint("MissingPermission")
     @Synchronized
     private fun sendData(arg1: Int, data: ByteArray) {
+        eAiDEX("try send data ----> ${StringUtils.binaryToHexString(data)}")
         try {
-            val bluetoothGattCharacteristic = characteristicsMap[arg1]
+            val gattCharacteristic = characteristicsMap[arg1]
             if (data.size <= 20) {
-                if (bluetoothGattCharacteristic == null) {
+                if (gattCharacteristic == null) {
                     eAiDEX("send data error ----> characteristic is null")
                     return
                 }
@@ -267,13 +263,13 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 }
                 sleep()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    mBluetoothGatt!!.writeCharacteristic(bluetoothGattCharacteristic, data, WRITE_TYPE_DEFAULT)
+                    mBluetoothGatt!!.writeCharacteristic(gattCharacteristic, data, WRITE_TYPE_DEFAULT)
                 } else {
-                    bluetoothGattCharacteristic.value = data
-                    bluetoothGattCharacteristic.writeType = WRITE_TYPE_DEFAULT
-                    mBluetoothGatt!!.writeCharacteristic(bluetoothGattCharacteristic)
-                    eAiDEX("send data ----> ${StringUtils.binaryToHexString(data)}")
+                    gattCharacteristic.value = data
+                    gattCharacteristic.writeType = WRITE_TYPE_DEFAULT
+                    mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
                 }
+                eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
                 if (timerTask != null) {
                     timerTask!!.cancel()
                     timerTask = null
@@ -437,6 +433,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         val message = Message.obtain()
         message.what = SEND_DATA
         message.obj = data
+        message.arg1 = characteristicUUID
         workHandler!!.sendMessage(message)
     }
 
@@ -596,9 +593,13 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             super.onDescriptorWrite(gatt, descriptor, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 eAiDEX("onDescriptorWrite -->" + "Descriptor enable success. uuid:" + descriptor.characteristic.uuid)
-//                if (descriptor.characteristic == mCharacteristic) {
-                workHandler!!.sendEmptyMessage(CONNECT_SUCCESS)
-//                }
+                if (descriptor.characteristic != mCharacteristic) {
+                    mCharacteristic?.let {
+                        setNotify(it)
+                    }
+                } else {
+                    workHandler!!.sendEmptyMessage(CONNECT_SUCCESS)
+                }
             } else {
                 workHandler!!.sendEmptyMessage(CLOSE_GATT)
                 workHandler!!.sendEmptyMessage(CONNECT_FAILURE)
@@ -627,9 +628,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     companion object {
         private const val TIME_BETWEEN_CONNECT = 2L //断开到连接的时间间隔
         private const val DISCOVER_TIME_OUT_SECONDS = 30
-        private val UUID_SERVICE = UUID.fromString("0000181F-0000-1000-8000-00805F9B34FB")
-        private val UUID_CHARACTERISTIC = UUID.fromString("00002AFF-0000-1000-8000-00805F9B34FB")
-        private const val LINK_TIME_OUT = 1000
         const val START_SCAN = 1001
         private const val STOP_SCAN = 1002
         private const val CONNECT_GATT = 1003
@@ -637,7 +635,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         private const val DISCONNECT_GATT = 1005
         private const val CLOSE_GATT = 1006
         private const val SEND_DATA = 1007
-        private const val CLOSE_GATT_ONLY = 1011
         private const val RECEIVER_DATA = 2000 //处理返回的数据
         private const val CONNECT_DISCONNECTED = 1008
         private const val CONNECT_FAILURE = 1009
@@ -645,8 +642,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         private const val FOUND_SERVER = 1012
         private const val READ_CHARACTERISTIC = 1013
         private const val BLE_CONNECT_TIME_OUT = 1100 //连接超时
-        private const val BLE_CONNECT_TIME_LIMIT = (30 * 1000 //连接超时30S
-                ).toLong()
+        private const val BLE_CONNECT_TIME_LIMIT = (30 * 1000).toLong() //连接超时30S
 
         fun init(context: Context) {
             if (instance == null) {

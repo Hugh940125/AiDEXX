@@ -9,7 +9,6 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.ByteUtils
-import com.microtech.aidexx.utils.LogUtil
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.entity.BleMessage
@@ -31,6 +30,7 @@ class MainService : Service() {
         super.onCreate()
         serviceMainScope = MainScope()
         transmitterManager = TransmitterManager.instance()
+        val default = transmitterManager.getDefault()
         MessageDispatcher.instance().observeLifecycle(serviceMainScope)
     }
 
@@ -60,7 +60,9 @@ class MainService : Service() {
 
             }
 
-            CgmOperation.BOND -> {}
+            CgmOperation.BOND -> {
+
+            }
 
             CgmOperation.UNPAIR -> {
 
@@ -74,8 +76,6 @@ class MainService : Service() {
                 if (UserInfoManager.instance().isLogin()) {
                     model.saveRawHistoryFromConnect(message.data)
                 }
-            }
-            else -> {
             }
         }
         MessageDispatcher.instance().dispatch(serviceMainScope, message)

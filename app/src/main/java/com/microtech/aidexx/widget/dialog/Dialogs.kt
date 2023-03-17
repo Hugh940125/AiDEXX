@@ -39,10 +39,10 @@ object Dialogs {
     }
 
     fun showMessage(
-        context: AppCompatActivity,
+        context: Context,
         title: String? = null,
         content: String?,
-        callBack: (() -> Unit)?
+        callBack: (() -> Unit)? = null
     ) {
         StandardDialog.Setter(context)
             .content(content)

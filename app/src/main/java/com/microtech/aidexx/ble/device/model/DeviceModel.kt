@@ -1,8 +1,9 @@
 package com.microtech.aidexx.ble.device.model
 
-import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerProxy
@@ -16,22 +17,24 @@ import java.util.*
  *@desc
  */
 abstract class DeviceModel(val entity: TransmitterEntity) {
-    lateinit var controller: BleController
     var faultType = 0 // 1.异常状态，可恢复 2.需要更换
-    var messageCallBack: ((msg: BleMessage) -> Unit)? = null
-    var isHistoryValid: Boolean = false
-    var isMalfunction: Boolean = false
-    var sensorStartTime: Date? = null
     var targetEventIndex = 0
     var nextEventIndex = 0
     var nextFullEventIndex = 0
     var latestAdTime = 0L
     var latestAd: Any? = null
     var glucose: Float? = null
+    var lastHistoryTime: Date? = null
+    lateinit var controller: BleController
+    var isHistoryValid: Boolean = false
+    var isMalfunction: Boolean = false
+    var sensorStartTime: Date? = null
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
     var latestHistory: AidexXHistoryEntity? = null
-    var lastHistoryTime: Date? = null
+    var messageCallBack: ((msg: BleMessage) -> Unit)? = null
+    var onCalibrationCallback: ((allow: Boolean) -> Unit)? = null
+    var onCalibrationPermitChange: ((allow: Boolean) -> Unit)? = null
     var minutesAgo: Int? = null
         private set
         get() {
@@ -66,6 +69,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun getSensorRemainingTime(): Int?
 
+    abstract fun calibration(info: CalibrationInfo)
+
+    abstract fun isAllowCalibration(): Boolean
+
     abstract suspend fun savePair(success: (() -> Unit)?, fail: (() -> Unit)?)
 
     fun disconnect() {
@@ -81,5 +88,9 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         }, onError = {
             callback?.invoke(false)
         })
+    }
+
+    fun setCalibrationResult(boolean: Boolean) {
+        onCalibrationCallback?.invoke(boolean)
     }
 }

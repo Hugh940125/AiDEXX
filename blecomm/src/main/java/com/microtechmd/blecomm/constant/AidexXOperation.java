@@ -6,6 +6,9 @@ public class AidexXOperation {
     public static final int DISCOVER = 1;
     public static final int CONNECT = 2;
     public static final int DISCONNECT = 3;
+    public static final int PAIR = 4;
+    public static final int UNPAIR = 5;
+    public static final int BOND = 6;
 
     public static int GET_DEVICE_INFO = 0x0100;
     public static int GET_BROADCAST_DATA = 0x0101;

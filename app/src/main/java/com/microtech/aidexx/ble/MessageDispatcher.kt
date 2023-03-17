@@ -39,15 +39,15 @@ class MessageDispatcher {
 
     fun dispatch(scope: CoroutineScope, message: BleMessage) {
 //        if (needSend) {
-            scope.launch {
-                mutableSharedFlow.emit(message)
+        scope.launch {
+            mutableSharedFlow.emit(message)
 //            }
         }
     }
 
     @OptIn(FlowPreview::class)
-    fun observer(scope: CoroutineScope, onReceive: ((message: BleMessage) -> Unit)) {
-        scope.launch {
+    fun observer(scope: CoroutineScope, onReceive: ((message: BleMessage) -> Unit)): Job {
+        return scope.launch {
             mutableSharedFlow.buffer(10).flowOn(Dispatchers.IO).collect {
                 onReceive.invoke(it)
             }

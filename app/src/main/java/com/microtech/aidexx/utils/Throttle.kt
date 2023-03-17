@@ -29,9 +29,26 @@ fun View.clickFlow() = callbackFlow {
     awaitClose { setOnClickListener(null) }
 }
 
-class Throttle {
-    fun input() = callbackFlow {
-        trySend(Unit).onFailure { e -> e?.printStackTrace() }
-        awaitClose { }
+class Throttle private constructor() {
+    private var lastTimeMap = hashMapOf<Int, Long>()
+
+    companion object {
+        @Synchronized
+        fun instance(): Throttle {
+            return Throttle()
+        }
+    }
+
+    fun emit(thresholdMillis: Long, requestCode: Int, callBack: (() -> Unit)) {
+        val currentTime = SystemClock.elapsedRealtime()
+        if (lastTimeMap[requestCode] != null) {
+            if (currentTime - lastTimeMap[requestCode]!! >= thresholdMillis) {
+                callBack.invoke()
+                lastTimeMap[requestCode] = currentTime
+            }
+        } else {
+            callBack.invoke()
+            lastTimeMap[requestCode] = currentTime
+        }
     }
 }

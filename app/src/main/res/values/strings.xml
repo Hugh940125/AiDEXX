@@ -599,4 +599,5 @@
     <string name="Button_Reset">重设序列号</string>
     <string name="content_new_sensor">确认选择新传感器？</string>
     <string name="register_device">注册设备</string>
+    <string name="calibration_with_in_notice">校准请在指血值检出后5分钟内完成</string>
 </resources>

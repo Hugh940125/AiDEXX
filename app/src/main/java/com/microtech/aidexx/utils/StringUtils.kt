@@ -32,7 +32,7 @@ object StringUtils {
             hex += "0123456789ABCDEF"[bytes[i].toInt() and 0x0F].toString()
             result += "$hex,"
         }
-        return result.drop(result.length - 1)
+        return result
     }
 
     fun getPrivacyPhone(mobile: String): String {
