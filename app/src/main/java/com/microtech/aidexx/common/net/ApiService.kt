@@ -4,17 +4,20 @@ package com.microtech.aidexx.common.net
 import com.google.gson.*
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
-import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
+import com.microtech.aidexx.common.net.entity.LoginInfo
 import com.microtech.aidexx.common.net.interceptors.EncryptInterceptor
 import com.microtech.aidexx.common.net.interceptors.HeaderInterceptor
 import com.microtech.aidexx.common.net.interceptors.LogInterceptor
 import com.microtech.aidexx.common.net.interceptors.TokenInterceptor
-import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtechmd.cgms.data.api.interceptors.DecryptInterceptor
 import okhttp3.OkHttpClient
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.POST
 import java.io.File
 import java.lang.reflect.Type
 import java.text.DecimalFormat
@@ -22,10 +25,18 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 
-const val API_DEVICE_REGISTER = "/cgm-device/register" //注册设备
-const val API_DEVICE_UNREGISTER = "/cgm-device/unregister" //注销设备
+const val middleUrl = "backend/aidex/api"
+const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
+const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
+const val LOGIN_VERIFICATION_CODE = "$middleUrl/login-verification-code" //验证码
+const val LOGIN = "$middleUrl/login" //验证码
 
 interface ApiService {
+
+    @POST(LOGIN)
+    suspend fun login(@Body map: HashMap<String, String>): ApiResult<BaseResponse<LoginInfo>>
+    @POST(LOGIN_VERIFICATION_CODE)
+    suspend fun getVerCode(@Body map: HashMap<String, String>): ApiResult<BaseResponse.Info>
 
     @POST(API_DEVICE_REGISTER)
     suspend fun deviceRegister(@Body entity: TransmitterEntity): ApiResult<TransmitterEntity>
@@ -39,20 +50,18 @@ interface ApiService {
 
         val instance: ApiService by lazy {
             buildRetrofit(
-                "${BuildConfig.baseUrl}/api/",
+                BuildConfig.baseUrl,
                 GsonConverterFactory.create(createGson(), checkBizCodeIsSuccess = {
                     val baseResponse = gson.fromJson(it, BaseResponse::class.java)
-                    var ret: Throwable?
+                    var ret: Throwable? = null
                     baseResponse.info.let { info ->
                         info.code.let { code ->
-                            when (code) {
-                                in 800..806 -> {
-                                    LogUtil.eAiDEX("token expired,need login")
-//                                    TODO("跳转到登录")
-                                    ret = null
+                            if (code != 100000) {
+                                if (code in 800..806) {
+                                    EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
+                                } else {
+                                    ret = BizException(code, message = info.msg)
                                 }
-                                100000 -> ret = BizException(code, message = info.msg)
-                                else -> ret = null
                             }
                         }
                     }
@@ -119,7 +128,5 @@ interface ApiService {
                 .setDateFormat("yyyy-MM-dd HH:mm:ssZ")
                 .create()
         }
-
     }
-
 }

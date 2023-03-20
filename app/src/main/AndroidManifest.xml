@@ -17,6 +17,7 @@
         android:maxSdkVersion="28" />
 
     <application
+        android:usesCleartextTraffic="true"
         android:name=".AidexxApp"
         android:allowBackup="true"
         android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|uiMode|fontScale|fontWeightAdjustment|locale|keyboard|layoutDirection|density|navigation|smallestScreenSize|mcc|mnc|touchscreen"

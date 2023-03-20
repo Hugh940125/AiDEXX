@@ -5,6 +5,7 @@ import com.microtech.aidexx.utils.ThresholdManager
 
 object MmkvManager {
 
+    private const val PHONE_NUMBER = "PHONE_NUMBER"
     private const val GET_USER_ID = "GET_USER_ID"
     private const val THEME = "THEME"
     private const val GLUCOSE_UNIT = "GLUCOSE_UNIT"
@@ -25,7 +26,12 @@ object MmkvManager {
     private const val FAST_UP_ALERT_ENABLE = "RAISE_ALERT"
     private const val LAST_FAST_UP_ALERT_TIME = "LAST_FAST_UP_ALERT_TIME"
     private const val LAST_FAST_DOWN_ALERT_TIME = "LAST_FAST_DOWN_ALERT_TIME"
+    private const val FLAG_LOGIN = "FLAG_LOGIN"
+    private const val USER_AVATAR = "USER_AVATAR"
 
+    fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
+    fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
+    fun isLogin(): Boolean = MmkvUtil.decodeBoolean(FLAG_LOGIN, false)
     fun saveFastUpAlertTime(time: Long) = MmkvUtil.encodeLong(LAST_FAST_UP_ALERT_TIME, time)
     fun saveFastDownAlertTime(time: Long) = MmkvUtil.encodeLong(LAST_FAST_DOWN_ALERT_TIME, time)
     fun getLastFastDownAlertTime() = MmkvUtil.decodeLong(LAST_FAST_DOWN_ALERT_TIME, 0)
@@ -49,7 +55,9 @@ object MmkvManager {
     fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, true)
     fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, false)
     fun getUserId() = MmkvUtil.decodeString(GET_USER_ID, "")
-
+    fun saveUserId(id: String) = MmkvUtil.encodeString(GET_USER_ID, id)
+    fun getPhone() = MmkvUtil.decodeString(PHONE_NUMBER, "")
+    fun savePhone(phone: String) = MmkvUtil.encodeString(PHONE_NUMBER, phone)
     fun getOnlineServiceMsgCount() = MmkvUtil.decodeInt(UserInfoManager.instance().userId(), 0)
 
     fun setOnlineServiceMsgCount(count: Int) =
@@ -89,5 +97,4 @@ object MmkvManager {
 
     fun getCustomerServiceIconBottom() =
         MmkvUtil.decodeInt(CUSTOMER_SERVICE_ICON_BOTTOM, 0)
-
 }

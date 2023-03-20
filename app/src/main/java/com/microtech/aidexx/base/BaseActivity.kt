@@ -19,6 +19,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.constant.MESSAGE_TYPE_SENRORERROR
 import com.microtech.aidexx.constant.MESSAGE_TYPE_SENROR_EMBEDDING
 import com.microtech.aidexx.constant.MESSAGE_TYPE_SENROR_EMBEDDING_SUPER
+import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -65,6 +66,11 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
         EventBusManager.onReceive<Nothing>(EventBusKey.EVENT_RESTART_BLUETOOTH, this) {
 
+        }
+        EventBusManager.onReceive<Nothing>(EventBusKey.TOKEN_EXPIRED, this) {
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
     }
 

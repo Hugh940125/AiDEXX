@@ -1,15 +1,16 @@
 package com.microtech.aidexx.ui.account
 
 import android.os.Bundle
+import android.text.InputType
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.view.View
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
-import com.microtech.aidexx.utils.ActivityUtil
-import com.microtech.aidexx.utils.LOGIN
-import com.microtech.aidexx.utils.StringUtils
+import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.widget.dialog.Dialogs
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), View.OnClickListener {
 
@@ -25,25 +26,26 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         binding.loginActionBar.getLeftIcon().setOnClickListener {
             ActivityUtil.toSystemHome(this)
         }
+        binding.etUsername.inputType = InputType.TYPE_CLASS_PHONE
         binding.tvExchange.setOnClickListener(this)
         binding.loginByCode.btnGetVerCode.setOnClickListener(this)
         binding.btnLogin.setOnClickListener(this)
         viewModel.timeLeft.observe(this) {
             if (it.first) {
-                binding.loginByCode.btnGetVerCode.alpha = 0.5f
+                binding.loginByCode.btnGetVerCode.setTextColor(ThemeManager.getTypeValue(this, R.attr.textColorHint))
                 binding.loginByCode.btnGetVerCode.isClickable = false
                 binding.loginByCode.btnGetVerCode.text =
-                        resources.getString(R.string.bt_retry, "${it.second}s ")
+                    getString(R.string.bt_retry, "${it.second}s ")
             } else {
-                binding.loginByCode.btnGetVerCode.alpha = 1f
+                binding.loginByCode.btnGetVerCode.setTextColor(ThemeManager.getTypeValue(this, R.attr.appColorAccent))
                 binding.loginByCode.btnGetVerCode.isClickable = true
                 binding.loginByCode.btnGetVerCode.text =
-                        resources.getString(R.string.bt_retry, "")
+                    getString(R.string.bt_retry, "")
             }
         }
         binding.loginByCode.txtUserProtocol.text = StringUtils.initProtocol(
-                this, LOGIN,
-                SpannableStringBuilder()
+            this, LOGIN,
+            SpannableStringBuilder()
         )
         binding.loginByCode.txtUserProtocol.movementMethod = LinkMovementMethod.getInstance()
     }
@@ -58,12 +60,76 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
                 changeLoginMethod()
             }
             binding.loginByCode.btnGetVerCode -> {
-                viewModel.startCountDown()
+                getVerCode()
             }
             binding.btnLogin -> {
-
+                checkLoginInfo()
             }
         }
+    }
+
+    private fun getVerCode() {
+        val user = binding.etUsername.text.toString().trim()
+        if (user.isNotEmpty() && user.length >= 11) {
+            Dialogs.showWait(getString(R.string.loading))
+            val reqContent = hashMapOf(
+                "phoneNumber" to user.trim()
+            )
+            viewModel.getVerCode(reqContent, {
+                viewModel.startCountDown()
+                Dialogs.dismissWait()
+            }, {
+                Dialogs.showError(getString(R.string.get_ver_code_fail))
+            })
+        } else {
+            ToastUtil.showShort(getString(R.string.phone_error))
+        }
+    }
+
+    private fun checkLoginInfo() {
+        val account = binding.etUsername.text.toString().trim()
+        val password = binding.loginByPwd.etPwd.text.toString().trim()
+        val code = binding.loginByCode.etCode.text.toString().trim()
+        if (isLoginByVerCode) {
+            if (code.isEmpty()) {
+                ToastUtil.showShort(getString(R.string.code_empty))
+                return
+            }
+            if (!binding.loginByCode.checkProtocol.isChecked) {
+                Dialogs.showMessage(this, content = getString(R.string.user_check))
+                return
+            }
+            val reqContent = hashMapOf(
+                "phoneNumber" to account,
+                "verificationCode" to code
+            )
+            if (account.isEmpty()) {
+                ToastUtil.showShort(getString(R.string.account_empty))
+            } else {
+                Dialogs.showWait(getString(R.string.Login_loging))
+                login(reqContent)
+            }
+        } else {
+            val reqContent = linkedMapOf(
+                "username" to account,
+                "password" to EncryptUtils.md5(password)
+            )
+            if (account.isEmpty() || password.isEmpty()) {
+                ToastUtil.showShort(getString(R.string.email_password_empty))
+            } else {
+                Dialogs.showWait(getString(R.string.Login_loging))
+                login(reqContent)
+            }
+        }
+    }
+
+    private fun login(map: HashMap<String, String>) {
+        viewModel.login(map, { baseResponse ->
+            val content = baseResponse.content
+            UserInfoManager.instance().onUserLogin(content)
+        }, {
+
+        })
     }
 
     private fun changeLoginMethod() {
@@ -78,6 +144,4 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         }
         isLoginByVerCode = !isLoginByVerCode
     }
-
-
 }

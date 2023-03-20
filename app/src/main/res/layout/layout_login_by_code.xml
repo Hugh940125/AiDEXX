@@ -12,7 +12,7 @@
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/et_code"
-            android:textSize="14sp"
+            android:textSize="16sp"
             style="@style/MyEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
             android:paddingBottom="20dp" />
 
         <TextView
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:layout_gravity="center_vertical"
             android:id="@+id/btn_get_ver_code"
             style="@style/btnLogin"
@@ -58,7 +58,7 @@
             android:id="@+id/txt_user_protocol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -69,6 +69,6 @@
         android:gravity="center"
         android:text="@string/login_content_3"
         android:textColor="#666"
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 
 </LinearLayout>

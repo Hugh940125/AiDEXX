@@ -34,7 +34,7 @@ android {
             debuggable true
             buildConfigField("Boolean", "isPre", "false")
             buildConfigField("Boolean", "enableEncrypt", "false")
-            buildConfigField("String", "baseUrl", "\"http://192.168.222.26:5555/backend/aidex\"")
+            buildConfigField("String", "baseUrl", "\"http://192.168.222.26:5555/\"")
             buildConfigField("String", "updateUrl", "\"http://192.168.222.26:5555/backend/vcs/version/getAppConfig?project=aidex&appId=cn&os=android\"")
             buildConfigField("String", "logUploadUrl", "\"http://192.168.222.26:5555/backend/vcs/log/uploadLog/\"")
         }

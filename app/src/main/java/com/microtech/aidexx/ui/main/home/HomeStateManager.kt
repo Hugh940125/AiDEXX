@@ -50,6 +50,7 @@ class HomeStateManager private constructor() {
         onWarmingUpTimeLeftListener?.invoke(timeLeft)
     }
 
+    @Synchronized
     private fun countDownToReset() {
         timer?.cancel()
         timer = Timer()

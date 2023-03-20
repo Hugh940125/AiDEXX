@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ble.device.model
 
+import android.os.SystemClock
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
@@ -256,9 +257,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
         isHistoryValid =
             latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
-        val now = TimeUtils.currentTimeMillis
         latestAd = broadcast
-        latestAdTime = now
+        latestAdTime = SystemClock.elapsedRealtime()
         if (UserInfoManager.shareUserInfo != null) {
             LogUtil.eAiDEX("view sharing")
             return
@@ -315,7 +315,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         val days = entity.expirationTime
         return when {
             isSensorExpired -> 0
-            entity.sensorStartTime == null || latestAdTime == 0L || (TimeUtils.currentTimeMillis - latestAdTime).millisToMinutes() > 15 -> null
+            entity.sensorStartTime == null || latestAdTime == 0L || (SystemClock.elapsedRealtime() - latestAdTime).millisToMinutes() > 15 -> null
             else -> {
                 (days * TimeUtils.oneDaySeconds - (TimeUtils.currentTimeMillis - entity.sensorStartTime?.time!!).millisToSeconds()).millisToHours()
             }
@@ -327,8 +327,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override fun isAllowCalibration(): Boolean {
-        val entity = latestAd as AidexXBroadcastEntity
-        return entity.calTemp == 0 || entity.calTemp == History.CALIBRATION_NOT_ALLOWED || entity.timeOffset < 60 * 6
+        latestAd?.let {
+            val entity = latestAd as AidexXBroadcastEntity
+            return entity.calTemp != History.CALIBRATION_NOT_ALLOWED && entity.timeOffset > 60 * 6
+        }
+        return false
     }
 
     private fun refreshSensorState(broadcast: AidexXBroadcastEntity) {

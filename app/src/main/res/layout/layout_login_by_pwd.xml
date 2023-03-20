@@ -10,7 +10,7 @@
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/et_pwd"
         style="@style/MyEditText"
-        android:textSize="14sp"
+        android:textSize="16sp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/bgColor"
@@ -36,6 +36,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"
             android:gravity="center"
+            android:textSize="14sp"
             android:text="@string/login_content_1"
             android:textColor="?colorDesc" />
 
@@ -46,6 +47,7 @@
             android:layout_alignParentEnd="true"
             android:gravity="center"
             android:padding="10dp"
+            android:textSize="14sp"
             android:text="@string/Forget_Password"
             android:textColor="?appColorAccent"
             tools:ignore="RelativeOverlap" />

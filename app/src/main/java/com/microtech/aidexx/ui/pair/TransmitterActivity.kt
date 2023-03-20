@@ -16,6 +16,7 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.databinding.DialogWithOneBtnBinding
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.permission.PermissionGroups
@@ -27,6 +28,8 @@ import com.microtech.aidexx.widget.dialog.x.interfaces.OnBindView
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.controller.BleControllerInfo
+import io.objectbox.reactive.DataObserver
+import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,6 +40,7 @@ private const val REFRESH_TRANS_LIST = 2005
 
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(), OnClickListener {
     private var scanStarted = false
+    private var subscription: DataSubscription? = null
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
     private var transmitter: TransmitterEntity? = null
@@ -268,6 +272,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             AidexBleAdapter.getInstance().stopBtScan(false)
         }
         transmitterHandler.removeCallbacksAndMessages(null)
+        subscription?.cancel()
     }
 
     override fun getViewBinding(): ActivityTransmitterBinding {
@@ -275,6 +280,11 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     }
 
     private fun loadSavedTransmitter() {
+        val observer = DataObserver<Class<TransmitterEntity>> { refreshMine() }
+        subscription = ObjectBox.store.subscribe(TransmitterEntity::class.java).observer(observer)
+    }
+
+    private fun refreshMine() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 transmitter = TransmitterManager.instance().loadTransmitter()

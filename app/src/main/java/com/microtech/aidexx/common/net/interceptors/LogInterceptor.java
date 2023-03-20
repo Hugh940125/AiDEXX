@@ -29,16 +29,16 @@ public class LogInterceptor implements Interceptor {
             okhttp3.MediaType mediaType = Objects.requireNonNull(response.body()).contentType();
             String content = response.body().string();
 
-            LogUtil.eHttp("\n");
-            LogUtil.eHttp("----------------Start----------------");
-            LogUtil.eHttp("| " + request);
+            LogUtil.eAiDEX("\n");
+            LogUtil.eAiDEX("----------------Start----------------");
+            LogUtil.eAiDEX("| " + request);
             String method = request.method();
             Headers headers = request.headers();
             for (int i = 0, count = headers.size(); i < count; i++) {
                 String name = headers.name(i);
                 // Skip headers from the request body as they are explicitly logged above.
                 if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
-                    LogUtil.eHttp(name + ": " + headers.value(i));
+                    LogUtil.eAiDEX(name + ": " + headers.value(i));
                 }
             }
             if (method.equalsIgnoreCase("POST")) {
@@ -49,11 +49,11 @@ public class LogInterceptor implements Interceptor {
                         sb.append(body.encodedName(i)).append("=").append(body.encodedValue(i)).append(",");
                     }
                     sb.delete(sb.length() - 1, sb.length());
-                    LogUtil.eHttp("| RequestParams:{" + sb + "}");
+                    LogUtil.eAiDEX("| RequestParams:{" + sb + "}");
                 }
             }
-            LogUtil.eHttp("| Response:" + content);
-            LogUtil.eHttp("----------End:" + duration + "millis----------");
+            LogUtil.eAiDEX("| Response:" + content);
+            LogUtil.eAiDEX("----------End:" + duration + "millis----------");
             return response.newBuilder()
                     .body(okhttp3.ResponseBody.create(mediaType, content))
                     .build();
