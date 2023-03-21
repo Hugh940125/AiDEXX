@@ -1,4 +1,4 @@
-package com.microtechmd.cgms.data.api.interceptors
+package com.microtech.aidexx.common.net.interceptors
 
 import androidx.vectordrawable.animated.R
 import com.microtech.aidexx.common.net.RSAUtil

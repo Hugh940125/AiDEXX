@@ -14,7 +14,7 @@ import com.microtech.aidexx.common.net.interceptors.TokenInterceptor
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtechmd.cgms.data.api.interceptors.DecryptInterceptor
+import com.microtech.aidexx.common.net.interceptors.DecryptInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.http.Body
 import retrofit2.http.POST

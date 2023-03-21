@@ -3,7 +3,6 @@ package com.microtech.aidexx.common.net.interceptors;
 import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 import com.microtech.aidexx.common.net.RSAUtil;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
