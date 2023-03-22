@@ -6,18 +6,27 @@ import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
+import com.microtech.aidexx.common.net.entity.BaseList
+import com.microtech.aidexx.common.net.entity.BasePageList
+import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.LoginInfo
 import com.microtech.aidexx.common.net.interceptors.EncryptInterceptor
 import com.microtech.aidexx.common.net.interceptors.HeaderInterceptor
 import com.microtech.aidexx.common.net.interceptors.LogInterceptor
 import com.microtech.aidexx.common.net.interceptors.TokenInterceptor
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
+import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtechmd.cgms.data.api.interceptors.DecryptInterceptor
 import okhttp3.OkHttpClient
+import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import java.io.File
 import java.lang.reflect.Type
 import java.text.DecimalFormat
@@ -29,14 +38,33 @@ const val middleUrl = "backend/aidex/api"
 const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
 const val LOGIN_VERIFICATION_CODE = "$middleUrl/login-verification-code" //验证码
-const val LOGIN = "$middleUrl/login" //验证码
+const val LOGIN = "$middleUrl/login" //登录
+const val DEVICE = "$middleUrl/cgn-device" //获取设备
+const val USER_PREFERENCE = "$middleUrl/user-preference" //
+const val UPLOAD_CGM_RECORD = "$middleUrl/cgm-record" //上传CGM
+const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
 
 interface ApiService {
+    @POST(DOWNLOAD_CGM_RECORD)
+    suspend fun getRemoteHistory(@Body json: String): Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
+
+    @POST(UPLOAD_CGM_RECORD)
+    suspend fun postHistory(@Body json: String): Call<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+
+    @PUT(UPLOAD_CGM_RECORD)
+    suspend fun putHistory(@Body json: String): Call<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+
+    @GET(USER_PREFERENCE)
+    suspend fun getUserPreference(): ApiResult<BaseResponse<MutableList<UserPreferenceEntity>>>
 
     @POST(LOGIN)
     suspend fun login(@Body map: HashMap<String, String>): ApiResult<BaseResponse<LoginInfo>>
+
     @POST(LOGIN_VERIFICATION_CODE)
     suspend fun getVerCode(@Body map: HashMap<String, String>): ApiResult<BaseResponse.Info>
+
+    @GET(DEVICE)
+    suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
 
     @POST(API_DEVICE_REGISTER)
     suspend fun deviceRegister(@Body entity: TransmitterEntity): ApiResult<TransmitterEntity>
@@ -58,7 +86,9 @@ interface ApiService {
                         info.code.let { code ->
                             if (code != 100000) {
                                 if (code in 800..806) {
-                                    EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
+                                    Throttle.instance().emit(5000, code) {
+                                        EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
+                                    }
                                 } else {
                                     ret = BizException(code, message = info.msg)
                                 }

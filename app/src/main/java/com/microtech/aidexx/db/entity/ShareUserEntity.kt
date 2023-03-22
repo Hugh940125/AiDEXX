@@ -36,16 +36,13 @@ class ShareUserEntity(type: Int) : Parcelable {
         home = parcel.readByte() != 0.toByte()
         pushState = parcel.readByte() != 0.toByte()
         emergeState = parcel.readByte() != 0.toByte()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            user = parcel.readParcelable(
-                UserEntity::javaClass.javaClass.classLoader, UserEntity::class.java
+        user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            parcel.readParcelable(
+                UserEntity::javaClass.javaClass.classLoader,
+                UserEntity::class.java
             )
         } else {
-            user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                parcel.readParcelable(UserEntity::javaClass.javaClass.classLoader,UserEntity::class.java)
-            }else{
-                parcel.readParcelable(UserEntity::javaClass.javaClass.classLoader)
-            }
+            parcel.readParcelable(UserEntity::javaClass.javaClass.classLoader)
         }
     }
 

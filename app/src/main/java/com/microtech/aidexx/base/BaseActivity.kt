@@ -34,8 +34,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
-
-
 abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatActivity() {
 
     lateinit var viewModel: VM
@@ -68,9 +66,11 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
         }
         EventBusManager.onReceive<Nothing>(EventBusKey.TOKEN_EXPIRED, this) {
-            val intent = Intent(this, LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+            Dialogs.showMessage(this, content = getString(R.string.token_expired), callBack = {
+                val intent = Intent(this, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            })
         }
     }
 

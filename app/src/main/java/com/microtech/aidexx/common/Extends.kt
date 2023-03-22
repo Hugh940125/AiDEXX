@@ -2,6 +2,10 @@ package com.microtech.aidexx.common
 
 import android.content.Context
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import io.objectbox.Property
+import io.objectbox.query.QueryBuilder
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -51,3 +55,11 @@ fun Long.millisToHours(): Int = BigDecimal(this).divide(BigDecimal(60 * 60 * 100
 
 fun Date.date2ymdhm(pattern: String = "yyyy/MM/dd HH:mm"): String? =
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)
+
+fun <T> QueryBuilder<T>.equal(property: Property<T>, value: String): QueryBuilder<T> {
+    return equal(property, value, QueryBuilder.StringOrder.CASE_SENSITIVE)
+}
+
+fun GsonBuilder.createWithDateFormat(): Gson {
+    return setDateFormat("yyyy-MM-dd HH:mm:ssZ").create()
+}

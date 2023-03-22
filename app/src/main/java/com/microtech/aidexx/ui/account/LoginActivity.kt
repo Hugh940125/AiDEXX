@@ -5,12 +5,16 @@ import android.text.InputType
 import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.widget.dialog.Dialogs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), View.OnClickListener {
 
@@ -32,12 +36,22 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         binding.btnLogin.setOnClickListener(this)
         viewModel.timeLeft.observe(this) {
             if (it.first) {
-                binding.loginByCode.btnGetVerCode.setTextColor(ThemeManager.getTypeValue(this, R.attr.textColorHint))
+                binding.loginByCode.btnGetVerCode.setTextColor(
+                    ThemeManager.getTypeValue(
+                        this,
+                        R.attr.textColorHint
+                    )
+                )
                 binding.loginByCode.btnGetVerCode.isClickable = false
                 binding.loginByCode.btnGetVerCode.text =
                     getString(R.string.bt_retry, "${it.second}s ")
             } else {
-                binding.loginByCode.btnGetVerCode.setTextColor(ThemeManager.getTypeValue(this, R.attr.appColorAccent))
+                binding.loginByCode.btnGetVerCode.setTextColor(
+                    ThemeManager.getTypeValue(
+                        this,
+                        R.attr.appColorAccent
+                    )
+                )
                 binding.loginByCode.btnGetVerCode.isClickable = true
                 binding.loginByCode.btnGetVerCode.text =
                     getString(R.string.bt_retry, "")
@@ -124,12 +138,30 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
     }
 
     private fun login(map: HashMap<String, String>) {
+        if (!NetUtil.isNetAvailable(this)){
+            ToastUtil.showShort(getString(R.string.net_error))
+            return
+        }
         viewModel.login(map, { baseResponse ->
             val content = baseResponse.content
-            UserInfoManager.instance().onUserLogin(content)
+            lifecycleScope.launch {
+                UserInfoManager.instance().onUserLogin(content) {
+                    if (it) {
+                        downloadData()
+                    } else {
+                        ToastUtil.showShort(getString(R.string.login_fail))
+                    }
+                }
+            }
         }, {
 
         })
+    }
+
+    private fun downloadData() {
+        viewModel.getUserPreference({
+
+        }, {})
     }
 
     private fun changeLoginMethod() {

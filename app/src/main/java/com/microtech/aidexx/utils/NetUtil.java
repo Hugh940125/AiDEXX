@@ -35,9 +35,7 @@ public class NetUtil {
             info.isAvailable();
             return true;
         }
-
         return false;
-
     }
 
     // 判断网络是否已连接

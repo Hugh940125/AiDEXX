@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:1803966885780693754",
-      "lastPropertyId": "6:2350881103047551411",
+      "lastPropertyId": "7:5512373399131508939",
       "name": "UserEntity",
       "properties": [
         {
@@ -37,6 +37,11 @@
         {
           "id": "6:2350881103047551411",
           "name": "authorizedUserAlias",
+          "type": 9
+        },
+        {
+          "id": "7:5512373399131508939",
+          "name": "avatar",
           "type": 9
         }
       ],
@@ -150,7 +155,7 @@
     },
     {
       "id": "4:7116906528857590846",
-      "lastPropertyId": "10:7151475468233497463",
+      "lastPropertyId": "11:6999354895575138401",
       "name": "BloodGlucoseEntity",
       "properties": [
         {
@@ -203,13 +208,18 @@
           "id": "10:7151475468233497463",
           "name": "bloodGlucose",
           "type": 7
+        },
+        {
+          "id": "11:6999354895575138401",
+          "name": "recordId",
+          "type": 9
         }
       ],
       "relations": []
     },
     {
       "id": "5:7965544801460559811",
-      "lastPropertyId": "26:684534924606322477",
+      "lastPropertyId": "27:5478258158429012314",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -342,6 +352,11 @@
           "id": "26:684534924606322477",
           "name": "rawData9",
           "type": 7
+        },
+        {
+          "id": "27:5478258158429012314",
+          "name": "recordId",
+          "type": 9
         }
       ],
       "relations": []

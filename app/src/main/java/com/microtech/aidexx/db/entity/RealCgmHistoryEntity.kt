@@ -16,7 +16,6 @@ import java.util.*
 class RealCgmHistoryEntity : EventEntity,
     CgmHistoryEntity {
     var eventWarning: Int? = null
-
     @Id
     override var idx: Long? = null
     override var state: Int = 0
@@ -34,6 +33,7 @@ class RealCgmHistoryEntity : EventEntity,
     var type = 0 // type为0正常数据，1代表占位数据
     override var authorizationId: String? = null
     var recordUuid: String? = null
+    override var recordId: String? = null
 
     fun updateRecordUUID() {
         val uuidStr = StringBuffer()
@@ -187,6 +187,6 @@ class RealCgmHistoryEntity : EventEntity,
     }
 
     override fun toString(): String {
-        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, eventData=$eventData, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, recordUuid=$recordUuid, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
+        return "RealCgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, eventData=$eventData, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, recordUuid=$recordUuid, recordId=$recordId, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
     }
 }

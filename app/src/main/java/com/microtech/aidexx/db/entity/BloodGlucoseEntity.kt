@@ -9,14 +9,13 @@ import java.util.*
 
 
 @Entity
-class BloodGlucoseEntity :
-    EventEntity {
+class BloodGlucoseEntity : EventEntity {
     override var authorizationId: String? = null
-
     @Id
     override var idx: Long? = null
     override var state: Int = 0
     override var recordIndex: Long? = null
+    override var recordId: String? = null
     override var deleteStatus: Int = 0
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
     override var id: String? = null

@@ -14,10 +14,7 @@ import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.db.entity.TransmitterEntity
-import com.microtech.aidexx.ui.main.home.HomeStateManager
-import com.microtech.aidexx.ui.main.home.glucosePanel
-import com.microtech.aidexx.ui.main.home.newOrUsedSensor
-import com.microtech.aidexx.ui.main.home.warmingUp
+import com.microtech.aidexx.ui.main.home.*
 import com.microtech.aidexx.ui.setting.alert.AlertManager
 import com.microtech.aidexx.ui.setting.alert.AlertManager.Companion.calculateFrequency
 import com.microtech.aidexx.ui.setting.alert.AlertType
@@ -335,13 +332,15 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     private fun refreshSensorState(broadcast: AidexXBroadcastEntity) {
-        if (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
-            HomeStateManager.instance().setState(newOrUsedSensor)
-        } else if (broadcast.timeOffset < 60) {
-            HomeStateManager.instance().setState(warmingUp)
-            HomeStateManager.instance().setWarmingUpTimeLeft(broadcast.timeOffset)
-        } else {
-            HomeStateManager.instance().setState(glucosePanel)
+        broadcast.let {
+            if (it.status == History.SESSION_STOPPED && it.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
+                HomeStateManager.instance().setState(newOrUsedSensor)
+            } else if (it.timeOffset < 60) {
+                HomeStateManager.instance().setState(warmingUp)
+                HomeStateManager.instance().setWarmingUpTimeLeft(it.timeOffset)
+            } else {
+                HomeStateManager.instance().setState(glucosePanel)
+            }
         }
     }
 

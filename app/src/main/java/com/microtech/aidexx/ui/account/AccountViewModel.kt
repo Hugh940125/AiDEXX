@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.BaseResponse
+import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.LoginInfo
+import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -66,6 +68,53 @@ class AccountViewModel : BaseViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 when (val apiResult = ApiService.instance.getVerCode(map)) {
+                    is ApiResult.Success -> {
+                        apiResult.result.let { result ->
+                            withContext(Dispatchers.Main) {
+                                success?.invoke(result)
+                            }
+                        }
+                    }
+                    is ApiResult.Failure -> {
+                        withContext(Dispatchers.Main) {
+                            failure?.invoke()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun getUserPreference(
+        success: ((info: BaseResponse<MutableList<UserPreferenceEntity>>) -> Unit)? = null,
+        failure: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                when (val apiResult = ApiService.instance.getUserPreference()) {
+                    is ApiResult.Success -> {
+                        apiResult.result.let { result ->
+                            withContext(Dispatchers.Main) {
+                                success?.invoke(result)
+                            }
+                        }
+                    }
+                    is ApiResult.Failure -> {
+                        withContext(Dispatchers.Main) {
+                            failure?.invoke()
+                        }
+                    }
+                }
+            }
+        }
+    }
+    fun getDevice(
+        success: ((info: BaseResponse<TransmitterEntity>) -> Unit)? = null,
+        failure: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                when (val apiResult = ApiService.instance.getDevice()) {
                     is ApiResult.Success -> {
                         apiResult.result.let { result ->
                             withContext(Dispatchers.Main) {

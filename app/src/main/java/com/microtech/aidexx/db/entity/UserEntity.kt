@@ -14,6 +14,7 @@ class UserEntity() : Parcelable {
     var emailAddress: String? = null
     var registerTime: String? = null
     var authorizedUserAlias: String? = null
+    var avatar: String? = null
 
     constructor(parcel: Parcel) : this() {
         id = parcel.readString()
@@ -21,6 +22,7 @@ class UserEntity() : Parcelable {
         emailAddress = parcel.readString()
         registerTime = parcel.readString()
         authorizedUserAlias = parcel.readString()
+        avatar = parcel.readString()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -29,6 +31,7 @@ class UserEntity() : Parcelable {
         parcel.writeString(emailAddress)
         parcel.writeString(registerTime)
         parcel.writeString(authorizedUserAlias)
+        parcel.writeString(avatar)
     }
 
     override fun describeContents(): Int {
@@ -48,6 +51,4 @@ class UserEntity() : Parcelable {
             return arrayOfNulls(size)
         }
     }
-
-
 }
