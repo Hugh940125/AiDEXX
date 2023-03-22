@@ -14,7 +14,11 @@ import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.db.entity.TransmitterEntity
-import com.microtech.aidexx.ui.main.home.*
+import com.microtech.aidexx.db.entity.TransmitterEntity_
+import com.microtech.aidexx.ui.main.home.HomeStateManager
+import com.microtech.aidexx.ui.main.home.glucosePanel
+import com.microtech.aidexx.ui.main.home.newOrUsedSensor
+import com.microtech.aidexx.ui.main.home.warmingUp
 import com.microtech.aidexx.ui.setting.alert.AlertManager
 import com.microtech.aidexx.ui.setting.alert.AlertManager.Companion.calculateFrequency
 import com.microtech.aidexx.ui.setting.alert.AlertType
@@ -29,6 +33,7 @@ import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
 import com.microtechmd.blecomm.parser.AidexXParser
 import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
+import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.kotlin.equal
 import io.objectbox.query.QueryBuilder
 import java.math.RoundingMode
@@ -139,8 +144,32 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         transmitterBox!!.put(entity)
     }
 
-    override suspend fun savePair(success: (() -> Unit)?, fail: (() -> Unit)?) {
+    override suspend fun savePair(model: Int, version: String?, success: (() -> Unit)?, fail: (() -> Unit)?) {
+        entity.encryptionKey = controller.key
         entity.deviceMac = controller.mac
+        entity.accessId = controller.id
+        entity.deviceModel = model
+        entity.version = version
+        entity.deviceSn?.let {
+            val existTrans = ObjectBox.store.awaitCallInTx {
+                transmitterBox!!.query()
+                    .equal(
+                        TransmitterEntity_.deviceSn, it,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    )
+                    .build()
+                    .findFirst()
+            }
+            if (existTrans != null) {
+                entity.eventIndex = existTrans.eventIndex
+                entity.fullEventIndex = existTrans.fullEventIndex
+                entity.id = existTrans.id
+                entity.idx = existTrans.idx
+            }
+            targetEventIndex = entity.eventIndex
+            nextEventIndex = entity.eventIndex + 1
+            nextFullEventIndex = entity.fullEventIndex + 1
+        }
         //向服务器请求注册设备
         DeviceApi.deviceRegister(entity, success = {
             entity.id = it.id
@@ -394,7 +423,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({
             val now = TimeUtils.currentTimeMillis
             for (history in histories) {
-                val oldHistory = ObjectBox.cgmHistoryBox!!.query().equal(
+                val oldHistory = cgmHistoryBox!!.query().equal(
                     RealCgmHistoryEntity_.sensorIndex,
                     entity.startTimeToIndex()
                 ).equal(RealCgmHistoryEntity_.eventIndex, history.timeOffset).equal(
@@ -412,7 +441,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     continue
                 }
                 val time = getHistoryDate(history.timeOffset).dateHourMinute()
-                val historyEntity = com.microtech.aidexx.db.entity.RealCgmHistoryEntity()
+                val historyEntity = RealCgmHistoryEntity()
                 historyEntity.deviceId = deviceId
                 if (history.isValid == 0) {
                     historyEntity.eventType = History.HISTORY_INVALID

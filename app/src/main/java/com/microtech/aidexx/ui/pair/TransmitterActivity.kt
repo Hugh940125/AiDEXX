@@ -1,7 +1,6 @@
 package com.microtech.aidexx.ui.pair
 
 import android.os.*
-import android.text.format.Time
 import android.view.View
 import android.view.View.OnClickListener
 import androidx.lifecycle.lifecycleScope
@@ -12,7 +11,6 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDispatcher
-import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
@@ -140,19 +138,19 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     private fun startPair(controllerInfo: BleControllerInfo) {
         Dialogs.showWait(getString(R.string.Searching))
-        if (transmitter != null && transmitter?.accessId != null) {
-            unpairOld()
-        } else {
-            val buildModel = TransmitterManager.instance().buildModel(controllerInfo.sn)
-            buildModel.controller.mac = controllerInfo.address
-            buildModel.getController().pair()
-            buildModel.getController().startTime()
-        }
+//        if (transmitter != null && transmitter?.accessId != null) {
+////            unpairOld()
+//        } else {
+        val buildModel = TransmitterManager.instance().buildModel(controllerInfo.sn)
+        buildModel.controller.mac = controllerInfo.address
+        buildModel.getController().pair()
+        buildModel.getController().startTime()
+//        }
     }
 
-    private fun unpairOld() {
-        TODO("Not yet implemented")
-    }
+//    private fun unpairOld() {
+//        TODO("Not yet implemented")
+//    }
 
     private fun requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -166,74 +164,66 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         MessageDispatcher.instance().observer(lifecycleScope) { msg ->
             val success = msg.isSuccess
             val default = TransmitterManager.instance().getDefault()
-            when (msg.operation) {
-                AidexXOperation.DISCOVER -> {
-                    LogUtil.eAiDEX("Pair ----> scan:$success")
-                    if (success) {
-                        Dialogs.showWait(resources.getString(R.string.Connecting))
-                    } else {
-                        Dialogs.showError(resources.getString(R.string.Search_Timeout))
+            default?.let {
+                when (msg.operation) {
+                    AidexXOperation.DISCOVER -> {
+                        LogUtil.eAiDEX("Pair ----> scan:$success")
+                        if (success) {
+                            Dialogs.showWait(resources.getString(R.string.Connecting))
+                        } else {
+                            Dialogs.showError(resources.getString(R.string.Search_Timeout))
+                        }
                     }
-                }
-                AidexXOperation.CONNECT -> {
-                    LogUtil.eAiDEX("Pair ----> connect:$success")
-                    if (success) {
-                        Dialogs.showWait(resources.getString(R.string.Pairing))
-                    } else {
-                        Dialogs.showError(resources.getString(R.string.Connecting_Failed))
+                    AidexXOperation.CONNECT -> {
+                        LogUtil.eAiDEX("Pair ----> connect:$success")
+                        if (success) {
+                            Dialogs.showWait(resources.getString(R.string.Pairing))
+                        } else {
+                            Dialogs.showError(resources.getString(R.string.Connecting_Failed))
+                        }
                     }
-                }
-                CgmOperation.BOND -> {
-                    LogUtil.eAiDEX("Pair ----> bond:$success")
-                    if (success) {
+                    CgmOperation.BOND -> {
+                        LogUtil.eAiDEX("Pair ----> bond:$success")
+                        if (success) {
 //                        default?.run {
 //                            this.getController().getDefaultParam()
 //                            this.getController().getTransInfo()
 //                        }
-                    } else {
-                        Dialogs.showError(resources.getString(R.string.Pairing_Failed))
-                    }
-                }
-                CgmOperation.PAIR -> {
-                    LogUtil.eAiDEX("Pair ----> pair:$success")
-                    if (success) {
-                        default?.getController()?.startTime()
-                    } else {
-                        pairFailedTips()
-                    }
-                }
-                AidexXOperation.GET_START_TIME -> {
-                    val data = msg.data
-                    val sensorStartTime = ByteUtils.toDate(data)
-                    LogUtil.eAiDEX("Pair ----> Start time :" + sensorStartTime.date2ymdhm())
-                    default?.updateStartTime(sensorStartTime) {
-                        if (it) {
-                            lifecycleScope.launch {
-                                default.savePair({
-                                    this.launch {
-                                        DeviceApi.deviceRegister(default.entity, {
-                                            Dialogs.showSuccess(resources.getString(R.string.Pairing_Succeed))
-                                        }, {
-                                            Dialogs.showError(resources.getString(R.string.Pairing_Failed))
-                                        })
-                                    }
-                                }, {
-                                    this.launch {
-                                        Dialogs.showError(resources.getString(R.string.Pairing_Failed))
-                                    }
-                                })
-                            }
                         } else {
                             Dialogs.showError(resources.getString(R.string.Pairing_Failed))
                         }
                     }
-                }
-                AidexXOperation.GET_DEVICE_INFO -> {
+                    CgmOperation.PAIR -> {
+                        LogUtil.eAiDEX("Pair ----> pair:$success")
+                        if (success) {
+                            default.getController().startTime()
+                        } else {
+                            pairFailedTips()
+                        }
+                    }
+                    AidexXOperation.GET_START_TIME -> {
+                        val data = msg.data
+                        val sensorStartTime = ByteUtils.toDate(data)
+                        LogUtil.eAiDEX("Pair ----> Start time :" + sensorStartTime.date2ymdhm())
+                        default.entity.sensorStartTime = sensorStartTime
+                        lifecycleScope.launch {
+                            default.savePair(success = {
+                                this.launch {
+                                    Dialogs.showSuccess(resources.getString(R.string.Pairing_Succeed))
+                                }
+                            }, fail = {
+                                this.launch {
+                                    Dialogs.showError(resources.getString(R.string.Pairing_Failed))
+                                }
+                            })
+                        }
+                    }
+                    AidexXOperation.GET_DEVICE_INFO -> {}
 
-                }
-                AidexXOperation.DISCONNECT -> {
-                    LogUtil.eAiDEX("Pair ----> disconnect:$success")
-                    Dialogs.dismissWait()
+                    AidexXOperation.DISCONNECT -> {
+                        LogUtil.eAiDEX("Pair ----> disconnect:$success")
+                        Dialogs.dismissWait()
+                    }
                 }
             }
         }

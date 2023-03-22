@@ -73,7 +73,12 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun isAllowCalibration(): Boolean
 
-    abstract suspend fun savePair(success: (() -> Unit)?, fail: (() -> Unit)?)
+    abstract suspend fun savePair(
+        model: Int = 0,
+        version: String? = null,
+        success: (() -> Unit)?,
+        fail: (() -> Unit)?
+    )
 
     fun disconnect() {
         controller.disconnect()

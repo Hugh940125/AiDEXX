@@ -67,7 +67,7 @@ interface ApiService {
     suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
 
     @POST(API_DEVICE_REGISTER)
-    suspend fun deviceRegister(@Body entity: TransmitterEntity): ApiResult<TransmitterEntity>
+    suspend fun deviceRegister(@Body entity: TransmitterEntity): Call<ApiResult<TransmitterEntity>>
 
     @POST(API_DEVICE_UNREGISTER)
     suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>

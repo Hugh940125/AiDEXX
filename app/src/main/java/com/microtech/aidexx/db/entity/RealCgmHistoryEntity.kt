@@ -13,8 +13,7 @@ import io.objectbox.annotation.Id
 import java.util.*
 
 @Entity
-class RealCgmHistoryEntity : EventEntity,
-    CgmHistoryEntity {
+class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var eventWarning: Int? = null
     @Id
     override var idx: Long? = null

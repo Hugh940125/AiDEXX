@@ -7,6 +7,7 @@ import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.await
 
 /**
  *@date 2023/2/24
@@ -20,16 +21,7 @@ object DeviceApi : BaseApi() {
         success: ((entity: TransmitterEntity) -> Unit)? = null,
         failure: (() -> Unit)? = null
     ) = withContext(dispatcher) {
-        when (val apiResult = ApiService.instance.deviceRegister(entity)) {
-            is ApiResult.Success -> {
-                apiResult.result.run {
-                    success?.invoke(this)
-                }
-            }
-            is ApiResult.Failure -> {
-                failure?.invoke()
-            }
-        }
+        val apiResult = ApiService.instance.deviceRegister(entity).await()
     }
 
     suspend fun deviceUnregister(

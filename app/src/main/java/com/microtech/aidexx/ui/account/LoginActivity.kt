@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.account
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
 import android.text.SpannableStringBuilder
@@ -10,11 +11,10 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
+import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.widget.dialog.Dialogs
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), View.OnClickListener {
 
@@ -120,7 +120,6 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
             if (account.isEmpty()) {
                 ToastUtil.showShort(getString(R.string.account_empty))
             } else {
-                Dialogs.showWait(getString(R.string.Login_loging))
                 login(reqContent)
             }
         } else {
@@ -131,23 +130,24 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
             if (account.isEmpty() || password.isEmpty()) {
                 ToastUtil.showShort(getString(R.string.email_password_empty))
             } else {
-                Dialogs.showWait(getString(R.string.Login_loging))
                 login(reqContent)
             }
         }
     }
 
     private fun login(map: HashMap<String, String>) {
-        if (!NetUtil.isNetAvailable(this)){
+        if (!NetUtil.isNetAvailable(this)) {
             ToastUtil.showShort(getString(R.string.net_error))
             return
         }
+        Dialogs.showWait(getString(R.string.Login_loging))
         viewModel.login(map, { baseResponse ->
             val content = baseResponse.content
             lifecycleScope.launch {
                 UserInfoManager.instance().onUserLogin(content) {
                     if (it) {
                         downloadData()
+                        onLoginSuccess()
                     } else {
                         ToastUtil.showShort(getString(R.string.login_fail))
                     }
@@ -158,10 +158,16 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         })
     }
 
-    private fun downloadData() {
-        viewModel.getUserPreference({
+    private fun onLoginSuccess() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
 
-        }, {})
+    private fun downloadData() {
+        //{"info":{"code":"100000","msg":"success"},"content":{"pageInfo":{"currentPage":1,"pageSize":200,"sortOrder":"DESC","totalCount":1},"records":[{"id":"4664cccb4894cc835bf61a775ef6c709","recordIndex":1,"guidanceDone":true,"heightUnit":1,"heightUnitStr":"cm","weightUnit":1,"weightUnitStr":"kg","glucoseUnit":1,"glucoseUnitStr":"mmol/L"}]}}
+//        viewModel.getUserPreference({
+//
+//        }, {})
     }
 
     private fun changeLoginMethod() {

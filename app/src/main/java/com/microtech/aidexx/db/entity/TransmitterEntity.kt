@@ -44,14 +44,6 @@ class TransmitterEntity {
         deviceSn = sn
     }
 
-    fun updateDeviceKey() {
-        deviceKey =
-            if (accessId != null && encryptionKey != null)
-                EncryptUtils.encodeBase64(accessId!! + encryptionKey!!)
-            else
-                null
-    }
-
     fun startTimeToIndex(): Int {
         return sensorStartTime?.time?.millisToMinutes()!!
     }
