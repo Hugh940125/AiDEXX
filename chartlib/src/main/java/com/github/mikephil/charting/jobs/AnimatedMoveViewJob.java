@@ -36,6 +36,13 @@ public class AnimatedMoveViewJob extends AnimatedViewPortJob {
     }
 
     public static void recycleInstance(AnimatedMoveViewJob instance){
+        instance.mViewPortHandler = null;
+        instance.xValue = 0f;
+        instance.yValue = 0f;
+        instance.mTrans = null;
+        instance.view = null;
+        instance.xOrigin = 0f;
+        instance.yOrigin = 0f;
         pool.recycle(instance);
     }
 
