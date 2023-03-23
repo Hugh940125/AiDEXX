@@ -153,7 +153,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
 
-            <View
+            <com.microtech.aidexx.ui.main.home.chart.GlucoseChart
                 android:id="@+id/chart"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -162,6 +162,19 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/iv_scale" />
+
+            <View
+                android:id="@+id/touchView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="60dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintBottom_toBottomOf="@id/chart"
+                app:layout_constraintEnd_toEndOf="@id/chart"
+                app:layout_constraintStart_toStartOf="@id/chart"
+                app:layout_constraintTop_toTopOf="@id/chart" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <com.microtech.aidexx.ui.main.home.timetab.TimeTabLayout

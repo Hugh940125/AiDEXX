@@ -2,57 +2,95 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.utils.EncryptUtils
-import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.toGlucoseValue
+import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.ui.main.home.chart.CgmModel
+import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.MD5Utils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.widget.dialog.x.util.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
 import java.util.*
 
 @Entity
-class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
-    var eventWarning: Int? = null
+class CgmHistoryEntity : EventEntity,
+    CgmHistoryEntity {
     @Id
     override var idx: Long? = null
+
+    @Index
     override var state: Int = 0
     override var id: String? = null
+    @Index
     var deviceSn: String? = null
+    @Index
     var deviceTime = Date()
+    set(value) {
+     field = value
+     deviceTimeLong = deviceTime.time/1000
+    }
     var eventIndex = 0
     var sensorIndex = 0
+    @Index
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
+    @Index
     override var recordIndex: Long? = null
-
-    override var createTime: Date = Date()
-
+    @Index
     override var deleteStatus: Int = 0
-
     var eventType: Int = History.HISTORY_INVALID
     var eventData: Float? = null
+    var eventDataOrgin: Float? = null
+    var calFactor: Float = 1f //校准系数
+    var calOffset: Float = 0f //校准偏移量
+    var eventWarning: Int = 0  //0默认 1高血糖 2低血糖
     var deviceId: String? = null
-    var type = 0 // type为0正常数据，1代表占位数据
+    var type = 0; // type为0正常数据，1代表占位数据
+    var deviceTimeLong: Long? = null
+    @Transient
+    override var createTime: Date = Date()
+    @Transient
+    override var language: String = ""
+    @Index
     override var authorizationId: String? = null
-    var recordUuid: String? = null
+
     override var recordId: String? = null
 
-    override var language: String = ""
-    constructor() {
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
-    }
+    @Index
+    var recordUuid: String? = null
+//        get() {
+//            var userID = UserManager.instance().getUserID();
+//            var deviceId = TransmitterManager.instance().getDefaultModel()?.getDeviceID();
+//            var uuidStr = StringBuffer();
+//            uuidStr.append(userID)
+//                .append(deviceId)
+//                .append(deviceTime.time / 1000)
+//                .append(sensorIndex)
+//                .append(eventIndex)
+//                .append(eventType)
+////                .append(eventData)
+//            LogUtils.data("cgmHistory : userID:" + userID + ", deviceId :" + deviceId + " , deviceSn :" + deviceSn + ", time :" + deviceTime.time / 1000 + " ,eventData :" + eventData + " ,sensorIndex :" + sensorIndex)
+//            return  MD5Utils.md5(uuidStr.toString())
+//        }
 
     fun updateRecordUUID() {
-        val uuidStr = StringBuffer()
-        uuidStr.append(authorizationId)
+        var userID = UserInfoManager.instance().userId();
+        var deviceId = TransmitterManager.instance().getDefault()?.deviceId()
+        var uuidStr = StringBuffer();
+        uuidStr.append(userID)
             .append(deviceId)
             .append(deviceTime.time / 1000)
             .append(sensorIndex)
             .append(eventIndex)
             .append(eventType)
-        recordUuid = EncryptUtils.md5(uuidStr.toString())
+//                .append(eventData)
+
+        LogUtils.data("cgmHistory : userID:" + userID + ", deviceId :" + deviceId + " , deviceSn :" + deviceSn + ", time :" + deviceTime.time / 1000 + " ,eventData :" + eventData + " ,sensorIndex :" + sensorIndex)
+        recordUuid = MD5Utils.md5(uuidStr.toString())
     }
 
     override fun _setDatetime(datetime: Long) {
@@ -111,14 +149,14 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     override fun getEventDescription(res: Resources): String {
         return when (eventWarning) {
-            History.HISTORY_LOCAL_HYPER -> res.getString(R.string.hyper_item)
-            History.HISTORY_LOCAL_HYPO -> res.getString(R.string.hypo_item)
-            History.HISTORY_BLOOD_GLUCOSE -> res.getString(R.string.bg_title)
+            History.HISTORY_LOCAL_HYPER -> res.getString(R.string.high_gluecose_alert)
+            History.HISTORY_LOCAL_HYPO -> res.getString(R.string.low_gluecose_alert)
+            History.HISTORY_BLOOD_GLUCOSE -> res.getString(R.string.title_bg)
             History.HISTORY_LOCAL_URGENT_HYPO -> res.getString(R.string.Urgent_Low_Alarm)
             0, null -> when (eventType) {
-                History.HISTORY_HYPER -> res.getString(R.string.hyper_item)
+                History.HISTORY_HYPER -> res.getString(R.string.high_gluecose_alert)
                 History.HISTORY_HYPO -> res.getString(
-                    R.string.hypo_item
+                    R.string.low_gluecose_alert
                 )
                 else -> ""
             }
@@ -156,11 +194,12 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         }
     }
 
-    fun isHighOrLow(): Boolean {
-        eventData?.let {
-            if (it > ThresholdManager.hyper) {
+    fun isHighOrLowGlucose(): Boolean {
+        val model = TransmitterManager.instance().getDefault()
+        if (model != null) {
+            if (eventData!! > ThresholdManager.hyper) {
                 return true
-            } else if (it < ThresholdManager.hypo) {
+            } else if (eventData!! < ThresholdManager.hypo) {
                 return true
             }
         }
@@ -169,12 +208,13 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
 
     fun getHighOrLowGlucoseType(): Int {
-        eventData?.let {
-            if (it > ThresholdManager.hyper) {
+        val model = TransmitterManager.instance().getDefault()
+        if (model != null) {
+            if (eventData!! > ThresholdManager.hyper) {
                 return 2
-            } else if (it < ThresholdManager.hypo && it >= ThresholdManager.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= CgmModel.URGENT_HYPO) {
                 return 1
-            } else if (it < ThresholdManager.URGENT_HYPO) {
+            } else if (eventData!! < CgmModel.URGENT_HYPO) {
                 return 3
             }
         }
@@ -183,19 +223,21 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
 
     fun updateEventWarning() {
-        eventData?.let {
-            eventWarning = History.HISTORY_LOCAL_NORMAL
-            if (it > ThresholdManager.hyper) {
+        val model = TransmitterManager.instance().getDefault()
+        eventWarning = History.HISTORY_LOCAL_NORMAL
+        if (model != null) {
+            if (eventData!! > ThresholdManager.hyper) {
                 eventWarning = History.HISTORY_LOCAL_HYPER
-            } else if (it < ThresholdManager.hypo && it >= ThresholdManager.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= CgmModel.URGENT_HYPO) {
                 eventWarning = History.HISTORY_LOCAL_HYPO
-            } else if (it < ThresholdManager.URGENT_HYPO) {
+            } else if (eventData!! < CgmModel.URGENT_HYPO) {
                 eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
             }
         }
     }
 
     override fun toString(): String {
-        return "RealCgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, eventData=$eventData, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, recordUuid=$recordUuid, recordId=$recordId, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
+        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, eventData=$eventData, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, recordUuid=$recordUuid, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
     }
+
 }

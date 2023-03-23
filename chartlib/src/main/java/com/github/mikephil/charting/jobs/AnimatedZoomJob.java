@@ -64,6 +64,20 @@ public class AnimatedZoomJob extends AnimatedViewPortJob implements Animator.Ani
     }
 
     protected Matrix mOnAnimationUpdateMatrixBuffer = new Matrix();
+
+    public static void recycleInstance(AnimatedZoomJob instance){
+        instance.mViewPortHandler = null;
+        instance.xValue = 0f;
+        instance.yValue = 0f;
+        instance.mTrans = null;
+        instance.view = null;
+        instance.xOrigin = 0f;
+        instance.yOrigin = 0f;
+        instance.yAxis = null;
+        instance.xAxisRange = 0f;
+        pool.recycle(instance);
+    }
+
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
 
@@ -104,7 +118,7 @@ public class AnimatedZoomJob extends AnimatedViewPortJob implements Animator.Ani
 
     @Override
     public void recycleSelf() {
-
+        recycleInstance(this);
     }
 
     @Override

@@ -59,7 +59,8 @@ public abstract class AnimatedViewPortJob extends ViewPortJob implements ValueAn
     protected void resetAnimator(){
         animator.removeAllListeners();
         animator.removeAllUpdateListeners();
-        animator.reverse();
+//        animator.reverse();
+        phase = 0;
         animator.addUpdateListener(this);
         animator.addListener(this);
     }

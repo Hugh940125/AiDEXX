@@ -14,22 +14,35 @@ import com.github.mikephil.charting.listener.BarLineChartTouchListener
 import com.github.mikephil.charting.listener.ChartTouchListener
 import com.github.mikephil.charting.listener.OnChartGestureListener
 import com.github.mikephil.charting.utils.MPPointD
+import kotlin.math.abs
 
 open class MyChart : CombinedChart {
+
+    interface ScrollListener {
+
+        fun onXAxisVisibleAreaChanged(isLtr: Boolean, visibleLeftX: Float, visibleRightX: Float,
+                                         xAxisMin: Float, xAxisMax: Float)
+
+        fun onToEndLeft()
+
+        fun onToEndRight()
+    }
+
+
     private var bitmap: Bitmap? = null
     private var canvas: Canvas? = null
 
     var majorAxis: AxisDependency? = null
-    private var highlightOnLongPressedEnable = true
+    var highlightOnLongPressedEnable = true
 
     var touchable = true
-    private var selectAllow = false
+    var selectAllow = false
     var onSelectX: ((x: Float?) -> Unit)? = null
 
     var gridBackgroundStart = 0f
     var gridBackgroundEnd = 0f
 
-    private var mVisibleXRange = 6f
+    var mVisibleXRange = 6f
     fun setVisibleXRange(range: Float) {
         mVisibleXRange = range
         stopFlying()
@@ -39,6 +52,8 @@ open class MyChart : CombinedChart {
     var enableAutoScaleY = false
     val yMaximums: MutableList<Float> = ArrayList()
     val yMinimums: MutableList<Float> = ArrayList()
+
+    var onScrollListener: ScrollListener? = null
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -73,13 +88,14 @@ open class MyChart : CombinedChart {
 
     override fun getChartBitmap(): Bitmap {
         bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
         bitmap?.let {
             canvas = canvas ?: Canvas(it)
             try {
                 background?.draw(canvas!!)
                 draw(canvas)
             } catch (e: Exception) {
-                e.printStackTrace()
+                //TODO
             }
         }
         return bitmap!!
@@ -156,16 +172,18 @@ open class MyChart : CombinedChart {
             yValue,
             origin.x.toFloat(),
             origin.y.toFloat(),
-            200
+            duration
         )
         addViewportJob(job)
         MPPointD.recycleInstance(origin)
     }
 
+
     fun delayAutoScaleY(delayMillis: Long) {
         zoomToVisibleRange()
         postDelayed({ autoScaleY() }, delayMillis)
     }
+
 
     /*
     自适应y轴
@@ -226,11 +244,15 @@ open class MyChart : CombinedChart {
 
         private var highlightAllowed: Boolean = true
         private val chart = this@MyChart
+        private var curHighestX = 0.0f
+        private var isEndToLeft = false
+        private var isEndToRight = false
 
         override fun onChartGestureStart(
             me: MotionEvent?,
             lastPerformedGesture: ChartTouchListener.ChartGesture?
         ) {
+            curHighestX = highestVisibleX
             chart.highlightValue(null, true)
             highlightAllowed = true
             chart.isHighlightPerDragEnabled = false
@@ -240,8 +262,19 @@ open class MyChart : CombinedChart {
             me: MotionEvent?,
             lastPerformedGesture: ChartTouchListener.ChartGesture?
         ) {
+
+            isEndToLeft = false
+            isEndToRight = false
+
+            if (lastPerformedGesture == ChartTouchListener.ChartGesture.FLING) {
+                zoomToVisibleRange()
+                if (enableAutoScaleY) autoScaleY()
+                return
+            }
+
             highlightAllowed = false
             chart.isHighlightPerDragEnabled = false
+
         }
 
         override fun onChartLongPressed(me: MotionEvent) {
@@ -270,6 +303,28 @@ open class MyChart : CombinedChart {
 
         override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {
             highlightAllowed = false
+
+//            LogUtils.debug("=====gb=== onChartTranslate dx=${dX} dy=${dY} " +
+//                    "lx=${lowestVisibleX} mx=${highestVisibleX} range=${visibleXRange}" +
+//                    " min=${mXAxis.axisMinimum} max=${mXAxis.axisMaximum}")
+
+            val isLtr = dX < 0
+            // 这里做滚动距离差量最少0.01的误差矫正
+            if (abs(highestVisibleX - curHighestX) > 0.01
+                && ((!isLtr && lowestVisibleX > mXAxis.mAxisMinimum) || (isLtr && highestVisibleX < mXAxis.mAxisMaximum))) {
+                onScrollListener?.onXAxisVisibleAreaChanged(isLtr, lowestVisibleX, highestVisibleX, mXAxis.axisMinimum, mXAxis.axisMaximum)
+                curHighestX = highestVisibleX
+            } else if (!isLtr && lowestVisibleX == mXAxis.mAxisMinimum) {
+                if (!isEndToLeft) {
+                    isEndToLeft = true
+                    onScrollListener?.onToEndLeft()
+                }
+            } else if (isLtr && highestVisibleX == mXAxis.mAxisMaximum) {
+                if (!isEndToRight) {
+                    isEndToRight = true
+                    onScrollListener?.onToEndRight()
+                }
+            }
         }
     }
 }
