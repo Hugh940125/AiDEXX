@@ -1,7 +1,6 @@
 package com.microtech.aidexx.db.entity
 
 import com.microtech.aidexx.common.millisToMinutes
-import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -37,6 +36,8 @@ class TransmitterEntity {
     var hypoThreshold: Float = ThresholdManager.DEFAULT_HYPO
     var deviceKey: String? = null
     var et: Int = 0
+    var deviceName: String? = null
+    var deviceType: Int = 2
 
     constructor()
 

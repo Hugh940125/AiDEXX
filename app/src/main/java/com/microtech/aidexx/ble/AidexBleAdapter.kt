@@ -18,11 +18,12 @@ import androidx.core.app.ActivityCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.ble.device.TransmitterManager.Companion.instance
+import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
 import com.microtech.aidexx.common.toIntBigEndian
 import com.microtech.aidexx.common.toUuid
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtil.Companion.eAiDEX
 import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.StringUtils.binaryToHexString
@@ -183,7 +184,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
                         workHandler!!.sendEmptyMessageDelayed(BLE_CONNECT_TIME_OUT, BLE_CONNECT_TIME_LIMIT)
                         eAiDEX("Start connect " + mBluetoothDevice!!.address)
-                        closeGatt()
+                        //closeGatt()
                         mBluetoothGatt = mBluetoothDevice!!.connectGatt(
                             context,
                             false,
@@ -351,7 +352,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         bluetoothAdapter.bluetoothLeScanner.startScan(buildScanFilters(), buildScanSettings(), scanCallback)
         if (!isOnConnectState && isPeriodic) {
             WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
-            if (instance().getDefault() != null) {
+            if (TransmitterManager.instance().getDefault() != null) {
                 val scanWorker: OneTimeWorkRequest =
                     OneTimeWorkRequest.Builder(StopScanWorker::class.java).setInitialDelay(30, TimeUnit.SECONDS).addTag(
                         STOP_SCAN.toString()
@@ -377,8 +378,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             bluetoothLeScanner.stopScan(scanCallback)
         }
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
-        val aDefault = instance().getDefault()
-        if (aDefault != null && aDefault.entity.accessId != null && !isOnConnectState && isPeriodic) {
+        val default = TransmitterManager.instance().getDefault()
+        if (default != null && default.entity.accessId != null && !isOnConnectState && isPeriodic) {
             val scanWorker: OneTimeWorkRequest =
                 OneTimeWorkRequest.Builder(StartScanWorker::class.java).setInitialDelay(2, TimeUnit.SECONDS).addTag(
                     START_SCAN.toString()

@@ -150,6 +150,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         entity.accessId = controller.id
         entity.deviceModel = model
         entity.version = version
+        entity.deviceName = controller.name
         entity.deviceSn?.let {
             val existTrans = ObjectBox.store.awaitCallInTx {
                 transmitterBox!!.query()

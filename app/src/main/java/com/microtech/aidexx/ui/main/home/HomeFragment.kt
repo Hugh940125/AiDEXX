@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.ble.MessageDispatcher
+import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
@@ -21,7 +21,7 @@ import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.utils.LogUtil
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  *@date 2023/2/15
@@ -37,8 +37,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private val initOrientation: Int = 0
     private val switchOrientation: Int = 1
-    private var param1: String? = null
-    private var param2: String? = null
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
 
@@ -48,11 +46,19 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         HomeStateManager.onHomeStateChange = {
             replaceFragment(it)
         }
+        TransmitterManager.onTransmitterChange = {
+            judgeState()
+            AidexBleAdapter.getInstance().startBtScan(true)
+        }
+        lifecycleScope.launch {
+            TransmitterManager.instance().loadTransmitter()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
+        judgeState()
     }
 
     override fun onPause() {
@@ -74,24 +80,24 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun initView() {
-        judgeState()
         binding.ivScale.setOnClickListener {
             orientation(switchOrientation)
         }
     }
 
     private fun judgeState() {
-        replaceFragment(needPair)
+        val default = TransmitterManager.instance().getDefault()
+        if ((default != null && default.isPaired())) {
+            replaceFragment(glucosePanel)
+        } else {
+            replaceFragment(needPair)
+        }
     }
 
     private fun replaceFragment(pageTag: String) {
-        val default = TransmitterManager.instance().getDefault()
+        if (pageTag == lastPageTag) return
         if (lastPageTag == glucosePanel && pageTag != glucosePanel) {
             binding.homeRoot.setBackgroundResource(0)
-        }
-        if ((default == null || !default.isPaired()) && pageTag != needPair) {
-            replaceFragment(needPair)
-            return
         }
         val fragment = when (pageTag) {
             needPair -> NeedPairFragment.newInstance()
@@ -100,7 +106,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             newOrUsedSensor -> NewOrUsedSensorFragment.newInstance()
             else -> return
         }
-        if (pageTag == lastPageTag) return
         if (childFragmentManager.findFragmentByTag(tag) == null) {
             lastPageTag = pageTag
             try {

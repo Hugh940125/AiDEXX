@@ -272,7 +272,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
         when (v) {
             binding.buttonCalibration -> {
                 val model = TransmitterManager.instance().getDefault()
-                if (model != null && model.entity.accessId != null) {
+                if (model != null && model.isPaired()) {
                     if (calibrationAllowed) {
                         val glucoseValue = binding.etGlucoseValue.text.toString().toFloatOrNull()
                         if (!isBgExpired() && isBgFilled(glucoseValue)) {

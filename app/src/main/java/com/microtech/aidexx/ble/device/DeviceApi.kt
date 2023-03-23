@@ -21,7 +21,18 @@ object DeviceApi : BaseApi() {
         success: ((entity: TransmitterEntity) -> Unit)? = null,
         failure: (() -> Unit)? = null
     ) = withContext(dispatcher) {
-        val apiResult = ApiService.instance.deviceRegister(entity).await()
+        when(val apiResult = ApiService.instance.deviceRegister(entity)){
+            is ApiResult.Success -> {
+                apiResult.result.run {
+                    success?.invoke(this.content)
+                }
+            }
+            is ApiResult.Failure -> {
+                apiResult.msg.run {
+                    failure?.invoke()
+                }
+            }
+        }
     }
 
     suspend fun deviceUnregister(

@@ -61,7 +61,7 @@ protected:
 
     uint16 getServiceUUID() const override { return SERVICE_UUID; }
     uint16 getCharacteristicUUID() const override { return CHARACTERISTIC_UUID; }
-    uint16 getPrivateCharacteristicUUID() const override { return  PRIVATE_CHARACTERISTIC_UUID; };
+    uint16 getPrivateCharacteristicUUID() const override { return isPaired() ? 0 : PRIVATE_CHARACTERISTIC_UUID; };
     uint8 getPacketLength() const override { return 0; }
     uint getCommPort() const override { return 0xFF; }
     uint getHostAddressLength() const override {return HOST_ADDRESS_LENGTH;}

@@ -1,42 +1,33 @@
 package com.microtech.aidexx.ble.device
 
-import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.ble.device.model.TransmitterModel
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity_
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class TransmitterManager private constructor() {
     private var default: DeviceModel? = null
-    var cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
-    var onTransmitterLoaded: ((TransmitterModel) -> Unit)? = null
-    var onLoadHistoriesListener: ((List<RealCgmHistoryEntity>) -> Unit)? = null
-    var onUpdateHistoriesListener: ((List<RealCgmHistoryEntity>) -> Unit)? = null
 
-    suspend fun loadTransmitter(sn: String? = null): TransmitterEntity? {
-        return ObjectBox.store.awaitCallInTx {
-            var findFirst: TransmitterEntity? = null
-            try {
-                val query = transmitterBox!!.query()
-                sn?.apply {
-                    query.equal(
-                        TransmitterEntity_.deviceSn, this, QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                }
-                findFirst = query.orderDesc(TransmitterEntity_.idx).build().findFirst()
-            } catch (e: Exception) {
-                LogUtil.eAiDEX("Failed to load transmitter from db")
+    suspend fun loadTransmitter(sn: String? = null) {
+        val transmitterEntity: TransmitterEntity? = ObjectBox.store.awaitCallInTx {
+            val query = transmitterBox!!.query()
+            sn?.apply {
+                query.equal(
+                    TransmitterEntity_.deviceSn, this, QueryBuilder.StringOrder.CASE_INSENSITIVE
+                )
             }
-            findFirst
+            query.orderDesc(TransmitterEntity_.idx).build().findFirst()
+        }
+        transmitterEntity?.let {
+            when (transmitterEntity.deviceType) {
+                2 -> set(TransmitterModel.instance(transmitterEntity))
+            }
         }
     }
 
@@ -44,32 +35,24 @@ class TransmitterManager private constructor() {
         ObjectBox.runAsync({
             transmitterBox!!.removeAll()
         }, onSuccess = {
-            onLoadHistoriesListener?.invoke(cgmHistories)
         })
     }
 
-    fun buildModel(sn: String): DeviceModel {
+    fun buildModel(sn: String, address: String): DeviceModel {
         if (sn != default?.entity?.deviceSn) {
             val entity = TransmitterEntity(sn)
+            entity.deviceMac = address
             entity.hyperThreshold = ThresholdManager.hyper
             entity.hypoThreshold = ThresholdManager.hypo
             default = TransmitterModel.instance(entity)
         }
         default?.let {
-            onModelChange?.invoke(it)
+            onTransmitterChange?.invoke(it)
         }
         return default!!
     }
 
     fun getDefault(): DeviceModel? {
-        if (default == null) {
-            AidexxApp.mainScope.launch(Dispatchers.IO) {
-                val loadTransmitterFromDb = loadTransmitter()
-                loadTransmitterFromDb?.let {
-                    set(TransmitterModel.instance(it))
-                }
-            }
-        }
         return default
     }
 
@@ -77,10 +60,12 @@ class TransmitterManager private constructor() {
         default = null
     }
 
-    fun set(model: TransmitterModel) {
+    fun set(model: DeviceModel) {
         default = model
-        model.getController().register()
-        onModelChange?.invoke(model)
+        if (default?.isPaired() == true) {
+            model.getController().register()
+        }
+        onTransmitterChange?.invoke(model)
     }
 
     fun update(model: TransmitterModel) {
@@ -99,12 +84,10 @@ class TransmitterManager private constructor() {
 //    }
 
     fun updateHistories(cgmHistories: List<RealCgmHistoryEntity>) {
-        this.cgmHistories.addAll(cgmHistories)
-        onUpdateHistoriesListener?.invoke(cgmHistories)
     }
 
     companion object {
-        var onModelChange: ((model: DeviceModel) -> Unit)? = null
+        var onTransmitterChange: ((model: DeviceModel) -> Unit)? = null
         private var INSTANCE: TransmitterManager? = null
             get() {
                 if (field == null) {

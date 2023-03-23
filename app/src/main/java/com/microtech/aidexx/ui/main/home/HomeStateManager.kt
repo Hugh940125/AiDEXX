@@ -11,6 +11,11 @@ class HomeStateManager private constructor() {
     private var timer: Timer? = null
     private var timeLeft: Int? = null
     private var currentState = glucosePanel
+
+    init {
+        timer = Timer()
+    }
+
     private val timeTask = object : TimerTask() {
         override fun run() {
             setState(glucosePanel)
@@ -52,8 +57,7 @@ class HomeStateManager private constructor() {
 
     @Synchronized
     private fun countDownToReset() {
-        timer?.cancel()
-        timer = Timer()
+        timeTask.cancel()
         timer?.schedule(timeTask, 5 * 60 * 1000)
     }
 

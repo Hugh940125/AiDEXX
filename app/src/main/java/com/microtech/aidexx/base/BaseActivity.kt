@@ -65,7 +65,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         EventBusManager.onReceive<Nothing>(EventBusKey.EVENT_RESTART_BLUETOOTH, this) {
 
         }
-        EventBusManager.onReceive<Nothing>(EventBusKey.TOKEN_EXPIRED, this) {
+        EventBusManager.onReceive<Boolean>(EventBusKey.TOKEN_EXPIRED, this) {
             Dialogs.showMessage(this, content = getString(R.string.token_expired), callBack = {
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

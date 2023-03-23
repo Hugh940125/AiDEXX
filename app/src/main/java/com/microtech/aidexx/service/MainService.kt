@@ -9,6 +9,8 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.ByteUtils
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.StringUtils
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.entity.BleMessage
@@ -24,13 +26,10 @@ import kotlinx.coroutines.cancel
 class MainService : Service() {
 
     lateinit var serviceMainScope: CoroutineScope
-    lateinit var transmitterManager: TransmitterManager
 
     override fun onCreate() {
         super.onCreate()
         serviceMainScope = MainScope()
-        transmitterManager = TransmitterManager.instance()
-        val default = transmitterManager.getDefault()
         MessageDispatcher.instance().observeLifecycle(serviceMainScope)
     }
 
@@ -86,14 +85,22 @@ class MainService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        TransmitterManager.onModelChange = {
-            it.let {
-                it.messageCallBack = { msg ->
-                    onMessage(it, msg)
-                }
-            }
+        TransmitterManager.instance().getDefault()?.let { setMessageCallback(it) }
+        TransmitterManager.onTransmitterChange = {
+            setMessageCallback(it)
         }
         return START_STICKY
+    }
+
+    private fun setMessageCallback(it: DeviceModel) {
+        it.getController().setMessageCallback { operation, success, data ->
+            LogUtil.eAiDEX(
+                "onStartCommand  operation: $operation, success: $success, message: ${
+                    StringUtils.binaryToHexString(data)
+                }"
+            )
+    //                    onMessage(it, msg)
+        }
     }
 
     override fun onDestroy() {

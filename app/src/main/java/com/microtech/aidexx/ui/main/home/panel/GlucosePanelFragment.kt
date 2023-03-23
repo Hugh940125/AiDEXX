@@ -46,6 +46,9 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         timer = Timer()
+        timer?.schedule(0, 60000) {
+            handler.sendEmptyMessage(REFRESH_PANEL)
+        }
         MessageDispatcher.instance().observer(lifecycleScope){
             Throttle.instance().emit(2000, REFRESH_PANEL) {
                 update()
@@ -55,18 +58,15 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
 
     override fun onResume() {
         super.onResume()
-        timer?.schedule(0, 60000) {
-            handler.sendEmptyMessage(REFRESH_PANEL)
-        }
     }
 
     override fun onPause() {
-        timer?.cancel()
         super.onPause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        timer?.cancel()
     }
 
     companion object {

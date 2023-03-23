@@ -67,7 +67,7 @@ interface ApiService {
     suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
 
     @POST(API_DEVICE_REGISTER)
-    suspend fun deviceRegister(@Body entity: TransmitterEntity): Call<ApiResult<TransmitterEntity>>
+    suspend fun deviceRegister(@Body entity: TransmitterEntity): ApiResult<BaseResponse<TransmitterEntity>>
 
     @POST(API_DEVICE_UNREGISTER)
     suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>
@@ -85,7 +85,7 @@ interface ApiService {
                     baseResponse.info.let { info ->
                         info.code.let { code ->
                             if (code != 100000) {
-                                if (code in 800..806) {
+                                if (code == 120002) {
                                     Throttle.instance().emit(5000, code) {
                                         EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                                     }

@@ -34,8 +34,8 @@ class HeaderInterceptor : Interceptor {
         newRequest.header("encryption", if (BuildConfig.enableEncrypt) "enabled" else "disable")
         newRequest.header("app-info", "${BuildConfig.APPLICATION_ID},${BuildConfig.VERSION_NAME}")
         when (select) {
-            0 -> newRequest.header("Accept-Language", "en-US")
-            1 -> newRequest.header("Accept-Language", "zh-cn")
+            0 -> newRequest.header("Accept-Language", "zh-cn")
+            1 -> newRequest.header("Accept-Language", "en-US")
             else -> newRequest.header("Accept-Language", "zh-cn")
         }
         return chain.proceed(newRequest.build())

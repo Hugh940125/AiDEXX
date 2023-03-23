@@ -79,9 +79,10 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                     return
                 }
                 val sn = name.substring(name.length - 6)
+                val address = device.address
                 val bleControllerInfo =
-                    BleControllerInfo(device.address, name, sn, result.rssi + 130)
-                if (transmitter != null && sn == transmitter?.deviceSn) {
+                    BleControllerInfo(address, name, sn, result.rssi + 130)
+                if (transmitter != null && address == transmitter?.deviceMac) {
                     continue
                 }
                 if (!transmitterList.contains(bleControllerInfo)) {
@@ -90,7 +91,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             }
         }
         transmitterAdapter.setList(transmitterList)
-        transmitterHandler.sendEmptyMessageDelayed(REFRESH_TRANS_LIST, 1500)
+        transmitterHandler.sendEmptyMessageDelayed(REFRESH_TRANS_LIST, 3000)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -141,10 +142,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 //        if (transmitter != null && transmitter?.accessId != null) {
 ////            unpairOld()
 //        } else {
-        val buildModel = TransmitterManager.instance().buildModel(controllerInfo.sn)
-        buildModel.controller.mac = controllerInfo.address
+        val buildModel = TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
         buildModel.getController().pair()
-        buildModel.getController().startTime()
 //        }
     }
 
@@ -208,6 +207,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                         default.entity.sensorStartTime = sensorStartTime
                         lifecycleScope.launch {
                             default.savePair(success = {
+                                transmitterList.clear()
+                                transmitterHandler.removeMessages(REFRESH_TRANS_LIST)
+                                transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)
                                 this.launch {
                                     Dialogs.showSuccess(resources.getString(R.string.Pairing_Succeed))
                                 }
@@ -278,7 +280,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     private fun refreshMine() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                transmitter = TransmitterManager.instance().loadTransmitter()
+                transmitter = TransmitterManager.instance().getDefault()?.entity
             }
             if (transmitter == null) {
                 binding.tvPlsSelectTrans.visibility = View.VISIBLE
@@ -286,7 +288,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             } else {
                 binding.tvPlsSelectTrans.visibility = View.GONE
                 binding.layoutMyTrans.root.visibility = View.VISIBLE
-                binding.layoutMyTrans.tvSn.text = transmitter!!.deviceSn
+                binding.layoutMyTrans.tvSn.text = transmitter!!.deviceName
                 binding.layoutMyTrans.buttonDelete.setOnClickListener(this@TransmitterActivity)
                 if (transmitter!!.accessId == null) {
                     binding.layoutMyTrans.buttonPair.visibility = View.VISIBLE
