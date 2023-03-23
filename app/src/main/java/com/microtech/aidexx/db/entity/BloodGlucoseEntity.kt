@@ -2,6 +2,7 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
+import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.widget.dialog.x.util.toGlucoseStringWithUnit
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -22,7 +23,7 @@ class BloodGlucoseEntity : EventEntity {
     var testTime: Date = Date()
     var testTag: Int = 0
     var bloodGlucose: Float = -1f
-
+    override var createTime: Date = Date()
     @Transient
     var calibration: Boolean = false
 
@@ -35,11 +36,12 @@ class BloodGlucoseEntity : EventEntity {
             field = time
             testTime = time
         }
-
+    override var language: String = ""
     constructor()
     constructor(testTime: Date, bloodGlucose: Float) {
         this.testTime = testTime
         this.bloodGlucose = bloodGlucose
+        this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
 
     override fun getEventDescription(res: Resources): String =

@@ -8,4 +8,5 @@ object EventBusKey {
     const val TOKEN_EXPIRED: String = "token.expired"
     const val EVENT_SHOW_ALERT: String = "event.show.alert"
     const val EVENT_RESTART_BLUETOOTH: String = "event.restart.bluetooth"
+    const val REFRESH_CHART_DATE: String = "REFRESH_CHART_DATE"
 }
