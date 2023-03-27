@@ -24,6 +24,8 @@ class UserInfoManager {
         fun instance(): UserInfoManager {
             return INSTANCE
         }
+
+        fun getCurShowUserId() = shareUserInfo?.id ?: INSTANCE.userId()
     }
 
     fun userId(): String {

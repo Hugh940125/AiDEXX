@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home.chart
+package com.microtech.aidexx.widget.chart
 
 import android.content.Context
 import android.graphics.Color
@@ -9,6 +9,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.annotation.IntDef
+import androidx.annotation.LongDef
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.*
@@ -24,7 +26,8 @@ import com.microtech.aidexx.common.dateAndTimeHour
 import com.microtech.aidexx.common.toGlucoseString2
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.ui.main.home.chart.dataset.GlucoseDataSet
+import com.microtech.aidexx.ui.main.home.chart.ChartManager
+import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import java.nio.charset.Charset
@@ -33,9 +36,13 @@ import java.util.*
 import kotlin.math.roundToInt
 
 /**
- * APP-SRC-A-3-2-1
+ * Home页中的图表
  */
 class GlucoseChart : MyChart {
+
+    companion object {
+        const val CHART_LABEL_COUNT: Int = 6
+    }
 
     interface ExtraParams {
 
@@ -77,6 +84,7 @@ class GlucoseChart : MyChart {
          * 选中事件浮框具体事件的跳转历史记录按钮点击回调
          */
         var onGoToHistory: (() -> Unit)?
+
     }
 
     var extraParams: ExtraParams? = null
@@ -84,8 +92,6 @@ class GlucoseChart : MyChart {
     private var isValueNull: Boolean = true
 
     private val chartManager = ChartManager.instance()
-
-    private var labelCount: Int = 6
 
     var textColor: Int? = null
 
@@ -226,31 +232,9 @@ class GlucoseChart : MyChart {
     /**
      * 初始化数据集
      */
-    fun initData() {
+    fun initData(combinedData: CombinedData) {
         initBackground()
 
-        val lineDataSets: ArrayList<ILineDataSet> = ArrayList()
-        lineDataSets.addAll(generateLimitLines())
-
-        val glucoseSets: List<LineDataSet> = chartManager.getGlucoseSets()
-        LogUtils.data("Glucose Set Size ${glucoseSets.size}")
-        lineDataSets.addAll(glucoseSets)
-
-        if (UserInfoManager.shareUserInfo == null) {
-            val currentGlucose = chartManager.getCurrentGlucose()
-            currentGlucose.circleHoleColor =
-                ThemeManager.getTypeValue(context, R.attr.containerBackground)
-            lineDataSets.add(currentGlucose)
-        }
-
-        val scatterDataSets: ArrayList<IScatterDataSet> = ArrayList()
-        scatterDataSets.add(chartManager.calSet)
-        scatterDataSets.add(chartManager.bgSet)
-        scatterDataSets.add(chartManager.eventSet)
-
-        val combinedData = CombinedData()
-        combinedData.setData(LineData(lineDataSets))
-        combinedData.setData(ScatterData(scatterDataSets))
         data = combinedData
 
         notifyChanged(true)
@@ -283,6 +267,13 @@ class GlucoseChart : MyChart {
             refresh()
     }
 
+    /**
+     * 切换时间模式
+     */
+    fun updateGranularity(@ChartGranularityPerScreen granularity: Int) {
+        xAxis.granularity = granularity.toFloat()
+    }
+
     private fun isAtLatestPosition(highestVisibleX: Float): Boolean {
         val cur = (highestVisibleX * 1000).roundToInt().toFloat() / 1000
         val max = (xChartMax * 1000).roundToInt().toFloat() / 1000
@@ -291,7 +282,7 @@ class GlucoseChart : MyChart {
 
     private fun refresh() {
         touchable = false
-        xAxis.granularity = chartManager.granularity.toFloat()
+//        xAxis.granularity = chartManager.granularity.toFloat()
         xAxis.axisMinimum = xMin()
         xAxis.axisMaximum = xMax()
         visibleXRange = xRange()
@@ -303,7 +294,7 @@ class GlucoseChart : MyChart {
         touchable = false
         xAxis.axisMinimum = xMin()
         xAxis.axisMaximum = xMax()
-        xAxis.granularity = chartManager.granularity.toFloat()
+//        xAxis.granularity = chartManager.granularity.toFloat()
         visibleXRange = xRange()
 
         moveViewToX(xMax())
@@ -332,7 +323,7 @@ class GlucoseChart : MyChart {
         xAxis.yOffset = 5f
         xAxis.textColor = textColor!!
         xAxis.granularity = chartManager.granularity.toFloat()
-        xAxis.labelCount = (labelCount + 1)
+        xAxis.labelCount = (CHART_LABEL_COUNT + 1)
         val lines = floatArrayOf(22f, 1000f)
         xAxis.setGridDashedLine(DashPathEffect(lines, 0f));
         xAxis.gridLineWidth = 1f
@@ -354,7 +345,7 @@ class GlucoseChart : MyChart {
                     hours == 0L -> {
                         mFormatT.format(Date(second * 1000))
                     }
-                    (value - lowestVisibleX < xAxis.granularity) && (hours % 24 < 24 - xAxis.granularity * (labelCount - 1)) -> {
+                    (value - lowestVisibleX < xAxis.granularity) && (hours % 24 < 24 - xAxis.granularity * (CHART_LABEL_COUNT - 1)) -> {
                         mFormatT.format(Date(second * 1000))
                     }
                     else -> {
@@ -394,7 +385,7 @@ class GlucoseChart : MyChart {
     }
 
     private fun xRange(): Float {
-        return xAxis.granularity * labelCount
+        return xAxis.granularity * CHART_LABEL_COUNT
     }
 
     private fun xMargin(): Float {

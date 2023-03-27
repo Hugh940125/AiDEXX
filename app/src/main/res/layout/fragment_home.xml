@@ -153,7 +153,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
 
-            <com.microtech.aidexx.ui.main.home.chart.GlucoseChart
+            <com.microtech.aidexx.widget.chart.GlucoseChart
                 android:id="@+id/chart"
                 android:layout_width="0dp"
                 android:layout_height="0dp"

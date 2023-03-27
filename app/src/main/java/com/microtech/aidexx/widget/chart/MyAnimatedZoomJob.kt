@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home.chart
+package com.microtech.aidexx.widget.chart
 
 import android.animation.Animator
 import android.view.View
