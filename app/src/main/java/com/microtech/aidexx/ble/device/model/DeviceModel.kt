@@ -17,6 +17,13 @@ import java.util.*
  *@desc
  */
 abstract class DeviceModel(val entity: TransmitterEntity) {
+
+    companion object {
+        const val GLUCOSE_LOWER = 2f
+        const val GLUCOSE_UPPER = 25f
+        const val URGENT_HYPO = 3f
+    }
+
     var faultType = 0 // 1.异常状态，可恢复 2.需要更换
     var targetEventIndex = 0
     var nextEventIndex = 0

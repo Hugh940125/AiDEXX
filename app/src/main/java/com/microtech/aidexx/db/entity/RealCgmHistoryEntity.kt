@@ -3,9 +3,9 @@ package com.microtech.aidexx.db.entity
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.toGlucoseValue
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.ui.main.home.chart.CgmModel
 import com.microtech.aidexx.utils.*
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
@@ -205,9 +205,9 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         if (model != null) {
             if (eventData!! > ThresholdManager.hyper) {
                 return 2
-            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= CgmModel.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= DeviceModel.URGENT_HYPO) {
                 return 1
-            } else if (eventData!! < CgmModel.URGENT_HYPO) {
+            } else if (eventData!! < DeviceModel.URGENT_HYPO) {
                 return 3
             }
         }
@@ -221,9 +221,9 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         if (model != null) {
             if (eventData!! > ThresholdManager.hyper) {
                 eventWarning = History.HISTORY_LOCAL_HYPER
-            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= CgmModel.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= DeviceModel.URGENT_HYPO) {
                 eventWarning = History.HISTORY_LOCAL_HYPO
-            } else if (eventData!! < CgmModel.URGENT_HYPO) {
+            } else if (eventData!! < DeviceModel.URGENT_HYPO) {
                 eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
             }
         }
