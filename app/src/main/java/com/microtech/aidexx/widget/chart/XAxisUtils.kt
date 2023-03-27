@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home.chart
+package com.microtech.aidexx.widget.chart
 
 import com.microtech.aidexx.utils.TimeUtils
 import java.util.*

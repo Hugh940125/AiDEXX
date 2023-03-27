@@ -1,4 +1,4 @@
-package com.microtech.aidexx.ui.main.home.chart
+package com.microtech.aidexx.widget.chart
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
+import androidx.annotation.IntDef
 import com.github.mikephil.charting.charts.CombinedChart
 import com.github.mikephil.charting.components.YAxis.AxisDependency
 import com.github.mikephil.charting.highlight.Highlight
@@ -18,8 +19,27 @@ import kotlin.math.abs
 
 open class MyChart : CombinedChart {
 
+    companion object {
+        const val G_SIX_HOURS = 1
+        const val G_HALF_DAY = 2
+        const val G_ONE_DAY = 4
+    }
+    /**
+     * 控制图表每一屏显示的时间跨度
+     */
+    @IntDef(G_SIX_HOURS, G_HALF_DAY, G_ONE_DAY)
+    annotation class ChartGranularityPerScreen
+
     interface ScrollListener {
 
+        /**
+         * 触发加载下一页数据
+         * @param isLtr 是否向右移动
+         * @param visibleLeftX 可视最左坐标
+         * @param visibleRightX 可视最右坐标
+         * @param xAxisMin 当前最左坐标
+         * @param xAxisMax 当前最右坐标
+         */
         fun onXAxisVisibleAreaChanged(isLtr: Boolean, visibleLeftX: Float, visibleRightX: Float,
                                          xAxisMin: Float, xAxisMax: Float)
 

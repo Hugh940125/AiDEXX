@@ -4,6 +4,8 @@ import android.content.Context
 import com.microtech.aidexx.db.entity.*
 import io.objectbox.Box
 import io.objectbox.BoxStore
+import io.objectbox.kotlin.awaitCallInTx
+import java.util.concurrent.Callable
 
 /**
  *@date 2023/2/15
@@ -69,4 +71,10 @@ object ObjectBox {
             }
             return field
         }
+
+    /**
+     * 把ob自带的异步包装到协程中使用
+     */
+    suspend inline fun <V : Any> awaitCallInTx(callable: Callable<V?>): V? = store.awaitCallInTx(callable)
+
 }

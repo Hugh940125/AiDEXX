@@ -1,6 +1,7 @@
 package com.microtech.aidexx.utils
 
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.DbRepository
 import com.microtech.aidexx.db.dao.CalerateDao
 import com.microtech.aidexx.db.dao.CgmHistoryDao
 import com.microtech.aidexx.db.entity.CalerateEntity
@@ -14,7 +15,7 @@ object CalibrateManager {
 
         val uid = UserInfoManager.shareUserInfo?.id ?: UserInfoManager.instance().userId()
 
-        val calListFromHistory = CgmHistoryDao.queryByUid(uid)
+        val calListFromHistory = DbRepository.queryCgmByUid(uid) ?: mutableListOf()
 
         for (history in calListFromHistory) {
             val calerateEntity = CalerateEntity()
@@ -25,7 +26,7 @@ object CalibrateManager {
             mutableListOf.add(calerateEntity)
         }
 
-        val calList = CalerateDao.queryByUid(uid)
+        val calList = CalerateDao.queryByUid(uid) ?: mutableListOf()
 
         LogUtils.eAiDex("-----2|||$mutableListOf")
         mutableListOf.addAll(calList)
