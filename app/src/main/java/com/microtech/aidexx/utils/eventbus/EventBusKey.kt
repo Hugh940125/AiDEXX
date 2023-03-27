@@ -10,4 +10,5 @@ object EventBusKey {
     const val EVENT_RESTART_BLUETOOTH: String = "event.restart.bluetooth"
     const val REFRESH_CHART_DATE: String = "REFRESH_CHART_DATE"
     const val GO_TO_HISTORY: String = "GO_TO_HISTORY"
+    const val EVENT_UNPAIR_SUCCESS: String = "EVENT_UNPAIR_SUCCESS"
 }

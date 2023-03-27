@@ -6,6 +6,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
@@ -16,6 +17,7 @@ import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentGlucosePanelBinding
 import com.microtech.aidexx.ui.main.home.HomeBackGroundSelector
+import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.TimeUtils
@@ -27,6 +29,8 @@ import kotlin.concurrent.schedule
 
 private const val REFRESH_PANEL = 2006
 class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBinding>() {
+
+    private val chartViewModel: ChartViewModel by viewModels(ownerProducer = { requireActivity() })
 
     private var timer: Timer? = null
     private val handler = Handler(Looper.getMainLooper()) {
@@ -100,8 +104,10 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 binding.tvGlucoseValue.text =
                     deviceModel.glucose?.toGlucoseStringWithLowAndHigh(resources)
             }
+
             //设置当前血糖值
-//            ChartManager.instance().setCurrentGlucose(model.lastHistoryDatetime, model.glucose)
+            chartViewModel.setCurrentGlucose(deviceModel.lastHistoryTime, deviceModel.glucose)
+
             binding.bgPanel.rotation = when (deviceModel.glucoseTrend) {
                 DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.FAST_UP -> 180f
                 DeviceModel.GlucoseTrend.UP -> -90f

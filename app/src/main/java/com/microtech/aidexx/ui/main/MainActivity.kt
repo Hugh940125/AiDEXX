@@ -66,18 +66,18 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             activity.enableLocation()
                         }
-                        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
-                            val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
-                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
-                            if (!hasIgnored) {
-                                Dialogs.showWhether(
-                                    activity,
-                                    content = activity.getString(R.string.content_ignore_battery),
-                                    confirm = {
-                                        activity.ignoreBatteryOptimization()
-                                    })
-                            }
-                        }
+//                        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
+//                            val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
+//                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
+//                            if (!hasIgnored) {
+//                                Dialogs.showWhether(
+//                                    activity,
+//                                    content = activity.getString(R.string.content_ignore_battery),
+//                                    confirm = {
+//                                        activity.ignoreBatteryOptimization()
+//                                    })
+//                            }
+//                        }
                     }
                 }
             }

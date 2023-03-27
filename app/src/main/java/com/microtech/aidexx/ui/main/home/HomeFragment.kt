@@ -33,6 +33,7 @@ import com.microtech.aidexx.utils.LogUtil
 import kotlinx.coroutines.launch
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_HALF_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_ONE_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
@@ -113,6 +114,12 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private fun initChart() {
         binding.run {
 
+            touchView.setOnTouchListener { _, event ->
+                touchView.performClick()
+                if (MyAnimatedZoomJob.animators > 0) true
+                else chart.onTouchEvent(event)
+            }
+
             chart.extraParams = object: GlucoseChart.ExtraParams {
                 override var outerDescriptionView: View? = descriptions
 
@@ -132,6 +139,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                         LiveEventBus.get<Boolean>(EventBusKey.GO_TO_HISTORY).post(true)
                     }
                 }
+
+                override var curDateTv: TextView? = tvXTime
+
+                override fun xMax(): Float = chartViewModel.xMax()
+                override fun xMin(): Float = chartViewModel.xMin()
+                override fun xRange(): Float = chartViewModel.xRange()
+                override fun lowerLimit(): Float = chartViewModel.lowerLimit
+                override fun upperLimit(): Float = chartViewModel.upperLimit
             }
 
             chart.onScrollListener = object: MyChart.ScrollListener {
@@ -143,16 +158,18 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                     xAxisMax: Float
                 ) {
                     if (chartViewModel.needLoadNextPage(isLtr, visibleLeftX, xAxisMin)) {
-                        chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                        val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                        LogUtils.debug(TAG,"===CHART===onXAxisVisibleAreaChanged do=$ret")
                     }
                 }
 
                 override fun onToEndLeft() {
-                    chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                    LogUtils.debug(TAG,"===CHART===onToEndLeft do=$ret")
                 }
 
                 override fun onToEndRight() {
-                    LogUtils.debug("","onToEndRight")
+                    LogUtils.debug(TAG,"===CHART===onToEndRight")
                 }
             }
 
@@ -168,6 +185,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 launch {
                     chartViewModel.initData().collectLatest {
                         chart.initData(it)
+//                        chart.notifyChanged(true)
                     }
                 }
 
@@ -193,6 +211,13 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 chartViewModel.updateGranularity(newModel)
             }
         }
+
+        // 解配成功后
+        LiveEventBus.get(EventBusKey.EVENT_UNPAIR_SUCCESS,String::class.java).observe(this) {
+            LogUtils.eAiDex("执行--取消注册")
+            chartViewModel.clearCurrentGlucose()
+        }
+
     }
 
     private fun judgeState() {
@@ -273,5 +298,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     companion object {
         @JvmStatic
         fun newInstance() = HomeFragment()
+        const val TAG = "HomeFragment"
     }
 }

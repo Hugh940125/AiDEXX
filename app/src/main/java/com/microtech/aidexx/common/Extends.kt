@@ -6,7 +6,6 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.db.entity.CgmHistoryEntity
 import com.microtech.aidexx.ui.main.home.chart.CgmModel
 import com.microtech.aidexx.utils.LocalManageUtil
 import com.microtech.aidexx.utils.UnitManager

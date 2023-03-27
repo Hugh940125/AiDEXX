@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ble.device.model
 
 import android.os.SystemClock
+import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
@@ -24,6 +25,7 @@ import com.microtech.aidexx.ui.setting.alert.AlertManager.Companion.calculateFre
 import com.microtech.aidexx.ui.setting.alert.AlertType
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
+import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
@@ -227,8 +229,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             })
                             TransmitterManager.instance().removeAllFromDb()
                             TransmitterManager.instance().removeDefault()
-//                    LiveEventBus.get<String>(EventKey.EVENT_UNPAIR_SUCCESS)
-//                        .post("unPairSuccess") //解配成功
+                    LiveEventBus.get<String>(EventBusKey.EVENT_UNPAIR_SUCCESS)
+                        .post("unPairSuccess") //解配成功
                         },
                         failure = {
                             ToastUtil.showShort(it)

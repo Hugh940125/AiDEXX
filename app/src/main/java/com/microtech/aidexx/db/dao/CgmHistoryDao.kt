@@ -1,10 +1,9 @@
 package com.microtech.aidexx.db.dao
 
-import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.awaitCallInTx
-import com.microtech.aidexx.db.entity.CgmHistoryEntity
-import com.microtech.aidexx.db.entity.CgmHistoryEntity_
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtechmd.blecomm.constant.History
 import io.objectbox.kotlin.boxFor
 import io.objectbox.kotlin.equal
@@ -13,13 +12,13 @@ import java.util.*
 
 object CgmHistoryDao {
 
-    private val box by lazy { ObjectBox.store.boxFor<CgmHistoryEntity>() }
+    private val box by lazy { ObjectBox.store.boxFor<RealCgmHistoryEntity>() }
 
-    suspend fun queryByUid(id: String): MutableList<CgmHistoryEntity>? =
+    suspend fun queryByUid(authorId: String): MutableList<RealCgmHistoryEntity>? =
         awaitCallInTx {
             box.query()
-                .equal(CgmHistoryEntity_.eventType, History.HISTORY_CALIBRATION)
-                .equal(CgmHistoryEntity_.authorizationId, id, StringOrder.CASE_SENSITIVE)
+                .equal(RealCgmHistoryEntity_.eventType, History.HISTORY_CALIBRATION)
+                .equal(RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE)
                 .build()
                 .find()
         }
@@ -28,17 +27,25 @@ object CgmHistoryDao {
         startDate: Date,
         endDate: Date,
         authorId: String
-    ): MutableList<CgmHistoryEntity>? =
+    ): MutableList<RealCgmHistoryEntity>? =
         awaitCallInTx {
             box.query()
                 .between(
-                    CgmHistoryEntity_.deviceTime,
+                    RealCgmHistoryEntity_.deviceTime,
                     startDate,
                     endDate
                 )
-                .equal( CgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
-                .equal(CgmHistoryEntity_.deleteStatus, 0)
+                .equal( RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
+                .equal(RealCgmHistoryEntity_.deleteStatus, 0)
                 .build().find()
         }
 
+    suspend fun queryLatest(authorId: String): RealCgmHistoryEntity? =
+        awaitCallInTx {
+            box.query()
+                .equal( RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
+                .orderDesc(RealCgmHistoryEntity_.deviceTime)
+                .build()
+                .findFirst()
+        }
 }

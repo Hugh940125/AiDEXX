@@ -16,6 +16,8 @@ object DbRepository {
         uid: String = UserInfoManager.instance().userId()
     ) = CgmHistoryDao.query(startDate,endDate,uid)
 
-
+    suspend fun queryLatestOne(
+        uid: String = UserInfoManager.instance().userId()
+    ) = CgmHistoryDao.queryLatest(uid)
 
 }
