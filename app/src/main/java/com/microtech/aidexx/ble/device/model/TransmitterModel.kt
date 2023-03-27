@@ -99,24 +99,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     StringUtils.binaryToHexString(data)
                 }"
             )
-            if (operation in 1..3) {
-                messageCallBack?.invoke(
-                    BleMessage(
-                        operation,
-                        success,
-                        data
-                    )
-                )
-            } else {
-                val result = ByteUtils.subByte(data, 1, data.size - 1);
-                messageCallBack?.invoke(
-                    BleMessage(
-                        operation,
-                        success,
-                        result
-                    )
-                )
+            var result: ByteArray = byteArrayOf()
+            if (operation !in 1..3) {
+                result = ByteUtils.subByte(data, 1, data.size - 1);
             }
+            messageCallBack?.invoke(
+                BleMessage(
+                    operation,
+                    success,
+                    result
+                )
+            )
         }
     }
 

@@ -49,7 +49,7 @@
     },
     {
       "id": "3:3796110624465004345",
-      "lastPropertyId": "21:5554186718738981798",
+      "lastPropertyId": "23:8711943568725265028",
       "name": "TransmitterEntity",
       "properties": [
         {
@@ -149,13 +149,23 @@
           "id": "21:5554186718738981798",
           "name": "needReplace",
           "type": 1
+        },
+        {
+          "id": "22:3008263584411491891",
+          "name": "deviceName",
+          "type": 9
+        },
+        {
+          "id": "23:8711943568725265028",
+          "name": "deviceType",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "4:7116906528857590846",
-      "lastPropertyId": "11:6999354895575138401",
+      "lastPropertyId": "13:3998739008301207511",
       "name": "BloodGlucoseEntity",
       "properties": [
         {
@@ -213,13 +223,23 @@
           "id": "11:6999354895575138401",
           "name": "recordId",
           "type": 9
+        },
+        {
+          "id": "12:7215014204097331683",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "13:3998739008301207511",
+          "name": "language",
+          "type": 9
         }
       ],
       "relations": []
     },
     {
       "id": "5:7965544801460559811",
-      "lastPropertyId": "27:5478258158429012314",
+      "lastPropertyId": "29:4513057390725316254",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -357,13 +377,775 @@
           "id": "27:5478258158429012314",
           "name": "recordId",
           "type": 9
+        },
+        {
+          "id": "28:8552690612570296178",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "29:4513057390725316254",
+          "name": "language",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:1798530400434991751",
+      "lastPropertyId": "17:1377765878542676419",
+      "name": "CalerateEntity",
+      "properties": [
+        {
+          "id": "1:4529944353844671717",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2083774641830348407",
+          "name": "state",
+          "type": 5
+        },
+        {
+          "id": "3:4220883836626977670",
+          "name": "authorizationId",
+          "type": 9
+        },
+        {
+          "id": "4:502135336687861126",
+          "name": "calTime",
+          "type": 10
+        },
+        {
+          "id": "5:3363489039058012097",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "6:7924969664955235464",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "7:3620567015986399526",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "8:7021280559673482143",
+          "name": "deviceId",
+          "type": 9
+        },
+        {
+          "id": "9:4131744523252092689",
+          "name": "recordIndex",
+          "type": 6
+        },
+        {
+          "id": "10:8129640547872891662",
+          "name": "deleteStatus",
+          "type": 5
+        },
+        {
+          "id": "11:7774869072123823703",
+          "name": "recordUuid",
+          "type": 9
+        },
+        {
+          "id": "12:818972524183962692",
+          "name": "sensorIndex",
+          "type": 5
+        },
+        {
+          "id": "13:7926327698546368635",
+          "name": "referenceGlucose",
+          "type": 7
+        },
+        {
+          "id": "14:1610277962372493618",
+          "name": "indexBeforeCal",
+          "type": 5
+        },
+        {
+          "id": "15:9080111594885577725",
+          "name": "indexAfterCal",
+          "type": 5
+        },
+        {
+          "id": "16:7773164303046789211",
+          "name": "calFactor",
+          "type": 7
+        },
+        {
+          "id": "17:1377765878542676419",
+          "name": "calOffset",
+          "type": 7
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "7:2976060399919880460",
+      "lastPropertyId": "31:1017272832797782403",
+      "name": "CgmHistoryEntity",
+      "properties": [
+        {
+          "id": "1:7706057882935073436",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5589292219855803777",
+          "name": "state",
+          "indexId": "2:1989256901668882493",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "3:1502099356679755758",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "4:7009778966774592337",
+          "name": "deviceSn",
+          "indexId": "3:7634935636240958704",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "5:6947171259095209902",
+          "name": "deviceTime",
+          "indexId": "4:680230498172607740",
+          "type": 10,
+          "flags": 8
+        },
+        {
+          "id": "6:1400028701978172934",
+          "name": "eventIndex",
+          "type": 5
+        },
+        {
+          "id": "7:5998110691626942962",
+          "name": "sensorIndex",
+          "type": 5
+        },
+        {
+          "id": "8:8676460461059803284",
+          "name": "dataStatus",
+          "indexId": "5:2778451778793799038",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "9:6510188961981896847",
+          "name": "recordIndex",
+          "indexId": "6:5563614557563421253",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "10:4576337287221504181",
+          "name": "deleteStatus",
+          "indexId": "7:4826364599514489265",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "11:3179766450836122762",
+          "name": "eventType",
+          "type": 5
+        },
+        {
+          "id": "12:145885184411306339",
+          "name": "eventData",
+          "type": 7
+        },
+        {
+          "id": "13:3514798164199549828",
+          "name": "eventDataOrgin",
+          "type": 7
+        },
+        {
+          "id": "14:5892773914992455476",
+          "name": "calFactor",
+          "type": 7
+        },
+        {
+          "id": "15:2799752073026020719",
+          "name": "calOffset",
+          "type": 7
+        },
+        {
+          "id": "16:1577595871125953054",
+          "name": "eventWarning",
+          "type": 5
+        },
+        {
+          "id": "17:7127879106977313966",
+          "name": "deviceId",
+          "type": 9
+        },
+        {
+          "id": "18:470968373813971323",
+          "name": "type",
+          "type": 5
+        },
+        {
+          "id": "19:8727927278134252704",
+          "name": "deviceTimeLong",
+          "type": 6
+        },
+        {
+          "id": "20:6539912235719684813",
+          "name": "authorizationId",
+          "indexId": "8:6534629549118721255",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "21:3167306451708922663",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "22:4106479320567322092",
+          "name": "recordUuid",
+          "indexId": "9:19967245965897944",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "23:1243761830409203328",
+          "name": "rawData1",
+          "type": 7
+        },
+        {
+          "id": "24:5944769147360671995",
+          "name": "rawData2",
+          "type": 7
+        },
+        {
+          "id": "25:5787639564239244198",
+          "name": "rawData3",
+          "type": 7
+        },
+        {
+          "id": "26:2006553083380337893",
+          "name": "rawData4",
+          "type": 7
+        },
+        {
+          "id": "27:1396902670258769555",
+          "name": "rawData5",
+          "type": 7
+        },
+        {
+          "id": "28:6297500696958887359",
+          "name": "rawData6",
+          "type": 7
+        },
+        {
+          "id": "29:2316472075691365822",
+          "name": "rawData7",
+          "type": 7
+        },
+        {
+          "id": "30:6106519459820284728",
+          "name": "rawData8",
+          "type": 7
+        },
+        {
+          "id": "31:1017272832797782403",
+          "name": "rawData9",
+          "type": 7
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "8:1125014526974303161",
+      "lastPropertyId": "16:9169127843685693182",
+      "name": "DietEntity",
+      "properties": [
+        {
+          "id": "1:1730024633406168383",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3660958514068738316",
+          "name": "state",
+          "indexId": "10:2443216487136100194",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "3:2445772721386491434",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "4:6599079054145487300",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "5:2899689794929552947",
+          "name": "recordIndex",
+          "indexId": "11:7288634528536408804",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "6:9149106482049538031",
+          "name": "deleteStatus",
+          "indexId": "12:6073821731969410279",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "7:8676850838291507047",
+          "name": "mealTime",
+          "indexId": "13:7644226702392068057",
+          "type": 10,
+          "flags": 8
+        },
+        {
+          "id": "8:1996808575280321444",
+          "name": "recordUuid",
+          "indexId": "14:2928129378902944856",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "9:7527251408549500056",
+          "name": "mealRemark",
+          "type": 9
+        },
+        {
+          "id": "10:4552968448769664959",
+          "name": "carbohydrate",
+          "type": 5
+        },
+        {
+          "id": "11:6576250088365011414",
+          "name": "isPreset",
+          "type": 1
+        },
+        {
+          "id": "12:4363277597286140089",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "13:630542695186129611",
+          "name": "relList",
+          "type": 9
+        },
+        {
+          "id": "14:8468624267762487097",
+          "name": "momentType",
+          "type": 5
+        },
+        {
+          "id": "15:7611640840931771066",
+          "name": "authorizationId",
+          "indexId": "15:7459245770508031755",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "16:9169127843685693182",
+          "name": "language",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "9:8442502733337307465",
+      "lastPropertyId": "15:2243838490572318102",
+      "name": "ExerciseEntity",
+      "properties": [
+        {
+          "id": "1:3056701347183412582",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "2:5007040849254598086",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:1097224519777158631",
+          "name": "state",
+          "indexId": "16:7951891827720771062",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "4:2859786372785119259",
+          "name": "id",
+          "indexId": "17:5468792013763434841",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "5:5100953950495582672",
+          "name": "recordIndex",
+          "indexId": "18:4478236244572361811",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "6:293557017902365658",
+          "name": "deleteStatus",
+          "indexId": "19:2272126168068191455",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "7:2529345966863100856",
+          "name": "recordUuid",
+          "indexId": "20:1209470660885680889",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "8:6204430724254560602",
+          "name": "startTime",
+          "indexId": "21:4068826094766924705",
+          "type": 10,
+          "flags": 8
+        },
+        {
+          "id": "9:5370862107420572986",
+          "name": "duration",
+          "type": 5
+        },
+        {
+          "id": "10:5347849731678102615",
+          "name": "intensity",
+          "type": 5
+        },
+        {
+          "id": "11:2262265366558130156",
+          "name": "isPreset",
+          "type": 1
+        },
+        {
+          "id": "12:2640276915990473715",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "13:6627439480773135722",
+          "name": "relList",
+          "type": 9
+        },
+        {
+          "id": "14:6523889272272239584",
+          "name": "authorizationId",
+          "indexId": "22:2092311544626645243",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "15:2243838490572318102",
+          "name": "language",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "10:7304187857319336808",
+      "lastPropertyId": "16:2231435937734113351",
+      "name": "InsulinEntity",
+      "properties": [
+        {
+          "id": "1:8180860695559915655",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "2:8773727311351855687",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:2312347447827486276",
+          "name": "state",
+          "indexId": "23:1852298947891530390",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "4:7078353522657131540",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "5:2367843943463427680",
+          "name": "recordIndex",
+          "indexId": "24:2279224479943743343",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "6:2899966875327649344",
+          "name": "deleteStatus",
+          "indexId": "25:4781714378110591654",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "7:2999992088184972729",
+          "name": "injectionTime",
+          "type": 10
+        },
+        {
+          "id": "8:9111325129720258625",
+          "name": "insulinName",
+          "type": 9
+        },
+        {
+          "id": "9:255799689608028538",
+          "name": "recordUuid",
+          "indexId": "26:6259227620576284801",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "10:2542285136175982839",
+          "name": "insulinDosage",
+          "type": 7
+        },
+        {
+          "id": "11:459695997165845765",
+          "name": "isPreset",
+          "type": 1
+        },
+        {
+          "id": "12:5840551459506364348",
+          "name": "authorizationId",
+          "indexId": "27:6797099745912492224",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "13:6507552047357259567",
+          "name": "relList",
+          "type": 9
+        },
+        {
+          "id": "14:424250787081091565",
+          "name": "momentType",
+          "type": 5
+        },
+        {
+          "id": "15:2455968297119374376",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "16:2231435937734113351",
+          "name": "language",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "11:296914133873562613",
+      "lastPropertyId": "16:22329404583910535",
+      "name": "MedicationEntity",
+      "properties": [
+        {
+          "id": "1:888884993458427849",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "2:5366177380731893633",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "3:2597230937786614040",
+          "name": "state",
+          "indexId": "28:5428670826096617021",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "4:5353205425938759567",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "5:2149010929727572450",
+          "name": "recordIndex",
+          "indexId": "29:2651600144232699712",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "6:4068090166948510895",
+          "name": "deleteStatus",
+          "indexId": "30:2268316120461578597",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "7:2577168030059413740",
+          "name": "recordUuid",
+          "indexId": "31:2045186631924243658",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "8:3599102795876045808",
+          "name": "takenTime",
+          "type": 10
+        },
+        {
+          "id": "9:1833264796238316282",
+          "name": "medicineName",
+          "indexId": "32:6595537758629585765",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "10:3518525000085345899",
+          "name": "medicineDosage",
+          "type": 7
+        },
+        {
+          "id": "11:5757617696930821296",
+          "name": "isPreset",
+          "type": 1
+        },
+        {
+          "id": "12:1244129808714025032",
+          "name": "relList",
+          "type": 9
+        },
+        {
+          "id": "13:3125204095334169407",
+          "name": "momentType",
+          "type": 5
+        },
+        {
+          "id": "14:4411460409307699069",
+          "name": "authorizationId",
+          "indexId": "33:6751351485218163655",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "15:5302709113892276852",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "16:22329404583910535",
+          "name": "language",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "12:2169653012286408768",
+      "lastPropertyId": "12:4023540551647043288",
+      "name": "OthersEntity",
+      "properties": [
+        {
+          "id": "1:578324854478581534",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:922117971371651457",
+          "name": "state",
+          "indexId": "34:5271068016592621045",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "3:4731912812905343704",
+          "name": "id",
+          "type": 9
+        },
+        {
+          "id": "4:7780730630045045106",
+          "name": "recordIndex",
+          "indexId": "35:1324079708265236358",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "5:2338539432646859029",
+          "name": "deleteStatus",
+          "indexId": "36:4427282625292554903",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "6:1303266161743262074",
+          "name": "recordUuid",
+          "indexId": "37:2138446174225652719",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "7:3330973226838960142",
+          "name": "recordId",
+          "type": 9
+        },
+        {
+          "id": "8:1542134698200296825",
+          "name": "createTime",
+          "type": 10
+        },
+        {
+          "id": "9:4214501219865400016",
+          "name": "content",
+          "type": 9
+        },
+        {
+          "id": "10:4613555409845372089",
+          "name": "deleteFlag",
+          "type": 5
+        },
+        {
+          "id": "11:414701428841921847",
+          "name": "authorizationId",
+          "indexId": "38:6578842569984145387",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "12:4023540551647043288",
+          "name": "language",
+          "type": 9
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "5:7965544801460559811",
-  "lastIndexId": "1:5011674403519970320",
+  "lastEntityId": "12:2169653012286408768",
+  "lastIndexId": "38:6578842569984145387",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
