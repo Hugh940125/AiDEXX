@@ -83,10 +83,7 @@ class MainService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        TransmitterManager.instance().getDefault()?.let {
-            setMessageCallback(it)
-        }
-        TransmitterManager.onTransmitterChange = {
+        TransmitterManager.setOnTransmitterChangeListener {
             setMessageCallback(it)
         }
         return START_STICKY
@@ -96,7 +93,7 @@ class MainService : Service() {
         it.messageCallBack = { msg ->
             val default = TransmitterManager.instance().getDefault()
             default?.let {
-                onMessage(it,msg)
+                onMessage(it, msg)
             }
         }
     }

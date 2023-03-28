@@ -47,7 +47,7 @@ class TransmitterManager private constructor() {
             default = TransmitterModel.instance(entity)
         }
         default?.let {
-            onTransmitterChange?.invoke(it)
+            notifyTransmitterChange(it)
         }
         return default!!
     }
@@ -65,12 +65,18 @@ class TransmitterManager private constructor() {
         if (default?.isPaired() == true) {
             model.getController().register()
         }
-        onTransmitterChange?.invoke(model)
+        notifyTransmitterChange(model)
     }
 
     fun update(model: TransmitterModel) {
         if (model.entity.idx != null) {
             transmitterBox!!.put(model.entity)
+        }
+    }
+
+    fun notifyTransmitterChange(model: DeviceModel) {
+        for (listener in listenerList) {
+            listener?.invoke(model)
         }
     }
 
@@ -87,7 +93,17 @@ class TransmitterManager private constructor() {
     }
 
     companion object {
-        var onTransmitterChange: ((model: DeviceModel) -> Unit)? = null
+
+        private val listenerList = mutableListOf<((model: DeviceModel) -> Unit)?>()
+
+        fun setOnTransmitterChangeListener(listener: ((model: DeviceModel) -> Unit)?) {
+            listenerList.add(listener)
+        }
+
+        fun removeOnTransmitterChangeListener(listener: ((model: DeviceModel) -> Unit)?) {
+            listenerList.remove(listener)
+        }
+
         private var INSTANCE: TransmitterManager? = null
             get() {
                 if (field == null) {

@@ -9,6 +9,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
@@ -24,16 +25,17 @@ import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.customerservice.CustomerServiceDialog
-import com.microtech.aidexx.widget.dialog.x.DialogX
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
+
 abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatActivity() {
 
     lateinit var viewModel: VM
@@ -125,6 +127,33 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         val clazz =
             (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<VM>
         viewModel = ViewModelProvider(this)[clazz]
+    }
+
+    protected fun checkEnvironment(onSuccess: (() -> Unit)) {
+        if (!BleUtil.isBleEnable(this)) {
+            enableBluetooth()
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
+                PermissionsUtil.requestPermissions(this, PermissionGroups.Bluetooth)
+                return@checkPermissions
+            }
+        } else {
+            PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
+                PermissionsUtil.requestPermissions(this, PermissionGroups.Location)
+                return@checkPermissions
+            }
+        }
+        if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            enableLocation()
+            return
+        }
+        if (!NetUtil.isNetAvailable(this)) {
+            Dialogs.showError(getString(R.string.net_error))
+            return
+        }
+        onSuccess.invoke()
     }
 
     protected fun enableBluetooth() {

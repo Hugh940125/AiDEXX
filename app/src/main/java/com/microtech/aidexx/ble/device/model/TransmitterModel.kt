@@ -247,11 +247,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
+        return
+        val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
         if (entity.sensorStartTime == null) {
             getController().startTime
             return
         }
-        val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
         broadcast?.let {
             refreshSensorState(broadcast)
         }

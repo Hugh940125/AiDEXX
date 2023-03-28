@@ -3,7 +3,6 @@ package com.microtech.aidexx.ui.pair
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
-import com.microtech.aidexx.widget.button.StateButton
 import com.microtechmd.blecomm.controller.BleControllerInfo
 
 class TransmitterAdapter :
@@ -13,13 +12,17 @@ class TransmitterAdapter :
     override fun convert(holder: BaseViewHolder, item: BleControllerInfo) {
         holder.apply {
             setText(R.id.tv_sn, item.name)
-            setGone(R.id.button_unpair, true)
-            val buttonPair = holder.getView<StateButton>(R.id.button_pair)
-            buttonPair.setOnClickListener {
+            setGone(R.id.tv_trans_pair_state, true)
+            holder.itemView.setOnClickListener {
                 onPairClick?.invoke(item)
             }
-            setGone(R.id.button_delete, true)
         }
+    }
 
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        super.onBindViewHolder(holder, position)
+        if (position == 0) {
+            holder.setGone(R.id.trans_line, true)
+        }
     }
 }

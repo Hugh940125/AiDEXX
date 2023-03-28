@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.main.home
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
@@ -23,26 +24,21 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
-import com.microtech.aidexx.widget.chart.GlucoseChart
-import com.microtech.aidexx.widget.chart.MyChart
 import com.microtech.aidexx.ui.main.home.panel.GlucosePanelFragment
 import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
+import com.microtech.aidexx.ui.setting.SettingActivity
 import com.microtech.aidexx.utils.LogUtil
-import kotlinx.coroutines.launch
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.widget.chart.GlucoseChart
+import com.microtech.aidexx.widget.chart.MyChart
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_HALF_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_ONE_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  *@date 2023/2/15
@@ -60,7 +56,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private val switchOrientation: Int = 1
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
-
     private val chartViewModel: ChartViewModel by viewModels(ownerProducer = { requireActivity() })
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +64,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         HomeStateManager.onHomeStateChange = {
             replaceFragment(it)
         }
-        TransmitterManager.onTransmitterChange = {
+        TransmitterManager.setOnTransmitterChangeListener {
             judgeState()
             AidexBleAdapter.getInstance().startBtScan(true)
         }
@@ -108,12 +103,15 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         binding.ivScale.setOnClickListener {
             orientation(switchOrientation)
         }
+        binding.userCenter.setOnClickListener {
+            startActivity(Intent(activity, SettingActivity::class.java))
+        }
     }
 
     private fun initChart() {
         binding.run {
 
-            chart.extraParams = object: GlucoseChart.ExtraParams {
+            chart.extraParams = object : GlucoseChart.ExtraParams {
                 override var outerDescriptionView: View? = descriptions
 
                 override var llValue: LinearLayout? = llDescValue
@@ -134,7 +132,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 }
             }
 
-            chart.onScrollListener = object: MyChart.ScrollListener {
+            chart.onScrollListener = object : MyChart.ScrollListener {
                 override fun onXAxisVisibleAreaChanged(
                     isLtr: Boolean,
                     visibleLeftX: Float,
@@ -152,7 +150,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 }
 
                 override fun onToEndRight() {
-                    LogUtils.debug("","onToEndRight")
+                    LogUtils.debug("", "onToEndRight")
                 }
             }
 
@@ -185,7 +183,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private fun initEvent() {
         binding.run {
             homeTimeTab.onTabChange = {
-                val newModel = when(it) {
+                val newModel = when (it) {
                     1 -> G_HALF_DAY
                     2 -> G_ONE_DAY
                     else -> G_SIX_HOURS

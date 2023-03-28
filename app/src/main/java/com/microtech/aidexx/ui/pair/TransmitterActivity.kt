@@ -1,8 +1,15 @@
 package com.microtech.aidexx.ui.pair
 
-import android.os.*
+import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.animation.Animation
+import android.view.animation.LinearInterpolator
+import android.view.animation.RotateAnimation
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
@@ -17,9 +24,8 @@ import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.databinding.DialogWithOneBtnBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TransmitterEntity
-import com.microtech.aidexx.utils.*
-import com.microtech.aidexx.utils.permission.PermissionGroups
-import com.microtech.aidexx.utils.permission.PermissionsUtil
+import com.microtech.aidexx.utils.ByteUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.x.bottom.BottomDialog
 import com.microtech.aidexx.widget.dialog.x.bottom.NoSlideBottomDialog
@@ -37,8 +43,14 @@ import java.lang.ref.WeakReference
 private const val DISMISS_LOADING = 2004
 private const val REFRESH_TRANS_LIST = 2005
 
+const val OPERATION_TYPE_PAIR: Int = 1
+const val OPERATION_TYPE_UNPAIR: Int = 2
+const val OPERATION_TYPE = "type"
+const val BLE_INFO = "info"
+
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(), OnClickListener {
     private var scanStarted = false
+    private lateinit var rotateAnimation: RotateAnimation
     private var subscription: DataSubscription? = null
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
@@ -69,11 +81,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             val name = AdvertisingParser.getName(result.scanRecord?.bytes)
             val device = result.device
             if (name.contains("AiDEX X")) {
-//                LogUtil.eAiDEX(
-//                    "Find device" + result.device.address + "--$name - $sn--" + StringUtils.binaryToHexString(
-//                        result.scanRecord?.bytes!!
-//                    )
-//                )
                 if (name.length < 6) {
                     LogUtil.eAiDEX("Device name length less than 6")
                     return
@@ -106,35 +113,32 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             Dialogs.showWait(getString(R.string.loading))
             transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
         }
+        initAnim()
         initView()
         observeMessage()
     }
 
-    private fun checkEnvironment(controllerInfo: BleControllerInfo) {
-        if (!BleUtil.isBleEnable(this)) {
-            enableBluetooth()
-            return
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
-                requestPermission()
-                return@checkPermissions
-            }
-        } else {
-            PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
-                requestPermission()
-                return@checkPermissions
-            }
-        }
-        if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            enableLocation()
-            return
-        }
-        if (!NetUtil.isNetAvailable(this)) {
-            Dialogs.showError(getString(R.string.net_error))
-            return
-        }
-        startPair(controllerInfo)
+    private fun initAnim() {
+        rotateAnimation =
+            RotateAnimation(
+                0f, 360f, RotateAnimation.RELATIVE_TO_SELF,
+                0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f
+            )
+        rotateAnimation.fillAfter = true
+        rotateAnimation.interpolator = LinearInterpolator()
+        rotateAnimation.repeatCount = Animation.INFINITE
+        rotateAnimation.repeatMode = Animation.RESTART
+        rotateAnimation.duration = 1500
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.ivRefreshScan.startAnimation(rotateAnimation)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.ivRefreshScan.clearAnimation()
     }
 
     private fun startPair(controllerInfo: BleControllerInfo) {
@@ -150,14 +154,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 //    private fun unpairOld() {
 //        TODO("Not yet implemented")
 //    }
-
-    private fun requestPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PermissionsUtil.requestPermissions(this, PermissionGroups.Bluetooth)
-        } else {
-            PermissionsUtil.requestPermissions(this, PermissionGroups.Location)
-        }
-    }
 
     private fun observeMessage() {
         MessageDispatcher.instance().observer(lifecycleScope) { msg ->
@@ -251,9 +247,11 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
         transmitterAdapter.onPairClick = {
-            checkEnvironment(it)
+            checkEnvironment {
+                startPair(it)
+            }
         }
-        binding.layoutMyTrans.buttonPair.setOnClickListener(this)
+        binding.layoutMyTrans.root.setOnClickListener(this)
         binding.rvOtherTrans.adapter = transmitterAdapter
         transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)
     }
@@ -289,13 +287,12 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 binding.tvPlsSelectTrans.visibility = View.GONE
                 binding.layoutMyTrans.root.visibility = View.VISIBLE
                 binding.layoutMyTrans.tvSn.text = transmitter!!.deviceName
-                binding.layoutMyTrans.buttonDelete.setOnClickListener(this@TransmitterActivity)
+//                binding.layoutMyTrans.buttonDelete.setOnClickListener(this@TransmitterActivity)
+                binding.layoutMyTrans.tvTransPairState.visibility = View.VISIBLE
                 if (transmitter!!.accessId == null) {
-                    binding.layoutMyTrans.buttonPair.visibility = View.VISIBLE
-                    binding.layoutMyTrans.buttonUnpair.visibility = View.GONE
+                    binding.layoutMyTrans.tvTransPairState.text = "未配对"
                 } else {
-                    binding.layoutMyTrans.buttonPair.visibility = View.GONE
-                    binding.layoutMyTrans.buttonUnpair.visibility = View.VISIBLE
+                    binding.layoutMyTrans.tvTransPairState.text = "已配对"
                 }
             }
         }
@@ -303,11 +300,21 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     override fun onClick(v: View?) {
         when (v) {
-            binding.layoutMyTrans.buttonDelete -> {
-
-            }
-            binding.layoutMyTrans.buttonPair -> {
-                checkEnvironment(BleControllerInfo(transmitter?.deviceMac, "", transmitter?.deviceSn, 130))
+            binding.layoutMyTrans.root -> {
+                val intent = Intent()
+                intent.putExtra(
+                    BLE_INFO,
+                    BleControllerInfo(transmitter?.deviceMac, transmitter?.deviceName, transmitter?.deviceSn, 130)
+                )
+                if (transmitter!!.accessId == null) {
+                    intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_PAIR)
+                } else {
+                    intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
+                }
+                startActivity(intent)
+//                checkEnvironment {
+//                    startPair()
+//                }
             }
         }
     }

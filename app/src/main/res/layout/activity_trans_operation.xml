@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.pair.TransOperationActivity">
+
+    <com.microtech.aidexx.widget.ActionBarWidget
+        android:id="@+id/actionbar_trans_operation"
+        app:leftIcon="@drawable/ic_back"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/ll_pair"
+        app:layout_constraintTop_toBottomOf="@id/actionbar_trans_operation"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:textColor="@color/green_65"
+            android:background="@drawable/shape_rounded_setting"
+            android:textSize="16sp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="配对"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:textColor="?colorHint"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="配对成功后，可持续接收设备数据。"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/ll_unpair"
+        app:layout_constraintTop_toBottomOf="@id/ll_pair"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:textColor="@color/green_65"
+            android:background="@drawable/shape_rounded_setting"
+            android:textSize="16sp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="正常解配"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:textColor="?colorHint"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="正常解佩后，该发射器可被其他账号配对使用。"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/ll_force_delete"
+        app:layout_constraintTop_toBottomOf="@id/ll_unpair"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:textColor="@color/green_65"
+            android:background="@drawable/shape_rounded_setting"
+            android:textSize="16sp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="强制删除"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:drawableEndCompat="@drawable/ic_arrow_right" />
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:textColor="?colorHint"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:text="在发射器丢失或损坏的情况下，执行该操作；强制删除后，该发射器不能被其他账号配对使用。"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,6 +50,7 @@
                 layout="@layout/item_transmitter" />
 
             <TextView
+                android:textColor="?colorHint"
                 android:id="@+id/tv_pls_select_trans"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
@@ -94,13 +95,15 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
+                android:src="@drawable/ic_scanning"
                 android:id="@+id/iv_refresh_scan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

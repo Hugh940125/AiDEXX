@@ -1,10 +1,13 @@
 package com.microtechmd.blecomm.controller;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-public class BleControllerInfo {
+public class BleControllerInfo implements Parcelable {
     public String address;
     public String name;
     public String sn;
@@ -16,6 +19,25 @@ public class BleControllerInfo {
         this.sn = sn;
         this.rssi = rssi;
     }
+
+    protected BleControllerInfo(Parcel in) {
+        address = in.readString();
+        name = in.readString();
+        sn = in.readString();
+        rssi = in.readInt();
+    }
+
+    public static final Creator<BleControllerInfo> CREATOR = new Creator<BleControllerInfo>() {
+        @Override
+        public BleControllerInfo createFromParcel(Parcel in) {
+            return new BleControllerInfo(in);
+        }
+
+        @Override
+        public BleControllerInfo[] newArray(int size) {
+            return new BleControllerInfo[size];
+        }
+    };
 
     @Override
     public boolean equals(Object o) {
@@ -39,5 +61,18 @@ public class BleControllerInfo {
                 ", sn='" + sn + '\'' +
                 ", rssi=" + rssi +
                 '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(address);
+        dest.writeString(name);
+        dest.writeString(sn);
+        dest.writeInt(rssi);
     }
 }
