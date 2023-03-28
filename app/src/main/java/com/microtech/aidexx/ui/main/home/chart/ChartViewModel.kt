@@ -9,11 +9,15 @@ import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
+import com.google.gson.*
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.DbRepository
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.*
+import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
@@ -26,9 +30,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.reflect.Type
+import java.text.DateFormat
+import java.text.ParseException
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
+import kotlin.math.max
 
 class ChartViewModel: ViewModel() {
 
@@ -49,13 +58,17 @@ class ChartViewModel: ViewModel() {
         private set
 
     private val mGranularityFlow = MutableStateFlow<Int?>(null)
-    private fun getGranularity() = mGranularityFlow.value ?: G_SIX_HOURS
+    private fun getGranularity(): Int = mGranularityFlow.value ?: G_SIX_HOURS
     val granularityFlow = mGranularityFlow.asStateFlow()
 
     /** 启动加载下一页任务 */
     val startLoadNextPage = MutableStateFlow(false)
 
     val mDataChangedFlow = MutableStateFlow<Pair<Float?, Boolean>?>(null)
+
+    /** 标记当前最小日期数据是否已经触发了下一页的加载 滚动时防止重复触发下一页 */
+    private var loadedMinDate = -Float.MAX_VALUE
+    private var curPageMinDate = Date()
 
     /**
      * 切换每屏的图表时间跨度
@@ -68,19 +81,21 @@ class ChartViewModel: ViewModel() {
         viewModelScope.launch {
             startLoadNextPage.collect {
                 if (it) {
-                    var maxTime = Date()
-                    val curMinTime = timeMin?.let { x ->
-                        maxTime = Date(XAxisUtils.xToSecond(x))
-                        getCurPageStartDate(XAxisUtils.xToSecond(x))
-                    } ?: getCurPageStartDate(System.currentTimeMillis())
-
-                    getCgmPageData(curMinTime, maxTime)?.let { d ->
-                        updateGlucoseSets(d)
+                    LogUtils.debug("===CHART===开始加载下一页")
+                    withContext(Dispatchers.IO) {
+                        var maxTime = Date(curPageMinDate.time - 1000) // ob between是前闭后闭
+                        val curMinTime = getCurPageStartDate(curPageMinDate.time)
+                        LogUtils.debug("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
+                        getCgmPageData(curMinTime, maxTime)?.let { d ->
+                            updateGlucoseSets(d)
+                            LogUtils.debug("===CHART=== 有数据")
+                        }
+                        LogUtils.debug("===CHART=== 加载之后 timeMin=$timeMin start=${curMinTime} end=${maxTime}")
                     }
-
                     mDataChangedFlow.emit(Pair(timeMin, false))
                     //重置标记
-                    startLoadNextPage.compareAndSet(true, update = false)
+                    val ret = startLoadNextPage.compareAndSet(true, update = false)
+                    LogUtils.debug("===CHART=== 通知及标记重置了 ret=$ret")
                 }
             }
         }
@@ -91,11 +106,13 @@ class ChartViewModel: ViewModel() {
      */
     fun initData() = flow {
 
-        val startDate = getCurPageStartDate()
-        val endDate = Date()
+        val latestOne = DbRepository.queryLatestOne(UserInfoManager.getCurShowUserId()) //"f03550ef07a7b2164f06deaef597ce37"
+        val endDate = latestOne?.let {
+            it.deviceTime
+        } ?: Date()
 
         // 加载一页cgm数据
-        val cgmData = getCgmPageData(startDate, endDate)
+        val cgmData = getCgmPageData(getCurPageStartDate(endDate.time), endDate)
 
         cgmData?.let {
             updateGlucoseSets(it)
@@ -127,28 +144,38 @@ class ChartViewModel: ViewModel() {
 
         emit(combinedData)
 
-    }
+    }.flowOn(Dispatchers.IO)
 
     /** 是否需要加载下一页 */
     fun needLoadNextPage(isLtr: Boolean, visibleLeftX: Float, xAxisMin: Float): Boolean {
 
+        if(loadedMinDate >= xAxisMin) {
+            LogUtils.debug("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
+            return false
+        }
+
         val isLeftTwoDays = abs(
             XAxisUtils.xToSecond(visibleLeftX) - XAxisUtils.xToSecond(xAxisMin)
         ) <= TimeUtils.oneDaySeconds * 2
-
-        return !isLtr && isLeftTwoDays
+        val ret = !isLtr && isLeftTwoDays
+        if (ret) {
+            LogUtils.debug("===CHART=== 滚动过程触发加载下一页")
+            loadedMinDate = xAxisMin
+        }
+        return ret
     }
 
     private suspend fun getCgmPageData(startDate: Date, endDate: Date) =
         DbRepository.queryCgmByPage(
             startDate,
             endDate,
+//            "f03550ef07a7b2164f06deaef597ce37"
             UserInfoManager.getCurShowUserId()
         )
 
 
     private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis()): Date =
-        Date(curTime - 1000 * 60 * 60 * 24 * 7)
+        Date(curTime - TimeUtils.oneDayMillis * 2)
 
 
     private fun generateLimitLines(): List<LineDataSet> {
@@ -183,7 +210,7 @@ class ChartViewModel: ViewModel() {
         return listOf(l1, l2)
     }
 
-    private fun xRange(): Float {
+    fun xRange(): Float {
         return getGranularity() * CHART_LABEL_COUNT.toFloat()
     }
 
@@ -191,20 +218,15 @@ class ChartViewModel: ViewModel() {
         return getGranularity() / 2f
     }
 
-    private fun xMin(): Float {
+    fun xMin(): Float {
         val default = xMax() - xRange()
         return if (timeMin == null || timeMin!! > default) default
         else timeMin!!
     }
 
-    private fun xMax(): Float {
+    fun xMax(): Float {
         return XAxisUtils.secondToX(Date().time / 1000) + xMargin()
     }
-
-
-
-
-
 
     var upperLimit = 12f.toGlucoseValue()
         get() {
@@ -231,13 +253,16 @@ class ChartViewModel: ViewModel() {
         timeMax = null
     }
 
-    private suspend fun updateGlucoseSets(cgmHistories: List<CgmHistoryEntity>) {
+    private suspend fun updateGlucoseSets(cgmHistories: List<RealCgmHistoryEntity>) {
         if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
-        if (cgmHistories.isEmpty()) return
+        if (cgmHistories.isEmpty()) {
+            return
+        }
         loop@ for (history in cgmHistories) {
             when (history.eventType) {
                 History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
                     if (history.eventData == null || history.eventWarning == -1) continue@loop
+                    LogUtils.debug("===CHART=== 塞数据日期 d=${history.deviceTime}")
                     val dateTime = XAxisUtils.dateToX(history.deviceTime)
                     val entry = Entry(dateTime, history.eventData!!.toFloat().toGlucoseValue())
                     if (entry.y < 2f.toGlucoseValue()) {
@@ -245,6 +270,11 @@ class ChartViewModel: ViewModel() {
                     }// 小于2的数值 都当2处理
                     glucoseSets.last().addEntryOrdered(entry)
                     xMaxMin(dateTime)
+
+                    //记录最小时间
+                    if (curPageMinDate.time > history.deviceTime.time) {
+                        curPageMinDate = history.deviceTime
+                    }
                 }
             }
         }
@@ -383,12 +413,12 @@ class ChartViewModel: ViewModel() {
         return currentSet
     }
 
-    // todo 解配成功后调用
+    // 解配成功后调用
     fun clearCurrentGlucose() {
         currentSet.clear()
     }
 
-    // todo 设置当前血糖值后调用
+    // 设置当前血糖值后调用
     fun setCurrentGlucose(time: Date?, glucose: Float?) {
         if (time != null && glucose != null && UserInfoManager.shareUserInfo == null) {
             currentSet.clear()
@@ -456,4 +486,5 @@ class ChartViewModel: ViewModel() {
             timeMax = dateTime
         }
     }
+
 }

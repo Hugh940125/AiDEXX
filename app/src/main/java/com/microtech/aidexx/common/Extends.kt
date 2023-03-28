@@ -6,8 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.db.entity.CgmHistoryEntity
-import com.microtech.aidexx.ui.main.home.chart.CgmModel
+import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.utils.LocalManageUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
@@ -77,9 +76,9 @@ fun GsonBuilder.createWithDateFormat(): Gson {
 fun Float.toGlucoseString2(): String {
 
     return when {
-        this <= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) CgmModel.GLUCOSE_LOWER else CgmModel.GLUCOSE_LOWER * 18 -> "LO"
+        this <= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) DeviceModel.GLUCOSE_LOWER else DeviceModel.GLUCOSE_LOWER * 18 -> "LO"
 
-        this >= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) CgmModel.GLUCOSE_UPPER else CgmModel.GLUCOSE_UPPER * 18
+        this >= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) DeviceModel.GLUCOSE_UPPER else DeviceModel.GLUCOSE_UPPER * 18
         -> "HI"
         else -> UnitManager.formatterUnitByIndex().format(this)
     }

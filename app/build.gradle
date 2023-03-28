@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-android'
     id 'kotlin-kapt'
-    id 'io.objectbox'
+//    id 'io.objectbox'
 }
 
 android {
@@ -74,8 +74,9 @@ dependencies {
     implementation 'com.tencent.bugly:crashreport:4.1.9'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    debugImplementation("io.objectbox:objectbox-android-objectbrowser:$objectboxVersion")
     implementation "io.objectbox:objectbox-kotlin:$objectboxVersion"
-    implementation "io.objectbox:objectbox-android:$objectboxVersion"
+    releaseImplementation("io.objectbox:objectbox-android:$objectboxVersion")
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
@@ -85,3 +86,5 @@ dependencies {
     implementation 'com.contrarywind:wheelview:4.1.0'
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 }
+
+apply plugin: 'io.objectbox'

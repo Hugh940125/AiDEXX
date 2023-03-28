@@ -40,6 +40,73 @@
         app:layout_constraintTop_toBottomOf="@id/layout_state"
         app:layout_constraintVertical_weight="1">
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/ll_chart"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="?attr/bgHomeChartNew"
+            android:gravity="bottom"
+            android:orientation="vertical"
+            android:paddingBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/home_time_tab">
+
+            <ImageView
+                android:id="@+id/iv_scale"
+                android:layout_width="30dp"
+                android:layout_height="25dp"
+                android:layout_gravity="end"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="12dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="6dp"
+                android:src="@drawable/ic_scale"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription" />
+
+            <com.microtech.aidexx.widget.chart.GlucoseChart
+                android:id="@+id/chart"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="2dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_scale" />
+
+            <View
+                android:id="@+id/touchView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="60dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintBottom_toBottomOf="@id/chart"
+                app:layout_constraintEnd_toEndOf="@id/chart"
+                app:layout_constraintStart_toStartOf="@id/chart"
+                app:layout_constraintTop_toTopOf="@id/chart" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.microtech.aidexx.ui.main.home.timetab.TimeTabLayout
+            android:id="@+id/home_time_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_x_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:paddingBottom="3dp"
+            android:textColor="?colorChartText"
+            app:layout_constraintBottom_toBottomOf="@id/ll_chart"
+            app:layout_constraintStart_toStartOf="@id/ll_chart"
+            />
+
         <LinearLayout
             android:id="@+id/descriptions"
             android:layout_width="wrap_content"
@@ -117,71 +184,7 @@
             </RelativeLayout>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tv_x_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:paddingBottom="3dp"
-            android:textColor="?colorChartText"
-            app:layout_constraintBottom_toBottomOf="@id/ll_chart"
-            app:layout_constraintStart_toStartOf="@id/ll_chart" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/ll_chart"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:background="?attr/bgHomeChartNew"
-            android:gravity="bottom"
-            android:orientation="vertical"
-            android:paddingBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/home_time_tab">
-
-            <ImageView
-                android:id="@+id/iv_scale"
-                android:layout_width="30dp"
-                android:layout_height="25dp"
-                android:layout_gravity="end"
-                android:layout_marginTop="5dp"
-                android:layout_marginEnd="12dp"
-                android:paddingStart="10dp"
-                android:paddingEnd="6dp"
-                android:paddingBottom="6dp"
-                android:src="@drawable/ic_scale"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="ContentDescription" />
-
-            <com.microtech.aidexx.widget.chart.GlucoseChart
-                android:id="@+id/chart"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginTop="2dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/iv_scale" />
-
-            <View
-                android:id="@+id/touchView"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginTop="60dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:layout_constraintBottom_toBottomOf="@id/chart"
-                app:layout_constraintEnd_toEndOf="@id/chart"
-                app:layout_constraintStart_toStartOf="@id/chart"
-                app:layout_constraintTop_toTopOf="@id/chart" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <com.microtech.aidexx.ui.main.home.timetab.TimeTabLayout
-            android:id="@+id/home_time_tab"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

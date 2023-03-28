@@ -24,21 +24,28 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
+import com.microtech.aidexx.widget.chart.GlucoseChart
+import com.microtech.aidexx.widget.chart.MyChart
 import com.microtech.aidexx.ui.main.home.panel.GlucosePanelFragment
 import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
 import com.microtech.aidexx.utils.LogUtil
+import kotlinx.coroutines.launch
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.widget.chart.GlucoseChart
-import com.microtech.aidexx.widget.chart.MyChart
+import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_HALF_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_ONE_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  *@date 2023/2/15
@@ -111,7 +118,13 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private fun initChart() {
         binding.run {
 
-            chart.extraParams = object : GlucoseChart.ExtraParams {
+            touchView.setOnTouchListener { _, event ->
+                touchView.performClick()
+                if (MyAnimatedZoomJob.animators > 0) true
+                else chart.onTouchEvent(event)
+            }
+
+            chart.extraParams = object: GlucoseChart.ExtraParams {
                 override var outerDescriptionView: View? = descriptions
 
                 override var llValue: LinearLayout? = llDescValue
@@ -130,9 +143,17 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                         LiveEventBus.get<Boolean>(EventBusKey.GO_TO_HISTORY).post(true)
                     }
                 }
+
+                override var curDateTv: TextView? = tvXTime
+
+                override fun xMax(): Float = chartViewModel.xMax()
+                override fun xMin(): Float = chartViewModel.xMin()
+                override fun xRange(): Float = chartViewModel.xRange()
+                override fun lowerLimit(): Float = chartViewModel.lowerLimit
+                override fun upperLimit(): Float = chartViewModel.upperLimit
             }
 
-            chart.onScrollListener = object : MyChart.ScrollListener {
+            chart.onScrollListener = object: MyChart.ScrollListener {
                 override fun onXAxisVisibleAreaChanged(
                     isLtr: Boolean,
                     visibleLeftX: Float,
@@ -141,16 +162,18 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                     xAxisMax: Float
                 ) {
                     if (chartViewModel.needLoadNextPage(isLtr, visibleLeftX, xAxisMin)) {
-                        chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                        val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                        LogUtils.debug(TAG,"===CHART===onXAxisVisibleAreaChanged do=$ret")
                     }
                 }
 
                 override fun onToEndLeft() {
-                    chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                    LogUtils.debug(TAG,"===CHART===onToEndLeft do=$ret")
                 }
 
                 override fun onToEndRight() {
-                    LogUtils.debug("", "onToEndRight")
+                    LogUtils.debug(TAG,"===CHART===onToEndRight")
                 }
             }
 
@@ -166,6 +189,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 launch {
                     chartViewModel.initData().collectLatest {
                         chart.initData(it)
+//                        chart.notifyChanged(true)
                     }
                 }
 
@@ -183,7 +207,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private fun initEvent() {
         binding.run {
             homeTimeTab.onTabChange = {
-                val newModel = when (it) {
+                val newModel = when(it) {
                     1 -> G_HALF_DAY
                     2 -> G_ONE_DAY
                     else -> G_SIX_HOURS
