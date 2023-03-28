@@ -64,10 +64,18 @@ class ChartViewModel: ViewModel() {
     /** 启动加载下一页任务 */
     val startLoadNextPage = MutableStateFlow(false)
 
+    /**
+     * 数据图表数据发生变化通知外面刷新
+     * value-Pair<Float?, Boolean>
+     *   first: [timeMin] 当前x轴最小值
+     *   second: true-滚动到最右端 false-不滚动
+     */
     val mDataChangedFlow = MutableStateFlow<Pair<Float?, Boolean>?>(null)
 
     /** 标记当前最小日期数据是否已经触发了下一页的加载 滚动时防止重复触发下一页 */
     private var loadedMinDate = -Float.MAX_VALUE
+
+    /** 当前页面数据最小日期 */
     private var curPageMinDate = Date()
 
     /**
@@ -145,6 +153,17 @@ class ChartViewModel: ViewModel() {
         emit(combinedData)
 
     }.flowOn(Dispatchers.IO)
+
+    /**
+     *  todo 重新加载数据
+     *      清空当前数据集
+     *      重置所有标记位
+     *      --通知外部刷页面
+     *      加载第一页数据
+     *      --通知外部刷页面
+     */
+    fun reload() {
+    }
 
     /** 是否需要加载下一页 */
     fun needLoadNextPage(isLtr: Boolean, visibleLeftX: Float, xAxisMin: Float): Boolean {
