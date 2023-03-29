@@ -1,7 +1,9 @@
 package com.microtech.aidexx.utils.mmkv
 
+import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.ThresholdManager
+import java.util.*
 
 object MmkvManager {
 
@@ -28,6 +30,7 @@ object MmkvManager {
     private const val LAST_FAST_DOWN_ALERT_TIME = "LAST_FAST_DOWN_ALERT_TIME"
     private const val FLAG_LOGIN = "FLAG_LOGIN"
     private const val USER_AVATAR = "USER_AVATAR"
+    private const val APP_CHECK_UPDATE_DATE = "APP_CHECK_UPDATE_DATE"
 
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
@@ -97,4 +100,10 @@ object MmkvManager {
 
     fun getCustomerServiceIconBottom() =
         MmkvUtil.decodeInt(CUSTOMER_SERVICE_ICON_BOTTOM, 0)
+
+    fun updateAppCheckVersionTime(date: Long = Date().getStartOfTheDay().time) =
+        MmkvUtil.encodeLong(APP_CHECK_UPDATE_DATE, date)
+
+    fun getAppCheckVersionTime(): Long =
+        MmkvUtil.decodeLong(APP_CHECK_UPDATE_DATE, 0)
 }

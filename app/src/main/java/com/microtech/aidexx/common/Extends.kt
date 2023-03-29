@@ -65,6 +65,16 @@ fun Date.date2ymdhm(pattern: String = "yyyy/MM/dd HH:mm"): String? =
 fun Date.dateAndTimeHour(pattern: String = "HH:mm"): String? =
     SimpleDateFormat(pattern, Locale.ENGLISH).format(this)
 
+fun Date.getStartOfTheDay(): Date {
+    val calendar = Calendar.getInstance()
+    calendar.time = this
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+    return calendar.time
+}
+
 fun <T> QueryBuilder<T>.equal(property: Property<T>, value: String): QueryBuilder<T> {
     return equal(property, value, QueryBuilder.StringOrder.CASE_SENSITIVE)
 }
@@ -116,3 +126,7 @@ fun Number.stripTrailingZeros(scale: Int? = null): String {
 inline fun <reified T> getMutableListType() = object : TypeToken<MutableList<T>>() {}.type
 
 fun getContext() = AidexxApp.instance
+
+internal fun Number.dp2px() =
+    this.toFloat().times(getContext().resources.displayMetrics.density)
+        .plus(.5f).toInt()

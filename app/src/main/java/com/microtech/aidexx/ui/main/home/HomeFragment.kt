@@ -24,28 +24,22 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
-import com.microtech.aidexx.widget.chart.GlucoseChart
-import com.microtech.aidexx.widget.chart.MyChart
 import com.microtech.aidexx.ui.main.home.panel.GlucosePanelFragment
 import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
 import com.microtech.aidexx.utils.LogUtil
-import kotlinx.coroutines.launch
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.widget.chart.GlucoseChart
 import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
+import com.microtech.aidexx.widget.chart.MyChart
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_HALF_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_ONE_DAY
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  *@date 2023/2/15
@@ -295,5 +289,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     companion object {
         @JvmStatic
         fun newInstance() = HomeFragment()
+
+        const val TAG = "HomeFragment"
     }
 }

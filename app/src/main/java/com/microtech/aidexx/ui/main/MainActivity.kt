@@ -10,22 +10,25 @@ import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.compliance.EnquireManager
+import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
+import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.LocationUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
-import com.microtech.aidexx.widget.dialog.Dialogs
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 private const val REQUEST_STORAGE_PERMISSION = 2000
@@ -97,6 +100,13 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     override fun onResume() {
         super.onResume()
         requestPermission()
+
+        lifecycleScope.launch {
+            AppUpgradeManager.fetchVersionInfo()?.let {
+                AppUpdateFragment(it).show(supportFragmentManager, AppUpdateFragment.TAG)
+            }
+        }
+
     }
 
     override fun onPause() {

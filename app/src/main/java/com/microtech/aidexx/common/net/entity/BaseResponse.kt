@@ -14,3 +14,16 @@ data class BaseResponse<T>(
         var msg: String = ""
     )
 }
+
+data class AppUpdateInfo(
+    val code: Int = 0,
+    val data: UpdateData = UpdateData(),
+    val msg: String = ""
+) {
+    data class UpdateData(
+        val version: String = "",
+        val downloadpath: String = "",
+        val description: String = "",
+        val force: Int = 0
+    )
+}

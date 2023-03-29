@@ -6,10 +6,7 @@ import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
-import com.microtech.aidexx.common.net.entity.BaseList
-import com.microtech.aidexx.common.net.entity.BasePageList
-import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.entity.LoginInfo
+import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.EncryptInterceptor
 import com.microtech.aidexx.common.net.interceptors.HeaderInterceptor
 import com.microtech.aidexx.common.net.interceptors.LogInterceptor
@@ -23,10 +20,7 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtechmd.cgms.data.api.interceptors.DecryptInterceptor
 import okhttp3.OkHttpClient
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.PUT
+import retrofit2.http.*
 import java.io.File
 import java.lang.reflect.Type
 import java.text.DecimalFormat
@@ -43,6 +37,10 @@ const val DEVICE = "$middleUrl/cgn-device" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CGM_RECORD = "$middleUrl/cgm-record" //上传CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
+
+const val vcsMiddleUrl = "backend/vcs"
+const val CHECK_APP_UPDATE = "$vcsMiddleUrl/version/getAppConfig" //APP版本升级检查
+const val LOG_UPLOAD = "$vcsMiddleUrl/log/uploadLog" //上传日志
 
 interface ApiService {
     @POST(DOWNLOAD_CGM_RECORD)
@@ -72,6 +70,15 @@ interface ApiService {
     @POST(API_DEVICE_UNREGISTER)
     suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>
 
+    @GET(BuildConfig.updateUrl + CHECK_APP_UPDATE)
+    suspend fun checkAppUpdate(
+        @Query("appId") appId: String,
+        @Query("project") project: String = "aidex",
+        @Query("os") os: String = "android" ): ApiResult<AppUpdateInfo>
+
+    @POST(BuildConfig.updateUrl + LOG_UPLOAD)
+    suspend fun uploadLog(/*todo 参数*/): ApiResult<BaseResponse<String>>
+
     companion object {
         private val okClient by lazy { getOkHttpClient() }
         private val gson by lazy { Gson() }
@@ -80,22 +87,29 @@ interface ApiService {
             buildRetrofit(
                 BuildConfig.baseUrl,
                 GsonConverterFactory.create(createGson(), checkBizCodeIsSuccess = {
-                    val baseResponse = gson.fromJson(it, BaseResponse::class.java)
-                    var ret: Throwable? = null
-                    baseResponse.info.let { info ->
-                        info.code.let { code ->
-                            if (code != 100000) {
-                                if (code == 120002) {
-                                    Throttle.instance().emit(5000, code) {
-                                        EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
+
+                    // todo 暂时try 后面考虑统一到BaseResponse
+                    try {
+                        val baseResponse = gson.fromJson(it, BaseResponse::class.java)
+                        var ret: Throwable? = null
+                        baseResponse.info.let { info ->
+                            info.code.let { code ->
+                                if (code != 100000) {
+                                    if (code == 120002) {
+                                        Throttle.instance().emit(5000, code) {
+                                            EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
+                                        }
+                                    } else {
+                                        ret = BizException(code, message = info.msg)
                                     }
-                                } else {
-                                    ret = BizException(code, message = info.msg)
                                 }
                             }
                         }
+                    } catch (e: Exception) {
+
                     }
-                    ret
+
+                    null
                 }),
                 client = okClient
             ).create(ApiService::class.java)

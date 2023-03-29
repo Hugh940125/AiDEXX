@@ -6,7 +6,10 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.toGlucoseValue
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.EncryptUtils
+import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.UnitManager
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
 import io.objectbox.annotation.Entity
@@ -72,7 +75,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
             .append(eventType)
 
         LogUtils.data("cgmHistory : userID:" + userID + ", deviceId :" + deviceId + " , deviceSn :" + deviceSn + ", time :" + deviceTime.time / 1000 + " ,eventData :" + eventData + " ,sensorIndex :" + sensorIndex)
-        recordUuid = MD5Utils.md5(uuidStr.toString())
+        recordUuid = EncryptUtils.md5(uuidStr.toString())
     }
 
     override fun _setDatetime(datetime: Long) {
