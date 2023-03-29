@@ -1,17 +1,16 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/transparent"
-    android:gravity="bottom"
-    android:orientation="vertical">
+    android:background="@drawable/shape_dialog_confirm"
+    >
 
     <LinearLayout
-        style="@style/dialogMagin"
+        android:id="@+id/upgradeTop"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/shape_dialog_confirm"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/ll_download">
 
         <ImageView
             android:layout_width="60dp"
@@ -40,6 +39,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
                     android:id="@+id/tv_content"
                     android:layout_width="match_parent"
@@ -48,7 +48,7 @@
                     android:layout_marginRight="25dp"
                     android:lineSpacingExtra="2dp"
                     android:minHeight="120dp"
-                    />
+                    android:text="adfkasfla;dfj;\n\n\n\n\n\\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nn\;askdfa" />
             </LinearLayout>
         </ScrollView>
 
@@ -65,45 +65,46 @@
             android:textSize="16sp"
             android:visibility="gone" />
 
-
-        <LinearLayout
-            android:id="@+id/ll_download"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingLeft="30dp"
-            android:paddingRight="30dp">
-
-
-            <com.microtech.aidexx.widget.button.StateButton
-                android:id="@+id/bt_ok"
-                style="@style/StateButtonRaised"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/button_old_sensor"
-                android:layout_centerHorizontal="true"
-                android:text="@string/btn_update_ok" />
-
-            <TextView
-                android:id="@+id/bt_cancel"
-                style="@style/btnDialog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:padding="12dp"
-                android:text="@string/btn_update_cancel" />
-
-        </LinearLayout>
-
         <Space
             android:layout_width="match_parent"
             android:layout_height="12dp" />
     </LinearLayout>
-</LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp">
+
+
+        <com.microtech.aidexx.widget.button.StateButton
+            android:id="@+id/bt_ok"
+            style="@style/StateButtonRaised"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/button_old_sensor"
+            android:layout_centerHorizontal="true"
+            android:text="@string/btn_update_ok" />
+
+        <TextView
+            android:id="@+id/bt_cancel"
+            style="@style/btnDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="@string/btn_update_cancel" />
+
+    </LinearLayout>
+
+</RelativeLayout>

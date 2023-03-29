@@ -6,11 +6,15 @@ import com.microtech.aidexx.utils.LogUtil;
 
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -18,48 +22,69 @@ import okio.Buffer;
 
 public class LogInterceptor implements Interceptor {
 
+    private List<String> cantReadStringContentType = Arrays.asList(
+            "application/vnd.android.package-archive"
+    );
+
     @NonNull
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         long startTime = System.currentTimeMillis();
-        try (Response response = chain.proceed(chain.request())) {
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-            okhttp3.MediaType mediaType = Objects.requireNonNull(response.body()).contentType();
-            String content = response.body().string();
 
-            LogUtil.eAiDEX("\n");
-            LogUtil.eAiDEX("----------------Start----------------");
-            LogUtil.eAiDEX("| " + request);
-            String method = request.method();
-            Headers headers = request.headers();
-            for (int i = 0, count = headers.size(); i < count; i++) {
-                String name = headers.name(i);
-                // Skip headers from the request body as they are explicitly logged above.
-                if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
-                    LogUtil.eAiDEX(name + ": " + headers.value(i));
-                }
+        Response response = chain.proceed(chain.request());
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+
+        okhttp3.MediaType mediaType = null;
+
+        String content = " not support show";
+        boolean needInterceptor = needInterceptor(response);
+        if(needInterceptor) {
+            mediaType = Objects.requireNonNull(response.body()).contentType();
+            content = response.body().string();
+        }
+
+        LogUtil.eAiDEX("\n");
+        LogUtil.eAiDEX("----------------Start----------------");
+        LogUtil.eAiDEX("| " + request);
+        String method = request.method();
+        Headers headers = request.headers();
+        for (int i = 0, count = headers.size(); i < count; i++) {
+            String name = headers.name(i);
+            // Skip headers from the request body as they are explicitly logged above.
+            if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
+                LogUtil.eAiDEX(name + ": " + headers.value(i));
             }
-            if (method.equalsIgnoreCase("POST")) {
-                StringBuilder sb = new StringBuilder();
-                if (request.body() instanceof FormBody) {
-                    FormBody body = (FormBody) request.body();
-                    for (int i = 0; i < body.size(); i++) {
-                        sb.append(body.encodedName(i)).append("=").append(body.encodedValue(i)).append(",");
-                    }
-                    sb.delete(sb.length() - 1, sb.length());
-                    LogUtil.eAiDEX("| RequestParams:{" + sb + "}");
+        }
+        if (method.equalsIgnoreCase("POST")) {
+            StringBuilder sb = new StringBuilder();
+            if (request.body() instanceof FormBody) {
+                FormBody body = (FormBody) request.body();
+                for (int i = 0; i < body.size(); i++) {
+                    sb.append(body.encodedName(i)).append("=").append(body.encodedValue(i)).append(",");
                 }
+                sb.delete(sb.length() - 1, sb.length());
+                LogUtil.eAiDEX("| RequestParams:{" + sb + "}");
             }
-            LogUtil.eAiDEX("| Response:" + content);
-            LogUtil.eAiDEX("----------End:" + duration + "millis----------");
+        }
+        LogUtil.eAiDEX("| Response:" + content);
+        LogUtil.eAiDEX("----------End:" + duration + "millis----------");
+
+        if(needInterceptor) {
+            response.close();
             return response.newBuilder()
                     .body(okhttp3.ResponseBody.create(mediaType, content))
                     .build();
+        } else {
+            return response;
         }
     }
 
+    private boolean needInterceptor(@NonNull Response response) {
+        return !cantReadStringContentType.contains(response.header("Content-Type"));
+    }
 
     /**
      * 读取参数

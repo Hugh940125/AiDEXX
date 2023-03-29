@@ -7,18 +7,15 @@ import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.entity.*
-import com.microtech.aidexx.common.net.interceptors.EncryptInterceptor
-import com.microtech.aidexx.common.net.interceptors.HeaderInterceptor
-import com.microtech.aidexx.common.net.interceptors.LogInterceptor
-import com.microtech.aidexx.common.net.interceptors.TokenInterceptor
+import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtechmd.cgms.data.api.interceptors.DecryptInterceptor
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 import java.io.File
@@ -75,6 +72,10 @@ interface ApiService {
         @Query("appId") appId: String,
         @Query("project") project: String = "aidex",
         @Query("os") os: String = "android" ): ApiResult<AppUpdateInfo>
+
+    @Streaming
+    @GET
+    suspend fun downloadFile(@Url url:String): ApiResult<ResponseBody>
 
     @POST(BuildConfig.updateUrl + LOG_UPLOAD)
     suspend fun uploadLog(/*todo 参数*/): ApiResult<BaseResponse<String>>

@@ -1,5 +1,6 @@
 package com.microtech.aidexx.common
 
+import android.app.Application
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
@@ -11,6 +12,9 @@ import com.microtech.aidexx.utils.LocalManageUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -130,3 +134,11 @@ fun getContext() = AidexxApp.instance
 internal fun Number.dp2px() =
     this.toFloat().times(getContext().resources.displayMetrics.density)
         .plus(.5f).toInt()
+
+/**
+ * 全局协程作用域用于取代GlobalScope
+ */
+val Application.scope: CoroutineScope
+    get() {
+        return CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    }

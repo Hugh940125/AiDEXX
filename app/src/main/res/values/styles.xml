@@ -404,10 +404,9 @@
     </style>
 
     <style name="StateButtonRaised" parent="StateButtonBase">
-        <item name="android:textSize">18sp</item>
-        <item name="isRound">false</item>
         <item name="normalBackgroundColor">?appColorAccent</item>
         <item name="normalTextColor">@color/white</item>
+        <item name="bgRadius">5dp</item>
         <item name="pressedBackgroundColor">?attr/buttonPressColor</item>
         <item name="pressedTextColor">@color/white</item>
     </style>
