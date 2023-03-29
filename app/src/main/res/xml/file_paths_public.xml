@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path
+        name="my_images"
+        path="Android/data/com.microtechmd.cgms.fileprovider/files/Pictures" />
+    <external-path
+        name="external_files"
+        path="." />
+    <external-path
+        name="files_root"
+        path="Android/data/com.microtechmd.cgms/" />
+    <external-path
+        name="rc_external_path"
+        path="." />
+</paths>

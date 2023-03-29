@@ -1,18 +1,27 @@
 package com.microtech.aidexx.data
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import androidx.core.content.FileProvider
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.net.ApiRepository
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.entity.AppUpdateInfo
-import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.common.scope
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import java.io.File
+import java.io.IOException
 import java.util.*
 
 private val appUpgradeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -23,35 +32,60 @@ private val appUpgradeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 object AppUpgradeManager {
 
     const val TAG = "AppUpgradeManager"
-    const val SYNC_STATUS_DONE = 100
-    const val SYNC_STATUS_ERROR = -1
+    const val DOWNLOAD_STATUS_DONE = 100
+    const val DOWNLOAD_STATUS_ERROR = -1
 
     /**
      * 标记任务执行状态
      * 1：启动状态
      * 0：停止状态
      */
-    private val mUpgradeState: MutableStateFlow<Int> = MutableStateFlow(0)
+    private val mUpgradeState: MutableStateFlow<AppUpdateInfo?> = MutableStateFlow(null)
 
     /**
-     * 更新进度
+     * 更新进度 <进度，msg>
      */
-    private val mUpgradeProgress: MutableStateFlow<Int> = MutableStateFlow(0)
-
-    /** 外部使用 */
-    val upgradeProgress = mUpgradeProgress.asStateFlow()
+    private val mUpgradeProgress: MutableStateFlow<Pair<Int, String>?> = MutableStateFlow(null)
+    val upgradeProgressFlow: StateFlow<Pair<Int, String>?> = mUpgradeProgress
 
     private val syncExceptionHandler = CoroutineExceptionHandler { context, throwable ->
-        LogUtils.error(TAG,"app升级异常 \n ${throwable.stackTraceToString()}")
+        LogUtil.xLogE( "app升级异常 \n ${throwable.stackTraceToString()}", TAG)
         stopUpgrade(true)
     }
 
     init {
-        GlobalScope.launch {
+        // 长生命周期下载
+        AidexxApp.instance.scope.launch {
             mUpgradeState.collect {
-                if (it == 1) {
+                it?.let {
                     appUpgradeScope.launch(syncExceptionHandler) {
+
+                        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+                            stopUpgrade()
+                            mUpgradeProgress.emit(DOWNLOAD_STATUS_ERROR to "no sdcard")
+                            return@launch
+                        }
+
+                        val fileName = "app_${it.data.version}.apk"
+                        val downloadPath = getDownloadDir("downloads")
                         // 启动下载
+                        ApiRepository.downloadFile(it.data.downloadpath, downloadPath, fileName).collect { ret ->
+                            when (ret) {
+                                is ApiRepository.NetResult.Loading -> {
+                                    mUpgradeProgress.emit(ret.value to "正在下载")
+                                }
+                                is ApiRepository.NetResult.Success -> {
+                                    mUpgradeProgress.emit(DOWNLOAD_STATUS_DONE to ret.result)
+                                    stopUpgrade()
+                                    installApk(ret.result)
+                                }
+                                is ApiRepository.NetResult.Failure -> {
+                                    LogUtil.xLogE( "download fail ${ret.code}-${ret.msg}", TAG)
+                                    mUpgradeProgress.emit(DOWNLOAD_STATUS_ERROR to "${ret.code}-${ret.msg}")
+                                    stopUpgrade()
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -81,9 +115,12 @@ object AppUpgradeManager {
         } else null
     }
 
-    fun startUpgrade(): Boolean {
-        val ret = mUpgradeState.compareAndSet(0, 1)
-        LogUtils.debug(TAG,"启动升级 ret=$ret")
+    /**
+     * 启动升级
+     */
+    fun startUpgrade(appUpdateInfo: AppUpdateInfo): Boolean {
+        val ret = mUpgradeState.compareAndSet(null, appUpdateInfo)
+        LogUtil.xLogI("启动升级 ret=$ret", TAG)
         return ret
     }
 
@@ -93,25 +130,81 @@ object AppUpgradeManager {
      */
     private fun stopUpgrade(isFromException: Boolean = false){
         if(isFromException){
-            GlobalScope.launch { mUpgradeProgress.emit(SYNC_STATUS_ERROR) }
+            AidexxApp.instance.scope.launch { mUpgradeProgress.emit(DOWNLOAD_STATUS_ERROR to "") }
         }
-        val isStop = mUpgradeState.compareAndSet(1,0)
-        LogUtils.data("$TAG 结束同步结果=$isStop  curState=${mUpgradeState.value}")
+        mUpgradeState.value = null
+        LogUtil.xLogI("结束升级 curState=${mUpgradeState.value}", TAG)
     }
 
     private fun needCheckNewVersion(isManual: Boolean): Boolean {
 
         val isCheckedToday = MmkvManager.getAppCheckVersionTime() == Date().getStartOfTheDay().time
         if (!isManual && isCheckedToday) {
-            LogUtils.data("needCheckNewVersion 当天已经检测过")
+            LogUtil.xLogE("当天已经检测过", TAG)
             return false
         }
 
         if (!NetUtil.isNetAvailable(getContext())) {
-            LogUtils.data("needCheckNewVersion 网络不可用")
+            LogUtil.xLogE("网络不可用", TAG)
             return false
         }
         return true
+    }
+
+    /**
+     * 安装APK文件
+     */
+    private fun installApk(path: String) {
+        val apkFile = File(path)
+        setPermission(apkFile.path)
+        if (!apkFile.exists()) {
+            return
+        }
+
+        // 通过Intent安装APK文件
+        val i = Intent(Intent.ACTION_VIEW)
+        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val contentUri = FileProvider.getUriForFile(
+                getContext(),
+                getContext().packageName + ".FileProvider",
+                apkFile
+            )
+            i.setDataAndType(contentUri, "application/vnd.android.package-archive")
+        } else {
+            i.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive")
+        }
+
+        getContext().startActivity(i)
+    }
+
+
+
+    private fun setPermission(filePath: String) {
+        val command = "chmod 777 $filePath"
+        val runtime = Runtime.getRuntime()
+        try {
+            runtime.exec(command)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun getDownloadDir(subDir: String?): String {
+        var sdpath: String = getContext().externalCacheDir!!.absolutePath
+
+        sdpath = if (subDir != null) {
+            "$sdpath/aidex/$subDir/"
+        } else {
+            "$sdpath/aidex/"
+        }
+        val saveDir = File(sdpath)
+        if (!saveDir.exists()) {
+            saveDir.mkdirs()
+        }
+        return sdpath
     }
 
 }
