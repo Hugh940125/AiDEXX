@@ -5,14 +5,14 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import com.microtech.aidexx.R
 import com.microtech.aidexx.databinding.WidgetSettingItemBinding
 
-class SettingItemWidget : RelativeLayout {
+class SettingItemWidget : ConstraintLayout {
     private lateinit var settingItemBinding: WidgetSettingItemBinding
 
     constructor(context: Context) : super(context) {

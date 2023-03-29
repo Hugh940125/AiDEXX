@@ -23,7 +23,7 @@ import com.microtech.aidexx.utils.DensityUtils;
  */
 public class NiceImageView extends androidx.appcompat.widget.AppCompatImageView {
     private boolean isCircle = true; // 是否显示为圆形，如果为圆形则设置的corner无效
-    private boolean isCoverSrc; // border、inner_border是否覆盖图片
+    private boolean isCoverSrc = true; // border、inner_border是否覆盖图片
     private int borderWidth; // 边框宽度
     private int borderColor = Color.WHITE; // 边框颜色
     private int innerBorderWidth; // 内层边框宽度

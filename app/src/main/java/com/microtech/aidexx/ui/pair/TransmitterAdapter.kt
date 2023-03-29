@@ -13,7 +13,8 @@ class TransmitterAdapter :
         holder.apply {
             setText(R.id.tv_sn, item.name)
             setGone(R.id.tv_trans_pair_state, true)
-            holder.itemView.setOnClickListener {
+            addChildClickViewIds(R.id.root)
+            itemView.setOnClickListener {
                 onPairClick?.invoke(item)
             }
         }

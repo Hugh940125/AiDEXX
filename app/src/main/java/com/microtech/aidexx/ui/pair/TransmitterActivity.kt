@@ -11,6 +11,7 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
@@ -26,6 +27,8 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
+import com.microtech.aidexx.utils.adapter.OnItemClickListener
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.x.bottom.BottomDialog
 import com.microtech.aidexx.widget.dialog.x.bottom.NoSlideBottomDialog
@@ -244,6 +247,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     }
 
     private fun initView() {
+        binding.actionbarTransmitter.getLeftIcon().setOnClickListener { finish() }
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
         transmitterAdapter.onPairClick = {

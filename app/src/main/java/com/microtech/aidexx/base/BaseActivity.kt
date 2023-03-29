@@ -12,6 +12,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -48,8 +51,30 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         setTheme(ThemeManager.theme.id)
         binding = getViewBinding()
         mainScope = MainScope()
+        initWindow()
         initViewModel()
         initEvent()
+    }
+
+    private fun initWindow() {
+        val window = this.window
+        val decorView = window.decorView
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+            window.statusBarColor = Color.TRANSPARENT
+            window.insetsController?.also { controller ->
+                controller.show(WindowInsets.Type.statusBars())
+                controller.show(WindowInsets.Type.navigationBars())
+            }
+        } else {
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            window.statusBarColor = Color.TRANSPARENT
+            window.decorView.apply {
+                // 设置状态栏系统栏覆盖在应用内容上
+                systemUiVisibility =
+                    systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            }
+        }
     }
 
     private fun initEvent() {
