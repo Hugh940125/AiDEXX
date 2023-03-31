@@ -190,6 +190,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
+            <com.microtech.aidexx.widget.SettingItemWidget
+                android:id="@+id/siw_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                app:has_line="false"
+                app:has_next="false"
+                app:title="@string/setting_about"
+                app:layout_constraintTop_toBottomOf="@+id/setting_trans"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>

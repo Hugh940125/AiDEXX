@@ -11,17 +11,20 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.data.CombinedData
+import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
-import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.convertPointer
 import com.microtech.aidexx.common.dateAndTimeHour
 import com.microtech.aidexx.common.toGlucoseString2
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.utils.ThemeManager
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
@@ -121,7 +124,7 @@ class GlucoseChart : MyChart {
     )
 
     init {
-        isLogEnabled = BuildConfig.DEBUG
+//        isLogEnabled = BuildConfig.DEBUG
         textColor = ThemeManager.getTypeValue(context, R.attr.colorChartText)
         initBackground()
         initChartAxisX()
@@ -159,7 +162,7 @@ class GlucoseChart : MyChart {
                 LanguageUnitManager.languageUnitByIndex(context).hmFormat
 
             override fun onValueSelected(e: Entry, h: Highlight) {
-                extraParams?.outerDescriptionX?.text = formatSD.format(XAxisUtils.xToSecond(h.x) * 1000)
+                extraParams?.outerDescriptionX?.text = formatSD.format(ChartUtil.xToSecond(h.x) * 1000)
                 if (ThemeManager.isLight()) {
                     extraParams?.outerDescriptionView?.setBackgroundResource(R.drawable.bg_desc_light)
                 } else {
@@ -342,7 +345,7 @@ class GlucoseChart : MyChart {
                 LanguageUnitManager.languageUnitByIndex(context).hmFormat
 
             override fun getFormattedValue(value: Float): String {
-                val second: Long = XAxisUtils.xToSecond(value)
+                val second: Long = ChartUtil.xToSecond(value)
 
                 extraParams?.curDateTv?.text = mFormatD.format(Date(second * 1000))
 
@@ -396,7 +399,7 @@ class GlucoseChart : MyChart {
     }
 
     private fun moveToTime(timeInSecond: Long) {
-        moveViewToX(XAxisUtils.secondToX(timeInSecond))
+        moveViewToX(ChartUtil.secondToX(timeInSecond))
         delayAutoScaleY(100)
     }
 

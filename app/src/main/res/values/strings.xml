@@ -612,4 +612,14 @@
     <string name="btn_update_cancel">暂不更新</string>
     <!-- app升级-->
 
+    <!-- 关于 -->
+    <string name="setting_about">关于</string>
+    <string name="setting_software_name">软件名称</string>
+    <string name="setting_open_version">发布版本号</string>
+    <string name="setting_soft_version">软件版本号</string>
+    <string name="setting_check_version">检测版本</string>
+    <string name="verson_last">已是最新版本</string>
+    <string name="txt_new">NEW</string>
+    <!-- 关于 -->
+
 </resources>

@@ -14,7 +14,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
-import android.view.WindowInsetsController
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -249,5 +248,15 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         dialog.show()
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.BLACK)
         dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(Color.BLACK)
+    }
+
+    fun startActivity(bundle: Bundle?, cls: Class<*>) {
+        val intent = Intent(this, cls)
+        val bundle1 = Bundle()
+        if (bundle != null) {
+            bundle1.putAll(bundle)
+        }
+        intent.putExtras(bundle1)
+        startActivity(intent)
     }
 }
