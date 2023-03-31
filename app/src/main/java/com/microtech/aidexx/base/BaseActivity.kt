@@ -52,7 +52,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         mainScope = MainScope()
         initWindow()
         initViewModel()
-        initEvent()
+        observe()
     }
 
     private fun initWindow() {
@@ -76,7 +76,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
     }
 
-    private fun initEvent() {
+    private fun observe() {
         EventBusManager.onReceive<AlertInfo>(EventBusKey.EVENT_SHOW_ALERT, this) {
             if (ActivityUtil.isForeground(this) && it.content.isNotBlank()) {
                 mainScope.launch {

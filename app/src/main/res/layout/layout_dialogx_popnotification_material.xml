@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.microtech.aidexx.widget.dialog.x.views.DialogXBaseRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.microtech.aidexx.widget.dialog.lib.views.DialogXBaseRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/box_root"
     android:layout_width="match_parent"
@@ -7,7 +7,7 @@
     android:orientation="vertical"
     app:baseFocusable="false">
 
-    <com.microtech.aidexx.widget.dialog.x.views.MaxRelativeLayout
+    <com.microtech.aidexx.widget.dialog.lib.views.MaxRelativeLayout
         android:id="@+id/box_body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -87,6 +87,6 @@
                 android:textSize="14dp" />
         </LinearLayout>
 
-    </com.microtech.aidexx.widget.dialog.x.views.MaxRelativeLayout>
+    </com.microtech.aidexx.widget.dialog.lib.views.MaxRelativeLayout>
 
-</com.microtech.aidexx.widget.dialog.x.views.DialogXBaseRelativeLayout>
+</com.microtech.aidexx.widget.dialog.lib.views.DialogXBaseRelativeLayout>

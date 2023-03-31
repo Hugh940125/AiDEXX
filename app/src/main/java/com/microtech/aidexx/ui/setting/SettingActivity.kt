@@ -6,6 +6,7 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivitySettingBinding
 import com.microtech.aidexx.ui.pair.TransmitterActivity
+import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
 
 class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,8 +20,11 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
         binding.settingTrans.setOnClickListener {
             startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
         }
-        binding.siwAbout.setOnClickListener {
+        binding.settingAbout.setOnClickListener {
             startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
+        }
+        binding.settingAlert.setOnClickListener {
+            startActivity(Intent(this@SettingActivity, AlertSettingsActivity::class.java))
         }
     }
 

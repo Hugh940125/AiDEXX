@@ -290,4 +290,56 @@
         <attr name="ios" format="boolean"/>
         <attr name="leftSwipe" format="boolean"/>
     </declare-styleable>
+
+    <!--背景色-->
+    <attr name="zjun_bgColor" format="reference|color" />
+    <!--刻度颜色-->
+    <attr name="zjun_gradationColor" format="reference|color" />
+    <!--刻度字体颜色-->
+    <attr name="zjun_textColor" format="reference|color" />
+    <!--刻度字体大小-->
+    <attr name="zjun_textSize" format="reference|dimension" />
+    <!--中间指针线颜色-->
+    <attr name="zjun_indicatorLineColor" format="reference|color" />
+    <!--中间指针线宽度-->
+    <attr name="zjun_indicatorLineWidth" format="reference|dimension" />
+
+    <declare-styleable name="RuleView">
+        <!--背景色-->
+        <attr name="zjun_bgColor" />
+        <!--刻度颜色-->
+        <attr name="zjun_gradationColor" />
+        <!--短刻度线宽度-->
+        <attr name="gv_shortLineWidth" format="reference|dimension" />
+        <!--长刻度线宽度-->
+        <attr name="gv_longLineWidth" format="reference|dimension" />
+        <!--短刻度长度-->
+        <attr name="gv_shortGradationLen" format="reference|dimension" />
+        <!--长刻度长度-->
+        <attr name="gv_longGradationLen" format="reference|dimension" />
+        <!--刻度字体颜色-->
+        <attr name="zjun_textColor" />
+        <!--刻度字体大小-->
+        <attr name="zjun_textSize" />
+        <!--中间指针线颜色-->
+        <attr name="zjun_indicatorLineColor" />
+        <!--中间指针线宽度-->
+        <attr name="zjun_indicatorLineWidth" />
+        <!--中间指针线长度-->
+        <attr name="gv_indicatorLineLen" format="reference|dimension" />
+        <!--最小值-->
+        <attr name="gv_minValue" format="reference|float" />
+        <!--最大值-->
+        <attr name="gv_maxValue" format="reference|float" />
+        <!--当前值-->
+        <attr name="gv_currentValue" format="reference|float" />
+        <!--刻度最小单位-->
+        <attr name="gv_gradationUnit" format="reference|float" />
+        <!--需要绘制数值之间的最小单位个数-->
+        <attr name="gv_numberPerCount" format="reference|integer" />
+        <!--刻度间距离-->
+        <attr name="gv_gradationGap" format="reference|dimension" />
+        <!--刻度与文字的间距-->
+        <attr name="gv_gradationNumberGap" format="reference|dimension" />
+    </declare-styleable>
 </resources>

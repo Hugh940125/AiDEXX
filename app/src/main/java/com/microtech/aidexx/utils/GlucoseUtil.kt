@@ -1,4 +1,4 @@
-package com.microtech.aidexx.widget.dialog.x.util
+package com.microtech.aidexx.widget.dialog.lib.util
 
 import android.content.res.Resources
 import com.microtech.aidexx.R

@@ -5,6 +5,7 @@ package com.microtech.aidexx.utils.eventbus
  *@desc 统一定义EventBus key值
  */
 object EventBusKey {
+    const val EVENT_GO_TO_HISTORY: String = "EVENT_GO_TO_HISTORY"
     const val TOKEN_EXPIRED: String = "TOKEN_EXPIRED"
     const val EVENT_SHOW_ALERT: String = "EVENT_SHOW_ALERT"
     const val EVENT_RESTART_BLUETOOTH: String = "EVENT_REBOOT_BLUETOOTH"

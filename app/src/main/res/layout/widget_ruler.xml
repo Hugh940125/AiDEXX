@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@android:color/transparent"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/tv_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5"
+            android:textAlignment="center"
+            android:textSize="48sp"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/tv_number"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_alignBottom="@id/tv_number"
+            android:layout_toEndOf="@id/tv_number"
+            android:id="@+id/tv_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="mmol/l"
+            android:textAlignment="center"
+            android:textSize="24sp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tv_arrow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="▼"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        tools:ignore="HardcodedText" />
+
+    <com.microtech.aidexx.widget.ruler.RulerView
+        android:id="@+id/rv_number"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        app:gv_gradationGap="10dp"
+        app:zjun_bgColor="?containerBackgroundDark"
+        app:zjun_gradationColor="?android:textColor"
+        app:zjun_textColor="?android:textColor"
+        app:zjun_textSize="18sp" />
+
+</LinearLayout>

@@ -3,9 +3,10 @@ package com.microtech.aidexx
 import android.app.Application
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.utils.CrashHandler
 import com.microtech.aidexx.utils.ProcessUtil
-import com.microtech.aidexx.widget.dialog.x.DialogX
+import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
 import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
@@ -40,5 +41,6 @@ class AidexxApp : Application() {
         DialogX.init(this)
         AidexBleAdapter.init(this)
         BleController.setBleAdapter(AidexBleAdapter.getInstance())
+        AlertUtil.init(this)
     }
 }

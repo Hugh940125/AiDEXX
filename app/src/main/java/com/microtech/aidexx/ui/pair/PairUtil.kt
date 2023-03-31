@@ -12,9 +12,8 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.x.bottom.BottomDialog
-import com.microtech.aidexx.widget.dialog.x.bottom.NoSlideBottomDialog
-import com.microtech.aidexx.widget.dialog.x.interfaces.OnBindView
+import com.microtech.aidexx.widget.dialog.lib.bottom.BottomDialog
+import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.controller.BleControllerInfo
@@ -119,7 +118,7 @@ object PairUtil {
     }
 
     private fun pairFailedTips(context: Context) {
-        NoSlideBottomDialog(object : OnBindView<BottomDialog?>(R.layout.dialog_with_one_btn) {
+        Dialogs.showBottom(object : OnBindView<BottomDialog?>(R.layout.dialog_with_one_btn) {
             override fun onBind(dialog: BottomDialog?, v: View?) {
                 v?.let {
                     val bind = DialogWithOneBtnBinding.bind(it)

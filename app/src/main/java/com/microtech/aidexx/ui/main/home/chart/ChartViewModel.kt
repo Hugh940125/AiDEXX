@@ -22,7 +22,7 @@ import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUN
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
 import com.microtech.aidexx.widget.chart.dataset.*
-import com.microtech.aidexx.widget.dialog.x.util.toGlucoseValue
+import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

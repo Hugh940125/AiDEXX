@@ -1,11 +1,8 @@
 package com.microtech.aidexx.ble.device.model
 
 import android.os.SystemClock
-import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.MessageDispatcher
-import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.common.millisToHours
@@ -38,7 +35,6 @@ import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
-import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
@@ -360,7 +356,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
         val temp = broadcast.history[0].glucose
         glucose = if (isMalfunction || isSensorExpired || temp < 0) null
-        else com.microtech.aidexx.widget.dialog.x.util.roundOffDecimal(temp / 18f)
+        else com.microtech.aidexx.widget.dialog.lib.util.roundOffDecimal(temp / 18f)
         glucoseLevel = getGlucoseLevel(glucose)
         latestHistory?.let {
             val historyDate = getHistoryDate(it.timeOffset)
@@ -528,7 +524,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                 }
                 historyEntity.eventData =
-                    com.microtech.aidexx.widget.dialog.x.util.roundOffDecimal(history.glucose / 18f)
+                    com.microtech.aidexx.widget.dialog.lib.util.roundOffDecimal(history.glucose / 18f)
                 historyEntity.eventIndex = history.timeOffset
                 historyEntity.time = getHistoryDate(history.timeOffset)
                 historyEntity.deviceTime = getHistoryDate(history.timeOffset)

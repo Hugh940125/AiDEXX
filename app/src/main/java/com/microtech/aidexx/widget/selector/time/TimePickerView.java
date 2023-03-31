@@ -39,7 +39,7 @@ public class TimePickerView extends BasePickerView implements View.OnClickListen
 
             //顶部标题
             TextView tvTitle = (TextView) findViewById(R.id.tvTitle);
-            RelativeLayout rv_top_bar = (RelativeLayout) findViewById(R.id.rv_top_bar);
+            RelativeLayout rv_top_bar = (RelativeLayout) findViewById(R.id.rl_top_bar);
 
             //确定和取消按钮
             Button btnSubmit = (Button) findViewById(R.id.btnSubmit);

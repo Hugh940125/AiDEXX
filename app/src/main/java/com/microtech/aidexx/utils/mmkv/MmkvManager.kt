@@ -7,6 +7,8 @@ import java.util.*
 
 object MmkvManager {
 
+    private const val NOTICE_METHOD = "NOTICE_METHOD"
+    private const val URGENT_NOTICE_METHOD = "URGENT_NOTICE_METHOD"
     private const val PHONE_NUMBER = "PHONE_NUMBER"
     private const val GET_USER_ID = "GET_USER_ID"
     private const val THEME = "THEME"
@@ -43,9 +45,17 @@ object MmkvManager {
     fun isFastDownAlertEnable() = MmkvUtil.decodeBoolean(FAST_DOWN_ALERT_ENABLE, true)
     fun isUrgentAlertEnable() = MmkvUtil.decodeBoolean(URGENT_NOTICE_ENABLE, true)
     fun isHypoAlertEnable() = MmkvUtil.decodeBoolean(LOW_NOTICE_ENABLE, true)
+    fun setHypoAlertEnable(enable:Boolean) = MmkvUtil.encodeBoolean(LOW_NOTICE_ENABLE, enable)
     fun isHyperAlertEnable() = MmkvUtil.decodeBoolean(HIGH_NOTICE_ENABLE, true)
+    fun setHyperAlertEnable(enable:Boolean) = MmkvUtil.encodeBoolean(HIGH_NOTICE_ENABLE, enable)
+    fun getUrgentAlertMethod() = MmkvUtil.decodeInt(URGENT_NOTICE_METHOD, 2)
+    fun getAlertMethod() = MmkvUtil.decodeInt(NOTICE_METHOD, 2)
+    fun saveUrgentAlertMethod(method: Int) = MmkvUtil.encodeInt(URGENT_NOTICE_METHOD, method)
+    fun saveAlertMethod(method: Int) = MmkvUtil.encodeInt(NOTICE_METHOD, method)
     fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY, 0)
     fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY, 2)
+    fun saveUrgentAlertFrequency(frequency: Int) = MmkvUtil.encodeInt(URGENT_NOTICE_FREQUENCY, frequency)
+    fun saveAlertFrequency(frequency: Int) = MmkvUtil.encodeInt(NOTICE_FREQUENCY, frequency)
     fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
     fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)

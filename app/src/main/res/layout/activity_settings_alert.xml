@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.setting.alert.AlertSettingsActivity">
+
+    <com.microtech.aidexx.widget.ActionBarWidget
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:leftIcon="@drawable/ic_back"
+        app:titleText="@string/alert_setting" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="@string/common_notice"
+                android:textColor="?attr/settingItemValueTextColor"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                style="@style/baseMargin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="?attr/bgSetting"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:paddingTop="6dp"
+                    android:paddingBottom="6dp"
+                    android:text="@string/alert_mode"
+                    android:textColor="?attr/settingItemTitleTextColor"
+                    android:textSize="?attr/settingItemTitleTextSize"
+                    android:textStyle="bold" />
+
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/notice_method"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:has_line="true"
+                    app:title="@string/notice_method" />
+
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/notice_frequency"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:has_line="true"
+                    app:title="@string/notice_frequency" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="6dp"
+                    android:text="@string/notice_content"
+                    android:textColor="?attr/settingItemTitleTextColor"
+                    android:textSize="?attr/settingItemTitleTextSize"
+                    android:textStyle="bold" />
+
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/hypo_alert_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_switch="true"
+                    app:title="@string/Guide_Low_Alert_Title" />
+
+<!--                APP-SRC-A-2-7-->
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/hypo_threshold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/low_threshold" />
+
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/hyper_alert_switch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_switch="true"
+                    app:title="@string/Guide_High_Alert_Title" />
+
+<!--                APP-SRC-A-2-8-->
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/hyper_threshold"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/High_Glucose" />
+
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/siw_raise"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_switch="true"
+                    app:title="@string/Rise_Rate" />
+
+                <com.microtech.aidexx.widget.SettingItemWidget
+                    android:id="@+id/siw_fall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_switch="true"
+                    app:has_next="false"
+                    app:title="@string/Fall_Rate" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="18dp"
+                android:text="@string/urgent_notice"
+                android:textColor="?attr/settingItemValueTextColor"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                style="@style/baseMargin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="?attr/bgSetting"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/siw_urgent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:has_switch="true"
+                        app:title="@string/Urgent_Low_Alarm" />
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/low_urgent_value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:title="@string/low_urgent_value" />
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/notice_method_urgent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:has_next="true"
+                        app:has_line="true"
+                        app:title="@string/notice_method" />
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/notice_frequency_urgent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:has_next="true"
+                        app:title="@string/notice_frequency" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="18dp"
+                android:text="@string/system_notice"
+                android:textColor="?attr/settingItemValueTextColor"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                style="@style/baseMargin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="?attr/bgSetting"
+                android:orientation="vertical">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/siw_signal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:has_line="false"
+                        app:has_switch="true"
+                        app:title="@string/Signal_Loss" />
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/notice_method_signal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:has_next="true"
+                        app:has_line="true"
+                        app:title="@string/notice_method" />
+
+                    <com.microtech.aidexx.widget.SettingItemWidget
+                        android:id="@+id/notice_frequency_signal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="1dp"
+                        app:has_next="true"
+                        app:title="@string/notice_frequency" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="6dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

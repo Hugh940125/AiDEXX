@@ -1,10 +1,18 @@
 package com.microtech.aidexx.widget.dialog
 
 import android.content.Context
+import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.microtech.aidexx.R
+import com.microtech.aidexx.widget.dialog.lib.TipDialog
+import com.microtech.aidexx.widget.dialog.lib.WaitDialog
+import com.microtech.aidexx.widget.dialog.lib.bottom.BottomDialog
+import com.microtech.aidexx.widget.dialog.lib.bottom.NoSlideBottomDialog
+import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
-import com.microtech.aidexx.widget.dialog.x.TipDialog
-import com.microtech.aidexx.widget.dialog.x.WaitDialog
+import com.microtech.aidexx.widget.selector.option.OptionsPickerBuilder
+import com.microtech.aidexx.widget.selector.option.OptionsPickerView
 
 /**
  *@date 2023/2/9
@@ -12,8 +20,40 @@ import com.microtech.aidexx.widget.dialog.x.WaitDialog
  *@desc 多次弹出只保留最后一个
  */
 object Dialogs {
-
     private var dialogList = mutableListOf<StandardDialog>()
+
+    fun showBottom(onBindView: OnBindView<BottomDialog?>) {
+        NoSlideBottomDialog(onBindView)
+    }
+
+    class Picker(private val context: Context) {
+
+        private lateinit var pickBuilder: OptionsPickerView<String>
+        fun singlePick(list: List<String>, selectPos: Int, callBack: (pos: Int) -> Unit) {
+            pickBuilder = OptionsPickerBuilder(context) { _, option2, _, _ ->
+                callBack.invoke(option2)
+            }.setLayoutRes(R.layout.layout_option_pick) { v ->
+                val tvSubmit = v.findViewById<View>(R.id.tv_option_confirm) as TextView
+                val ivCancel = v.findViewById<View>(R.id.tv_option_cancel) as TextView
+                tvSubmit.setOnClickListener {
+                    pickBuilder.returnData()
+                    pickBuilder.dismiss()
+                }
+                ivCancel.setOnClickListener {
+                    pickBuilder.dismiss()
+                }
+            }
+                .setTextColorCenter(context.getColor(R.color.green_65))
+                .setDividerColor(context.getColor(R.color.green_65))
+                .isDialog(false)
+                .setOutSideCancelable(true)
+                .setSelectOptions(0, selectPos, 0)
+                .setBgColor(context.getColor(R.color.bg_item_color))
+                .build()
+            pickBuilder.setNPicker(emptyList(), list, emptyList()) //添加数据
+            pickBuilder.show()
+        }
+    }
 
     fun showAlert(
         context: AppCompatActivity,

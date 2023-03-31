@@ -21,7 +21,7 @@ import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.widget.dialog.x.util.toGlucoseStringWithLowAndHigh
+import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithLowAndHigh
 import com.microtechmd.blecomm.constant.History
 import java.math.BigDecimal
 import java.util.*

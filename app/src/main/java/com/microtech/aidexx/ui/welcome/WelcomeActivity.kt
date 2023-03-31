@@ -11,7 +11,7 @@ import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.dialog.x.DialogX
+import com.microtech.aidexx.widget.dialog.lib.DialogX
 
 class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 

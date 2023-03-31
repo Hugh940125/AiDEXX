@@ -27,7 +27,7 @@ import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.x.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.selector.time.TimePicker
 import com.microtechmd.blecomm.constant.AidexXOperation
 import kotlinx.coroutines.Dispatchers
