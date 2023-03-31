@@ -19,6 +19,9 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
         binding.settingTrans.setOnClickListener {
             startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
         }
+        binding.siwAbout.setOnClickListener {
+            startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
+        }
     }
 
     override fun getViewBinding(): ActivitySettingBinding {

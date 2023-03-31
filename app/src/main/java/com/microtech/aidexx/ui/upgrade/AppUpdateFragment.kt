@@ -21,6 +21,7 @@ class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment()
 
     companion object {
         const val TAG = "AppUpdateFragment"
+        const val LABEL_FORCE: Int = 1
     }
 
     lateinit var binding: DialogAppUpdateBinding
@@ -43,8 +44,13 @@ class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment()
                     when (ret.first) {
                         DOWNLOAD_STATUS_DONE -> {
                             //do something
-                            if (updateInfo.data.force != 1) {
+                            if (updateInfo.data.force != LABEL_FORCE) {
                                 dismissAllowingStateLoss()
+                            } else {
+                                binding.run {
+                                    llDownload.visibility = View.VISIBLE
+                                    txtUpdateProgress.visibility = View.GONE
+                                }
                             }
                         }
                         DOWNLOAD_STATUS_ERROR -> {
@@ -70,12 +76,13 @@ class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment()
 
         binding.run {
 
-//            tvContent.text = updateInfo.data.description
+            tvTitle.text = String.format(getString(R.string.title_update_version), updateInfo.data.version)
+            tvContent.text = updateInfo.data.description
 
             btOk.setOnClickListener {
                 AppUpgradeManager.startUpgrade(updateInfo)
             }
-            btCancel.visibility = if (updateInfo.data.force == 1) View.GONE else View.VISIBLE
+            btCancel.visibility = if (updateInfo.data.force == LABEL_FORCE) View.GONE else View.VISIBLE
             btCancel.setOnClickListener {
                 dismissAllowingStateLoss()
                 LogUtil.xLogE("暂不更新", TAG)
@@ -95,7 +102,7 @@ class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment()
             val lp = it.attributes
             context?.resources?.displayMetrics?.widthPixels?.let { width ->
                 lp.width = width - 2 * 40.dp2px()
-                lp.height = (lp.width * 1.3).toInt()
+                lp.height = (lp.width * 1.1).toInt()
             }
             it.attributes = lp
         }

@@ -8,38 +8,34 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
-import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.ui.main.MainActivity
-import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
+import com.microtech.aidexx.ui.main.home.chart.ChartViewHolder
 import com.microtech.aidexx.ui.main.home.panel.GlucosePanelFragment
 import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.widget.chart.GlucoseChart
-import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
-import com.microtech.aidexx.widget.chart.MyChart
-import com.microtech.aidexx.widget.chart.MyChart.Companion.G_HALF_DAY
-import com.microtech.aidexx.widget.chart.MyChart.Companion.G_ONE_DAY
-import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
-import kotlinx.coroutines.flow.collectLatest
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtechmd.blecomm.constant.History
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 /**
  *@date 2023/2/15
@@ -57,7 +53,8 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private val switchOrientation: Int = 1
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
-    private val chartViewModel: ChartViewModel by viewModels(ownerProducer = { requireActivity() })
+
+    private lateinit var chartViewHolder: ChartViewHolder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,9 +90,19 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         binding = FragmentHomeBinding.inflate(layoutInflater)
         initView()
-        initChart()
+
+        chartViewHolder = ChartViewHolder(binding, this) {
+            if (switchOrientation == 2) {
+                orientation(initOrientation)
+                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY,true, 500)
+            } else {
+                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY,true)
+            }
+        }
+
         initEvent()
         return binding.root
     }
@@ -109,106 +116,26 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         }
     }
 
-    private fun initChart() {
-        binding.run {
-
-            touchView.setOnTouchListener { _, event ->
-                touchView.performClick()
-                if (MyAnimatedZoomJob.animators > 0) true
-                else chart.onTouchEvent(event)
-            }
-
-            chart.extraParams = object: GlucoseChart.ExtraParams {
-                override var outerDescriptionView: View? = descriptions
-
-                override var llValue: LinearLayout? = llDescValue
-                override var outerDescriptionY: TextView? = descriptionTvValue
-                override var outerDescriptionUnit: TextView? = descriptionTvUnit
-                override var outerDescriptionX: TextView? = descriptionTvTime
-
-                override var rlDescription: RelativeLayout? = binding.rlDescription
-                override var outerDescriptionU: TextView? = descriptionTvContent
-                override var goToHistory: ImageView? = binding.goToHistory
-                override var onGoToHistory: (() -> Unit)? = {
-                    if (switchOrientation == 2) {
-                        orientation(initOrientation)
-                        LiveEventBus.get<Boolean>(EventBusKey.GO_TO_HISTORY).postDelay(true, 500)
-                    } else {
-                        LiveEventBus.get<Boolean>(EventBusKey.GO_TO_HISTORY).post(true)
-                    }
-                }
-
-                override var curDateTv: TextView? = tvXTime
-
-                override fun xMax(): Float = chartViewModel.xMax()
-                override fun xMin(): Float = chartViewModel.xMin()
-                override fun xRange(): Float = chartViewModel.xRange()
-                override fun lowerLimit(): Float = chartViewModel.lowerLimit
-                override fun upperLimit(): Float = chartViewModel.upperLimit
-            }
-
-            chart.onScrollListener = object: MyChart.ScrollListener {
-                override fun onXAxisVisibleAreaChanged(
-                    isLtr: Boolean,
-                    visibleLeftX: Float,
-                    visibleRightX: Float,
-                    xAxisMin: Float,
-                    xAxisMax: Float
-                ) {
-                    if (chartViewModel.needLoadNextPage(isLtr, visibleLeftX, xAxisMin)) {
-                        val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                        LogUtils.debug(TAG,"===CHART===onXAxisVisibleAreaChanged do=$ret")
-                    }
-                }
-
-                override fun onToEndLeft() {
-                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                    LogUtils.debug(TAG,"===CHART===onToEndLeft do=$ret")
-                }
-
-                override fun onToEndRight() {
-                    LogUtils.debug(TAG,"===CHART===onToEndRight")
-                }
-            }
-
-            lifecycleScope.launch {
-                launch {
-                    chartViewModel.granularityFlow.collectLatest {
-                        it?.let {
-                            chart.updateGranularity(it)
-                            chart.notifyChanged()
-                        }
-                    }
-                }
-                launch {
-                    chartViewModel.initData().collectLatest {
-                        chart.initData(it)
-//                        chart.notifyChanged(true)
-                    }
-                }
-
-                launch {
-                    chartViewModel.mDataChangedFlow.collect {
-                        it?.let {
-                            chart.notifyChanged(it.second)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private fun initEvent() {
-        binding.run {
-            homeTimeTab.onTabChange = {
-                val newModel = when(it) {
-                    1 -> G_HALF_DAY
-                    2 -> G_ONE_DAY
-                    else -> G_SIX_HOURS
+
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO){
+
+                for (i in 0..100) {
+                    delay(2.seconds)
+
+                    val a = RealCgmHistoryEntity()
+                    a.deviceTime = Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60*10))
+                    a.eventData = (i % 36).toFloat()
+                    a.eventType = History.HISTORY_GLUCOSE
+
+                    EventBusManager.send(EventBusKey.EVENT_CGM_DATA_CHANGED, CgmDataChangedInfo(DataChangedType.ADD, listOf(a)))
+
                 }
-                chartViewModel.updateGranularity(newModel)
+
             }
         }
+
     }
 
     private fun judgeState() {

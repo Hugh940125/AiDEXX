@@ -13,6 +13,10 @@ object EventBusManager {
         LiveEventBus.get<T>(key).post(value)
     }
 
+    fun <T> sendDelay(key: String, value: T, delay: Long) {
+        LiveEventBus.get<T>(key).postDelay(value, delay)
+    }
+
     fun <T : Any?> onReceive(
         vararg keys: String,
         owner: LifecycleOwner,

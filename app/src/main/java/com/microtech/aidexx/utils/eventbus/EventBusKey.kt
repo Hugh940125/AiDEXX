@@ -11,5 +11,6 @@ object EventBusKey {
     const val REFRESH_CHART_DATE: String = "REFRESH_CHART_DATE"
     const val GO_TO_HISTORY: String = "GO_TO_HISTORY"
     const val EVENT_UNPAIR_SUCCESS: String = "EVENT_UNPAIR_SUCCESS"
+    const val EVENT_CGM_DATA_CHANGED: String = "EVENT_CGM_DATA_CHANGED"
     const val EVENT_PAIR_SUCCESS: String = "EVENT_PAIR_SUCCESS"
 }

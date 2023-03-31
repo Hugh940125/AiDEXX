@@ -4,7 +4,7 @@ import com.microtech.aidexx.utils.TimeUtils
 import java.util.*
 import kotlin.math.roundToLong
 
-object XAxisUtils {
+object ChartUtil {
     private val timeZero: Long = TimeUtils.zeroOfDay(Date().time/1000)
 
     fun dateToX(date: Date): Float {
