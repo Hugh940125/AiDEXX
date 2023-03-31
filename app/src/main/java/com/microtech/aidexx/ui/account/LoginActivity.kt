@@ -143,13 +143,15 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         Dialogs.showWait(getString(R.string.Login_loging))
         viewModel.login(map, { baseResponse ->
             val content = baseResponse.content
-            lifecycleScope.launch {
-                UserInfoManager.instance().onUserLogin(content) {
-                    if (it) {
-                        downloadData()
-                        onLoginSuccess()
-                    } else {
-                        ToastUtil.showShort(getString(R.string.login_fail))
+            content?.let {
+                lifecycleScope.launch {
+                    UserInfoManager.instance().onUserLogin(content) {
+                        if (it) {
+                            downloadData()
+                            onLoginSuccess()
+                        } else {
+                            ToastUtil.showShort(getString(R.string.login_fail))
+                        }
                     }
                 }
             }

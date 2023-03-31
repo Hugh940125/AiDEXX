@@ -8,6 +8,8 @@ import io.objectbox.annotation.Unique
 import java.util.*
 
 
+const val TYPE_G7 = 1
+const val TYPE_X = 2
 @Entity
 class TransmitterEntity {
     @Id
@@ -37,7 +39,7 @@ class TransmitterEntity {
     var deviceKey: String? = null
     var et: Int = 0
     var deviceName: String? = null
-    var deviceType: Int = 2
+    var deviceType: Int = TYPE_X
 
     constructor()
 

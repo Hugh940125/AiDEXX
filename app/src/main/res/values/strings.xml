@@ -98,7 +98,7 @@
     <string name="setting_transmitter">发射器</string>
     <string name="setting_glucose_unit">血糖单位</string>
     <string name="setting_language">语言</string>
-    <string name="setting_theme">主题</string>
+    <string name="setting_theme">风格</string>
     <string name="setting_other">其他</string>
     <string name="history_all">全部</string>
     <string name="history_glucose">血糖</string>
@@ -610,6 +610,7 @@
     <string name="download_update">%s 正在下载…</string>
     <string name="btn_update_ok">立即更新</string>
     <string name="btn_update_cancel">暂不更新</string>
+    <string name="setting_about">关于</string>
     <!-- app升级-->
 
 </resources>

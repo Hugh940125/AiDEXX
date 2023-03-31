@@ -71,18 +71,8 @@ void AidexXController::setSn(const string &sn)
         snChar1[i] = snChar[i] * 13 + 61;
         snChar2[i] = snChar[i] * 17 + 19;
     }
-//    MD5::digest(snChar1, snLen, (unsigned char *)snSecret1);
-//    MD5::digest(snChar2, snLen, (unsigned char *)snSecret2);
-    
-    //TODO 临时采用crc16方式
-    uint16 crc16_1 = LibChecksum_GetChecksum16Bit_CCITT(snChar1, snLen);
-    uint16 crc16_2 = LibChecksum_GetChecksum16Bit_CCITT(snChar2, snLen);
-
-    snSecret1[0] = crc16_1 & 0xff;
-    snSecret1[1] = (crc16_1 >> 8) & 0xff;
-
-    snSecret2[0] = crc16_2 & 0xff;
-    snSecret2[1] = (crc16_2 >> 8) & 0xff;
+    MD5::digest(snChar1, snLen, (unsigned char *)snSecret1);
+    MD5::digest(snChar2, snLen, (unsigned char *)snSecret2);
 }
 
 bool AidexXController::startEncryption(const uint8 *key)

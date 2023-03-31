@@ -18,7 +18,7 @@ object DeviceApi : BaseApi() {
 
     suspend fun deviceRegister(
         entity: TransmitterEntity,
-        success: ((entity: TransmitterEntity) -> Unit)? = null,
+        success: ((entity: TransmitterEntity?) -> Unit)? = null,
         failure: (() -> Unit)? = null
     ) = withContext(dispatcher) {
         when(val apiResult = ApiService.instance.deviceRegister(entity)){

@@ -9,6 +9,8 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.ByteUtils
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.StringUtils
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.entity.BleMessage
@@ -31,53 +33,6 @@ class MainService : Service() {
         MessageDispatcher.instance().observeLifecycle(serviceMainScope)
     }
 
-    private fun onMessage(model: DeviceModel, message: BleMessage) {
-        val data = message.data
-        when (message.operation) {
-            CgmOperation.DISCOVER -> {
-                if (message.isSuccess) {
-                    model.handleAdvertisement(message.data)
-                }
-            }
-            AidexXOperation.GET_START_TIME -> {
-                if (!AidexxApp.isPairing) {
-                    val sensorStartTime = ByteUtils.toDate(data)
-                    model.updateStartTime(sensorStartTime)
-                }
-            }
-            CgmOperation.GET_DATETIME -> {
-                model.disconnect()
-            }
-
-            CgmOperation.CALIBRATION -> {
-
-            }
-
-            CgmOperation.CONFIG_INFO -> {
-
-            }
-
-            CgmOperation.BOND -> {
-
-            }
-
-            CgmOperation.UNPAIR -> {
-
-            }
-            CgmOperation.GET_HISTORIES -> {
-                if (UserInfoManager.instance().isLogin()) {
-                    model.saveBriefHistoryFromConnect(message.data)
-                }
-            }
-            CgmOperation.GET_HISTORIES_FULL -> {
-                if (UserInfoManager.instance().isLogin()) {
-                    model.saveRawHistoryFromConnect(message.data)
-                }
-            }
-        }
-        MessageDispatcher.instance().dispatch(serviceMainScope, message)
-    }
-
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
@@ -90,12 +45,12 @@ class MainService : Service() {
     }
 
     private fun setMessageCallback(it: DeviceModel) {
-        it.messageCallBack = { msg ->
-            val default = TransmitterManager.instance().getDefault()
-            default?.let {
-                onMessage(it, msg)
-            }
-        }
+//        it.messageCallBack = { msg ->
+//            val default = TransmitterManager.instance().getDefault()
+//            default?.let {
+//                onMessage(it, msg)
+//            }
+//        }
     }
 
     override fun onDestroy() {

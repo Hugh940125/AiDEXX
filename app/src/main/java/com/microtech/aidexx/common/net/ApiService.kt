@@ -34,12 +34,17 @@ const val DEVICE = "$middleUrl/cgn-device" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CGM_RECORD = "$middleUrl/cgm-record" //上传CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
+const val CGM_LIST_RECENT = "$middleUrl/cgm-record/list-recent"
 
 const val vcsMiddleUrl = "backend/vcs"
 const val CHECK_APP_UPDATE = "$vcsMiddleUrl/version/getAppConfig" //APP版本升级检查
 const val LOG_UPLOAD = "$vcsMiddleUrl/log/uploadLog" //上传日志
 
 interface ApiService {
+    @GET("$CGM_LIST_RECENT?{params}")
+    suspend fun getRecentHistories(@Path("params") params: String)
+            : Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
+
     @POST(DOWNLOAD_CGM_RECORD)
     suspend fun getRemoteHistory(@Body json: String): Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
 
@@ -71,11 +76,12 @@ interface ApiService {
     suspend fun checkAppUpdate(
         @Query("appId") appId: String,
         @Query("project") project: String = "aidex",
-        @Query("os") os: String = "android" ): ApiResult<AppUpdateInfo>
+        @Query("os") os: String = "android"
+    ): ApiResult<AppUpdateInfo>
 
     @Streaming
     @GET
-    suspend fun downloadFile(@Url url:String): ApiResult<ResponseBody>
+    suspend fun downloadFile(@Url url: String): ApiResult<ResponseBody>
 
     @POST(BuildConfig.updateUrl + LOG_UPLOAD)
     suspend fun uploadLog(/*todo 参数*/): ApiResult<BaseResponse<String>>

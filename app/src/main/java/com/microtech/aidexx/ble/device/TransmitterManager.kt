@@ -31,11 +31,10 @@ class TransmitterManager private constructor() {
         }
     }
 
-    fun removeAllFromDb() {
-        ObjectBox.runAsync({
+    suspend fun removeDb() {
+        ObjectBox.awaitCallInTx {
             transmitterBox!!.removeAll()
-        }, onSuccess = {
-        })
+        }
     }
 
     fun buildModel(sn: String, address: String): DeviceModel {

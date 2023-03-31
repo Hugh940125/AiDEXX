@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Description: 设备信息集合
@@ -15,7 +16,7 @@ public class BluetoothDeviceStore {
     private final Map<String, ScanResult> mDeviceMap;
 
     public BluetoothDeviceStore() {
-        mDeviceMap = new HashMap<>();
+        mDeviceMap = new ConcurrentHashMap<>();
     }
 
     public void add(ScanResult result) {

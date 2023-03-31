@@ -45,7 +45,6 @@ class MessageDispatcher {
         }
     }
 
-    @OptIn(FlowPreview::class)
     fun observer(scope: CoroutineScope, onReceive: ((message: BleMessage) -> Unit)): Job {
         return scope.launch {
             mutableSharedFlow.buffer(10).flowOn(Dispatchers.IO).collect {

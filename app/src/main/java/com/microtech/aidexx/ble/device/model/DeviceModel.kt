@@ -32,7 +32,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var latestAd: Any? = null
     var glucose: Float? = null
     var lastHistoryTime: Date? = null
-    lateinit var controller: BleController
+    var controller: BleController? = null
     var isHistoryValid: Boolean = false
     var isMalfunction: Boolean = false
     var sensorStartTime: Date? = null
@@ -87,8 +87,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         fail: (() -> Unit)?
     )
 
+    abstract suspend fun deletePair()
+
     fun disconnect() {
-        controller.disconnect()
+        controller?.disconnect()
     }
 
     fun updateStartTime(sensorStartTime: Date?, callback: ((Boolean) -> Unit)? = null) {

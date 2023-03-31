@@ -44,12 +44,12 @@ public class BleControllerInfo implements Parcelable {
         if (this == o) return true;
         if (!(o instanceof BleControllerInfo)) return false;
         BleControllerInfo that = (BleControllerInfo) o;
-        return rssi == that.rssi && Objects.equals(address, that.address) && Objects.equals(name, that.name) && Objects.equals(sn, that.sn);
+        return Objects.equals(address, that.address) && Objects.equals(name, that.name) && Objects.equals(sn, that.sn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address, name, sn, rssi);
+        return Objects.hash(address, name, sn);
     }
 
     @NonNull

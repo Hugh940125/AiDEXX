@@ -14,8 +14,18 @@ object EventBusManager {
     }
 
     fun <T : Any?> onReceive(
-        key: String, owner: LifecycleOwner, callback: ((it: T) -> Unit)
+        vararg keys: String,
+        owner: LifecycleOwner,
+        callback: ((it: T) -> Unit)
     ) {
+        for (key in keys) {
+            LiveEventBus.get<T>(key).observe(owner) {
+                callback.invoke(it)
+            }
+        }
+    }
+
+    fun <T : Any?> onReceive(key: String, owner: LifecycleOwner, callback: ((it: T) -> Unit)) {
         LiveEventBus.get<T>(key).observe(owner) {
             callback.invoke(it)
         }

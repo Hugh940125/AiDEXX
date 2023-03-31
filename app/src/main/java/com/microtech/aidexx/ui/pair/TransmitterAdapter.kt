@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.pair
 
+import android.widget.LinearLayout
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
@@ -13,8 +14,8 @@ class TransmitterAdapter :
         holder.apply {
             setText(R.id.tv_sn, item.name)
             setGone(R.id.tv_trans_pair_state, true)
-            addChildClickViewIds(R.id.root)
-            itemView.setOnClickListener {
+            val transItem = getView<LinearLayout>(R.id.trans_item)
+            transItem.setOnClickListener {
                 onPairClick?.invoke(item)
             }
         }

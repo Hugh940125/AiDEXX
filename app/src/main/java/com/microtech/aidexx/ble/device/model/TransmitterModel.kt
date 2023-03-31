@@ -2,12 +2,17 @@ package com.microtech.aidexx.ble.device.model
 
 import android.os.SystemClock
 import com.jeremyliao.liveeventbus.LiveEventBus
+import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.R
+import com.microtech.aidexx.ble.MessageDispatcher
 import com.microtech.aidexx.ble.device.DeviceApi
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.common.millisToHours
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
+import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
@@ -26,7 +31,11 @@ import com.microtech.aidexx.ui.setting.alert.AlertType
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtechmd.blecomm.constant.AidexXOperation
+import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.controller.BleController
@@ -63,6 +72,40 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (instance == null || instance?.entity?.deviceSn != entity.deviceSn) {
                 instance = TransmitterModel(entity)
             }
+            if (instance!!.controller == null) {
+                instance!!.controller = AidexXController()
+            }
+            instance!!.controller?.let {
+                it.mac = entity.deviceMac
+                it.sn = entity.deviceSn
+                it.name = "AiDEX X-${entity.deviceSn}"
+                val userId = UserInfoManager.instance().userId()
+                val getBytes = userId.toByteArray(Charset.forName("UTF-8"))
+                it.hostAddress = getBytes
+                it.id = entity.accessId
+                it.key = entity.encryptionKey
+                it.setMessageCallback { operation, success, data ->
+                    LogUtil.eAiDEX(
+                        "model --- operation: $operation, success: $success, message: ${
+                            StringUtils.binaryToHexString(data)
+                        }"
+                    )
+                    var result: ByteArray = byteArrayOf()
+                    if (operation !in 1..3) {
+                        result = ByteUtils.subByte(data, 1, data.size - 1);
+                    }
+//                    messageCallBack?.invoke(
+//                        BleMessage(
+//                            operation,
+//                            success,
+//                            result
+//                        )
+//                    )
+                    val bleMessage = BleMessage(operation, success, result)
+                    MessageDispatcher.instance().dispatch(AidexxApp.mainScope, bleMessage)
+                    instance?.onMessage(bleMessage)
+                }
+            }
             return instance!!
         }
     }
@@ -81,38 +124,59 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
 
-    override fun getController(): AidexXController {
-        return controller as AidexXController
+    fun onMessage(message: BleMessage) {
+        val data = message.data
+        when (message.operation) {
+            CgmOperation.DISCOVER -> {
+                if (message.isSuccess) {
+                    handleAdvertisement(message.data)
+                }
+            }
+            AidexXOperation.GET_START_TIME -> {
+                if (!AidexxApp.isPairing) {
+                    val sensorStartTime = ByteUtils.toDate(data)
+                    updateStartTime(sensorStartTime)
+                }
+            }
+            CgmOperation.GET_DATETIME -> {
+                disconnect()
+            }
+
+            CgmOperation.CALIBRATION -> {
+
+            }
+
+            CgmOperation.CONFIG_INFO -> {
+
+            }
+
+            CgmOperation.BOND -> {
+
+            }
+
+            CgmOperation.UNPAIR -> {
+
+            }
+            CgmOperation.GET_HISTORIES -> {
+                if (UserInfoManager.instance().isLogin()) {
+                    saveBriefHistoryFromConnect(message.data)
+                }
+            }
+            CgmOperation.GET_HISTORIES_FULL -> {
+                if (UserInfoManager.instance().isLogin()) {
+                    saveRawHistoryFromConnect(message.data)
+                }
+            }
+        }
+        LogUtil.eAiDEX(
+            "mainservice --- operation: ${message.operation}, message: ${
+                StringUtils.binaryToHexString(data)
+            }"
+        )
     }
 
-    init {
-        controller = AidexXController()
-        controller.mac = entity.deviceMac
-        controller.sn = entity.deviceSn
-        controller.name = "AiDEX X-${entity.deviceSn}"
-        val userId = UserInfoManager.instance().userId()
-        val getBytes = userId.toByteArray(Charset.forName("UTF-8"))
-        controller.hostAddress = getBytes
-        controller.id = entity.accessId
-        controller.key = entity.encryptionKey
-        controller.setMessageCallback { operation, success, data ->
-            LogUtil.eAiDEX(
-                "operation: $operation, success: $success, message: ${
-                    StringUtils.binaryToHexString(data)
-                }"
-            )
-            var result: ByteArray = byteArrayOf()
-            if (operation !in 1..3) {
-                result = ByteUtils.subByte(data, 1, data.size - 1);
-            }
-            messageCallBack?.invoke(
-                BleMessage(
-                    operation,
-                    success,
-                    result
-                )
-            )
-        }
+    override fun getController(): AidexXController {
+        return controller as AidexXController
     }
 
     //更新传感器状态
@@ -139,13 +203,18 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         transmitterBox!!.put(entity)
     }
 
-    override suspend fun savePair(model: Int, version: String?, success: (() -> Unit)?, fail: (() -> Unit)?) {
-        entity.encryptionKey = controller.key
-        entity.deviceMac = controller.mac
-        entity.accessId = controller.id
+    override suspend fun savePair(
+        model: Int,
+        version: String?,
+        success: (() -> Unit)?,
+        fail: (() -> Unit)?
+    ) {
+        entity.encryptionKey = controller?.key
+        entity.deviceMac = controller?.mac
+        entity.accessId = controller?.id
         entity.deviceModel = model
         entity.version = version
-        entity.deviceName = controller.name
+        entity.deviceName = controller?.name
         entity.deviceSn?.let {
             val existTrans = ObjectBox.store.awaitCallInTx {
                 transmitterBox!!.query()
@@ -167,23 +236,35 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             nextFullEventIndex = entity.fullEventIndex + 1
         }
         //向服务器请求注册设备
-        DeviceApi.deviceRegister(entity, success = {
-            entity.id = it.id
-            entity.deviceSn = it.deviceSn
-            entity.accessId = controller.id
-            entity.eventIndex = it.eventIndex
-            entity.fullEventIndex = it.fullEventIndex
-            targetEventIndex = entity.eventIndex
-            nextEventIndex = entity.eventIndex + 1
-            nextFullEventIndex = entity.fullEventIndex + 1
-            ObjectBox.runAsync({ transmitterBox!!.put(entity) }, {
-                TransmitterManager.instance().set(this@TransmitterModel)
-                success?.invoke()
-            })
-        }, failure = {
-            TransmitterManager.instance().removeDefault()
-            fail?.invoke()
-        })
+        when (val apiResult = ApiService.instance.deviceRegister(entity)) {
+            is ApiResult.Success -> {
+                apiResult.result.run {
+                    this.content?.let {
+                        entity.id = it.id
+                        entity.deviceSn = it.deviceSn
+                        entity.eventIndex = it.eventIndex
+                        entity.fullEventIndex = it.fullEventIndex
+                    }
+                    entity.accessId = controller?.id
+                    targetEventIndex = entity.eventIndex
+                    nextEventIndex = entity.eventIndex + 1
+                    nextFullEventIndex = entity.fullEventIndex + 1
+                    ObjectBox.runAsync({
+                        transmitterBox!!.removeAll()
+                        transmitterBox!!.put(entity)
+                    }, {
+                        TransmitterManager.instance().set(this@TransmitterModel)
+                        success?.invoke()
+                    })
+                }
+            }
+            is ApiResult.Failure -> {
+                apiResult.msg.run {
+                    TransmitterManager.instance().removeDefault()
+                    fail?.invoke()
+                }
+            }
+        }
     }
 
     fun resetIndex() {
@@ -209,37 +290,29 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         return false
     }
 
-    suspend fun deletePair() {
-        entity.accessId = null
-        controller.unregister()
-        ObjectBox.runAsync({
-            transmitterBox!!.put(entity)
-        }, onSuccess = {
-            entity.id?.let {
-                val map = hashMapOf("id" to it)
-                suspend {
-                    DeviceApi.deviceUnregister(map,
-                        success = {
-                            controller.sn = null
-                            controller.mac = null
-                            controller.id = null
-                            BleController.stopScan() //停止扫描
-                            ObjectBox.runAsync({
-                                transmitterBox!!.removeAll()
-                            })
-                            TransmitterManager.instance().removeAllFromDb()
-                            TransmitterManager.instance().removeDefault()
-                    LiveEventBus.get<String>(EventBusKey.EVENT_UNPAIR_SUCCESS)
-                        .post("unPairSuccess") //解配成功
-                        },
-                        failure = {
-                            ToastUtil.showShort(it)
-                        })
+    override suspend fun deletePair() {
+        entity.id?.let {
+            when (val apiResult = ApiService.instance.deviceUnregister(hashMapOf("id" to it))) {
+                is ApiResult.Success -> {
+                    apiResult.result.run {
+                        TransmitterManager.instance().removeDb()
+                        TransmitterManager.instance().removeDefault()
+                        entity.accessId = null
+                        controller?.sn = null
+                        controller?.mac = null
+                        controller?.id = null
+                        controller?.unregister()
+                        EventBusManager.send(EventBusKey.EVENT_UNPAIR_SUCCESS, true)
+                    }
+                }
+                is ApiResult.Failure -> {
+                    apiResult.msg.run {
+                        Dialogs.showError(this)
+                        EventBusManager.send(EventBusKey.EVENT_UNPAIR_SUCCESS, false)
+                    }
                 }
             }
-        }, onError = {
-
-        })
+        }
     }
 
     private fun getHistoryDate(timeOffset: Int): Date {
@@ -249,7 +322,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
-        return
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
         if (entity.sensorStartTime == null) {
             getController().startTime
@@ -569,7 +641,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             getController().getRawHistories(nextFullEventIndex)
         } else {
-            controller.disconnect()
+            getController().disconnect()
         }
     }
 
@@ -577,7 +649,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (targetEventIndex > nextFullEventIndex) {
             getController().getRawHistories(nextFullEventIndex)
         } else {
-            controller.disconnect()
+            getController().disconnect()
         }
     }
 
