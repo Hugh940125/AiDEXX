@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:paddingTop="40dp"
     tools:context=".ui.setting.alert.AlertSettingsActivity">
 
     <com.microtech.aidexx.widget.ActionBarWidget
@@ -24,29 +25,33 @@
             android:orientation="vertical">
 
             <TextView
+                android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="20dp"
                 android:text="@string/common_notice"
                 android:textColor="?attr/settingItemValueTextColor"
                 android:textSize="18sp" />
 
             <LinearLayout
-                style="@style/baseMargin"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:background="?attr/bgSetting"
                 android:orientation="vertical">
 
-                <View
+                <Space
                     android:layout_width="match_parent"
                     android:layout_height="6dp" />
 
                 <TextView
+                    android:layout_marginStart="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:paddingTop="6dp"
                     android:paddingBottom="6dp"
                     android:text="@string/alert_mode"
@@ -73,9 +78,9 @@
                     app:title="@string/notice_frequency" />
 
                 <TextView
+                    android:layout_marginStart="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
                     android:paddingTop="12dp"
                     android:paddingBottom="6dp"
                     android:text="@string/notice_content"
@@ -132,32 +137,37 @@
                     android:layout_marginTop="1dp"
                     app:has_switch="true"
                     app:has_next="false"
+                    app:has_line="false"
                     app:title="@string/Fall_Rate" />
 
-                <View
+                <Space
                     android:layout_width="match_parent"
                     android:layout_height="6dp" />
 
             </LinearLayout>
 
             <TextView
+                android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginTop="18dp"
                 android:text="@string/urgent_notice"
                 android:textColor="?attr/settingItemValueTextColor"
                 android:textSize="18sp" />
 
             <LinearLayout
-                style="@style/baseMargin"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:background="?attr/bgSetting"
                 android:orientation="vertical">
 
-                <View
+                <Space
                     android:layout_width="match_parent"
                     android:layout_height="6dp" />
 
@@ -196,38 +206,43 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         app:has_next="true"
+                        app:has_line="false"
                         app:title="@string/notice_frequency" />
 
                 </LinearLayout>
 
-                <View
+                <Space
                     android:layout_width="match_parent"
                     android:layout_height="6dp" />
 
             </LinearLayout>
 
             <TextView
+                android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="20dp"
                 android:layout_marginTop="18dp"
                 android:text="@string/system_notice"
                 android:textColor="?attr/settingItemValueTextColor"
                 android:textSize="18sp" />
 
             <LinearLayout
-                style="@style/baseMargin"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:background="?attr/bgSetting"
                 android:orientation="vertical">
 
-                <View
+                <Space
                     android:layout_width="match_parent"
                     android:layout_height="6dp" />
 
                 <LinearLayout
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
@@ -237,7 +252,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
-                        app:has_line="false"
+                        app:has_line="true"
                         app:has_switch="true"
                         app:title="@string/Signal_Loss" />
 
@@ -256,15 +271,21 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         app:has_next="true"
+                        app:has_line="false"
                         app:title="@string/notice_frequency" />
 
                 </LinearLayout>
 
-                <View
+                <Space
                     android:layout_width="match_parent"
                     android:layout_height="6dp" />
 
             </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="60dp"/>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

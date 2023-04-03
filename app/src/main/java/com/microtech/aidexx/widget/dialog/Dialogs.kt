@@ -5,10 +5,9 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.microtech.aidexx.R
+import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.widget.dialog.lib.TipDialog
 import com.microtech.aidexx.widget.dialog.lib.WaitDialog
-import com.microtech.aidexx.widget.dialog.lib.bottom.BottomDialog
-import com.microtech.aidexx.widget.dialog.lib.bottom.NoSlideBottomDialog
 import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.option.OptionsPickerBuilder
@@ -22,9 +21,9 @@ import com.microtech.aidexx.widget.selector.option.OptionsPickerView
 object Dialogs {
     private var dialogList = mutableListOf<StandardDialog>()
 
-    fun showBottom(onBindView: OnBindView<BottomDialog?>) {
-        NoSlideBottomDialog(onBindView)
-    }
+//    fun showBottom(onBindView: OnBindView<BottomDialog?>): BottomDialog {
+//        return NoSlideBottomDialog(onBindView).show()
+//    }
 
     class Picker(private val context: Context) {
 
@@ -48,7 +47,7 @@ object Dialogs {
                 .isDialog(false)
                 .setOutSideCancelable(true)
                 .setSelectOptions(0, selectPos, 0)
-                .setBgColor(context.getColor(R.color.bg_item_color))
+                .setBgColor(ThemeManager.getTypeValue(context, R.attr.bgMainTab))
                 .build()
             pickBuilder.setNPicker(emptyList(), list, emptyList()) //添加数据
             pickBuilder.show()

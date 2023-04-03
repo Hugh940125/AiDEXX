@@ -12,7 +12,6 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.bottom.BottomDialog
 import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
@@ -118,18 +117,18 @@ object PairUtil {
     }
 
     private fun pairFailedTips(context: Context) {
-        Dialogs.showBottom(object : OnBindView<BottomDialog?>(R.layout.dialog_with_one_btn) {
-            override fun onBind(dialog: BottomDialog?, v: View?) {
-                v?.let {
-                    val bind = DialogWithOneBtnBinding.bind(it)
-                    bind.tvContent.text = context.getString(R.string.Pairing_Failed)
-                    bind.tvDesc.text = context.getString(R.string.Bluetooth_Pair_Denied_Tip)
-                    bind.btOk.text = context.getString(R.string.Button_Reset)
-                    bind.btOk.setOnClickListener {
-                        dialog?.dismiss()
-                    }
-                }
-            }
-        })
+//        Dialogs.showBottom(object : OnBindView<BottomDialog?>(R.layout.dialog_with_one_btn) {
+//            override fun onBind(dialog: BottomDialog?, v: View?) {
+//                v?.let {
+//                    val bind = DialogWithOneBtnBinding.bind(it)
+//                    bind.tvContent.text = context.getString(R.string.Pairing_Failed)
+//                    bind.tvDesc.text = context.getString(R.string.Bluetooth_Pair_Denied_Tip)
+//                    bind.btOk.text = context.getString(R.string.Button_Reset)
+//                    bind.btOk.setOnClickListener {
+//                        dialog?.dismiss()
+//                    }
+//                }
+//            }
+//        })
     }
 }

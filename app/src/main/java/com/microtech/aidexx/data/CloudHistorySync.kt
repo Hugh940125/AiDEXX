@@ -1,10 +1,8 @@
 package com.microtech.aidexx.data
 
 import com.google.gson.GsonBuilder
-import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
@@ -12,7 +10,6 @@ import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import io.objectbox.Box
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
@@ -20,8 +17,6 @@ import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.lang.reflect.ParameterizedType
-import java.util.*
-import kotlin.collections.HashMap
 
 abstract class CloudHistorySync<T : EventEntity> {
     abstract val idx: Property<T>
@@ -165,6 +160,7 @@ abstract class CloudHistorySync<T : EventEntity> {
                     .equal(authorizationId, authorId ?: userId).build().find()
                 if (existRecord.isEmpty()) {
                     res.authorizationId = authorId ?: userId
+                    temp.add(res)
                 } else {
                     for (record in existRecord) {
                         record.recordIndex = res.recordIndex

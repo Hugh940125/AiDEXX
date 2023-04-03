@@ -2,24 +2,19 @@ package com.microtech.aidexx.ui.setting.alert
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.Observer
-import com.google.gson.Gson
-import com.jeremyliao.liveeventbus.LiveEventBus
+import android.view.ViewGroup
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.ActivitySettingsAlertBinding
 import com.microtech.aidexx.databinding.LayoutRulerDialogBinding
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.SettingItemWidget
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.bottom.BottomDialog
-import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
+import com.microtech.aidexx.widget.dialog.bottom.MethodSelectView
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.ruler.RulerWidget
-import com.tencent.mmkv.MMKV
 
 /**
  * APP-SRC-A-2-7-1
@@ -29,15 +24,17 @@ private const val TYPE_SET_METHOD = 1
 private const val TYPE_SET_FREQUENCY = 2
 
 class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertBinding>() {
+    private var alertMethod: Int = 2
+    private var alertFrequency: Int = 2
+    private var urgentAlertMethod: Int = 2
+    private var urgentAlertFrequency: Int = 0
+
     private lateinit var listOfMethod: List<String>
     private lateinit var listOfFrequency: List<String>
 
     override fun getViewBinding(): ActivitySettingsAlertBinding {
         return ActivitySettingsAlertBinding.inflate(layoutInflater)
     }
-
-    var recordID: String? = null
-    var isAlert = false
 
     private fun methodPreview(index: Int, isUrgent: Boolean) {
         when (index) {
@@ -59,56 +56,40 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         type: Int,
         isUrgent: Boolean
     ) {
-        settingItem.setOnClickListener {
-            val method: Int
-            val frequency: Int
+        Dialogs.Picker(this@AlertSettingsActivity).singlePick(list, selectPos) {
             when (type) {
                 TYPE_SET_METHOD -> {
-                    method = if (isUrgent) {
-                        MmkvManager.getAlertMethod()
+                    settingItem.setValue(list[it])
+                    if (isUrgent) {
+                        MmkvManager.saveUrgentAlertMethod(it)
+                        urgentAlertMethod = it
                     } else {
-                        MmkvManager.getUrgentAlertMethod()
+                        MmkvManager.saveAlertMethod(it)
+                        alertMethod = it
                     }
+                    methodPreview(it, isUrgent)
                 }
                 TYPE_SET_FREQUENCY -> {
-                    frequency = if (isUrgent) {
-                        MmkvManager.getUrgentAlertFrequency()
+                    settingItem.setValue(getString(R.string.notice_inner, list[it]))
+                    if (isUrgent) {
+                        MmkvManager.saveUrgentAlertFrequency(it)
+                        urgentAlertFrequency = it
                     } else {
-                        MmkvManager.getAlertFrequency()
-                    }
-                }
-            }
-            Dialogs.Picker(this@AlertSettingsActivity).singlePick(list, selectPos) {
-                when (type) {
-                    TYPE_SET_METHOD -> {
-                        settingItem.setValue(list[it])
-                        if (isUrgent) {
-                            MmkvManager.saveUrgentAlertMethod(it)
-                        } else {
-                            MmkvManager.saveAlertMethod(it)
-                        }
-                        methodPreview(it, isUrgent)
-                    }
-                    TYPE_SET_FREQUENCY -> {
-                        settingItem.setValue(getString(R.string.notice_inner, list[it]))
-                        if (isUrgent) {
-                            MmkvManager.saveUrgentAlertFrequency(it)
-                        } else {
-                            MmkvManager.saveAlertFrequency(it)
-                        }
+                        MmkvManager.saveAlertFrequency(it)
+                        alertFrequency = it
                     }
                 }
             }
         }
     }
 
-    fun initData() {
+    private fun initData() {
         listOfMethod = listOf(
             getString(R.string.sound),
             getString(R.string.shake),
             getString(R.string.soudAndShake)
         )
-        val listOfFrequency = listOf(
+        listOfFrequency = listOf(
             getString(R.string.five), getString(R.string.fifteen),
             getString(R.string.thirty), getString(R.string.halfAndQuarter),
             getString(R.string.oneHour)
@@ -119,28 +100,36 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         binding.actionBar.getLeftIcon().setOnClickListener {
             finish()
         }
-        val alertMethod = MmkvManager.getAlertMethod()
+        alertMethod = MmkvManager.getAlertMethod()
         binding.noticeMethod.setValue(listOfMethod[alertMethod])
-        setMethodOrFrequency(binding.noticeMethod, listOfMethod, alertMethod, TYPE_SET_METHOD, false)
+        binding.noticeMethod.setOnClickListener {
+            setMethodOrFrequency(binding.noticeMethod, listOfMethod, alertMethod, TYPE_SET_METHOD, false)
+        }
         //
-        val alertFrequency = MmkvManager.getAlertFrequency()
+        alertFrequency = MmkvManager.getAlertFrequency()
         binding.noticeFrequency.setValue(
             getString(R.string.notice_inner, listOfFrequency[alertFrequency])
         )
-        setMethodOrFrequency(binding.noticeFrequency, listOfFrequency, TYPE_SET_FREQUENCY, alertFrequency, false)
+        binding.noticeFrequency.setOnClickListener {
+            setMethodOrFrequency(binding.noticeFrequency, listOfFrequency, alertFrequency, TYPE_SET_FREQUENCY, false)
+        }
         //
-        val urgentAlertMethod = MmkvManager.getUrgentAlertMethod()
+        urgentAlertMethod = MmkvManager.getUrgentAlertMethod()
         binding.noticeMethodUrgent.setValue(listOfMethod[urgentAlertMethod])
-        setMethodOrFrequency(binding.noticeMethodUrgent, listOfMethod, urgentAlertMethod, TYPE_SET_FREQUENCY, true)
+        binding.noticeMethodUrgent.setOnClickListener {
+            setMethodOrFrequency(binding.noticeMethodUrgent, listOfMethod, urgentAlertMethod, TYPE_SET_METHOD, true)
+        }
         //
-        val urgentAlertFrequency = MmkvManager.getUrgentAlertFrequency()
+        urgentAlertFrequency = MmkvManager.getUrgentAlertFrequency()
         binding.noticeFrequencyUrgent.setValue(
             getString(R.string.notice_inner, listOfFrequency[urgentAlertFrequency])
         )
-        setMethodOrFrequency(
-            binding.noticeFrequencyUrgent, listOfFrequency,
-            urgentAlertFrequency, TYPE_SET_FREQUENCY, true
-        )
+        binding.noticeFrequencyUrgent.setOnClickListener {
+            setMethodOrFrequency(
+                binding.noticeFrequencyUrgent, listOfFrequency,
+                urgentAlertFrequency, TYPE_SET_FREQUENCY, true
+            )
+        }
         //
         val hypoAlertEnable = MmkvManager.isHypoAlertEnable()
         binding.hypoAlertSwitch.getSwitch().isChecked = hypoAlertEnable
@@ -153,46 +142,23 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         binding.hyperAlertSwitch.getSwitch().setOnCheckedChangeListener { _, isChecked ->
             MmkvManager.setHyperAlertEnable(isChecked)
         }
+        //
+        binding.hyperThreshold.setValue(ThresholdManager.hyper.toGlucoseStringWithUnit())
+        binding.hypoThreshold.setValue(ThresholdManager.hypo.toGlucoseStringWithUnit())
     }
 
     private fun initEvent() {
         binding.hypoThreshold.setOnClickListener {
-            Dialogs.showBottom(object : OnBindView<BottomDialog?>(R.layout.layout_ruler_dialog) {
-                override fun onBind(dialog: BottomDialog?, v: View?) {
-                    v?.let {
-                        val bind = LayoutRulerDialogBinding.bind(it)
-                        bind.rwNumber.setType(RulerWidget.RulerType.HYPO, ThresholdManager.hypo)
-                        bind.btOk.setOnClickListener {
-                            val currentValue = bind.rwNumber.getCurrentValue()
-                            ThresholdManager.hypo = currentValue
-                            binding.hypoThreshold.setValue(ThresholdManager.hypo.toGlucoseStringWithUnit())
-                            dialog?.dismiss()
-                        }
-                        bind.btCancel.setOnClickListener {
-                            dialog?.dismiss()
-                        }
-                    }
-                }
-            })
+            val methodSelectView = MethodSelectView(this,RulerWidget.RulerType.HYPO){
+                binding.hypoThreshold.setValue(it)
+            }
+            methodSelectView.show()
         }
         binding.hyperThreshold.setOnClickListener {
-            Dialogs.showBottom(object : OnBindView<BottomDialog?>(R.layout.layout_ruler_dialog) {
-                override fun onBind(dialog: BottomDialog?, v: View?) {
-                    v?.let {
-                        val bind = LayoutRulerDialogBinding.bind(it)
-                        bind.rwNumber.setType(RulerWidget.RulerType.HYPER, ThresholdManager.hyper)
-                        bind.btOk.setOnClickListener {
-                            val currentValue = bind.rwNumber.getCurrentValue()
-                            ThresholdManager.hyper = currentValue
-                            binding.hyperThreshold.setValue(ThresholdManager.hyper.toGlucoseStringWithUnit())
-                            dialog?.dismiss()
-                        }
-                        bind.btCancel.setOnClickListener {
-                            dialog?.dismiss()
-                        }
-                    }
-                }
-            })
+            val methodSelectView = MethodSelectView(this,RulerWidget.RulerType.HYPER){
+                binding.hyperThreshold.setValue(it)
+            }
+            methodSelectView.show()
         }
     }
 
@@ -200,6 +166,11 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        listOf(
+            getString(R.string.five), getString(R.string.fifteen), getString(
+                R.string.thirty
+            ), getString(R.string.halfAndQuarter), getString(R.string.oneHour)
+        )
         initData()
         initView()
         initEvent()

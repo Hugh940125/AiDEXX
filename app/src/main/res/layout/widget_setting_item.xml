@@ -86,10 +86,11 @@
                 android:layout_height="wrap_content"/>
 
             <Space
-                android:layout_width="10dp"
+                android:layout_width="5dp"
                 android:layout_height="wrap_content"/>
 
             <androidx.appcompat.widget.SwitchCompat
+                android:layout_marginEnd="12dp"
                 android:thumb="@drawable/switch_thumb"
                 app:track="@drawable/switch_track"
                 android:id="@+id/sw_on"
@@ -106,7 +107,6 @@
                 android:gravity="center"
                 android:src="@drawable/ic_arrow_right"
                 android:visibility="gone"
-                tools:visibility="visible"
                 tools:ignore="ContentDescription" />
 
             <ImageView
@@ -117,7 +117,6 @@
                 android:gravity="center"
                 android:src="@drawable/ic_next_down"
                 android:visibility="gone"
-                tools:visibility="visible"
                 tools:ignore="ContentDescription" />
         </LinearLayout>
 
@@ -135,7 +134,7 @@
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
         android:background="?attr/colorLine" />
 </androidx.constraintlayout.widget.ConstraintLayout>

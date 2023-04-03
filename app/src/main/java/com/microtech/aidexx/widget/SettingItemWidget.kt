@@ -58,6 +58,10 @@ class SettingItemWidget : ConstraintLayout {
         settingItemBinding.tvValue.text = str
     }
 
+    fun setSecondValue(str: String?) {
+        settingItemBinding.txtSecondValue.text = str
+    }
+
     fun getSecondTextView(): TextView {
         return settingItemBinding.txtSecondValue
     }

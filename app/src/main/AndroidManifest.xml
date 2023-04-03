@@ -32,12 +32,20 @@
         android:theme="@style/AppThemeLight"
         android:usesCleartextTraffic="true"
         tools:targetApi="31" >
+        <activity android:name=".ui.setting.alert.AlertSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.setting.SettingActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.pair.TransOperationActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.pair.TransmitterActivity"
             android:exported="false"

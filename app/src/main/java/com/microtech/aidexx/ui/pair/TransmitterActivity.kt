@@ -10,6 +10,8 @@ import android.view.View.OnClickListener
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
+import androidx.core.util.forEach
+import androidx.core.util.valueIterator
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
@@ -24,6 +26,7 @@ import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.controller.BleControllerInfo
@@ -84,6 +87,10 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                         LogUtil.eAiDEX("Device name length less than 6")
                         return@launch
                     }
+//                    val manufacturerSpecificData = result.scanRecord?.manufacturerSpecificData
+//                    manufacturerSpecificData?.forEach { key, value ->
+//                        LogUtil.eAiDEX("getManufacturerSpecificData---$$key--->${StringUtils.binaryToHexString(value)}")
+//                    }
                     val sn = name.substring(name.length - 6)
                     val address = device.address
                     val bleControllerInfo =
