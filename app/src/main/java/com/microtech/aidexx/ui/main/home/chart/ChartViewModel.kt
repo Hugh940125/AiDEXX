@@ -37,6 +37,9 @@ import kotlin.math.abs
 
 class ChartViewModel: ViewModel() {
 
+    // 国际版代码先放这里 后面做打包渠道配置
+    private val isGp = false
+
     /**
      * 图表数据总集
      */
@@ -311,36 +314,44 @@ class ChartViewModel: ViewModel() {
         }
 
         loop@ for (history in cgmHistories) {
-            if (checkCgmHistory(history)) {
-                LogUtil.d("===CHART=== 塞数据日期 d=${history.deviceTime}")
-                val dateTime = ChartUtil.dateToX(history.deviceTime)
-                val entry = Entry(dateTime, history.eventData!!.toFloat().toGlucoseValue())
-                if (entry.y < 2f.toGlucoseValue()) {
-                    entry.y = 2f.toGlucoseValue()
-                }// 小于2的数值 都当2处理
-                glucoseSets.last().addEntryOrdered(entry)
-                xMaxMin(dateTime)
-
-                //记录最小时间
-                if (curPageMinDate.time > history.deviceTime.time) {
-                    curPageMinDate = history.deviceTime
+            when (history.eventType) {
+                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
+                    if (history.eventData == null || history.eventWarning == -1) continue@loop
+                    val dateTime = ChartUtil.dateToX(history.deviceTime)
+                    val entry = Entry(dateTime, history.eventData!!.toFloat().toGlucoseValue())
+                    if (entry.y < 2f.toGlucoseValue()) {
+                        entry.y = 2f.toGlucoseValue()
+                    }// 小于2的数值 都当2处理
+                    if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
+                    glucoseSets.last().addEntryOrdered(entry)
+                    xMaxMin(dateTime)
+                    calDateMaxMin(history.deviceTime)
+                }
+                History.HISTORY_CALIBRATION -> {
+                    if (!isGp) {
+                        updateCnCalibrationSet(history)
+                    }
                 }
             }
         }
 
         LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
 
-        var all: MutableList<CalerateEntity> = mutableListOf()
-        all = CalibrateManager.getCalibrateHistorys()
-        calSet.clear()
-        for (item in all) {
-            updateCalibrationSet(item)
+        if (isGp) {
+            var all: MutableList<CalerateEntity> = mutableListOf()
+            all = CalibrateManager.getCalibrateHistorys()
+            calSet.clear()
+            for (item in all) {
+                updateGpCalibrationSet(item)
+            }
         }
+
     }
 
     private fun checkCgmHistory(cgm: RealCgmHistoryEntity) =
         (History.HISTORY_GLUCOSE == cgm.eventType
-                || History.HISTORY_GLUCOSE_RECOMMEND_CAL == cgm.eventType)
+                || History.HISTORY_GLUCOSE_RECOMMEND_CAL == cgm.eventType
+                || History.HISTORY_CALIBRATION == cgm.eventType )
                 && (cgm.eventData != null && cgm.eventWarning != -1)
 
     fun initBgSet(bgs: List<BloodGlucoseEntity>) {
@@ -408,8 +419,22 @@ class ChartViewModel: ViewModel() {
         return bg.bloodGlucose.toGlucoseValue()
     }
 
+    private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
+        if (history.eventData != null) {
+            val dateTime = ChartUtil.dateToX(history.deviceTime)
+            val bg = BloodGlucoseEntity(history.deviceTime, history.eventData!!.toFloat())
+            bg.calibration = true
+            val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
+            entry.data = bg
+            entry.icon = CalDataSet.icon
+            calSet.addEntryOrdered(entry)
+            xMaxMin(dateTime)
+            calDateMaxMin(history.deviceTime)
+        }
+    }
 
-    fun updateCalibrationSet(history: CalerateEntity) {
+    // 国际版用
+    private fun updateGpCalibrationSet(history: CalerateEntity) {
         val dateTime = ChartUtil.dateToX(history.calTime)
         val bg = BloodGlucoseEntity(history.calTime, history.referenceGlucose!!.toFloat())
         bg.calibration = true
@@ -418,6 +443,8 @@ class ChartViewModel: ViewModel() {
         entry.icon = CalDataSet.icon
         calSet.addEntryOrdered(entry)
         xMaxMin(dateTime)
+        // todo 国际版是直接从库里加载 应该也需要给个校准数据的最小日期标记 国内版是混合在cgm表中
+//        calDateMaxMin(history.calTime)
     }
 
 
@@ -538,6 +565,13 @@ class ChartViewModel: ViewModel() {
 
         if (timeMax == null || timeMax!! < dateTime) {
             timeMax = dateTime
+        }
+    }
+
+    private fun calDateMaxMin(dateTime: Date) {
+        //记录最小时间
+        if (curPageMinDate.time > dateTime.time) {
+            curPageMinDate = dateTime
         }
     }
 
