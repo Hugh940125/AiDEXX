@@ -123,7 +123,7 @@
                     app:title="@string/High_Glucose" />
 
                 <com.microtech.aidexx.widget.SettingItemWidget
-                    android:id="@+id/siw_raise"
+                    android:id="@+id/switch_raise_alert"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
@@ -131,7 +131,7 @@
                     app:title="@string/Rise_Rate" />
 
                 <com.microtech.aidexx.widget.SettingItemWidget
-                    android:id="@+id/siw_fall"
+                    android:id="@+id/switch_fall_alert"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="1dp"
@@ -177,7 +177,7 @@
                     android:orientation="vertical">
 
                     <com.microtech.aidexx.widget.SettingItemWidget
-                        android:id="@+id/siw_urgent"
+                        android:id="@+id/switch_urgent_alert"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
@@ -248,7 +248,7 @@
                     android:orientation="vertical">
 
                     <com.microtech.aidexx.widget.SettingItemWidget
-                        android:id="@+id/siw_signal"
+                        android:id="@+id/switch_signal_loss"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
@@ -257,7 +257,7 @@
                         app:title="@string/Signal_Loss" />
 
                     <com.microtech.aidexx.widget.SettingItemWidget
-                        android:id="@+id/notice_method_signal"
+                        android:id="@+id/notice_method_signal_loss"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"

@@ -7,6 +7,8 @@ import java.util.*
 
 object MmkvManager {
 
+    private const val SIGNAL_NOTICE_FREQUENCY = "SIGNAL_NOTICE_FREQUENCY"
+    private const val SIGNAL_NOTICE_METHOD = "SIGNAL_NOTICE_METHOD"
     private const val NOTICE_METHOD = "NOTICE_METHOD"
     private const val URGENT_NOTICE_METHOD = "URGENT_NOTICE_METHOD"
     private const val PHONE_NUMBER = "PHONE_NUMBER"
@@ -42,19 +44,26 @@ object MmkvManager {
     fun getLastFastDownAlertTime() = MmkvUtil.decodeLong(LAST_FAST_DOWN_ALERT_TIME, 0)
     fun getLastFastUpAlertTime() = MmkvUtil.decodeLong(LAST_FAST_UP_ALERT_TIME, 0)
     fun isFastUpAlertEnable() = MmkvUtil.decodeBoolean(FAST_UP_ALERT_ENABLE, true)
+    fun setFastUpAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(FAST_UP_ALERT_ENABLE, enable)
     fun isFastDownAlertEnable() = MmkvUtil.decodeBoolean(FAST_DOWN_ALERT_ENABLE, true)
+    fun setFastDownAlertEnable(enable: Boolean) =
+        MmkvUtil.encodeBoolean(FAST_DOWN_ALERT_ENABLE, enable)
+
     fun isUrgentAlertEnable() = MmkvUtil.decodeBoolean(URGENT_NOTICE_ENABLE, true)
+    fun setUrgentAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(URGENT_NOTICE_ENABLE, enable)
     fun isHypoAlertEnable() = MmkvUtil.decodeBoolean(LOW_NOTICE_ENABLE, true)
-    fun setHypoAlertEnable(enable:Boolean) = MmkvUtil.encodeBoolean(LOW_NOTICE_ENABLE, enable)
+    fun setHypoAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(LOW_NOTICE_ENABLE, enable)
     fun isHyperAlertEnable() = MmkvUtil.decodeBoolean(HIGH_NOTICE_ENABLE, true)
-    fun setHyperAlertEnable(enable:Boolean) = MmkvUtil.encodeBoolean(HIGH_NOTICE_ENABLE, enable)
+    fun setHyperAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(HIGH_NOTICE_ENABLE, enable)
     fun getUrgentAlertMethod() = MmkvUtil.decodeInt(URGENT_NOTICE_METHOD, 2)
     fun getAlertMethod() = MmkvUtil.decodeInt(NOTICE_METHOD, 2)
     fun saveUrgentAlertMethod(method: Int) = MmkvUtil.encodeInt(URGENT_NOTICE_METHOD, method)
     fun saveAlertMethod(method: Int) = MmkvUtil.encodeInt(NOTICE_METHOD, method)
     fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY, 0)
     fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY, 2)
-    fun saveUrgentAlertFrequency(frequency: Int) = MmkvUtil.encodeInt(URGENT_NOTICE_FREQUENCY, frequency)
+    fun saveUrgentAlertFrequency(frequency: Int) =
+        MmkvUtil.encodeInt(URGENT_NOTICE_FREQUENCY, frequency)
+
     fun saveAlertFrequency(frequency: Int) = MmkvUtil.encodeInt(NOTICE_FREQUENCY, frequency)
     fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
     fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
@@ -116,4 +125,10 @@ object MmkvManager {
 
     fun getAppCheckVersionTime(): Long =
         MmkvUtil.decodeLong(APP_CHECK_UPDATE_DATE, 0)
+
+    fun signalLossAlertMethod(): Int = MmkvUtil.decodeInt(SIGNAL_NOTICE_METHOD, 2)
+
+    fun setSignalLossMethod(index: Int) = MmkvUtil.encodeInt(SIGNAL_NOTICE_METHOD, index)
+    fun signalLossAlertFrequency(): Int = MmkvUtil.decodeInt(SIGNAL_NOTICE_FREQUENCY, 0)
+    fun setSignalLossAlertFrequency(index: Int) = MmkvUtil.encodeInt(SIGNAL_NOTICE_FREQUENCY, index)
 }

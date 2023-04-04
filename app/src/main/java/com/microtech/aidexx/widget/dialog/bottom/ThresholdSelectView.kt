@@ -7,7 +7,7 @@ import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.ruler.RulerWidget
 
-class MethodSelectView(context: Context, type: RulerWidget.RulerType, var onValue: ((value: String) -> Unit)) :
+class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onValue: ((value: String) -> Unit)) :
     BaseBottomPopupView(context) {
 
     init {
@@ -23,7 +23,7 @@ class MethodSelectView(context: Context, type: RulerWidget.RulerType, var onValu
             val currentValue = rulerWidget.getCurrentValue()
             if (type == RulerWidget.RulerType.HYPO) ThresholdManager.hypo = currentValue
             else ThresholdManager.hyper = currentValue
-            onValue.invoke(ThresholdManager.hypo.toGlucoseStringWithUnit())
+            onValue.invoke(currentValue.toGlucoseStringWithUnit())
             dismiss()
         }
         val btCancel = findViewById<RulerWidget>(R.id.bt_cancel)
@@ -31,6 +31,6 @@ class MethodSelectView(context: Context, type: RulerWidget.RulerType, var onValu
             dismiss()
         }
         setKeyBackCancelable(true)
-        setOutSideCancelable(true)
+        setOutSideCancelable(false)
     }
 }

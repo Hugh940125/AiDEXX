@@ -416,7 +416,7 @@
     <string name="Guide_High_Alert_Title">高血糖提醒</string>
     <string name="low_urgent_value">低血糖紧急提醒阈值</string>
     <string name="trends_title">趋势</string>
-    <string name="content_close_urgent">您确定要关闭低血糖紧急提醒？该提醒可以帮助您在血糖低于3mmol/L时，及时通知您！</string>
+    <string name="content_close_urgent">您确定要关闭低血糖紧急提醒？该提醒可以帮助您在血糖低于%s时，及时通知您！</string>
     <string name="confirm_yes">确定</string>
     <string name="exciese_duration">时长</string>
     <string name="common_notice">常规提醒</string>
