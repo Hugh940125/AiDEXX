@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.utils.LocalManageUtil
+import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
@@ -117,6 +118,15 @@ fun String.convertAllPointer(): String {
     return replace(",", POINTER).replace(".", POINTER)
 }
 
+fun String.isNumber(): Boolean = try {
+        this.toLong()
+        true
+    } catch (e: NumberFormatException) {
+        false
+    }
+
+fun String.toast() = ToastUtil.showLong(this)
+fun String.toastShort() = ToastUtil.showShort(this)
 fun Number.stripTrailingZeros(scale: Int? = null): String {
     return (if (scale != null) {
         BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros()

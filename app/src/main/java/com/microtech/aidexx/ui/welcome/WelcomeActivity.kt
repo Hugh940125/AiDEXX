@@ -43,13 +43,13 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
     }
 
     private fun greenLight() {
-//        if (UserInfoManager.instance().isLogin()) {
+        if (UserInfoManager.instance().isLogin()) {
             ActivityUtil.toActivity(this, MainActivity::class.java)
             finish()
-//        } else {
-//            ActivityUtil.toActivity(this, LoginActivity::class.java)
-//            finish()
-//        }
+        } else {
+            ActivityUtil.toActivity(this, LoginActivity::class.java)
+            finish()
+        }
     }
 
 }

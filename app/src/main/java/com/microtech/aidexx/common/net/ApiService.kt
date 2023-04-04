@@ -11,6 +11,7 @@ import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -29,6 +30,8 @@ const val middleUrl = "backend/aidex/api"
 const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
 const val LOGIN_VERIFICATION_CODE = "$middleUrl/login-verification-code" //验证码
+const val CHANGE_PASSWORD_VERIFICATION_CODE = "$middleUrl/change-password-verification-code" // 重置密码时
+const val CHANGE_PASSWORD = "$middleUrl/change-password" // 修改密码
 const val LOGIN = "$middleUrl/login" //登录
 const val DEVICE = "$middleUrl/cgn-device" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
@@ -63,6 +66,12 @@ interface ApiService {
     @POST(LOGIN_VERIFICATION_CODE)
     suspend fun getVerCode(@Body map: HashMap<String, String>): ApiResult<BaseResponse.Info>
 
+    @POST(CHANGE_PASSWORD_VERIFICATION_CODE)
+    suspend fun getChangePWDVerCode(@Body body: ReqChangePWDVerifyCode): ApiResult<BaseResponse<String>>
+
+    @POST(CHANGE_PASSWORD)
+    suspend fun changePWD(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
+
     @GET(DEVICE)
     suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
 
@@ -93,33 +102,37 @@ interface ApiService {
         val instance: ApiService by lazy {
             buildRetrofit(
                 BuildConfig.baseUrl,
-                GsonConverterFactory.create(createGson(), checkBizCodeIsSuccess = {
-
-                    // todo 暂时try 后面考虑统一到BaseResponse
-                    try {
-                        val baseResponse = gson.fromJson(it, BaseResponse::class.java)
-                        var ret: Throwable? = null
-                        baseResponse.info.let { info ->
-                            info.code.let { code ->
-                                if (code != 100000) {
-                                    if (code == 120002) {
-                                        Throttle.instance().emit(5000, code) {
-                                            EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
-                                        }
-                                    } else {
-                                        ret = BizException(code, message = info.msg)
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-
-                    }
-
-                    null
-                }),
+                GsonConverterFactory.create(createGson(), ::checkBizCodeIsSuccess),
                 client = okClient
             ).create(ApiService::class.java)
+        }
+
+        /**
+         * 响应在转实体之前做拦截判断业务是否成功
+         */
+        private fun checkBizCodeIsSuccess(bodyStr: String): Throwable? {
+            // todo 支持部分非json业务 如文件下载 暂时try 后面考虑统一到BaseResponse
+            try {
+                val baseResponse = gson.fromJson(bodyStr, BaseResponse::class.java)
+                var ret: Throwable? = null
+                baseResponse.info.let { info ->
+                    info.code.let { code ->
+                        if (code != 100000) {
+                            if (code == 120002) {
+                                Throttle.instance().emit(5000, code) {
+                                    EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
+                                }
+                            } else {
+                                ret = BizException(code, message = info.msg)
+                            }
+                        }
+                    }
+                }
+                return ret
+            } catch (e: Exception) {
+                LogUtil.e(e.localizedMessage ?: e.toString())
+            }
+            return null
         }
 
         private fun getOkHttpClient(): OkHttpClient {

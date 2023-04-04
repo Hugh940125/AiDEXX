@@ -1,5 +1,6 @@
 package com.microtech.aidexx.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.dp2px
 import com.microtech.aidexx.databinding.WidgetActionBarBinding
 
 open class ActionBarWidget : ConstraintLayout {
@@ -44,10 +46,20 @@ open class ActionBarWidget : ConstraintLayout {
     private fun initLayout() {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val parent = inflater.inflate(R.layout.widget_action_bar, this, true)
+        parent.setPadding(0, getStatusBarHeight(),8.dp2px(), 8.dp2px())
         mViewBinding = WidgetActionBarBinding.bind(parent)
         ivRightIcon = parent.findViewById(R.id.ll_title)
     }
 
+    //获取状态栏的高度
+    @SuppressLint("DiscouragedApi", "InternalInsetResource")
+    private fun getStatusBarHeight(): Int {
+        val resourceId: Int =
+            resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (resourceId > 0) {
+            resources.getDimensionPixelSize(resourceId)
+        } else 36.dp2px()
+    }
     fun getLeftIcon(): ImageView {
         return mViewBinding.ivLeft
     }

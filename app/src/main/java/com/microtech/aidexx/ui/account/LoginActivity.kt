@@ -34,6 +34,8 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         binding.tvExchange.setOnClickListener(this)
         binding.loginByCode.btnGetVerCode.setOnClickListener(this)
         binding.btnLogin.setOnClickListener(this)
+        binding.loginByPwd.tvForget.setOnClickListener(this)
+
         viewModel.timeLeft.observe(this) {
             if (it.first) {
                 binding.loginByCode.btnGetVerCode.setTextColor(
@@ -62,6 +64,8 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
             SpannableStringBuilder()
         )
         binding.loginByCode.txtUserProtocol.movementMethod = LinkMovementMethod.getInstance()
+
+
     }
 
     override fun getViewBinding(): ActivityLoginBinding {
@@ -78,6 +82,9 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
             }
             binding.btnLogin -> {
                 checkLoginInfo()
+            }
+            binding.loginByPwd.tvForget -> {
+                startActivity(Intent(this, ForgetPwdActivity::class.java))
             }
         }
     }

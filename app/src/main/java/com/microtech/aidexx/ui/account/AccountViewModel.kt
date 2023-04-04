@@ -4,13 +4,17 @@ import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.net.ApiRepository
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.LoginInfo
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
+import com.microtech.aidexx.utils.EncryptUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -84,6 +88,23 @@ class AccountViewModel : BaseViewModel() {
             }
         }
     }
+
+    fun getChangePWDVerifyCode(phoneNumber: String) = flow {
+        when (ApiRepository.getChangePWDVerifyCode(phoneNumber)) {
+            is ApiResult.Success -> emit(true)
+            else -> emit(false)
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun changePWD(phoneNumber: String, pwd: String, verifyCode: String) = flow {
+        val pwdEncrypted = EncryptUtils.md5(pwd)
+        when (val ret = ApiRepository.changePWD(phoneNumber, pwdEncrypted, verifyCode)) {
+            is ApiResult.Success -> emit(true to "")
+            is ApiResult.Failure -> {
+                emit(false to ret.msg)
+            }
+        }
+    }.flowOn(Dispatchers.IO)
 
     fun getUserPreference(
         success: ((info: BaseResponse<MutableList<UserPreferenceEntity>>) -> Unit)? = null,

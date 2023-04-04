@@ -1,5 +1,7 @@
 package com.microtech.aidexx.common.net
 
+import com.microtech.aidexx.common.net.entity.ReqChangePWD
+import com.microtech.aidexx.common.net.entity.ReqChangePWDVerifyCode
 import com.microtech.aidexx.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
@@ -76,5 +78,15 @@ object ApiRepository {
         }
 
     }.flowOn(Dispatchers.IO)
+
+    suspend fun getChangePWDVerifyCode(phoneNumber: String) = withContext(dispatcher) {
+        val body = ReqChangePWDVerifyCode(phoneNumber)
+        ApiService.instance.getChangePWDVerCode(body)
+    }
+
+    suspend fun changePWD(phoneNumber: String, pwdEncrypted: String, verifyCode: String) = withContext(dispatcher) {
+        val body = ReqChangePWD(phoneNumber, pwdEncrypted, verifyCode)
+        ApiService.instance.changePWD(body)
+    }
 
 }
