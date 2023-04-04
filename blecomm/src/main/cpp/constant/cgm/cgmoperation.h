@@ -18,6 +18,11 @@ public:
     static const uint16 SET_HYPER = 15;
     static const uint16 RECORD_BG = 16;
     static const uint16 CALIBRATION = 17;
+    
+    static const uint16 GET_CAL_FACTOR = 20;
+    static const uint16 SET_CAL_FACTOR = 21;
+    static const uint16 GET_OFFSET = 22;
+    static const uint16 SET_OFFSET = 23;
 
     static const uint16 GET_DEVICE_INFO = 0x1000;
     static const uint16 GET_DEVICE_CHECK = 0x1301;

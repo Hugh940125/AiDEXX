@@ -34,8 +34,7 @@
 
 #define AIDEXX_DEFAULT_PARAM_COUNT  24
 
-AidexXController::AidexXController() : BleController()
-{
+AidexXController::AidexXController() : BleController() {
     authenticated = true;
 #if ENABLE_ENCRYPTION
     authenticated = false;
@@ -47,36 +46,33 @@ AidexXController::AidexXController() : BleController()
     defaultParam = new DefaultParam(this);
 }
 
-AidexXController::~AidexXController()
-{
+AidexXController::~AidexXController() {
     delete defaultParam;
 }
 
-void AidexXController::setSn(const string &sn)
-{
+void AidexXController::setSn(const string &sn) {
     BleController::setSn(sn);
     if (!sn.size())
         return;
 
-    int snLen = (int)sn.length();
+    int snLen = (int) sn.length();
     uint8 snChar[snLen];
     for (int i = 0; i < snLen; i++)
         snChar[i] = *(sn.data() + i);
-    ByteUtils::snToBytes((char*)snChar, snLen);
+    ByteUtils::snToBytes((char *) snChar, snLen);
 
     uint8 snChar1[snLen];
     uint8 snChar2[snLen];
-    for (int i = 0; i < snLen; i++)
-    {
+    for (int i = 0; i < snLen; i++) {
         snChar1[i] = snChar[i] * 13 + 61;
         snChar2[i] = snChar[i] * 17 + 19;
     }
-    MD5::digest(snChar1, snLen, (unsigned char *)snSecret1);
-    MD5::digest(snChar2, snLen, (unsigned char *)snSecret2);
+    LOGE("aaaa-->snSecret1: %s , snSecret2 %s", snSecret1, snSecret2);
+    MD5::digest(snChar1, snLen, (unsigned char *) snSecret1);
+    MD5::digest(snChar2, snLen, (unsigned char *) snSecret2);
 }
 
-bool AidexXController::startEncryption(const uint8 *key)
-{
+bool AidexXController::startEncryption(const uint8 *key) {
     if (!sn.size())
         return false;
 
@@ -89,7 +85,7 @@ bool AidexXController::startEncryption(const uint8 *key)
     if (newKey[KEY_LENGTH] != LibChecksum_GetChecksum8Bit(newKey, KEY_LENGTH))
         return false;
     DevComm::getInstance()->getEncryptor()->setKey(newKey);
-    
+
 #if ENABLE_ENCRYPTION
     authenticated = true;
 #endif
@@ -100,7 +96,7 @@ uint16 AidexXController::pair() {
     if (getSecret() == NULL) {
         return BleOperation::BUSY;
     }
-    
+
     return BleController::pair();
 }
 
@@ -283,7 +279,8 @@ bool AidexXController::sendCommand(uint8 op, uint8 *data, uint16 length, bool in
         return send(0xFF, op, 0xFF, data, length);
 }
 
-bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length) {
+bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data,
+                                     uint16 length) {
     if (port == 0xFF && op == 0xFF) {
         if (length == 1) {
             autoSending = true;
@@ -293,7 +290,7 @@ bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const ui
         if (length == SECRET_LENGTH) {
             //TODO 如果全0则配对失败？？？
             autoSending = true;
-            setKey((const char *)data);
+            setKey((const char *) data);
             onReceive(BleOperation::PAIR, true, data, length);
             return true;
         }
@@ -304,7 +301,7 @@ bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const ui
             return success;
         }
     }
-    
+
     int aidexXOp = BleOperation::UNKNOWN;
     autoSending = false;
 
@@ -318,7 +315,8 @@ bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const ui
     else if (op == OP_GET_SG_RECORD) aidexXOp = AidexXOperation::GET_HISTORIES;
     else if (op == OP_GET_RAW_RECORD) aidexXOp = AidexXOperation::GET_HISTORIES_RAW;
     else if (op == OP_CALIBRATION) aidexXOp = AidexXOperation::SET_CALIBRATION;
-    else if (op == OP_GET_CALIBRATION_RECORD_RANGE) aidexXOp = AidexXOperation::GET_CALIBRATION_RANGE;
+    else if (op == OP_GET_CALIBRATION_RECORD_RANGE)
+        aidexXOp = AidexXOperation::GET_CALIBRATION_RANGE;
     else if (op == OP_GET_CALIBRATION_RECORD) aidexXOp = AidexXOperation::GET_CALIBRATION;
     else if (op == OP_GET_SENSOR_CHECK) aidexXOp = AidexXOperation::GET_SENSOR_CHECK;
     else if (op == OP_RESET) aidexXOp = AidexXOperation::RESET;
@@ -333,16 +331,29 @@ bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const ui
     return true;
 }
 
-AidexXController::LongAttribute::LongAttribute(AidexXController *controller, uint8 maxNumber, uint8 setCode, uint8 getCode, uint16 setOp, uint16 getOp) {
+void AidexXController::onReceive(uint16 op, bool success, const uint8 *data, uint16 length) {
+    switch (op) {
+        case BleOperation::CONNECT:
+        case BleOperation::DISCONNECT: {
+            authenticated = false;
+        }
+            break;
+    }
+    BleController::onReceive(op, success, data, length);
+}
+
+AidexXController::LongAttribute::LongAttribute(AidexXController *controller, uint8 maxNumber,
+                                               uint8 setCode, uint8 getCode, uint16 setOp,
+                                               uint16 getOp) {
     this->controller = controller;
     this->maxNumber = maxNumber;
     this->setCode = setCode;
     this->getCode = getCode;
     this->setOp = setOp;
     this->getOp = getOp;
-    sendValue = (float32*) malloc(maxNumber*sizeof(float32));
-    sendBuffer = (uint8*) malloc(maxNumber*sizeof(int16)+2);
-    queryBuffer = (uint8*) malloc(maxNumber*sizeof(int16)+1);
+    sendValue = (float32 *) malloc(maxNumber * sizeof(float32));
+    sendBuffer = (uint8 *) malloc(maxNumber * sizeof(int16) + 2);
+    queryBuffer = (uint8 *) malloc(maxNumber * sizeof(int16) + 1);
 }
 
 AidexXController::LongAttribute::~LongAttribute() {
@@ -381,8 +392,7 @@ bool AidexXController::LongAttribute::send(bool instantly) {
     sendBuffer[1] = sendIndex;
     uint8 count = (controller->mtu - 5) / 2;
     uint8 i;
-    for(i = 0; i < count; i++)
-    {
+    for (i = 0; i < count; i++) {
         uint8 index = i + sendIndex - 1;
         if (index >= setNumber)
             break;
@@ -391,10 +401,10 @@ bool AidexXController::LongAttribute::send(bool instantly) {
             value += 0.005;
         else
             value -= 0.005;
-        LittleEndianByteUtils::shortToBytes((int16)(value * 100), sendBuffer + 2 + i*2);
+        LittleEndianByteUtils::shortToBytes((int16) (value * 100), sendBuffer + 2 + i * 2);
     }
     sendIndex += i - 1;
-    return controller->sendCommand(setCode, sendBuffer, i*2+2, instantly);
+    return controller->sendCommand(setCode, sendBuffer, i * 2 + 2, instantly);
 }
 
 bool AidexXController::LongAttribute::sendResp(const uint8 *data, uint16 length) {
@@ -411,7 +421,8 @@ bool AidexXController::LongAttribute::sendResp(const uint8 *data, uint16 length)
         return sendRespErrorCount < MAX_RESP_ERROR_COUNT;
     }
     sendRespErrorCount = 0;
-    if (resp == AidexXResponseCode::REFUSED || resp == AidexXResponseCode::TIME_OUT || index >= setNumber) {
+    if (resp == AidexXResponseCode::REFUSED || resp == AidexXResponseCode::TIME_OUT ||
+        index >= setNumber) {
         controller->autoSending = true;
         controller->onReceive(setOp, true, data, 1);
     } else {
@@ -433,7 +444,8 @@ bool AidexXController::LongAttribute::queryResp(const uint8 *data, uint16 length
     uint8 number = data[1];
     uint8 index = data[2];
     uint8 count = (length - 3) / 2;
-    if (resp == AidexXResponseCode::REFUSED || resp == AidexXResponseCode::TIME_OUT || number > maxNumber || index == 0) {
+    if (resp == AidexXResponseCode::REFUSED || resp == AidexXResponseCode::TIME_OUT ||
+        number > maxNumber || index == 0) {
         return false;
     }
     if (index != queryIndex) {
@@ -447,7 +459,7 @@ bool AidexXController::LongAttribute::queryResp(const uint8 *data, uint16 length
     queryRespErrorCount = 0;
     if (index == 1)
         queryBuffer[0] = resp;
-    ByteUtils::copy((char*)queryBuffer + (index - 1) * 2 + 1, (char*)data + 3, length - 3);
+    ByteUtils::copy((char *) queryBuffer + (index - 1) * 2 + 1, (char *) data + 3, length - 3);
     if (queryIndex == number + 1) {
         controller->autoSending = true;
         controller->onReceive(getOp, true, queryBuffer, number * 2 + 1);
@@ -464,7 +476,7 @@ AidexXController::DefaultParam::DefaultParam(AidexXController *controller) : Lon
         OP_GET_DEFAULT_PARAM,
         AidexXOperation::SET_DEFAULT_PARAM,
         AidexXOperation::GET_DEFAULT_PARAM
-    ){
+) {
 }
 
 uint16 AidexXController::DefaultParam::set(float32 value[]) {

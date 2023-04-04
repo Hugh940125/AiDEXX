@@ -58,6 +58,8 @@ public abstract class BleAdapter {
 
     public native void onAdvertise(String address, int rssi, byte[] data);
 
+    public native void onAdvertiseWithAndroidRawBytes(String address, int rssi, byte[] data);
+
     public native void onConnectSuccess();
 
     public native void onConnectFailure();

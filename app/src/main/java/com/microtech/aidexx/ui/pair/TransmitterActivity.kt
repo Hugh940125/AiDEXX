@@ -87,10 +87,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                         LogUtil.eAiDEX("Device name length less than 6")
                         return@launch
                     }
-//                    val manufacturerSpecificData = result.scanRecord?.manufacturerSpecificData
-//                    manufacturerSpecificData?.forEach { key, value ->
-//                        LogUtil.eAiDEX("getManufacturerSpecificData---$$key--->${StringUtils.binaryToHexString(value)}")
-//                    }
                     val sn = name.substring(name.length - 6)
                     val address = device.address
                     val bleControllerInfo =

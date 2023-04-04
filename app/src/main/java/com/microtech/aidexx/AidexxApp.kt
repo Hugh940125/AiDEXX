@@ -32,7 +32,6 @@ class AidexxApp : Application() {
                 Admin(ObjectBox.store).start(this)
             }
         }
-
     }
 
     private fun initSdks() {

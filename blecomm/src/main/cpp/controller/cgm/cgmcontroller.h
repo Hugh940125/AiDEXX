@@ -48,8 +48,12 @@ public:
     uint16 setDefaultParamData(float32 value[]);
     uint16 setGcBiasTrimming(uint16 value);
     uint16 setGcImeasTrimming(uint8 channel, int16 zero, uint16 scale);
-    
     uint16 getBroadcastData();
+    uint16 setCalFactor(float32 calFactor);
+    uint16 setOffset(float32 offset);
+    
+    uint16 getCalFactor();
+    uint16 getOffset();
     
     //CGM命令
     uint16 forceUnpair();

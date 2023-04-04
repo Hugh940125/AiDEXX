@@ -51,17 +51,15 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_BleController_set
 
             jclass bleControllerInfoCls = env->FindClass(
                     "com/microtechmd/blecomm/controller/BleControllerInfo");
-            jmethodID controllerInfo_new = env->GetMethodID(bleControllerInfoCls, "<init>", "()V");
-            jobject controllerInfo = env->NewObject(bleControllerInfoCls, controllerInfo_new);
-            jfieldID addressField = env->GetFieldID(bleControllerInfoCls, "address",
-                                                    "Ljava/lang/String;");
-            jfieldID nameField = env->GetFieldID(bleControllerInfoCls, "name",
-                                                 "Ljava/lang/String;");
+            jmethodID controllerInfo_new = env->GetMethodID(bleControllerInfoCls, "<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
+            jfieldID addressField = env->GetFieldID(bleControllerInfoCls, "address","Ljava/lang/String;");
+            jfieldID nameField = env->GetFieldID(bleControllerInfoCls, "name","Ljava/lang/String;");
             jfieldID snField = env->GetFieldID(bleControllerInfoCls, "sn", "Ljava/lang/String;");
             jfieldID rssiField = env->GetFieldID(bleControllerInfoCls, "rssi", "I");
+            jobject controllerInfo = env->NewObject(bleControllerInfoCls, controllerInfo_new,
+                                                    addressField, nameField, snField, rssiField);
             jstring addressString = env->NewStringUTF(info.address.data());
             jstring nameString = env->NewStringUTF(info.name.data());
-
             jstring snString = env->NewStringUTF(info.sn.data());
             env->SetObjectField(controllerInfo, addressField, addressString);
             env->SetObjectField(controllerInfo, nameField, nameString);

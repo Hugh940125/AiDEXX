@@ -60,6 +60,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         return entity.id
     }
 
+    fun deviceType(): Int {
+        return entity.deviceType
+    }
+
     fun isPaired(): Boolean {
         return entity.accessId != null
     }

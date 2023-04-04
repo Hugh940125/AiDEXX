@@ -23,7 +23,6 @@ import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
 import com.microtech.aidexx.common.toIntBigEndian
 import com.microtech.aidexx.common.toUuid
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtil.Companion.eAiDEX
 import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.StringUtils.binaryToHexString
@@ -32,6 +31,9 @@ import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager.send
 import com.microtechmd.blecomm.BleAdapter
 import com.microtechmd.blecomm.BluetoothDeviceStore
+import com.microtechmd.blecomm.controller.BleController
+import com.microtechmd.blecomm.controller.BleController.DiscoveredCallback
+import com.microtechmd.blecomm.controller.BleControllerInfo
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -81,9 +83,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             val scanRecord = result.scanRecord!!.bytes
             val address = result.device.address
             val rssi = result.rssi + 130
-            onScanRespond(address, rssi, scanRecord)
-            onAdvertise(address, rssi, scanRecord)
             bluetoothDeviceStore.add(result)
+            onAdvertiseWithAndroidRawBytes(address, rssi, scanRecord)
         }
 
         override fun onScanFailed(errorCode: Int) {
@@ -97,6 +98,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     fun initialize(context: Context): AidexBleAdapter {
+        BleController.setDiscoveredCallback { info -> eAiDEX("setDiscoveredCallback:${info.sn}") }
         mContext = context
         setDiscoverTimeoutSeconds(DISCOVER_TIME_OUT_SECONDS)
         workHandler = object : Handler(context.mainLooper) {
@@ -104,6 +106,9 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 super.handleMessage(msg)
                 val arg1 = msg.arg1
                 when (msg.what) {
+                    BLE_IDLE_DISCONNECT -> {
+                        executeDisconnect()
+                    }
                     BLE_CONNECT_TIME_OUT, CONNECT_FAILURE -> {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
                         refreshConnectState(false)
@@ -152,10 +157,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                                 if (privateCharacteristic != null) {
                                     characteristicsMap[privateCharacteristicUUID] =
                                         privateCharacteristic
-                                }
-                                if (normalCharacteristic == null || privateCharacteristic == null) {
-                                    eAiDEX("specific characteristic not found")
-                                    return
                                 }
                                 //设置特征值通知,即设备的值有变化时会通知该特征值，即回调方法onCharacteristicChanged会有该通知
                                 for ((key, characteristic) in characteristicsMap) {
@@ -297,17 +298,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     }
                 }
                 eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
-                if (timerTask != null) {
-                    timerTask!!.cancel()
-                    timerTask = null
-                }
-                val timer = Timer()
-                timerTask = object : TimerTask() {
-                    override fun run() {
-                        executeDisconnect()
-                    }
-                }
-                timer.schedule(timerTask, 1000)
+                workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
+                workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
             } else {
                 val b1 = ByteArray(20)
                 val b2 = ByteArray(data.size - 20)
@@ -413,7 +405,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         if (default != null && default.entity.accessId != null && !isOnConnectState && isPeriodic) {
             val scanWorker: OneTimeWorkRequest =
                 OneTimeWorkRequest.Builder(StartScanWorker::class.java)
-                    .setInitialDelay(2, TimeUnit.SECONDS).addTag(
+                    .setInitialDelay(5, TimeUnit.SECONDS).addTag(
                         START_SCAN.toString()
                     ).build() //2S后开启扫描
             WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
@@ -686,6 +678,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         private const val CONNECT_SUCCESS = 1010
         private const val FOUND_SERVER = 1012
         private const val READ_CHARACTERISTIC = 1013
+        private const val BLE_IDLE_DISCONNECT = 1014
         private const val BLE_CONNECT_TIME_OUT = 1100 //连接超时
         private const val BLE_CONNECT_TIME_LIMIT = (30 * 1000).toLong() //连接超时30S
 

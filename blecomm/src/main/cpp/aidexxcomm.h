@@ -10,6 +10,8 @@
 // 数据解析类
 #include "parser/cgm/aidexxentities.h"
 #include "parser/cgm/aidexxbroadcastparser.h"
+#include "parser/cgm/aidexxscanresponseparser.h"
+#include "parser/cgm/aidexxfullbroadcastparser.h"
 #include "parser/cgm/aidexxhistoriesparser.h"
 #include "parser/cgm/aidexxcalibrationsparser.h"
 #include "parser/cgm/aidexxdatetimeparser.h"

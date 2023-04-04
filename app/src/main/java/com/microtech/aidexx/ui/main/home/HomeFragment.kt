@@ -62,19 +62,18 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         HomeStateManager.onHomeStateChange = {
             replaceFragment(it)
         }
+        lifecycleScope.launch {
+            TransmitterManager.instance().loadTransmitter()
+        }
         TransmitterManager.setOnTransmitterChangeListener {
             judgeState()
             AidexBleAdapter.getInstance().startBtScan(true)
-        }
-        lifecycleScope.launch {
-            TransmitterManager.instance().loadTransmitter()
         }
     }
 
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
-        judgeState()
     }
 
     override fun onPause() {

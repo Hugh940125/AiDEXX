@@ -286,6 +286,70 @@ uint16 CgmController::getBroadcastData() {
     }
 }
 
+uint16 CgmController::setCalFactor(float32 calFactor) {
+    uint8 data[2];
+    float32 v = calFactor;
+    if (v >= 0)
+        v += 0.005;
+    else
+        v -= 0.005;
+    LittleEndianByteUtils::unsignedShortToBytes((uint16)(int16)(v * 100), data);
+
+    if (send(CgmPort::PORT_GLUCOSE,
+             Global::OPERATION_SET,
+             CgmGlucose::PARAM_CAL_FACTOR,
+             data,
+             sizeof(data))) {
+        return CgmOperation::SET_CAL_FACTOR;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
+uint16 CgmController::setOffset(float32 offset) {
+    uint8 data[2];
+    float32 v = offset;
+    if (v >= 0)
+        v += 0.005;
+    else
+        v -= 0.005;
+    LittleEndianByteUtils::unsignedShortToBytes((uint16)(int16)(v * 100), data);
+    
+    if (send(CgmPort::PORT_GLUCOSE,
+             Global::OPERATION_SET,
+             CgmGlucose::PARAM_OFFSET,
+             data,
+             sizeof(data))) {
+        return CgmOperation::SET_OFFSET;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
+uint16 CgmController::getCalFactor() {
+    if (send(CgmPort::PORT_GLUCOSE,
+             Global::OPERATION_GET,
+             CgmGlucose::PARAM_CAL_FACTOR,
+             0,
+             0)) {
+        return CgmOperation::GET_CAL_FACTOR;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
+uint16 CgmController::getOffset() {
+    if (send(CgmPort::PORT_GLUCOSE,
+             Global::OPERATION_GET,
+             CgmGlucose::PARAM_OFFSET,
+             0,
+             0)) {
+        return CgmOperation::GET_OFFSET;
+    } else {
+        return BleOperation::BUSY;
+    }
+}
+
 uint16 CgmController::forceUnpair() {
     char data[] = "force unpair all";
     uint16 length = sizeof(data) - 1;
@@ -385,6 +449,10 @@ bool CgmController::handleCommand(uint8 port, uint8 op, uint8 param, const uint8
         else if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmGlucose::PARAM_DEFAULT_PARAM) cgmOp = CgmOperation::SET_DEFAULT_PARAM;
         else if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmGlucose::PARAM_GC_BIAS_TRIMMING) cgmOp = CgmOperation::SET_GC_BIAS_TRIMMING;
         else if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmGlucose::PARAM_GC_IMEAS_TRIMMING) cgmOp = CgmOperation::SET_GC_IMEAS_TRIMMING;
+        else if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmGlucose::PARAM_CAL_FACTOR) cgmOp = CgmOperation::SET_CAL_FACTOR;
+        else if (op==Global::OPERATION_NOTIFY && param==CgmGlucose::PARAM_CAL_FACTOR) cgmOp = CgmOperation::GET_CAL_FACTOR;
+        else if (op==Global::OPERATION_ACKNOWLEDGE && param==CgmGlucose::PARAM_OFFSET) cgmOp = CgmOperation::SET_OFFSET;
+        else if (op==Global::OPERATION_NOTIFY && param==CgmGlucose::PARAM_OFFSET) cgmOp = CgmOperation::GET_OFFSET;
         break;
     default:
         break;

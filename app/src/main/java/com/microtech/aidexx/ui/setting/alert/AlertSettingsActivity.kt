@@ -180,9 +180,11 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
                 ), confirm = {
                     MmkvManager.setUrgentAlertEnable(false)
                 }, cancel = {
-                    binding.switchUrgentAlert.getSwitch().isChecked = false
-                    MmkvManager.setUrgentAlertEnable(false)
+                    binding.switchUrgentAlert.getSwitch().isChecked = true
+                    MmkvManager.setUrgentAlertEnable(true)
                 })
+            }else{
+                MmkvManager.setUrgentAlertEnable(true)
             }
         }
         binding.lowUrgentValue.setValue(ThresholdManager.URGENT_HYPO.toGlucoseStringWithUnit())
@@ -238,100 +240,8 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        listOf(
-            getString(R.string.five), getString(R.string.fifteen), getString(
-                R.string.thirty
-            ), getString(R.string.halfAndQuarter), getString(R.string.oneHour)
-        )
         initData()
         initView()
         initEvent()
-
-
-//        val subList = listOfFrequency.subList(1, listOfFrequency.size)
-//        vb.noticeFrequencySignal.setValue(
-//            getString(
-//                R.string.notice_inner, subList[MMKV.defaultMMKV().decodeInt(
-//                    LocalPreference.SIGNAL_NOTICE_FREQUENCY,
-//                    0
-//                )]
-//            )
-//        )
-//        vb.noticeFrequencySignal.setOnClickListener {
-//            OptionsDialog.show(this, subList, null) { index ->
-//                vb.noticeFrequencySignal.setValue(getString(R.string.notice_inner, subList[index]))
-//                MMKV.defaultMMKV().encode(LocalPreference.SIGNAL_NOTICE_FREQUENCY, index)
-//            }
-//        }
-//        vm.getUserBgSetting()
-//        vm.mUserBg.observe(this, Observer { list ->
-//            list.records.let {
-//                if (list.records.isNotEmpty()) {
-//                    recordID = it[0].id
-//                }
-//            }
-//        })
-//
-//        //报警消息弹框
-//        LiveEventBus
-//            .get(
-//                EventKey.ALERT_TIP, AlertEvent::
-//                class.java
-//            )
-//            .observe(this, androidx.lifecycle.Observer
-//            {
-//                runOnUiThread {
-//
-//                    if (!isAlert) {
-//                        isAlert = true
-//                        com.microtechmd.cgms.dialog.MessageDialog.show(
-//                            this,
-//                            getString(R.string.message_alert_error),
-//                            null
-//                        )
-//                    }
-//                }
-//            })
-    }
-
-    override fun onResume() {
-        super.onResume()
-//        vb.lowUrgentValue.setValue(CgmModel.URGENT_HYPO.toGlucoseStringWithUnit(resources))
-//        LogUtils.debug("model high :" + ThresholdManager.hyperThreshold)
-//        LogUtils.debug("model low :" + ThresholdManager.hypoThreshold)
-//
-//        vb.siwLow.setValue(
-//            (ThresholdManager.hypoThreshold).toGlucoseStringWithUnit(
-//                resources
-//            )
-//        )
-//        vb.siwHigh.setValue(
-//            (ThresholdManager.hyperThreshold).toGlucoseStringWithUnit(
-//                resources
-//            )
-//        )
-//
-//        vb.siwUrgent.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.URGENT_NOTICE_ENABLE, true)
-//        vb.siwUrgent.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-//            MMKV.defaultMMKV().encode(LocalPreference.URGENT_NOTICE_ENABLE, isChecked)
-//            if (!isChecked) {
-//                ConfirmDialog.showCloseUrgent(
-//                    this, {
-//                        MMKV.defaultMMKV().encode(LocalPreference.URGENT_NOTICE_ENABLE, isChecked)
-//                    }, {
-//                        MMKV.defaultMMKV().encode(LocalPreference.URGENT_NOTICE_ENABLE, !isChecked)
-//                        vb.siwUrgent.getSwitch().isChecked = !isChecked
-//                    }
-//                )
-//            }
-//        }
-//
-//        vb.siwRaise.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.RAISE_ALERT, true)
-//        vb.siwFall.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.FALL_ALERT, true)
-//        vb.siwSignal.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.LOSS_ALERT, true)
     }
 }

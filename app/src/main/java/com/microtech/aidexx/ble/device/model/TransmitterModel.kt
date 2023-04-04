@@ -37,6 +37,7 @@ import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
+import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
 import com.microtechmd.blecomm.parser.AidexXParser
 import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
@@ -86,20 +87,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             StringUtils.binaryToHexString(data)
                         }"
                     )
-                    var result: ByteArray = byteArrayOf()
+                    var result = data
                     if (operation !in 1..3) {
                         result = ByteUtils.subByte(data, 1, data.size - 1);
                     }
-//                    messageCallBack?.invoke(
-//                        BleMessage(
-//                            operation,
-//                            success,
-//                            result
-//                        )
-//                    )
                     val bleMessage = BleMessage(operation, success, result)
-                    MessageDispatcher.instance().dispatch(AidexxApp.mainScope, bleMessage)
                     instance?.onMessage(bleMessage)
+                    MessageDispatcher.instance().dispatch(AidexxApp.mainScope, bleMessage)
                 }
             }
             return instance!!
@@ -318,7 +312,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
-        val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data)
+        val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data)
         if (entity.sensorStartTime == null) {
             getController().startTime
             return
@@ -326,7 +320,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         broadcast?.let {
             refreshSensorState(broadcast)
         }
-        if (broadcast.calTemp == 0 || broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.timeOffset < 60 * 6) {
+        if (broadcast.calTemp == 0 || broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
             onCalibrationPermitChange?.invoke(false)
         } else {
             onCalibrationPermitChange?.invoke(true)
@@ -425,13 +419,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         return false
     }
 
-    private fun refreshSensorState(broadcast: AidexXBroadcastEntity) {
+    private fun refreshSensorState(broadcast: AidexXFullBroadcastEntity) {
         broadcast.let {
             if (it.status == History.SESSION_STOPPED && it.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
                 HomeStateManager.instance().setState(newOrUsedSensor)
-            } else if (it.timeOffset < 60) {
+            } else if (it.historyTimeOffset < 60) {
                 HomeStateManager.instance().setState(warmingUp)
-                HomeStateManager.instance().setWarmingUpTimeLeft(it.timeOffset)
+                HomeStateManager.instance().setWarmingUpTimeLeft(it.historyTimeOffset)
             } else {
                 HomeStateManager.instance().setState(glucosePanel)
             }

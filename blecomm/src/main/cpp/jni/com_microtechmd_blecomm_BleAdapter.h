@@ -73,6 +73,14 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertise
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
+ * Method:    onAdvertiseWithAndroidRawBytes
+ * Signature: (Ljava/lang/String;I[B)V
+ */
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertiseWithAndroidRawBytes
+        (JNIEnv *, jobject, jstring, jint, jbyteArray);
+
+/*
+ * Class:     com_microtechmd_blecomm_BleAdapter
  * Method:    onConnectSuccess
  * Signature: ()V
  */
