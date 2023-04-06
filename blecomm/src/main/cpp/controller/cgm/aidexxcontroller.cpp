@@ -67,7 +67,6 @@ void AidexXController::setSn(const string &sn) {
         snChar1[i] = snChar[i] * 13 + 61;
         snChar2[i] = snChar[i] * 17 + 19;
     }
-    LOGE("aaaa-->snSecret1: %s , snSecret2 %s", snSecret1, snSecret2);
     MD5::digest(snChar1, snLen, (unsigned char *) snSecret1);
     MD5::digest(snChar2, snLen, (unsigned char *) snSecret2);
 }
@@ -110,6 +109,7 @@ uint16 AidexXController::getDeviceInfo() {
 
 uint16 AidexXController::getBroadcastData() {
     if (sendCommand(OP_GET_BRAODCAST_DATA, 0, 0)) {
+
         return AidexXOperation::GET_DEVICE_INFO;
     } else {
         return BleOperation::BUSY;

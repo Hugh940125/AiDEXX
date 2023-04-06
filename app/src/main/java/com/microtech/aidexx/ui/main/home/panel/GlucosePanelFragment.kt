@@ -157,7 +157,6 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         }
         if (activity != null && !requireActivity().isFinishing) {
             val remainingTime = deviceModel.getSensorRemainingTime()
-            LogUtil.eAiDEX("Sensor remaining : $remainingTime hour")
             if (remainingTime == null || remainingTime < 0) {
                 binding.tvSensorRemainTime.visibility = View.GONE
             } else if (remainingTime == 0) {

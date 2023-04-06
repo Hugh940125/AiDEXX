@@ -1,30 +1,26 @@
 package com.microtechmd.blecomm;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.le.ScanResult;
-
 import androidx.annotation.NonNull;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.microtechmd.blecomm.controller.BleControllerInfo;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Description: 设备信息集合
  */
 public class BluetoothDeviceStore {
-    private final Map<String, ScanResult> mDeviceMap;
+    private final ConcurrentHashMap<String, BluetoothDevice> mDeviceMap;
 
     public BluetoothDeviceStore() {
         mDeviceMap = new ConcurrentHashMap<>();
     }
 
-    public void add(ScanResult result) {
-        if (result == null) {
+    public void add(BluetoothDevice device) {
+        if (device == null) {
             return;
         }
-        if (!mDeviceMap.containsKey(result.getDevice().getAddress())) {
-            mDeviceMap.put(result.getDevice().getAddress(), result);
+        if (!mDeviceMap.containsKey(device.getAddress())) {
+            mDeviceMap.put(device.getAddress(), device);
         }
     }
 
@@ -39,7 +35,7 @@ public class BluetoothDeviceStore {
         mDeviceMap.clear();
     }
 
-    public Map<String, ScanResult> getDeviceMap() {
+    public ConcurrentHashMap<String, BluetoothDevice> getDeviceMap() {
         return mDeviceMap;
     }
 

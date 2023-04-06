@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
@@ -57,11 +58,11 @@ fun Int.toColor(context: Context): Int = ContextCompat.getColor(context, this)
 fun UUID.toIntBigEndian(): Int = Integer.parseInt(this.toString().substring(4, 8), 16)
 
 fun Long.millisToMinutes(): Int =
-    BigDecimal(this).divide(BigDecimal(60 * 1000)).toInt()
+    BigDecimal(this).divide(BigDecimal(60 * 1000),RoundingMode.HALF_UP).toInt()
 
-fun Long.millisToSeconds(): Long = BigDecimal(this).divide(BigDecimal(1000)).toLong()
+fun Long.millisToSeconds(): Long = BigDecimal(this).divide(BigDecimal(1000),RoundingMode.HALF_UP).toLong()
 
-fun Long.millisToHours(): Int = BigDecimal(this).divide(BigDecimal(60 * 60 * 1000)).toInt()
+fun Long.millisToHours(): Int = BigDecimal(this).divide(BigDecimal(60 * 60 * 1000),RoundingMode.HALF_UP).toInt()
 
 fun Date.date2ymdhm(pattern: String = "yyyy/MM/dd HH:mm"): String? =
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)

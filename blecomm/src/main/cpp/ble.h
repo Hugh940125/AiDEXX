@@ -47,8 +47,8 @@ protected:
     
     // 第一次连接前的扫描超时设置
     void setDiscoverTimeoutSeconds(uint16 seconds);
-    
-    BleState getBleState() { return state; };
+
+    uint16 getBleState();
 
     // 蓝牙状态发生变化时需调用以下函数
     void onScanRespond(string address, int32 rssi, const char *data, uint16 length);

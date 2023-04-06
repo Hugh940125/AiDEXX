@@ -23,8 +23,12 @@ class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>(
     ): View {
         binding = FragmentWarmingUpBinding.inflate(layoutInflater)
         initAnim()
-        HomeStateManager.onWarmingUpTimeLeftListener = {
-            binding.tvRemain.text = it?.toString() ?: "--"
+        HomeStateManager.onWarmingUpTimeLeftListener = { timeOffset ->
+            if (timeOffset != null) {
+                binding.tvRemain.text = (60 - timeOffset).toString()
+            } else {
+                binding.tvRemain.text = "--"
+            }
         }
         return binding.root
     }
@@ -39,15 +43,19 @@ class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>(
         rotateAnimation?.interpolator = LinearInterpolator()
         rotateAnimation?.repeatCount = Animation.INFINITE
         rotateAnimation?.fillAfter = true
+        binding.bgPanel.startAnimation(rotateAnimation)
     }
 
     override fun onResume() {
         super.onResume()
-        binding.bgPanel.startAnimation(rotateAnimation)
     }
 
     override fun onPause() {
         super.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
         binding.bgPanel.clearAnimation()
     }
 

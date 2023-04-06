@@ -13,6 +13,9 @@ public class BleControllerInfo implements Parcelable {
     public String sn;
     public int rssi;
 
+    public BleControllerInfo() {
+    }
+
     public BleControllerInfo(String address, String name, String sn, int rssi) {
         this.address = address;
         this.name = name;

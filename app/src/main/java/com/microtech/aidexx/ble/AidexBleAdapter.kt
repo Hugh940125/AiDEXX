@@ -32,9 +32,9 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager.send
 import com.microtechmd.blecomm.BleAdapter
 import com.microtechmd.blecomm.BluetoothDeviceStore
 import com.microtechmd.blecomm.controller.BleController
-import com.microtechmd.blecomm.controller.BleController.DiscoveredCallback
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
@@ -44,7 +44,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     var retryNum = 0
     var workHandler: Handler? = null
     var lastDisConnectTime: Long = 0
-    var mCharacteristic: BluetoothGattCharacteristic? = null
+    private val devicesFound = ConcurrentHashMap<String, BluetoothDevice>()
+    private var mCharacteristic: BluetoothGattCharacteristic? = null
     private lateinit var mContext: Context
 
     //蓝牙设备
@@ -62,9 +63,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     //设置蓝牙扫描设置
     private var scanSettingBuilder: ScanSettings.Builder? = null
     private val bluetoothDeviceStore = BluetoothDeviceStore()
-    var isScaning = false
     private var isOnConnectState = false
-    private var timerTask: TimerTask? = null
     private var characteristicsMap = hashMapOf<Int, BluetoothGattCharacteristic>()
     private val bluetoothAdapter: BluetoothAdapter
         get() {
@@ -83,7 +82,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             val scanRecord = result.scanRecord!!.bytes
             val address = result.device.address
             val rssi = result.rssi + 130
-            bluetoothDeviceStore.add(result)
+            bluetoothDeviceStore.add(result.device)
             onAdvertiseWithAndroidRawBytes(address, rssi, scanRecord)
         }
 
@@ -98,7 +97,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     fun initialize(context: Context): AidexBleAdapter {
-        BleController.setDiscoveredCallback { info -> eAiDEX("setDiscoveredCallback:${info.sn}") }
         mContext = context
         setDiscoverTimeoutSeconds(DISCOVER_TIME_OUT_SECONDS)
         workHandler = object : Handler(context.mainLooper) {
@@ -159,12 +157,16 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                                         privateCharacteristic
                                 }
                                 //设置特征值通知,即设备的值有变化时会通知该特征值，即回调方法onCharacteristicChanged会有该通知
-                                for ((key, characteristic) in characteristicsMap) {
-                                    if (key == characteristicUUID) {
-                                        mCharacteristic = characteristic
-                                        continue
+                                if (privateCharacteristic == null) {
+                                    setNotify(normalCharacteristic)
+                                } else {
+                                    for ((key, characteristic) in characteristicsMap) {
+                                        if (key == characteristicUUID) {
+                                            mCharacteristic = characteristic
+                                            continue
+                                        }
+                                        setNotify(characteristic)
                                     }
-                                    setNotify(characteristic)
                                 }
                             }
                             return
@@ -190,9 +192,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                             BLE_CONNECT_TIME_OUT,
                             BLE_CONNECT_TIME_LIMIT
                         )
-                        eAiDEX("Start connect " + mBluetoothDevice!!.address)
                         //closeGatt()
-                        mBluetoothGatt = mBluetoothDevice!!.connectGatt(
+                        mBluetoothGatt = mBluetoothDevice?.connectGatt(
                             context,
                             false,
                             bluetoothGattCallback,
@@ -211,7 +212,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         arg1,
                         msg.obj as ByteArray
                     )
-                    READ_CHARACTERISTIC -> if (arg1 != 0) mBluetoothGatt!!.readCharacteristic(
+                    READ_CHARACTERISTIC -> if (arg1 != 0 && characteristicsMap[arg1] != null) mBluetoothGatt!!.readCharacteristic(
                         characteristicsMap[arg1]
                     )
                 }
@@ -348,6 +349,12 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         return scanSettingBuilder!!.build()
     }
 
+    override fun setDiscoverCallback() {
+        BleController.setDiscoveredCallback { info ->
+            onDeviceDiscover?.invoke(info)
+        }
+    }
+
     override fun executeStartScan() {
         startBtScan(true)
     }
@@ -377,7 +384,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             if (TransmitterManager.instance().getDefault() != null) {
                 val scanWorker: OneTimeWorkRequest =
                     OneTimeWorkRequest.Builder(StopScanWorker::class.java)
-                        .setInitialDelay(30, TimeUnit.SECONDS).addTag(
+                        .setInitialDelay(20, TimeUnit.SECONDS).addTag(
                             STOP_SCAN.toString()
                         ).build() //30s以后停止扫描
                 WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
@@ -420,22 +427,15 @@ class AidexBleAdapter private constructor() : BleAdapter() {
 
     override fun isReadyToConnect(mac: String): Boolean {
         val result = bluetoothDeviceStore.deviceMap[mac]
-        var bluetoothLeDevice: BluetoothDevice? = null
-        if (result != null) {
-            bluetoothLeDevice = result.device
-        }
-        eAiDEX("Device " + mac + " isReadyToConnect: " + (bluetoothLeDevice != null))
-        return bluetoothLeDevice != null
+        eAiDEX("Device " + mac + " isReadyToConnect: " + (result != null))
+        return result != null
     }
 
     override fun executeConnect(mac: String) {
         refreshConnectState(true)
         eAiDEX("Connecting to $mac")
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
-        val result = bluetoothDeviceStore.deviceMap[mac]
-        if (result != null) {
-            mBluetoothDevice = result.device
-        }
+        mBluetoothDevice = bluetoothDeviceStore.deviceMap[mac]
         val duration = currentTimeMillis / 1000 - lastDisConnectTime
         if (duration >= TIME_BETWEEN_CONNECT) {
             workHandler!!.sendEmptyMessage(CONNECT_GATT)
@@ -630,7 +630,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             super.onDescriptorWrite(gatt, descriptor, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 eAiDEX("onDescriptorWrite -->" + "Descriptor enable success. uuid:" + descriptor.characteristic.uuid)
-                if (descriptor.characteristic != mCharacteristic) {
+                if (mCharacteristic != null && descriptor.characteristic != mCharacteristic) {
                     mCharacteristic?.let {
                         setNotify(it)
                     }
@@ -663,6 +663,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     companion object {
+        var onDeviceDiscover: ((info: BleControllerInfo) -> Unit)? = null
         private const val TIME_BETWEEN_CONNECT = 2L //断开到连接的时间间隔
         private const val DISCOVER_TIME_OUT_SECONDS = 30
         const val START_SCAN = 1001

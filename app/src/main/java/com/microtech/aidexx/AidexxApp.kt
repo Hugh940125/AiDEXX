@@ -5,6 +5,7 @@ import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.utils.CrashHandler
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
@@ -40,6 +41,7 @@ class AidexxApp : Application() {
         DialogX.init(this)
         AidexBleAdapter.init(this)
         BleController.setBleAdapter(AidexBleAdapter.getInstance())
+        AidexBleAdapter.getInstance().setDiscoverCallback()
         AlertUtil.init(this)
     }
 }

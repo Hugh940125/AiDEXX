@@ -779,6 +779,10 @@ void Ble::continueSending() {
     }
 }
 
+uint16 Ble::getBleState() {
+    return state;
+}
+
 Ble::ReceiveBuffer::ReceiveBuffer(int maxLength) {
     mMaxLength = maxLength;
     mPointer = 0;

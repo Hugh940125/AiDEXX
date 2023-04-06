@@ -202,7 +202,6 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
     }
 }
 
-
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_reset
         (JNIEnv *env, jobject obj) {
     AidexXController *ptr = getPtr(env, obj);

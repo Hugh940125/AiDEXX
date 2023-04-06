@@ -51,13 +51,14 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_BleController_set
 
             jclass bleControllerInfoCls = env->FindClass(
                     "com/microtechmd/blecomm/controller/BleControllerInfo");
-            jmethodID controllerInfo_new = env->GetMethodID(bleControllerInfoCls, "<init>","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
-            jfieldID addressField = env->GetFieldID(bleControllerInfoCls, "address","Ljava/lang/String;");
-            jfieldID nameField = env->GetFieldID(bleControllerInfoCls, "name","Ljava/lang/String;");
+            jmethodID controllerInfo_new = env->GetMethodID(bleControllerInfoCls, "<init>", "()V");
+            jfieldID addressField = env->GetFieldID(bleControllerInfoCls, "address",
+                                                    "Ljava/lang/String;");
+            jfieldID nameField = env->GetFieldID(bleControllerInfoCls, "name",
+                                                 "Ljava/lang/String;");
             jfieldID snField = env->GetFieldID(bleControllerInfoCls, "sn", "Ljava/lang/String;");
             jfieldID rssiField = env->GetFieldID(bleControllerInfoCls, "rssi", "I");
-            jobject controllerInfo = env->NewObject(bleControllerInfoCls, controllerInfo_new,
-                                                    addressField, nameField, snField, rssiField);
+            jobject controllerInfo = env->NewObject(bleControllerInfoCls, controllerInfo_new);
             jstring addressString = env->NewStringUTF(info.address.data());
             jstring nameString = env->NewStringUTF(info.name.data());
             jstring snString = env->NewStringUTF(info.sn.data());
@@ -66,7 +67,6 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_BleController_set
             env->SetObjectField(controllerInfo, snField, snString);
             env->SetIntField(controllerInfo, rssiField, info.rssi);
             env->CallVoidMethod(discoverCallback, onDiscoveredMethod, controllerInfo);
-
             if (isAttached)
                 m_jvm->DetachCurrentThread();
         }

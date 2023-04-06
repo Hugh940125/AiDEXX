@@ -354,3 +354,13 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData__I_
     }
 }
 
+
+JNIEXPORT jint JNICALL
+Java_com_microtechmd_blecomm_BleAdapter_getBleState(JNIEnv *env, jobject obj) {
+    JniBleAdapter *ptr = getPtr(env, obj);
+    jint ret = 0;
+    if (ptr) {
+        ret = ptr->getBleState();
+    }
+    return ret;
+}

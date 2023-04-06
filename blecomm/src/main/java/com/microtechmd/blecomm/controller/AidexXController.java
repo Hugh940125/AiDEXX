@@ -50,6 +50,7 @@ public class AidexXController extends BleControllerProxy {
 
     public native int reset();
 
+
     public native int shelfMode();
 
     public native int deleteBond();

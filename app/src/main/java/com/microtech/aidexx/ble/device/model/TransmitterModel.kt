@@ -36,11 +36,7 @@ import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
-import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
-import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
-import com.microtechmd.blecomm.parser.AidexXHistoryEntity
-import com.microtechmd.blecomm.parser.AidexXParser
-import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
+import com.microtechmd.blecomm.parser.*
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.kotlin.equal
 import io.objectbox.query.QueryBuilder
@@ -82,11 +78,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 it.id = entity.accessId
                 it.key = entity.encryptionKey
                 it.setMessageCallback { operation, success, data ->
-                    LogUtil.eAiDEX(
-                        "model --- operation: $operation, success: $success, message: ${
-                            StringUtils.binaryToHexString(data)
-                        }"
-                    )
                     var result = data
                     if (operation !in 1..3) {
                         result = ByteUtils.subByte(data, 1, data.size - 1);
@@ -115,6 +106,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
 
     fun onMessage(message: BleMessage) {
+        if (message.operation != CgmOperation.DISCOVER) {
+            LogUtil.eAiDEX(
+                "operation:${message.operation}, success:${message.isSuccess}, data:${
+                    StringUtils.binaryToHexString(message.data)
+                }"
+            )
+        }
         val data = message.data
         when (message.operation) {
             CgmOperation.DISCOVER -> {
@@ -132,6 +130,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 disconnect()
             }
 
+            CgmOperation.DISCONNECT->{
+                if (!message.isSuccess){
+                    disconnect()
+                }
+            }
+
             CgmOperation.CALIBRATION -> {
 
             }
@@ -147,6 +151,14 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             CgmOperation.UNPAIR -> {
 
             }
+            AidexXOperation.GET_HISTORY_RANGE -> {
+                message.data.let {
+                    briefRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
+                    rawRangeStartIndex = ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
+                    newestIndex = ((it[5].toInt() and 0xff) shl 8).plus((it[4].toInt() and 0xff))
+                    LogUtils.eAiDex("GET_HISTORY_RANGE --- $briefRangeStartIndex--$rawRangeStartIndex--$newestIndex")
+                }
+            }
             CgmOperation.GET_HISTORIES -> {
                 if (UserInfoManager.instance().isLogin()) {
                     saveBriefHistoryFromConnect(message.data)
@@ -158,11 +170,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
             }
         }
-        LogUtil.eAiDEX(
-            "mainservice --- operation: ${message.operation}, message: ${
-                StringUtils.binaryToHexString(data)
-            }"
-        )
     }
 
     override fun getController(): AidexXController {
@@ -312,86 +319,90 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
-        val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data)
-        if (entity.sensorStartTime == null) {
-            getController().startTime
-            return
-        }
-        broadcast?.let {
-            refreshSensorState(broadcast)
-        }
-        if (broadcast.calTemp == 0 || broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
-            onCalibrationPermitChange?.invoke(false)
-        } else {
-            onCalibrationPermitChange?.invoke(true)
-        }
-        isSensorExpired =
-            (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
-        isMalfunction =
-            broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
-        if (broadcast.status == History.SENSOR_MALFUNCTION) {
-            faultType = 1
-        } else if (broadcast.status == History.GENERAL_DEVICE_FAULT) {
-            faultType = 2
-        }
-        val adHistories = broadcast.history
-        if (adHistories.isNotEmpty()) {
-            latestHistory = adHistories[0]
-        } else {
-            return
-        }
-        isHistoryValid =
-            latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
-        latestAd = broadcast
-        latestAdTime = SystemClock.elapsedRealtime()
-        if (UserInfoManager.shareUserInfo != null) {
-            LogUtil.eAiDEX("view sharing")
-            return
-        }
-        val temp = broadcast.history[0].glucose
-        glucose = if (isMalfunction || isSensorExpired || temp < 0) null
-        else com.microtech.aidexx.widget.dialog.lib.util.roundOffDecimal(temp / 18f)
-        glucoseLevel = getGlucoseLevel(glucose)
-        latestHistory?.let {
-            val historyDate = getHistoryDate(it.timeOffset)
-            if (glucose != null && lastHistoryTime != historyDate) {
-                lastHistoryTime = historyDate
+        Throttle.instance().emit(2000,11){
+            val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data)
+            LogUtil.eAiDEX("Receive broadcast ----> $broadcast")
+            if (entity.sensorStartTime == null) {
+                getController().startTime
+                return@emit
             }
-        }
-        targetEventIndex = latestHistory?.timeOffset ?: 0
-        if (nextEventIndex <= targetEventIndex) {
-            val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
-            if (broadcastContainsNext) {
-                val historiesFromBroadcast =
-                    getHistoriesFromBroadcast(nextEventIndex, adHistories)
-                saveBriefHistory(historiesFromBroadcast.reversed())
+            broadcast?.let {
+                refreshSensorState(broadcast)
+            }
+            if (broadcast.calTemp == 0 || broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
+                onCalibrationPermitChange?.invoke(false)
             } else {
-                latestHistory?.let {
-                    if (targetEventIndex > nextEventIndex) {
-                        if (newestIndex == targetEventIndex) {
-                            if (nextEventIndex < briefRangeStartIndex) {
-                                nextEventIndex = briefRangeStartIndex
+                onCalibrationPermitChange?.invoke(true)
+            }
+            isSensorExpired =
+                (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
+            isMalfunction =
+                broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
+            if (isMalfunction) {
+                when (broadcast.status) {
+                    History.SENSOR_MALFUNCTION -> faultType = 1
+                    History.GENERAL_DEVICE_FAULT -> faultType = 2
+                }
+            }
+            val adHistories = broadcast.history
+            if (adHistories.isNotEmpty()) {
+                latestHistory = adHistories[0]
+            } else {
+                return@emit
+            }
+            isHistoryValid =
+                latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
+            latestAd = broadcast
+            latestAdTime = SystemClock.elapsedRealtime()
+            if (UserInfoManager.shareUserInfo != null) {
+                LogUtil.eAiDEX("view sharing")
+                return@emit
+            }
+            val temp = broadcast.history[0].glucose
+            glucose = if (isMalfunction || isSensorExpired || temp < 0) null
+            else com.microtech.aidexx.widget.dialog.lib.util.roundOffDecimal(temp / 18f)
+            glucoseLevel = getGlucoseLevel(glucose)
+            latestHistory?.let {
+                val historyDate = getHistoryDate(it.timeOffset)
+                if (glucose != null && lastHistoryTime != historyDate) {
+                    lastHistoryTime = historyDate
+                }
+            }
+            targetEventIndex = latestHistory?.timeOffset ?: 0
+            if (nextEventIndex <= targetEventIndex) {
+                val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
+                if (broadcastContainsNext) {
+                    val historiesFromBroadcast =
+                        getHistoriesFromBroadcast(nextEventIndex, adHistories)
+                    saveBriefHistory(historiesFromBroadcast.reversed())
+                } else {
+                    latestHistory?.let {
+                        if (targetEventIndex > nextEventIndex) {
+                            if (newestIndex == targetEventIndex) {
+                                if (nextEventIndex < briefRangeStartIndex) {
+                                    nextEventIndex = briefRangeStartIndex
+                                }
+                                getController().getHistories(nextEventIndex)
+                            } else {
+                                getController().historyRange
                             }
-                            getController().getHistories(nextEventIndex)
-                        } else {
-                            getController().historyRange
                         }
                     }
                 }
+                return@emit
             }
-            return
-        }
-        val numGetHistory = 40
-        if (targetEventIndex >= nextFullEventIndex + numGetHistory
-            || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
-        ) {
-            if (newestIndex == targetEventIndex) {
-                if (nextFullEventIndex < rawRangeStartIndex) {
-                    nextFullEventIndex = rawRangeStartIndex
+            val numGetHistory = 40
+            if (targetEventIndex >= nextFullEventIndex + numGetHistory
+                || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
+            ) {
+                if (newestIndex == targetEventIndex) {
+                    if (nextFullEventIndex < rawRangeStartIndex) {
+                        nextFullEventIndex = rawRangeStartIndex
+                    }
+                    getController().getRawHistories(nextFullEventIndex)
+                } else {
+                    getController().historyRange
                 }
-                getController().getRawHistories(nextFullEventIndex)
-            } else {
-                getController().historyRange
             }
         }
     }

@@ -54,7 +54,7 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     model.getController().newSensor(
                         NewSensorEntity(false, TimeUtils.currentTimeMillis.millisToSeconds())
                     )
-                    HomeStateManager.instance().setState(glucosePanel)
+//                    HomeStateManager.instance().setState(glucosePanel)
                 })
             }
         }
@@ -62,17 +62,6 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
 
     override fun onResume() {
         super.onResume()
-        MessageDispatcher.instance().observer(lifecycleScope) {
-            val operation = it.operation
-            val success = it.isSuccess
-            when (operation) {
-                CgmOperation.CONNECT -> {
-                    if (!success){
-                        Dialogs.dismissWait()
-                    }
-                }
-            }
-        }
     }
 
     override fun onPause() {

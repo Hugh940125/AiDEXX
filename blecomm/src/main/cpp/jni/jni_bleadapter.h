@@ -18,6 +18,7 @@ public:
     using Ble::onConnectFailure;
     using Ble::onDisconnected;
     using Ble::onReceiveData;
+    using Ble::getBleState;
 
 protected:
     void executeStartScan();

@@ -24,6 +24,7 @@ public abstract class BleAdapter {
         super.finalize();
     }
 
+    public abstract void setDiscoverCallback();
     public abstract void executeStartScan();
 
     public abstract void executeStopScan();
@@ -49,6 +50,8 @@ public abstract class BleAdapter {
     public native int getServiceUUID();
 
     public native int getCharacteristicUUID();
+
+    public native int getBleState();
 
     public native int getPrivateCharacteristicUUID();
 

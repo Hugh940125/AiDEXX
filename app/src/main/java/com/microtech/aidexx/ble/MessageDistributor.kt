@@ -1,9 +1,9 @@
 package com.microtech.aidexx.ble
 
 import android.content.Context
-import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.microtechmd.blecomm.entity.BleMessage
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  *@date 2023/3/7
@@ -16,6 +16,7 @@ const val MESSAGE_DISTRIBUTOR_ACTION = "message.distributor.action"
 class MessageDistributor {
 
     private lateinit var localBroadcastManager: LocalBroadcastManager
+    private val concurrentHashMap = ConcurrentHashMap<Int, MessageObserver>()
 
     fun init(context: Context) {
         localBroadcastManager = LocalBroadcastManager.getInstance(context)
@@ -33,22 +34,28 @@ class MessageDistributor {
         }
     }
 
-    fun registerObserver(observer: MessageObserver) {
-
+    fun registerObserver(observer: MessageObserver, priority: Int) {
+        concurrentHashMap[priority] = observer
+        sort()
     }
 
-    fun unregisterObserver(observer: MessageObserver) {
-
+    fun unregisterObserver(observer: MessageObserver, priority: Int) {
+        concurrentHashMap.remove(priority, observer)
+        sort()
     }
 
-    fun unregisterAll(){
-
+    private fun sort() {
+        concurrentHashMap.toSortedMap(compareByDescending { it })
     }
 
     fun send(message: BleMessage) {
-        val intent = Intent(MESSAGE_DISTRIBUTOR_ACTION).apply {
-            putExtra("message", message)
+        val priorityMax = concurrentHashMap.keys.first()
+        for ((priority, observer) in concurrentHashMap) {
+            if (priority == priorityMax) {
+                observer.onMessage(message)
+            } else {
+                break
+            }
         }
-        localBroadcastManager.sendBroadcast(intent)
     }
 }
