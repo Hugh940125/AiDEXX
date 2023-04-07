@@ -11,7 +11,6 @@ import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -111,28 +110,28 @@ interface ApiService {
          * 响应在转实体之前做拦截判断业务是否成功
          */
         private fun checkBizCodeIsSuccess(bodyStr: String): Throwable? {
-            // todo 支持部分非json业务 如文件下载 暂时try 后面考虑统一到BaseResponse
-            try {
-                val baseResponse = gson.fromJson(bodyStr, BaseResponse::class.java)
-                var ret: Throwable? = null
-                baseResponse.info.let { info ->
-                    info.code.let { code ->
-                        if (code != 100000) {
-                            if (code == 120002) {
-                                Throttle.instance().emit(5000, code) {
-                                    EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
-                                }
-                            } else {
-                                ret = BizException(code, message = info.msg)
+            val baseResponse = gson.fromJson(bodyStr, BizCheckResponse::class.java)
+            var ret: Throwable? = null
+
+            baseResponse.run {
+                val infoCode = info.code
+                if (infoCode != RESULT_OK) {
+                    if (code != Int.MIN_VALUE) {
+                        if (code != 200) {
+                            ret = BizException(code, message = info.msg)
+                        }
+                    } else {
+                        if (infoCode == 120002) {
+                            Throttle.instance().emit(5000, infoCode) {
+                                EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                             }
+                        } else {
+                            ret = BizException(infoCode, message = info.msg)
                         }
                     }
                 }
-                return ret
-            } catch (e: Exception) {
-                LogUtil.e(e.localizedMessage ?: e.toString())
             }
-            return null
+            return ret
         }
 
         private fun getOkHttpClient(): OkHttpClient {
