@@ -8,7 +8,14 @@ public class AidexXController extends BleControllerProxy {
         System.loadLibrary("blecomm-lib");
     }
 
-    public AidexXController() {
+    private static class SingletonHolder{
+        private static final AidexXController INSTANCE = new AidexXController();
+    }
+    public static AidexXController getInstance(){
+        return SingletonHolder.INSTANCE;
+    }
+
+    private AidexXController() {
         constructor();
     }
 
@@ -79,5 +86,10 @@ public class AidexXController extends BleControllerProxy {
     @Override
     public void startTime() {
         getStartTime();
+    }
+
+    @Override
+    public void clearPair() {
+        deleteBond();
     }
 }

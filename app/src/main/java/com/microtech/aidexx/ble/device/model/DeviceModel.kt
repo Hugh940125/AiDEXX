@@ -28,6 +28,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var targetEventIndex = 0
     var nextEventIndex = 0
     var nextFullEventIndex = 0
+    var nextCalIndex = 0
     var latestAdTime = 0L
     var latestAd: Any? = null
     var glucose: Float? = null
@@ -39,8 +40,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
     var latestHistory: AidexXHistoryEntity? = null
-    var messageCallBack: ((msg: BleMessage) -> Unit)? = null
-    var onCalibrationCallback: ((allow: Boolean) -> Unit)? = null
+    var alert: ((time: String, type: Int) -> Unit)? = null
     var onCalibrationPermitChange: ((allow: Boolean) -> Unit)? = null
     var minutesAgo: Int? = null
         private set
@@ -87,8 +87,6 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     abstract suspend fun savePair(
         model: Int = 0,
         version: String? = null,
-        success: (() -> Unit)?,
-        fail: (() -> Unit)?
     )
 
     abstract suspend fun deletePair()
@@ -108,7 +106,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         })
     }
 
-    fun setCalibrationResult(boolean: Boolean) {
-        onCalibrationCallback?.invoke(boolean)
+    fun reset() {
+        entity.sensorStartTime = null
     }
 }

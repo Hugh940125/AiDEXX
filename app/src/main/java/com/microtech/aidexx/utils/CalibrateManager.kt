@@ -2,23 +2,22 @@ package com.microtech.aidexx.utils
 
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.DbRepository
-import com.microtech.aidexx.db.dao.CalerateDao
-import com.microtech.aidexx.db.dao.CgmHistoryDao
-import com.microtech.aidexx.db.entity.CalerateEntity
+import com.microtech.aidexx.db.dao.CalibrateDao
+import com.microtech.aidexx.db.entity.CalibrateEntity
 
 
 object CalibrateManager {
 
-    suspend fun getCalibrateHistorys(): MutableList<CalerateEntity> {
+    suspend fun getCalibrateHistorys(): MutableList<CalibrateEntity> {
 
-        val mutableListOf = mutableListOf<CalerateEntity>()
+        val mutableListOf = mutableListOf<CalibrateEntity>()
 
         val uid = UserInfoManager.shareUserInfo?.id ?: UserInfoManager.instance().userId()
 
         val calListFromHistory = DbRepository.queryCgmByUid(uid) ?: mutableListOf()
 
         for (history in calListFromHistory) {
-            val calerateEntity = CalerateEntity()
+            val calerateEntity = CalibrateEntity()
             calerateEntity.deviceId = history.deviceId ?: ""
             calerateEntity.calTime = history.deviceTime
             calerateEntity.sensorIndex = history.sensorIndex
@@ -26,7 +25,7 @@ object CalibrateManager {
             mutableListOf.add(calerateEntity)
         }
 
-        val calList = CalerateDao.queryByUid(uid) ?: mutableListOf()
+        val calList = CalibrateDao.queryByUid(uid) ?: mutableListOf()
 
         LogUtils.eAiDex("-----2|||$mutableListOf")
         mutableListOf.addAll(calList)

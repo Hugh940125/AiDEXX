@@ -8,5 +8,7 @@ import com.microtechmd.blecomm.entity.BleMessage
  *@desc
  */
 interface MessageObserver {
+
+
     fun onMessage(message: BleMessage)
 }

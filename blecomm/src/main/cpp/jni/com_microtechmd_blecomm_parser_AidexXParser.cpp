@@ -89,22 +89,25 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getRa
 }
 
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXCalbration
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXCalibration
         (JNIEnv *env, jclass, jbyteArray bytes) {
     const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
     jint length = env->GetArrayLength(bytes);
     AidexXCalibrationsParser calibrationsParser((const char *) data, length);
     jclass history_Class = env->FindClass(
             "com/microtechmd/blecomm/parser/AidexXCalibrationEntity");
-    jmethodID caliConstructMId = env->GetMethodID(history_Class, "<init>", "(IIFZ)V");
+    jmethodID caliConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIIFZ)V");
 
     jobject listObj = newList(env);
     while (calibrationsParser.hasNext()) {
         const AidexXCalibrationEntity *calbration = calibrationsParser.getCalibration();
         if (calbration != nullptr) {
+            LOGE("calbration : %d",calbration->offset);
             jobject historyObject = env->NewObject(history_Class, caliConstructMId,
                                                    calbration->index,
                                                    calbration->timeOffset,
+                                                   calbration->cf,
+                                                   calbration->offset,
                                                    calbration->referenceGlucose,
                                                    calbration->isValid);
             env->CallBooleanMethod(listObj, listAdd, historyObject);

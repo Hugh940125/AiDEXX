@@ -64,34 +64,33 @@ public class NiceImageView extends androidx.appcompat.widget.AppCompatImageView 
     public NiceImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        try (TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.NiceImageView, 0, 0)) {
-            for (int i = 0; i < ta.getIndexCount(); i++) {
-                int attr = ta.getIndex(i);
-                if (attr == R.styleable.NiceImageView_is_cover_src) {
-                    isCoverSrc = ta.getBoolean(attr, isCoverSrc);
-                } else if (attr == R.styleable.NiceImageView_is_circle) {
-                    isCircle = ta.getBoolean(attr, isCircle);
-                } else if (attr == R.styleable.NiceImageView_border_width) {
-                    borderWidth = ta.getDimensionPixelSize(attr, borderWidth);
-                } else if (attr == R.styleable.NiceImageView_border_color) {
-                    borderColor = ta.getColor(attr, borderColor);
-                } else if (attr == R.styleable.NiceImageView_inner_border_width) {
-                    innerBorderWidth = ta.getDimensionPixelSize(attr, innerBorderWidth);
-                } else if (attr == R.styleable.NiceImageView_inner_border_color) {
-                    innerBorderColor = ta.getColor(attr, innerBorderColor);
-                } else if (attr == R.styleable.NiceImageView_corner_radius) {
-                    cornerRadius = ta.getDimensionPixelSize(attr, cornerRadius);
-                } else if (attr == R.styleable.NiceImageView_corner_top_left_radius) {
-                    cornerTopLeftRadius = ta.getDimensionPixelSize(attr, cornerTopLeftRadius);
-                } else if (attr == R.styleable.NiceImageView_corner_top_right_radius) {
-                    cornerTopRightRadius = ta.getDimensionPixelSize(attr, cornerTopRightRadius);
-                } else if (attr == R.styleable.NiceImageView_corner_bottom_left_radius) {
-                    cornerBottomLeftRadius = ta.getDimensionPixelSize(attr, cornerBottomLeftRadius);
-                } else if (attr == R.styleable.NiceImageView_corner_bottom_right_radius) {
-                    cornerBottomRightRadius = ta.getDimensionPixelSize(attr, cornerBottomRightRadius);
-                } else if (attr == R.styleable.NiceImageView_mask_color) {
-                    maskColor = ta.getColor(attr, maskColor);
-                }
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.NiceImageView, 0, 0);
+        for (int i = 0; i < ta.getIndexCount(); i++) {
+            int attr = ta.getIndex(i);
+            if (attr == R.styleable.NiceImageView_is_cover_src) {
+                isCoverSrc = ta.getBoolean(attr, isCoverSrc);
+            } else if (attr == R.styleable.NiceImageView_is_circle) {
+                isCircle = ta.getBoolean(attr, isCircle);
+            } else if (attr == R.styleable.NiceImageView_border_width) {
+                borderWidth = ta.getDimensionPixelSize(attr, borderWidth);
+            } else if (attr == R.styleable.NiceImageView_border_color) {
+                borderColor = ta.getColor(attr, borderColor);
+            } else if (attr == R.styleable.NiceImageView_inner_border_width) {
+                innerBorderWidth = ta.getDimensionPixelSize(attr, innerBorderWidth);
+            } else if (attr == R.styleable.NiceImageView_inner_border_color) {
+                innerBorderColor = ta.getColor(attr, innerBorderColor);
+            } else if (attr == R.styleable.NiceImageView_corner_radius) {
+                cornerRadius = ta.getDimensionPixelSize(attr, cornerRadius);
+            } else if (attr == R.styleable.NiceImageView_corner_top_left_radius) {
+                cornerTopLeftRadius = ta.getDimensionPixelSize(attr, cornerTopLeftRadius);
+            } else if (attr == R.styleable.NiceImageView_corner_top_right_radius) {
+                cornerTopRightRadius = ta.getDimensionPixelSize(attr, cornerTopRightRadius);
+            } else if (attr == R.styleable.NiceImageView_corner_bottom_left_radius) {
+                cornerBottomLeftRadius = ta.getDimensionPixelSize(attr, cornerBottomLeftRadius);
+            } else if (attr == R.styleable.NiceImageView_corner_bottom_right_radius) {
+                cornerBottomRightRadius = ta.getDimensionPixelSize(attr, cornerBottomRightRadius);
+            } else if (attr == R.styleable.NiceImageView_mask_color) {
+                maskColor = ta.getColor(attr, maskColor);
             }
         }
         borderRadii = new float[8];

@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.microtechmd.blecomm.entity.BleMessage
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  *@date 2023/3/7
@@ -15,12 +17,8 @@ const val MESSAGE_DISTRIBUTOR_ACTION = "message.distributor.action"
 
 class MessageDistributor {
 
-    private lateinit var localBroadcastManager: LocalBroadcastManager
-    private val concurrentHashMap = ConcurrentHashMap<Int, MessageObserver>()
-
-    fun init(context: Context) {
-        localBroadcastManager = LocalBroadcastManager.getInstance(context)
-    }
+    private val observerList = CopyOnWriteArrayList<MessageObserver>()
+    private var topObserver: MessageObserver? = null
 
     companion object {
         private var instance: MessageDistributor? = null
@@ -34,28 +32,33 @@ class MessageDistributor {
         }
     }
 
-    fun registerObserver(observer: MessageObserver, priority: Int) {
-        concurrentHashMap[priority] = observer
-        sort()
+    fun observerAndIntercept(observer: MessageObserver) {
+        topObserver = observer
     }
 
-    fun unregisterObserver(observer: MessageObserver, priority: Int) {
-        concurrentHashMap.remove(priority, observer)
-        sort()
+    fun removeObserver() {
+        topObserver = null
     }
 
-    private fun sort() {
-        concurrentHashMap.toSortedMap(compareByDescending { it })
+    fun observer(observer: MessageObserver) {
+        observerList.add(observer)
+    }
+
+    fun removeObserver(observer: MessageObserver) {
+        observerList.remove(observer)
     }
 
     fun send(message: BleMessage) {
-        val priorityMax = concurrentHashMap.keys.first()
-        for ((priority, observer) in concurrentHashMap) {
-            if (priority == priorityMax) {
-                observer.onMessage(message)
-            } else {
-                break
-            }
+        if (topObserver != null) {
+            topObserver?.onMessage(message)
+            return
         }
+        for (observer in observerList) {
+            observer.onMessage(message)
+        }
+    }
+
+    fun clear() {
+        observerList.clear()
     }
 }

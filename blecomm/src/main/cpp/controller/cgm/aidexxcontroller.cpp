@@ -326,6 +326,10 @@ bool AidexXController::handleCommand(uint8 port, uint8 op, uint8 param, const ui
     else if (op == OP_SET_GC_BIAS_TRIMMING) aidexXOp = AidexXOperation::SET_GC_BIAS_TRIMMING;
     else if (op == OP_SET_GC_IMEAS_TRIMMING) aidexXOp = AidexXOperation::SET_GC_IMEAS_TRIMMING;
 
+    if (aidexXOp == AidexXOperation::DELETE_BOND) {
+        setKey(NULL);
+    }
+
     autoSending = true;
     onReceive(aidexXOp, true, data, length);
     return true;

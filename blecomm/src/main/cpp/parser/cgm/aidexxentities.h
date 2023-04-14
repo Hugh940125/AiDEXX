@@ -44,6 +44,8 @@ typedef struct {
     uint16 timeOffset;        // minutes, based on Session Start Time
     float32 referenceGlucose; // mg/dL
     bool isValid;             // false: data loss
+    int16 cf;        // minutes, based on Session Start Time
+    int16 offset;        // minutes, based on Session Start Time
 } AidexXCalibrationEntity;
 
 /* NewSensor:         (status & AidexxStatus::SESSION_STOPPED) && (calTemp & AidexxCalTemp::TIME_SYNCHRONIZATION_REQUIRED)

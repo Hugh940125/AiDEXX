@@ -1,6 +1,6 @@
 package com.microtech.aidexx.common.net.entity
 
-const val RESULT_OK = 100000
+const val RESULT_SUCCESS = 100000
 
 data class BaseResponse<T>(
     var info: Info = Info(),

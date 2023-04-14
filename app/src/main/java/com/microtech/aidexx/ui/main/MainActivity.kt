@@ -20,12 +20,12 @@ import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
+import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
-import com.microtech.aidexx.utils.LocationUtils
-import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.ProcessUtil
+import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
+import com.microtech.aidexx.widget.dialog.Dialogs
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
 import kotlinx.coroutines.launch
@@ -69,18 +69,18 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             activity.enableLocation()
                         }
-//                        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
-//                            val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
-//                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
-//                            if (!hasIgnored) {
-//                                Dialogs.showWhether(
-//                                    activity,
-//                                    content = activity.getString(R.string.content_ignore_battery),
-//                                    confirm = {
-//                                        activity.ignoreBatteryOptimization()
-//                                    })
-//                            }
-//                        }
+                        REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
+                            val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
+                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
+                            if (!hasIgnored) {
+                                Dialogs.showWhether(
+                                    activity,
+                                    content = activity.getString(R.string.content_ignore_battery),
+                                    confirm = {
+                                        activity.ignoreBatteryOptimization()
+                                    })
+                            }
+                        }
                     }
                 }
             }
@@ -90,23 +90,30 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        startService(Intent(this, MainService::class.java))
+        try {
+            startService(Intent(this, MainService::class.java))
+        } catch (e: Exception) {
+            LogUtil.eAiDEX(e.message.toString())
+        }
         mHandler = MainHandler(this)
         initSDKs()
         fitOrientation()
         initView()
+        loadDbData()
+    }
+
+    private fun loadDbData() {
+        AlertUtil.loadSettingsFromDb()
     }
 
     override fun onResume() {
         super.onResume()
         requestPermission()
-
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo()?.let {
                 AppUpdateFragment(it).show(supportFragmentManager, AppUpdateFragment.TAG)
             }
         }
-
     }
 
     override fun onPause() {
@@ -166,6 +173,7 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
 //        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
         //Xlog初始化
         initXlog()
+        ContextUtil.init(this)
     }
 
     fun fitOrientation() {
@@ -272,6 +280,11 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
                 )
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        ActivityUtil.toSystemHome(this)
     }
 
     @SuppressLint("BatteryLife")

@@ -65,9 +65,18 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         lifecycleScope.launch {
             TransmitterManager.instance().loadTransmitter()
         }
+        judgeState()
         TransmitterManager.setOnTransmitterChangeListener {
             judgeState()
-            AidexBleAdapter.getInstance().startBtScan(true)
+            if (it.isPaired() && AidexBleAdapter.getInstance().bleState != 1) {
+                lifecycleScope.launch {
+                    delay(2000)
+                    AidexBleAdapter.getInstance().startBtScan(true)
+                }
+            }
+        }
+        HomeBackGroundSelector.instance().onLevelChange = {
+            binding.homeRoot.setBackgroundResource(it)
         }
     }
 
@@ -96,9 +105,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         chartViewHolder = ChartViewHolder(binding, this) {
             if (switchOrientation == 2) {
                 orientation(initOrientation)
-                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY,true, 500)
+                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY, true, 500)
             } else {
-                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY,true)
+                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY, true)
             }
         }
 
@@ -116,25 +125,31 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun initEvent() {
-
         lifecycleScope.launch {
-            withContext(Dispatchers.IO){
-
+            withContext(Dispatchers.IO) {
                 for (i in 0..100) {
                     delay(2.seconds)
-
-                    val a = RealCgmHistoryEntity()
-                    a.deviceTime = Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60*10))
-                    a.eventData = (i % 36).toFloat()
-                    a.eventType = History.HISTORY_GLUCOSE
-
-                    EventBusManager.send(EventBusKey.EVENT_CGM_DATA_CHANGED, CgmDataChangedInfo(DataChangedType.ADD, listOf(a)))
-
+                    val historyEntity = RealCgmHistoryEntity()
+                    historyEntity.deviceTime = Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60 * 10))
+                    historyEntity.eventData = (i % 36).toFloat()
+                    historyEntity.eventType = History.HISTORY_GLUCOSE
+                    EventBusManager.send(
+                        EventBusKey.EVENT_CGM_DATA_CHANGED,
+                        CgmDataChangedInfo(DataChangedType.ADD, listOf(historyEntity))
+                    )
                 }
-
             }
         }
-
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_UNPAIR_RESULT,this){
+            if (it){
+                HomeStateManager.instance().setState(needPair)
+            }
+        }
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT,this){
+            if (it){
+                HomeStateManager.instance().setState(glucosePanel)
+            }
+        }
     }
 
     private fun judgeState() {

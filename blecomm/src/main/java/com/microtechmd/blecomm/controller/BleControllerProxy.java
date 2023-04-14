@@ -7,4 +7,5 @@ public abstract class BleControllerProxy extends BleController {
    public abstract void getDefaultParam();
    public abstract void newSensor(NewSensorEntity newSensorEntity);
    public abstract void startTime();
+   public abstract void clearPair();
 }

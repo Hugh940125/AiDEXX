@@ -1,6 +1,6 @@
 package com.microtech.aidexx.utils
 
-import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtech.aidexx.ui.setting.alert.AlertUtil
 
 object ThresholdManager {
 
@@ -19,21 +19,21 @@ object ThresholdManager {
 
     var hyper: Float = 0f
         set(value) {
-            MmkvManager.saveHyper(value)
+            AlertUtil.setHyperThreshold(value)
         }
         get() {
             if (field == 0f) {
-                field = MmkvManager.getHyper()
+                field = AlertUtil.getAlertSettings().hyperThreshold
             }
             return field
         }
     var hypo: Float = 0f
         set(value) {
-            MmkvManager.saveHypo(value)
+            AlertUtil.setHypoThreshold(value)
         }
         get() {
             if (field == 0f) {
-                field = MmkvManager.getHypo()
+                field = AlertUtil.getAlertSettings().hypoThreshold
             }
             return field
         }

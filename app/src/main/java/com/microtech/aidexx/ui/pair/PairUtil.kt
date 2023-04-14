@@ -1,105 +1,102 @@
 package com.microtech.aidexx.ui.pair
 
 import android.content.Context
-import android.view.View
 import com.microtech.aidexx.R
-import com.microtech.aidexx.ble.MessageDispatcher
+import com.microtech.aidexx.ble.MessageDistributor
+import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.date2ymdhm
-import com.microtech.aidexx.databinding.DialogWithOneBtnBinding
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.controller.BleControllerInfo
+import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 object PairUtil {
-    fun observe(
-        context: Context, scope: CoroutineScope, successCallback: ((success: Boolean) -> Unit)?
-    ): Job {
-        return MessageDispatcher.instance().observer(scope) { msg ->
-            val success = msg.isSuccess
-            val default = TransmitterManager.instance().getDefault()
-            default?.let {
-                when (msg.operation) {
-                    AidexXOperation.DISCOVER -> {
-                        LogUtil.eAiDEX("Pair ----> scan:$success")
-                        if (success) {
-                            Dialogs.showWait(context.getString(R.string.Connecting))
-                        } else {
-                            Dialogs.showError(context.getString(R.string.Search_Timeout))
-                        }
-                    }
-                    AidexXOperation.CONNECT -> {
-                        LogUtil.eAiDEX("Pair ----> connect:$success")
-                        if (success) {
-                            Dialogs.showWait(context.getString(R.string.Pairing))
-                        } else {
-                            Dialogs.showError(context.getString(R.string.Connecting_Failed))
-                        }
-                    }
-                    CgmOperation.BOND -> {
-                        LogUtil.eAiDEX("Pair ----> bond:$success")
-                        if (success) {
 
-                        } else {
-                            Dialogs.showError(context.getString(R.string.failure))
-                        }
-                    }
-                    CgmOperation.PAIR -> {
-                        LogUtil.eAiDEX("Pair ----> pair:$success")
-                        if (success) {
+    private var isForceUnpair: Boolean = false
 
-                        } else {
-                            pairFailedTips(context)
-                        }
-                    }
-                    CgmOperation.UNPAIR -> {
-                        LogUtil.eAiDEX("Pair ----> unpair:$success")
-                        if (success) {
-                            scope.launch {
-                                default.deletePair()
+    fun observeMessage(context: Context, scope: CoroutineScope) {
+        MessageDistributor.instance().observerAndIntercept(object : MessageObserver {
+            override fun onMessage(message: BleMessage) {
+                val success = message.isSuccess
+                val default = TransmitterManager.instance().getDefault()
+                if (default != null) {
+                    when (message.operation) {
+                        AidexXOperation.DISCOVER -> {
+                            if (!success) {
+                                Dialogs.showError(context.getString(R.string.Search_Timeout))
                             }
-                        } else {
-                            Dialogs.showError(context.getString(R.string.Unpair_fail))
                         }
-                    }
-                    AidexXOperation.GET_START_TIME -> {
-                        val data = msg.data
-                        val sensorStartTime = ByteUtils.toDate(data)
-                        LogUtil.eAiDEX("Pair ----> Start time :" + sensorStartTime.date2ymdhm())
-                        default.entity.sensorStartTime = sensorStartTime
-                        scope.launch {
-                            default.savePair(success = {
-                                successCallback?.invoke(true)
-                                this.launch(Dispatchers.Main) {
-                                    Dialogs.showSuccess(context.getString(R.string.Pairing_Succeed))
-                                    EventBusManager.send(EventBusKey.EVENT_PAIR_SUCCESS, true)
-                                }
-                            }, fail = {
-                                this.launch(Dispatchers.Main) {
-                                    Dialogs.showError(context.getString(R.string.Pairing_Failed))
-                                }
-                            })
+                        AidexXOperation.CONNECT -> {
+                            LogUtil.eAiDEX("Pair ----> connect:$success")
+                            if (success) {
+                                Dialogs.showWait(context.getString(R.string.Connecting))
+                            } else {
+                                Dialogs.showError(context.getString(R.string.Connecting_Failed))
+                            }
                         }
-                    }
-                    AidexXOperation.GET_DEVICE_INFO -> {}
+                        CgmOperation.BOND -> {
+                            LogUtil.eAiDEX("Pair ----> bond:$success")
+                            if (!success) {
+                                Dialogs.showError(context.getString(R.string.failure))
+                            }
+                        }
+                        CgmOperation.PAIR -> {
+                            LogUtil.eAiDEX("Pair ----> pair:$success")
+                            if (!success) {
+                                pairFailedTips(context)
+                            }
+                        }
+                        AidexXOperation.DELETE_BOND -> {
+                            LogUtil.eAiDEX("Pair ----> delete bond:$success")
+                            if (!isForceUnpair) {
+                                if (success) {
+                                    scope.launch {
+                                        default.deletePair()
+                                    }
+                                } else {
+                                    Dialogs.showError(context.getString(R.string.Unpair_fail))
+                                }
+                            }
+                        }
+                        CgmOperation.UNPAIR -> {
+                            LogUtil.eAiDEX("Pair ----> unpair:$success")
+                            if (success) {
+                                scope.launch {
+                                    default.deletePair()
+                                }
+                            } else {
+                                Dialogs.showError(context.getString(R.string.Unpair_fail))
+                            }
+                        }
+                        AidexXOperation.GET_START_TIME -> {
+                            val data = message.data
+                            val sensorStartTime = ByteUtils.toDate(data)
+                            LogUtil.eAiDEX("Pair ----> Start time :" + sensorStartTime.date2ymdhm())
+                            default.entity.sensorStartTime = sensorStartTime
+                            scope.launch {
+                                default.savePair()
+                            }
+                        }
+                        AidexXOperation.GET_DEVICE_INFO -> {}
 
-                    AidexXOperation.DISCONNECT -> {
-                        LogUtil.eAiDEX("Pair ----> disconnect:$success")
-                        Dialogs.dismissWait()
+                        AidexXOperation.DISCONNECT -> {
+                            LogUtil.eAiDEX("Pair ----> disconnect:$success")
+                            Dialogs.dismissWait()
+                        }
+                        else -> {}
                     }
                 }
             }
-        }
+        })
     }
 
     fun startPair(context: Context, controllerInfo: BleControllerInfo) {
@@ -110,10 +107,11 @@ object PairUtil {
         buildModel.getController().startTime()
     }
 
-    fun startUnpair(context: Context) {
+    fun startUnpair(context: Context, isForce: Boolean) {
+        isForceUnpair = isForce
         Dialogs.showWait(context.getString(R.string.Searching))
         val model = TransmitterManager.instance().getDefault()
-        model?.getController()?.unpair()
+        model?.getController()?.clearPair()
     }
 
     private fun pairFailedTips(context: Context) {

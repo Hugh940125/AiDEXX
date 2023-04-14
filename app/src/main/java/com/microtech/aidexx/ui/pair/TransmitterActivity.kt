@@ -17,19 +17,22 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
+import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ToastUtil
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import io.objectbox.reactive.DataObserver
 import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
@@ -44,15 +47,14 @@ const val BLE_INFO = "info"
 
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(),
     OnClickListener {
-    private var isMessageCallbackSet = false
-    private var mObserver: Job? = null
+    private var needSetMessageCallback = true
     private var scanStarted = false
     private lateinit var rotateAnimation: RotateAnimation
     private var subscription: DataSubscription? = null
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
     private var transmitter: TransmitterEntity? = null
-    private val transmitterList = mutableListOf<BleControllerInfo>()
+    private lateinit var transmitterList: MutableList<BleControllerInfo>
 
     class TransmitterHandler(val activity: TransmitterActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
@@ -73,30 +75,46 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         AidexxApp.isPairing = true
+        transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
         loadSavedTransmitter()
-        if (transmitter == null || transmitter?.accessId == null) {
-            AidexBleAdapter.getInstance().startBtScan(false)
-            scanStarted = true
-            Dialogs.showWait(getString(R.string.loading))
-            transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
-        }
         initAnim()
         initView()
-        AidexBleAdapter.onDeviceDiscover = {
-            if (!isMessageCallbackSet) {
-                observeMessage()
-                isMessageCallbackSet = true
+        onDeviceDiscover()
+        initEvent()
+    }
+
+    private fun initEvent() {
+        EventBusManager.onReceive<Boolean>(
+            EventBusKey.EVENT_PAIR_RESULT,
+            this
+        ) {
+            if (window.decorView.visibility == View.VISIBLE) {
+                if (it) {
+                    Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
+                    transmitterList.clear()
+                } else {
+                    TransmitterManager.instance().removeDefault()
+                }
+            }
+        }
+    }
+
+    private fun onDeviceDiscover() {
+        AidexBleAdapter.getInstance().onDeviceDiscover = {
+            if (needSetMessageCallback) {
+                PairUtil.observeMessage(this, lifecycleScope)
+                needSetMessageCallback = false
             }
             if (it.name.contains("AiDEX X")) {
                 val address = it.address
-                if (transmitter == null || address != transmitter?.deviceMac) {
-                    if (!transmitterList.contains(it)) {
-                        transmitterList.add(it)
-                    }
+                if ((transmitter == null || address != transmitter?.deviceMac)
+                    && !transmitterList.contains(it)
+                ) {
+                    transmitterList.add(it)
                 }
+                transmitterAdapter.setList(transmitterList)
             }
-            transmitterAdapter.setList(transmitterList)
         }
     }
 
@@ -122,12 +140,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         super.onPause()
     }
 
-    private fun observeMessage() {
-        mObserver = PairUtil.observe(this, lifecycleScope) {
-            transmitterList.clear()
-        }
-    }
-
     private fun initView() {
         binding.actionbarTransmitter.getLeftIcon().setOnClickListener { finish() }
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
@@ -150,16 +162,19 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
         binding.rvOtherTrans.adapter = transmitterAdapter
+        Dialogs.showWait(getString(R.string.loading))
+        transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()
         AidexxApp.isPairing = false
-        if (scanStarted) {
+        if ((transmitter == null || transmitter?.accessId == null) && scanStarted) {
             AidexBleAdapter.getInstance().stopBtScan(false)
         }
-        transmitterHandler.removeCallbacksAndMessages(null)
+        transmitterHandler.removeMessages(DISMISS_LOADING)
         subscription?.cancel()
     }
 
@@ -192,12 +207,24 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                     binding.layoutMyTrans.tvTransPairState.text = "已配对"
                 }
             }
+            if (transmitter == null || transmitter?.accessId == null) {
+                AidexBleAdapter.getInstance().startBtScan(true)
+                scanStarted = true
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            PairUtil.observeMessage(this, lifecycleScope)
         }
     }
 
     override fun onClick(v: View?) {
         when (v) {
             binding.layoutMyTrans.transItem -> {
+                MessageDistributor.instance().removeObserver()
                 val intent = Intent(this, TransOperationActivity::class.java)
                 intent.putExtra(
                     BLE_INFO,
@@ -213,7 +240,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 } else {
                     intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
                 }
-                startActivity(intent)
+                startActivityForResult(intent, 1)
             }
         }
     }

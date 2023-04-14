@@ -73,7 +73,7 @@ class TransmitterManager private constructor() {
         }
     }
 
-    fun notifyTransmitterChange(model: DeviceModel) {
+    private fun notifyTransmitterChange(model: DeviceModel) {
         for (listener in listenerList) {
             listener?.invoke(model)
         }

@@ -17,15 +17,20 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        PairUtil.observeMessage(this, lifecycleScope)
         initView()
         initEvents()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
     }
 
     private fun initEvents() {
         EventBusManager.onReceive<Boolean>(
             keys = arrayOf(
-                EventBusKey.EVENT_PAIR_SUCCESS,
-                EventBusKey.EVENT_UNPAIR_SUCCESS
+                EventBusKey.EVENT_PAIR_RESULT,
+                EventBusKey.EVENT_UNPAIR_RESULT
             ),
             this
         ) {
@@ -34,6 +39,7 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
     }
 
     private fun initView() {
+        binding.actionbarTransOperation.getLeftIcon().setOnClickListener { finish() }
         val bleControllerInfo = intent.getParcelableExtra<BleControllerInfo>(BLE_INFO)
         binding.actionbarTransOperation.setTitle(bleControllerInfo?.sn)
         when (intent.getIntExtra(OPERATION_TYPE, 0)) {
@@ -48,10 +54,11 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
             }
         }
         binding.tvUnpair.setOnClickListener {
-            PairUtil.startUnpair(this@TransOperationActivity)
+            PairUtil.startUnpair(this@TransOperationActivity,false)
         }
         binding.tvForceDelete.setOnClickListener {
             lifecycleScope.launch {
+                PairUtil.startUnpair(this@TransOperationActivity,true)
                 TransmitterManager.instance().getDefault()?.deletePair()
             }
         }

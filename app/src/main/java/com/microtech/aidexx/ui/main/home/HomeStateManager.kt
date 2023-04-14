@@ -3,6 +3,9 @@ package com.microtech.aidexx.ui.main.home
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import java.util.*
 
 /**
@@ -44,6 +47,7 @@ class HomeStateManager private constructor() {
     fun setState(tag: String) {
         if (tag != glucosePanel) {
             countDownToReset()
+            EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
         }
         if (tag == warmingUp) {
             timeLeft = null

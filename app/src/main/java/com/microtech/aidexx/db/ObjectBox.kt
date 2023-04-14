@@ -25,13 +25,13 @@ object ObjectBox {
     fun runAsync(
         runnable: Runnable,
         onSuccess: (() -> Unit)? = null,
-        onError: (() -> Unit)? = null
+        onError: ((error: Throwable?) -> Unit)? = null
     ) {
         store.runInTxAsync(runnable) { _, error ->
             if (error == null) {
                 onSuccess?.invoke()
             } else {
-                onError?.invoke()
+                onError?.invoke(error)
             }
         }
     }
@@ -49,6 +49,15 @@ object ObjectBox {
         get() {
             if (field == null) {
                 field = store.boxFor(TransmitterEntity::class.java)
+                return field
+            }
+            return field
+        }
+
+    var AlertSettingsBox: Box<AlertSettingsEntity>? = null
+        get() {
+            if (field == null) {
+                field = store.boxFor(AlertSettingsEntity::class.java)
                 return field
             }
             return field
@@ -72,9 +81,19 @@ object ObjectBox {
             return field
         }
 
+    var calibrationBox: Box<CalibrateEntity>? = null
+        get() {
+            if (field == null) {
+                field = store.boxFor(CalibrateEntity::class.java)
+                return field
+            }
+            return field
+        }
+
     /**
      * 把ob自带的异步包装到协程中使用
      */
-    suspend inline fun <V : Any> awaitCallInTx(callable: Callable<V?>): V? = store.awaitCallInTx(callable)
+    suspend inline fun <V : Any> awaitCallInTx(callable: Callable<V?>): V? =
+        store.awaitCallInTx(callable)
 
 }

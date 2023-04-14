@@ -6,7 +6,7 @@ import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.net.entity.RESULT_SUCCESS
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
@@ -47,7 +47,7 @@ abstract class CloudHistorySync<T : EventEntity> {
             withContext(Dispatchers.IO) {
                 val result = postLocalData(json)
                 result?.let { response ->
-                    if (response.info.code == RESULT_OK) {
+                    if (response.info.code == RESULT_SUCCESS) {
                         response.content?.let {
                             replaceEventData(needUploadData, it.records)
                         }
@@ -74,7 +74,7 @@ abstract class CloudHistorySync<T : EventEntity> {
                     val json = GsonBuilder().create().toJson(list)
                     val syncDeleteData = syncDeleteData(json)
                     syncDeleteData?.let {
-                        if (syncDeleteData.info.code == RESULT_OK) {
+                        if (syncDeleteData.info.code == RESULT_SUCCESS) {
                             for (item in needDelete) {
                                 item.deleteStatus = 2
                                 item.state = 1
@@ -90,7 +90,7 @@ abstract class CloudHistorySync<T : EventEntity> {
     suspend fun downloadData(authorizationId: String? = null) {
         val result = getRemoteData(authorizationId)
         result?.let { result ->
-            if (result.info.code == RESULT_OK) {
+            if (result.info.code == RESULT_SUCCESS) {
                 result.content?.let {
                     replaceEventData(
                         responseList = it.records, cgmStatus = 3, authorId = authorizationId

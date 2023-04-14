@@ -338,7 +338,7 @@ class ChartViewModel: ViewModel() {
         LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
 
         if (isGp) {
-            var all: MutableList<CalerateEntity> = mutableListOf()
+            var all: MutableList<CalibrateEntity> = mutableListOf()
             all = CalibrateManager.getCalibrateHistorys()
             calSet.clear()
             for (item in all) {
@@ -434,7 +434,7 @@ class ChartViewModel: ViewModel() {
     }
 
     // 国际版用
-    private fun updateGpCalibrationSet(history: CalerateEntity) {
+    private fun updateGpCalibrationSet(history: CalibrateEntity) {
         val dateTime = ChartUtil.dateToX(history.calTime)
         val bg = BloodGlucoseEntity(history.calTime, history.referenceGlucose!!.toFloat())
         bg.calibration = true

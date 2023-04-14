@@ -1,6 +1,8 @@
 package com.microtech.aidexx.base
 
 import android.app.AlertDialog
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -15,18 +17,18 @@ import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import com.microtech.aidexx.R
-import com.microtech.aidexx.constant.MESSAGE_TYPE_SENRORERROR
-import com.microtech.aidexx.constant.MESSAGE_TYPE_SENROR_EMBEDDING
-import com.microtech.aidexx.constant.MESSAGE_TYPE_SENROR_EMBEDDING_SUPER
 import com.microtech.aidexx.ui.account.LoginActivity
+import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
@@ -35,7 +37,6 @@ import com.microtech.aidexx.widget.dialog.customerservice.CustomerServiceDialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
 
 abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatActivity() {
@@ -76,22 +77,25 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
     }
 
-    private fun observe() {
-        EventBusManager.onReceive<AlertInfo>(EventBusKey.EVENT_SHOW_ALERT, this) {
-            if (ActivityUtil.isForeground(this) && it.content.isNotBlank()) {
-                mainScope.launch {
-                    Dialogs.showAlert(this@BaseActivity, null, it.content) {
-                        if (it.type == MESSAGE_TYPE_SENROR_EMBEDDING_SUPER || it.type == MESSAGE_TYPE_SENROR_EMBEDDING || it.type == MESSAGE_TYPE_SENRORERROR) {
-                            CustomerServiceDialog.Setter().create(this@BaseActivity)?.show()
-                        }
-                    }
-                }
+    private fun dialogAlert(content: String, showCustomerService: Boolean = false) {
+        Dialogs.showAlert(this@BaseActivity, null, content) {
+            AlertUtil.stop()
+            if (showCustomerService) {
+                CustomerServiceDialog.Setter().create(this@BaseActivity)?.show()
             }
         }
-        EventBusManager.onReceive<Nothing>(EventBusKey.EVENT_RESTART_BLUETOOTH, this) {
+    }
+
+    private fun observe() {
+        EventBusManager.onReceive<AlertInfo>(EventBusKey.EVENT_SHOW_ALERT, this) {
+            dialogAlert(it.content, it.showCustomerService)
+        }
+        EventBusManager.onReceive<Nothing>(EventBusKey.EVENT_RESTART_BLUETOOTH, this)
+        {
 
         }
-        EventBusManager.onReceive<Boolean>(EventBusKey.TOKEN_EXPIRED, this) {
+        EventBusManager.onReceive<Boolean>(EventBusKey.TOKEN_EXPIRED, this)
+        {
             Dialogs.showMessage(this, content = getString(R.string.token_expired), callBack = {
                 val intent = Intent(this, LoginActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -100,6 +104,22 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
     }
 
+    private fun process(type: Int, isUrgent: Boolean) {
+        if (type == MESSAGE_TYPE_SIGNAL_LOST) {
+            val signalLossAlertMethod = MmkvManager.signalLossAlertMethod()
+            AlertUtil.alert(this, signalLossAlertMethod, isUrgent)
+            return
+        }
+        if (type != MESSAGE_TYPE_REPLACE_SENSOR && type != MESSAGE_TYPE_NEW_SENSOR) {
+            if (isUrgent) {
+                val urgentAlertMethod = MmkvManager.getUrgentAlertMethod()
+                AlertUtil.alert(this, urgentAlertMethod, true)
+            } else {
+                val alertMethod = MmkvManager.getAlertMethod()
+                AlertUtil.alert(this, alertMethod, false)
+            }
+        }
+    }
     abstract fun getViewBinding(): VB
 
     override fun onResume() {

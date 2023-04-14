@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.account
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
@@ -9,6 +10,7 @@ import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
+import com.microtech.aidexx.common.net.entity.RESULT_SUCCESS
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
 import com.microtech.aidexx.ui.main.MainActivity
@@ -142,18 +144,22 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         }
         Dialogs.showWait(getString(R.string.Login_loging))
         viewModel.login(map, { baseResponse ->
-            val content = baseResponse.content
-            content?.let {
-                lifecycleScope.launch {
-                    UserInfoManager.instance().onUserLogin(content) {
-                        if (it) {
-                            downloadData()
-                            onLoginSuccess()
-                        } else {
-                            ToastUtil.showShort(getString(R.string.login_fail))
+            if (baseResponse.info.code == RESULT_SUCCESS) {
+                val content = baseResponse.content
+                content?.let {
+                    lifecycleScope.launch {
+                        UserInfoManager.instance().onUserLogin(content) {
+                            if (it) {
+                                downloadData()
+                                onLoginSuccess()
+                            } else {
+                                ToastUtil.showShort(getString(R.string.login_fail))
+                            }
                         }
                     }
                 }
+            } else {
+                ToastUtil.showShort(getString(R.string.login_fail))
             }
         }, {
 

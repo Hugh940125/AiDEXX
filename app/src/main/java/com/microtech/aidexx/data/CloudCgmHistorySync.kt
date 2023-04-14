@@ -1,7 +1,6 @@
 package com.microtech.aidexx.data
 
 import com.google.gson.GsonBuilder
-import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiService
@@ -9,7 +8,7 @@ import com.microtech.aidexx.common.net.UPLOAD_CGM_RECORD
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.net.entity.RESULT_SUCCESS
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
@@ -21,10 +20,8 @@ import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.await
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
 
 private const val TYPE_BRIEF = 0
 private const val TYPE_RAW = 1
@@ -77,7 +74,7 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             withContext(Dispatchers.IO) {
                 val briefResponse = postLocalData(json)
                 briefResponse?.let { response ->
-                    if (response.info.code == RESULT_OK) {
+                    if (response.info.code == RESULT_SUCCESS) {
                         response.content?.let {
                             replaceEventData(needUploadBriefData, it.records, 1)
                         }
@@ -96,7 +93,7 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             withContext(Dispatchers.IO) {
                 val rawResponse = putLocalData(json)
                 rawResponse?.let { response ->
-                    if (response.info.code == RESULT_OK) {
+                    if (response.info.code == RESULT_SUCCESS) {
                         response.content?.let {
                             replaceEventData(needUploadRawData, it.records, 2)
                         }
@@ -211,7 +208,7 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             //本地最大recordIndex
             val maxRecordIndex = getMaxRecordIndex(authorId)
             val result = getRecentCgmHistories(authorId, maxRecordIndex)
-            if (result?.code == RESULT_OK) {
+            if (result?.code == RESULT_SUCCESS) {
                 //服务器最小的recordIndex
                 val content = result.content
                 content?.let {

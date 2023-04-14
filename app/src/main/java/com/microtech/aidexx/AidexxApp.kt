@@ -1,6 +1,8 @@
 package com.microtech.aidexx
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
@@ -13,8 +15,11 @@ import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
+    private var activityAliveCount: AtomicInteger = AtomicInteger(0)
+
     companion object {
         var isPairing: Boolean = false
         lateinit var instance: AidexxApp
@@ -33,15 +38,42 @@ class AidexxApp : Application() {
                 Admin(ObjectBox.store).start(this)
             }
         }
+        registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
     }
 
     private fun initSdks() {
+        AlertUtil.init(this)
         MMKV.initialize(this)
         ObjectBox.init(this)
         DialogX.init(this)
         AidexBleAdapter.init(this)
         BleController.setBleAdapter(AidexBleAdapter.getInstance())
         AidexBleAdapter.getInstance().setDiscoverCallback()
-        AlertUtil.init(this)
     }
+
+    fun isForeground(): Boolean {
+        if (activityAliveCount.get() != 0) {
+            LogUtil.eAiDEX("前台")
+            return true
+        }
+        LogUtil.eAiDEX("后台")
+        return false
+    }
+
+    private val activityLifecycleCallbacks: ActivityLifecycleCallbacks =
+        object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: Activity) {
+                activityAliveCount.incrementAndGet()
+            }
+
+            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {
+                activityAliveCount.decrementAndGet()
+            }
+
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {}
+        }
 }
