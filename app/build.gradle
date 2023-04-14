@@ -4,6 +4,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
 //    id 'io.objectbox'
+    id 'com.microtech.plugins.resourcesId' version("1.0.0")
 }
 
 android {
@@ -39,6 +40,18 @@ android {
             buildConfigField("String", "logUploadUrl", "\"http://192.168.222.26:5555/\"")
         }
     }
+
+    aaptOptions {
+        File publicTxtFile = project.rootProject.file('app/dist/public.txt')
+        if (publicTxtFile.exists()) {
+            project.logger.info "${publicTxtFile} exists, apply it."
+            aaptOptions.additionalParameters "--stable-ids", "${publicTxtFile.absolutePath}"
+        } else {
+            project.logger.error "${publicTxtFile} not exists"
+//            aaptOptions.additionalParameters "--emit-ids", "${publicTxtFile.absolutePath}"
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -49,6 +62,7 @@ android {
     buildFeatures {
         viewBinding true
     }
+
 }
 
 dependencies {

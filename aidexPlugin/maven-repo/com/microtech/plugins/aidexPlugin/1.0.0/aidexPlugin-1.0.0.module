@@ -1,0 +1,73 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.microtech.plugins",
+    "module": "aidexPlugin",
+    "version": "1.0.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "files": [
+        {
+          "name": "aidexPlugin-1.0.0.jar",
+          "url": "aidexPlugin-1.0.0.jar",
+          "size": 39517,
+          "sha512": "3f43da4e7fe37104b53acb922025cb1350fce86dea0948d7e8a6ca9694fe9bb84c37e4d5c9a4f6fe31d598188e7086f0b48b142c92c4ff69f06739c38d8c89f0",
+          "sha256": "6a464531049af0dbd56580cc74447008335676ff2433963188be6847a13048ec",
+          "sha1": "33fcbbb852eb3e54357b371d3494f4298ebcd299",
+          "md5": "e0de10f792f41d4065a6322d22d9614c"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.8.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "aidexPlugin-1.0.0.jar",
+          "url": "aidexPlugin-1.0.0.jar",
+          "size": 39517,
+          "sha512": "3f43da4e7fe37104b53acb922025cb1350fce86dea0948d7e8a6ca9694fe9bb84c37e4d5c9a4f6fe31d598188e7086f0b48b142c92c4ff69f06739c38d8c89f0",
+          "sha256": "6a464531049af0dbd56580cc74447008335676ff2433963188be6847a13048ec",
+          "sha1": "33fcbbb852eb3e54357b371d3494f4298ebcd299",
+          "md5": "e0de10f792f41d4065a6322d22d9614c"
+        }
+      ]
+    }
+  ]
+}

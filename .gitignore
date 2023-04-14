@@ -10,3 +10,5 @@ ChartLib/build
 .cxx
 /.idea/
 *.so
+/app/dist/debug
+/app/dist/pre

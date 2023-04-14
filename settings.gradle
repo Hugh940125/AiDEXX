@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        maven { url './aidexPlugin/maven-repo' }
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
@@ -24,3 +25,4 @@ rootProject.name = "aidex-x"
 include ':app'
 include ':chartlib'
 include ':blecomm'
+include ':aidexPlugin'
