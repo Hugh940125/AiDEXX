@@ -2,12 +2,27 @@ package com.microtech.aidexx.common.net.entity
 
 open class ReqEntity
 
-data class ReqChangePWDVerifyCode(
-    val phoneNumber: String
+//region 账号
+data class ReqPhoneVerCode(
+    val phone: String
+): ReqEntity()
+
+data class ReqPhoneCodeLogin(
+    val phone: String,
+    val code: String,
+    val password: String? = null
+): ReqEntity()
+
+data class ReqPwdLogin(
+    val userName: String,
+    val password: String
 ): ReqEntity()
 
 data class ReqChangePWD(
-    val phoneNumber: String,
-    val password: String,
-    val verificationCode: String
+    val userName: String,
+    /** 小写32位MD5值 */
+    val newPassword: String,
+    val code: String
 ): ReqEntity()
+
+//endregion

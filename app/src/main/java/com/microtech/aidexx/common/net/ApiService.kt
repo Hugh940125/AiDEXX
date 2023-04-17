@@ -25,10 +25,21 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 
-const val middleUrl = "backend/aidex/api"
+const val middleUrl = "/backend/aidex-v2"
+
+// region 账号
+const val USER_URL = "$middleUrl/user"
+const val sendRegisterPhoneVerificationCode = "$USER_URL/sendRegisterPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
+const val sendLoginPhoneVerificationCode = "$USER_URL/sendLoginPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
+const val loginOrRegisterByVerificationCodeWithPhone = "$USER_URL/loginOrRegisterByVerificationCodeWithPhone"
+const val loginByPassword = "$USER_URL/loginByPassword"
+const val getUserInfo = "$USER_URL/getUserInfo"
+const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordPhoneVerificationCode"
+const val resetPasswordByVerificationCode = "$USER_URL/resetPasswordByVerificationCode"
+// endregion
+
 const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
-const val LOGIN_VERIFICATION_CODE = "$middleUrl/login-verification-code" //验证码
 const val CHANGE_PASSWORD_VERIFICATION_CODE = "$middleUrl/change-password-verification-code" // 重置密码时
 const val CHANGE_PASSWORD = "$middleUrl/change-password" // 修改密码
 const val LOGIN = "$middleUrl/login" //登录
@@ -43,6 +54,35 @@ const val CHECK_APP_UPDATE = "$vcsMiddleUrl/version/getAppConfig" //APP版本升
 const val LOG_UPLOAD = "$vcsMiddleUrl/log/uploadLog" //上传日志
 
 interface ApiService {
+
+
+    //region 账户相关
+    @POST(sendRegisterPhoneVerificationCode)
+    suspend fun sendRegisterPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<Nothing>>
+
+    @POST(sendLoginPhoneVerificationCode)
+    suspend fun sendLoginPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<Nothing>>
+
+    @POST(loginOrRegisterByVerificationCodeWithPhone)
+    suspend fun loginOrRegisterByVerificationCodeWithPhone(@Body body: ReqPhoneCodeLogin): ApiResult<BaseResponse<ResLogin>>
+
+    @POST(loginByPassword)
+    suspend fun loginByPassword(@Body body: ReqPwdLogin): ApiResult<BaseResponse<ResLogin>>
+
+    @GET(getUserInfo)
+    suspend fun getUserInfo(): ApiResult<BaseResponse<ResUserInfo>>
+
+    @POST(sendResetPasswordPhoneVerificationCode)
+    suspend fun sendResetPasswordPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<String>>
+
+    @POST(resetPasswordByVerificationCode)
+    suspend fun resetPasswordByVerificationCode(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
+
+    //endregion
+
+
+
+
     @GET("$CGM_LIST_RECENT?{params}")
     suspend fun getRecentHistories(@Path("params") params: String)
             : Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
@@ -58,18 +98,6 @@ interface ApiService {
 
     @GET(USER_PREFERENCE)
     suspend fun getUserPreference(): ApiResult<BaseResponse<MutableList<UserPreferenceEntity>>>
-
-    @POST(LOGIN)
-    suspend fun login(@Body map: HashMap<String, String>): ApiResult<BaseResponse<LoginInfo>>
-
-    @POST(LOGIN_VERIFICATION_CODE)
-    suspend fun getVerCode(@Body map: HashMap<String, String>): ApiResult<BaseResponse.Info>
-
-    @POST(CHANGE_PASSWORD_VERIFICATION_CODE)
-    suspend fun getChangePWDVerCode(@Body body: ReqChangePWDVerifyCode): ApiResult<BaseResponse<String>>
-
-    @POST(CHANGE_PASSWORD)
-    suspend fun changePWD(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
 
     @GET(DEVICE)
     suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
@@ -110,25 +138,17 @@ interface ApiService {
          * 响应在转实体之前做拦截判断业务是否成功
          */
         private fun checkBizCodeIsSuccess(bodyStr: String): Throwable? {
-            val baseResponse = gson.fromJson(bodyStr, BizCheckResponse::class.java)
+            val baseResponse = gson.fromJson(bodyStr, BaseResponse::class.java)
             var ret: Throwable? = null
 
             baseResponse.run {
-                val infoCode = info.code
-                if (infoCode != RESULT_OK) {
-                    if (code != Int.MIN_VALUE) {
-                        if (code != 200) {
-                            ret = BizException(code, message = info.msg)
-                        }
-                    } else {
-                        if (infoCode == 120002) {
-                            Throttle.instance().emit(5000, infoCode) {
-                                EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
-                            }
-                        } else {
-                            ret = BizException(infoCode, message = info.msg)
+                if (code != RESULT_OK) {
+                    if (code == 800) {
+                        Throttle.instance().emit(5000, code) {
+                            EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                         }
                     }
+                    ret = BizException(code, message = msg)
                 }
             }
             return ret

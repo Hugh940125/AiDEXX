@@ -12,7 +12,7 @@ import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.db.DbRepository
+import com.microtech.aidexx.db.repository.DbRepository
 import com.microtech.aidexx.db.entity.*
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo

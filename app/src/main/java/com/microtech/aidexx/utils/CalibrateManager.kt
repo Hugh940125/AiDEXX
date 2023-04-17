@@ -1,9 +1,8 @@
 package com.microtech.aidexx.utils
 
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.db.DbRepository
+import com.microtech.aidexx.db.repository.DbRepository
 import com.microtech.aidexx.db.dao.CalerateDao
-import com.microtech.aidexx.db.dao.CgmHistoryDao
 import com.microtech.aidexx.db.entity.CalerateEntity
 
 

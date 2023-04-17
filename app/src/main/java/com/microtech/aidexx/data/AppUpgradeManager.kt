@@ -9,7 +9,7 @@ import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getStartOfTheDay
-import com.microtech.aidexx.common.net.ApiRepository
+import com.microtech.aidexx.common.net.repository.ApiRepository
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.entity.AppUpdateInfo
 import com.microtech.aidexx.common.scope

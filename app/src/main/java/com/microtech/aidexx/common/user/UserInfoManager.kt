@@ -1,13 +1,12 @@
 package com.microtech.aidexx.common.user
 
-import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.common.net.entity.LoginInfo
-import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.common.net.entity.ResUserInfo
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.UserEntity
-import com.microtech.aidexx.db.entity.UserEntity_
+import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import io.objectbox.kotlin.awaitCallInTx
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  *@date 2023/2/9
@@ -25,6 +24,9 @@ class UserInfoManager {
             return INSTANCE
         }
 
+        /**
+         * 获取当前展示的用户id 自己的或者共享中的用户
+         */
         fun getCurShowUserId() = shareUserInfo?.id ?: INSTANCE.userId()
     }
 
@@ -56,34 +58,19 @@ class UserInfoManager {
         MmkvManager.saveProfile(profile)
     }
 
-    suspend fun getUserInfoById(userId: String): UserEntity? {
-        return ObjectBox.store.awaitCallInTx {
-            ObjectBox.userBox!!.query()
-                .equal(UserEntity_.id, userId)
-                .orderDesc(UserEntity_.idx)
-                .build().findFirst()
+    suspend fun onUserLogin(content: ResUserInfo): Long = withContext(Dispatchers.IO){
+        var entity = AccountDbRepository.getUserInfoByUid(content.userId!!)
+        if (entity == null) {
+            entity = UserEntity()
         }
-    }
+        entity.id = content.userId
+        entity.phoneNumber = content.phone
+        entity.emailAddress = content.email
+        entity.avatar = content.avatar
 
-    suspend fun onUserLogin(content: LoginInfo, callback: ((success: Boolean) -> Unit)?) {
-        if (content.id != null) {
-            var entity = getUserInfoById(content.id!!)
-            if (entity == null) {
-                entity = UserEntity()
-            }
-            entity.id = content.id
-            entity.phoneNumber = content.phoneNumber
-            entity.avatar = content.profile
-            ObjectBox.runAsync({
-                ObjectBox.userBox!!.put(entity)
-            }, {
-                instance().updateLoginFlag(true)
-                callback?.invoke(true)
-            }, {
-                callback?.invoke(false)
-            })
-        } else {
-            callback?.invoke(false)
-        }
+        AccountDbRepository.saveUser(entity)?.let {
+            instance().updateLoginFlag(true)
+            it
+        } ?: -1
     }
 }

@@ -47,8 +47,8 @@ abstract class CloudHistorySync<T : EventEntity> {
             withContext(Dispatchers.IO) {
                 val result = postLocalData(json)
                 result?.let { response ->
-                    if (response.info.code == RESULT_OK) {
-                        response.content?.let {
+                    if (response.code == RESULT_OK) {
+                        response.data?.let {
                             replaceEventData(needUploadData, it.records)
                         }
                     } else {
@@ -74,7 +74,7 @@ abstract class CloudHistorySync<T : EventEntity> {
                     val json = GsonBuilder().create().toJson(list)
                     val syncDeleteData = syncDeleteData(json)
                     syncDeleteData?.let {
-                        if (syncDeleteData.info.code == RESULT_OK) {
+                        if (syncDeleteData.code == RESULT_OK) {
                             for (item in needDelete) {
                                 item.deleteStatus = 2
                                 item.state = 1
@@ -90,8 +90,8 @@ abstract class CloudHistorySync<T : EventEntity> {
     suspend fun downloadData(authorizationId: String? = null) {
         val result = getRemoteData(authorizationId)
         result?.let { result ->
-            if (result.info.code == RESULT_OK) {
-                result.content?.let {
+            if (result.code == RESULT_OK) {
+                result.data?.let {
                     replaceEventData(
                         responseList = it.records, cgmStatus = 3, authorId = authorizationId
                     ) //下载的数据

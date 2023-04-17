@@ -1,7 +1,7 @@
-package com.microtech.aidexx.common.net
+package com.microtech.aidexx.common.net.repository
 
-import com.microtech.aidexx.common.net.entity.ReqChangePWD
-import com.microtech.aidexx.common.net.entity.ReqChangePWDVerifyCode
+import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.utils.LogUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
@@ -20,11 +20,12 @@ object ApiRepository {
         data class Failure(val code:String, val msg:String): NetResult<Nothing>()
     }
 
+
+
     suspend fun checkAppUpdate() = withContext(dispatcher) {
         val appId = "cn" // 国际版再改
         ApiService.instance.checkAppUpdate(appId)
     }
-
 
     /**
      * 文件下载
@@ -78,15 +79,5 @@ object ApiRepository {
         }
 
     }.flowOn(Dispatchers.IO)
-
-    suspend fun getChangePWDVerifyCode(phoneNumber: String) = withContext(dispatcher) {
-        val body = ReqChangePWDVerifyCode(phoneNumber)
-        ApiService.instance.getChangePWDVerCode(body)
-    }
-
-    suspend fun changePWD(phoneNumber: String, pwdEncrypted: String, verifyCode: String) = withContext(dispatcher) {
-        val body = ReqChangePWD(phoneNumber, pwdEncrypted, verifyCode)
-        ApiService.instance.changePWD(body)
-    }
 
 }

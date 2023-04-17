@@ -1,13 +1,12 @@
 package com.microtech.aidexx.ble.device
 
 import com.microtech.aidexx.base.BaseApi
-import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import retrofit2.await
 
 /**
  *@date 2023/2/24
@@ -24,7 +23,7 @@ object DeviceApi : BaseApi() {
         when(val apiResult = ApiService.instance.deviceRegister(entity)){
             is ApiResult.Success -> {
                 apiResult.result.run {
-                    success?.invoke(this.content)
+                    success?.invoke(this.data)
                 }
             }
             is ApiResult.Failure -> {

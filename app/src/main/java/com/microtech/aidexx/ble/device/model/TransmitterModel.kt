@@ -25,7 +25,11 @@ import com.microtech.aidexx.ui.main.home.warmingUp
 import com.microtech.aidexx.ui.setting.alert.AlertManager
 import com.microtech.aidexx.ui.setting.alert.AlertManager.Companion.calculateFrequency
 import com.microtech.aidexx.ui.setting.alert.AlertType
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.ByteUtils
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.StringUtils
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -46,7 +50,7 @@ import io.objectbox.query.QueryBuilder
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Date
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
@@ -235,7 +239,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         when (val apiResult = ApiService.instance.deviceRegister(entity)) {
             is ApiResult.Success -> {
                 apiResult.result.run {
-                    this.content?.let {
+                    this.data?.let {
                         entity.id = it.id
                         entity.deviceSn = it.deviceSn
                         entity.eventIndex = it.eventIndex

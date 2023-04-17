@@ -1,8 +1,8 @@
-package com.microtech.aidexx.db
+package com.microtech.aidexx.db.repository
 
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.dao.CgmHistoryDao
-import java.util.*
+import java.util.Date
 
 object DbRepository {
 

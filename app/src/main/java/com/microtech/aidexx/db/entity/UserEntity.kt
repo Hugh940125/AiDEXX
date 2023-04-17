@@ -4,11 +4,14 @@ import android.os.Parcel
 import android.os.Parcelable
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.annotation.Unique
 
 @Entity
 class UserEntity() : Parcelable {
     @Id
     var idx: Long = 0
+
+    @Unique
     var id: String? = null
     var phoneNumber: String? = null
     var emailAddress: String? = null
