@@ -605,7 +605,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         }
                     }
                 }
-                historyEntity.eventData = history.glucose / 18f
+                historyEntity.eventData = history.glucose.toFloat()
                 historyEntity.eventIndex = history.timeOffset
                 historyEntity.time = getHistoryDate(history.timeOffset)
                 historyEntity.deviceTime = getHistoryDate(history.timeOffset)
@@ -633,7 +633,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 deviceId, userId, typeHyperAlert
                                             )
                                             if (lastHyperAlertTime == null
-                                                || (deviceTimeMillis - lastHyperAlertTime!! > alertFrequency && TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange)
+                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
                                             ) {
                                                 historyEntity.updateEventWarning()
                                                 alert?.invoke(
@@ -649,7 +649,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 deviceId, userId, typeHypoAlert
                                             )
                                             if (lastHypoAlertTime == null
-                                                || (deviceTimeMillis - lastHypoAlertTime!! > alertFrequency && TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange)
+                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
                                             ) {
                                                 historyEntity.updateEventWarning()
                                                 alert?.invoke(
@@ -663,8 +663,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                         if (AlertUtil.getAlertSettings().isUrgentLowEnable) {
                                             lastUrgentAlertTime =
                                                 getLastAlertTime(deviceId, userId, typeUrgentAlert)
-                                            if (lastUrgentAlertTime == null || (deviceTimeMillis - lastUrgentAlertTime!! > urgentFrequency
-                                                        && TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange)
+                                            if (lastUrgentAlertTime == null || TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange
                                             ) {
                                                 historyEntity.updateEventWarning()
                                                 alert?.invoke(

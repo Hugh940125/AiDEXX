@@ -9,6 +9,7 @@ import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.utils.LocalManageUtil
+import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
@@ -58,11 +59,13 @@ fun Int.toColor(context: Context): Int = ContextCompat.getColor(context, this)
 fun UUID.toIntBigEndian(): Int = Integer.parseInt(this.toString().substring(4, 8), 16)
 
 fun Long.millisToMinutes(): Int =
-    BigDecimal(this).divide(BigDecimal(60 * 1000),RoundingMode.HALF_UP).toInt()
+    BigDecimal(this).divide(BigDecimal(60 * 1000), RoundingMode.HALF_UP).toInt()
 
-fun Long.millisToSeconds(): Long = BigDecimal(this).divide(BigDecimal(1000),RoundingMode.HALF_UP).toLong()
+fun Long.millisToSeconds(): Long =
+    BigDecimal(this).divide(BigDecimal(1000), RoundingMode.HALF_UP).toLong()
 
-fun Long.millisToHours(): Int = BigDecimal(this).divide(BigDecimal(60 * 60 * 1000),RoundingMode.HALF_UP).toInt()
+fun Long.millisToHours(): Int =
+    BigDecimal(this).divide(BigDecimal(60 * 60 * 1000), RoundingMode.HALF_UP).toInt()
 
 fun Date.date2ymdhm(pattern: String = "yyyy/MM/dd HH:mm"): String? =
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)
@@ -89,12 +92,11 @@ fun GsonBuilder.createWithDateFormat(): Gson {
 }
 
 fun Float.toGlucoseString2(): String {
-
     return when {
-        this <= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) DeviceModel.GLUCOSE_LOWER else DeviceModel.GLUCOSE_LOWER * 18 -> "LO"
-
-        this >= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) DeviceModel.GLUCOSE_UPPER else DeviceModel.GLUCOSE_UPPER * 18
-        -> "HI"
+        this <= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) ThresholdManager.GLUCOSE_LOW_LIMIT
+        else ThresholdManager.GLUCOSE_LOW_LIMIT * 18 -> "LO"
+        this >= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) ThresholdManager.GLUCOSE_UP_LIMIT
+        else ThresholdManager.GLUCOSE_UP_LIMIT * 18 -> "HI"
         else -> UnitManager.formatterUnitByIndex().format(this)
     }
 }

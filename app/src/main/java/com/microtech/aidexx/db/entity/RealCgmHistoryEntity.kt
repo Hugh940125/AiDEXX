@@ -26,20 +26,25 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index
     override var state: Int = 0
     override var id: String? = null
+
     @Index
     var deviceSn: String? = null
+
     @Index
     var deviceTime = Date()
         set(value) {
             field = value
-            deviceTimeLong = deviceTime.time/1000
+            deviceTimeLong = deviceTime.time / 1000
         }
     var eventIndex = 0
     var sensorIndex = 0
+
     @Index
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
+
     @Index
     override var recordIndex: Long? = null
+
     @Index
     override var deleteStatus: Int = 0
     var eventType: Int = History.HISTORY_INVALID
@@ -51,10 +56,13 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var deviceId: String? = null
     var type = 0; // type为0正常数据，1代表占位数据
     var deviceTimeLong: Long? = null
+
     @Transient
     override var createTime: Date = Date()
+
     @Transient
     override var language: String = ""
+
     @Index
     override var authorizationId: String? = null
 
@@ -164,7 +172,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
                 R.string.bg_description,
                 eventData?.toGlucoseValue()
             ) + UnitManager.glucoseUnit.text
-            0, null -> when (eventType) {
+            0 -> when (eventType) {
                 History.HISTORY_HYPER -> res.getString(
                     R.string.hyper_description,
                     eventData?.toGlucoseValue()
@@ -206,11 +214,11 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     fun getHighOrLowGlucoseType(): Int {
         val model = TransmitterManager.instance().getDefault()
         if (model != null) {
-            if (eventData!! > ThresholdManager.hyper) {
+            if (eventData!! > ThresholdManager.hyper * 18) {
                 return 2
-            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= DeviceModel.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.hypo * 18 && eventData!! >= ThresholdManager.URGENT_HYPO * 18) {
                 return 1
-            } else if (eventData!! < DeviceModel.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.URGENT_HYPO * 18) {
                 return 3
             }
         }
@@ -222,11 +230,11 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         val model = TransmitterManager.instance().getDefault()
         eventWarning = History.HISTORY_LOCAL_NORMAL
         if (model != null) {
-            if (eventData!! > ThresholdManager.hyper) {
+            if (eventData!! > ThresholdManager.hyper * 18) {
                 eventWarning = History.HISTORY_LOCAL_HYPER
-            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= DeviceModel.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.hypo * 18 && eventData!! >= ThresholdManager.URGENT_HYPO * 18) {
                 eventWarning = History.HISTORY_LOCAL_HYPO
-            } else if (eventData!! < DeviceModel.URGENT_HYPO) {
+            } else if (eventData!! < ThresholdManager.URGENT_HYPO * 18) {
                 eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
             }
         }

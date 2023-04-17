@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
@@ -59,24 +60,15 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
+        judgeState()
         HomeStateManager.onHomeStateChange = {
             replaceFragment(it)
         }
-        lifecycleScope.launch {
-            TransmitterManager.instance().loadTransmitter()
+        HomeBackGroundSelector.instance().onLevelChange = { bg->
+            binding.homeRoot.setBackgroundResource(bg)
         }
-        judgeState()
         TransmitterManager.setOnTransmitterChangeListener {
             judgeState()
-            if (it.isPaired() && AidexBleAdapter.getInstance().bleState != 1) {
-                lifecycleScope.launch {
-                    delay(2000)
-                    AidexBleAdapter.getInstance().startBtScan(true)
-                }
-            }
-        }
-        HomeBackGroundSelector.instance().onLevelChange = {
-            binding.homeRoot.setBackgroundResource(it)
         }
     }
 
@@ -130,7 +122,8 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 for (i in 0..100) {
                     delay(2.seconds)
                     val historyEntity = RealCgmHistoryEntity()
-                    historyEntity.deviceTime = Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60 * 10))
+                    historyEntity.deviceTime =
+                        Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60 * 10))
                     historyEntity.eventData = (i % 36).toFloat()
                     historyEntity.eventType = History.HISTORY_GLUCOSE
                     EventBusManager.send(
@@ -140,13 +133,13 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 }
             }
         }
-        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_UNPAIR_RESULT,this){
-            if (it){
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_UNPAIR_RESULT, this) {
+            if (it) {
                 HomeStateManager.instance().setState(needPair)
             }
         }
-        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT,this){
-            if (it){
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT, this) {
+            if (it) {
                 HomeStateManager.instance().setState(glucosePanel)
             }
         }

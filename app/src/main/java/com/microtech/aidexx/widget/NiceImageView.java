@@ -108,9 +108,6 @@ public class NiceImageView extends androidx.appcompat.widget.AppCompatImageView 
             xfermode = new PorterDuffXfermode(PorterDuff.Mode.DST_OUT);
             srcPath = new Path();
         }
-
-        calculateRadii();
-        clearInnerBorderWidth();
     }
 
     @Override
@@ -118,6 +115,8 @@ public class NiceImageView extends androidx.appcompat.widget.AppCompatImageView 
         super.onSizeChanged(w, h, oldw, oldh);
         width = w;
         height = h;
+        clearInnerBorderWidth();
+        calculateRadii();
         initBorderRectF();
         initSrcRectF();
     }
@@ -135,6 +134,7 @@ public class NiceImageView extends androidx.appcompat.widget.AppCompatImageView 
         super.onDraw(canvas);
         paint.reset();
         path.reset();
+        srcPath.reset();
         if (isCircle) {
             path.addCircle(width / 2.0f, height / 2.0f, radius, Path.Direction.CCW);
         } else {

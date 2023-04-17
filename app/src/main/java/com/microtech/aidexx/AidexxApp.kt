@@ -2,7 +2,9 @@ package com.microtech.aidexx
 
 import android.app.Activity
 import android.app.Application
+import android.hardware.display.DisplayManager
 import android.os.Bundle
+import android.view.Display
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
@@ -51,12 +53,20 @@ class AidexxApp : Application() {
         AidexBleAdapter.getInstance().setDiscoverCallback()
     }
 
+    fun isDisplayOn(): Boolean {
+        val displayManager = this.getSystemService(DISPLAY_SERVICE) as DisplayManager
+        for (display in displayManager.displays) {
+            if (display.state != Display.STATE_OFF) {
+                return true
+            }
+        }
+        return false
+    }
+
     fun isForeground(): Boolean {
         if (activityAliveCount.get() != 0) {
-            LogUtil.eAiDEX("前台")
             return true
         }
-        LogUtil.eAiDEX("后台")
         return false
     }
 

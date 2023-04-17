@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Message
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -25,9 +24,7 @@ import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
 import com.microtech.aidexx.common.toIntBigEndian
 import com.microtech.aidexx.common.toUuid
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtil.Companion.eAiDEX
-import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.StringUtils.binaryToHexString
 import com.microtech.aidexx.utils.TimeUtils.currentTimeMillis
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -37,7 +34,6 @@ import com.microtechmd.blecomm.BluetoothDeviceStore
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 /**
@@ -48,7 +44,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     var workHandler: Handler? = null
     var lastDisConnectTime: Long = 0
     var onDeviceDiscover: ((info: BleControllerInfo) -> Unit)? = null
-    private val devicesFound = ConcurrentHashMap<String, BluetoothDevice>()
     private var mCharacteristic: BluetoothGattCharacteristic? = null
     private lateinit var mContext: Context
 
@@ -280,18 +275,16 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     @SuppressLint("MissingPermission")
     @Synchronized
     private fun sendData(arg1: Int, data: ByteArray) {
-        eAiDEX("try send data ----> ${StringUtils.binaryToHexString(data)}")
+        eAiDEX("try send data ----> ${binaryToHexString(data)}")
         try {
             val gattCharacteristic = characteristicsMap[arg1]
             if (data.size <= 20) {
                 if (gattCharacteristic == null) {
                     eAiDEX("send data error ----> characteristic is null")
-                    workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
                     return
                 }
                 if (mBluetoothGatt == null) {
                     eAiDEX("send data error ----> gatt is null")
-                    workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
                     return
                 }
                 sleep()
@@ -324,17 +317,19 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
                 workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
             } else {
-                val b1 = ByteArray(20)
-                val b2 = ByteArray(data.size - 20)
-                System.arraycopy(data, 0, b1, 0, 20)
-                System.arraycopy(data, 20, b2, 0, data.size - 20)
-                sendData(arg1, b1)
-                sendData(arg1, b2)
+                val pieces = data.size % 20
+                for (i in 0 until pieces) {
+                    val array = ByteArray(20)
+                    System.arraycopy(data, 20 * i, array, 0, 20)
+                    sendData(arg1, array)
+                }
+                val dataLeft = ByteArray(data.size - 20)
+                System.arraycopy(data, 20, dataLeft, 0, data.size - 20 * pieces)
+                sendData(arg1, dataLeft)
             }
         } catch (e: Exception) {
             eAiDEX("send data error ----> $e")
             e.printStackTrace()
-            workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
         }
     }
 
@@ -565,11 +560,11 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
             eAiDEX("onCharacteristicChanged --> " + binaryToHexString(characteristic?.value))
-            if (mBluetoothGatt == null) {
-                eAiDEX("onCharacteristicChanged --> Gatt is null")
-                workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
-                return
-            }
+//            if (mBluetoothGatt == null) {
+//                eAiDEX("onCharacteristicChanged --> Gatt is null")
+//                workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
+//                return
+//            }
             val message = Message.obtain()
             message.what = RECEIVER_DATA
             message.obj = characteristic?.value
@@ -588,7 +583,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 eAiDEX("Characteristic write success --> uuid:${characteristic.uuid}")
             } else {
                 eAiDEX("Send data fail")
-                workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
             }
         }
 

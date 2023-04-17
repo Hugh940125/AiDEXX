@@ -22,9 +22,7 @@ object ThresholdManager {
             AlertUtil.setHyperThreshold(value)
         }
         get() {
-            if (field == 0f) {
-                field = AlertUtil.getAlertSettings().hyperThreshold
-            }
+            field = AlertUtil.getAlertSettings().hyperThreshold
             return field
         }
     var hypo: Float = 0f
@@ -32,9 +30,7 @@ object ThresholdManager {
             AlertUtil.setHypoThreshold(value)
         }
         get() {
-            if (field == 0f) {
-                field = AlertUtil.getAlertSettings().hypoThreshold
-            }
+            field = AlertUtil.getAlertSettings().hypoThreshold
             return field
         }
 }

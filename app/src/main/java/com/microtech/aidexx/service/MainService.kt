@@ -2,20 +2,21 @@ package com.microtech.aidexx.service
 
 import android.app.*
 import android.content.Intent
-import android.graphics.Bitmap
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.IBinder
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.NotificationCompat
-import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
+import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.ui.setting.alert.*
@@ -24,9 +25,7 @@ import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 
 /**
  *@date 2023/3/6
@@ -37,8 +36,15 @@ import kotlinx.coroutines.cancel
 private const val FOREGROUND_ID: Int = 10010
 
 class MainService : Service(), LifecycleOwner {
+    private var smallIcon: IconCompat? = null
+        get() {
+            if (field == null) {
+                field =
+                    IconCompat.createFromIcon(Icon.createWithResource(this, R.mipmap.ic_launcher))
+            }
+            return field
+        }
     private lateinit var foregroundNotification: Notification
-    private lateinit var remoteViews: ForegroundServiceNotification
     private lateinit var serviceMainScope: CoroutineScope
     private val alertChannelId = "com.microtech.aidexx.alert"
     private val foregroundChannelId = "com.microtech.aidexx.foreground"
@@ -69,12 +75,14 @@ class MainService : Service(), LifecycleOwner {
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) initNotificationChannel()
         EventBusManager.onReceive<Boolean>(EventBusKey.UPDATE_NOTIFICATION, this) {
-            updateNotification(it)
+            if (AidexxApp.instance.isDisplayOn()){
+                updateNotification(it)
+            }
         }
     }
 
     private fun startForeground() {
-        remoteViews = ForegroundServiceNotification(
+        val remoteViews = ForegroundServiceNotification(
             this, pendingIntent!!, packageName
         )
         buildNotification(remoteViews)
@@ -82,10 +90,12 @@ class MainService : Service(), LifecycleOwner {
     }
 
     private fun buildNotification(view: RemoteViews) {
-        foregroundNotification =
-            NotificationCompat.Builder(this, foregroundChannelId).setContent(view)
-                .setOnlyAlertOnce(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setSmallIcon(R.mipmap.ic_launcher_weitai2).build()
+        smallIcon?.let {
+            foregroundNotification =
+                NotificationCompat.Builder(this, foregroundChannelId).setContent(view)
+                    .setOnlyAlertOnce(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setSmallIcon(it).build()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -110,9 +120,13 @@ class MainService : Service(), LifecycleOwner {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         startForeground()
-        TransmitterManager.setOnTransmitterChangeListener { model ->
-            if (model.isPaired()) {
-                executeAlert(model)
+        lifecycleScope.launch {
+            TransmitterManager.instance().loadTransmitter()
+        }
+        TransmitterManager.setOnTransmitterChangeListener {
+            if (it.isPaired()) {
+                observeAlert(it)
+                AidexBleAdapter.getInstance().stopBtScan(true)
             }
         }
         return START_STICKY
@@ -121,7 +135,10 @@ class MainService : Service(), LifecycleOwner {
     private fun updateNotification(normal: Boolean) {
         val model = TransmitterManager.instance().getDefault()
         model?.let {
-            if (::foregroundNotification.isInitialized && ::remoteViews.isInitialized) {
+            if (::foregroundNotification.isInitialized) {
+                val remoteViews = ForegroundServiceNotification(
+                    this, pendingIntent!!, packageName
+                )
                 if (model.isDataValid() && normal) {
                     remoteViews.setGlucose(
                         if (model.minutesAgo == 0) "" else "${model.minutesAgo.toString()}${
@@ -137,7 +154,7 @@ class MainService : Service(), LifecycleOwner {
         }
     }
 
-    private fun executeAlert(model: DeviceModel) {
+    private fun observeAlert(model: DeviceModel) {
         model.alert = { time, type ->
             val content: String
             var isUrgent = false

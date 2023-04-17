@@ -7,7 +7,6 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivitySettingsAlertBinding
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.SettingItemWidget
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.bottom.ThresholdSelectView
@@ -186,21 +185,21 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         )
         binding.noticeMethodSignalLoss.setOnClickListener {
             val signalLossAlertMethod = AlertUtil.getAlertSettings().signalLossMethod
-            Dialogs.Picker(this@AlertSettingsActivity).singlePick(listOf(), signalLossAlertMethod) {
+            Dialogs.Picker(this@AlertSettingsActivity).singlePick(listOfMethod, signalLossAlertMethod) {
                 binding.noticeMethodSignalLoss.setValue(listOfMethod[it])
                 AlertUtil.alert(this, it, false)
                 AlertUtil.setSignalLossMethod(it)
             }
         }
         //
+        val signalLossAlertFrequency = AlertUtil.getAlertSettings().signalLossFrequency
         val subList = listOfFrequency.subList(1, listOfFrequency.size)
         binding.noticeFrequencySignal.setValue(
             getString(
-                R.string.notice_inner, subList[MmkvManager.signalLossAlertFrequency()]
+                R.string.notice_inner, subList[signalLossAlertFrequency]
             )
         )
         binding.noticeFrequencySignal.setOnClickListener {
-            val signalLossAlertFrequency = AlertUtil.getAlertSettings().signalLossFrequency
             Dialogs.Picker(this@AlertSettingsActivity)
                 .singlePick(subList, signalLossAlertFrequency) {
                     binding.noticeFrequencySignal.setValue(
@@ -216,16 +215,16 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
 
     private fun initEvent() {
         binding.hypoThreshold.setOnClickListener {
-            val methodSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPO) {
+            val hypoSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPO) {
                 binding.hypoThreshold.setValue(it)
             }
-            methodSelectView.show()
+            hypoSelectView.show()
         }
         binding.hyperThreshold.setOnClickListener {
-            val methodSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPER) {
+            val hyperSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPER) {
                 binding.hyperThreshold.setValue(it)
             }
-            methodSelectView.show()
+            hyperSelectView.show()
         }
     }
 

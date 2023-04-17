@@ -163,9 +163,9 @@ object AlertUtil {
         save(alertSettings)
     }
 
-    fun setHypoThreshold(enable: Float) {
+    fun setHypoThreshold(value: Float) {
         val alertSettings = getAlertSettings()
-        alertSettings.hypoThreshold = enable
+        alertSettings.hypoThreshold = value
         save(alertSettings)
     }
 
