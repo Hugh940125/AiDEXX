@@ -103,7 +103,9 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     }
 
     private fun loadDbData() {
-        AlertUtil.loadSettingsFromDb()
+        lifecycleScope.launch {
+            AlertUtil.loadSettingsFromDb()
+        }
     }
 
     override fun onResume() {

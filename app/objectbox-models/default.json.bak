@@ -49,7 +49,7 @@
     },
     {
       "id": "3:3796110624465004345",
-      "lastPropertyId": "23:8711943568725265028",
+      "lastPropertyId": "24:2560496494190107959",
       "name": "TransmitterEntity",
       "properties": [
         {
@@ -159,6 +159,11 @@
           "id": "23:8711943568725265028",
           "name": "deviceType",
           "type": 5
+        },
+        {
+          "id": "24:2560496494190107959",
+          "name": "calIndex",
+          "type": 5
         }
       ],
       "relations": []
@@ -245,7 +250,9 @@
         {
           "id": "1:8732628532584542878",
           "name": "eventWarning",
-          "type": 5
+          "indexId": "49:8444118598233097927",
+          "type": 5,
+          "flags": 8
         },
         {
           "id": "2:3353609488640152383",
@@ -282,12 +289,16 @@
         {
           "id": "7:8530262856812969356",
           "name": "eventIndex",
-          "type": 5
+          "indexId": "47:4313679941251644167",
+          "type": 5,
+          "flags": 8
         },
         {
           "id": "8:7713887781003220242",
           "name": "sensorIndex",
-          "type": 5
+          "indexId": "48:4956924452729074073",
+          "type": 5,
+          "flags": 8
         },
         {
           "id": "9:4283295531717793840",
@@ -991,7 +1002,7 @@
     },
     {
       "id": "14:6954862004841874046",
-      "lastPropertyId": "18:6478321324873536162",
+      "lastPropertyId": "19:3424617967414693633",
       "name": "CalibrateEntity",
       "properties": [
         {
@@ -1084,13 +1095,18 @@
           "id": "18:6478321324873536162",
           "name": "eventIndex",
           "type": 5
+        },
+        {
+          "id": "19:3424617967414693633",
+          "name": "isValid",
+          "type": 1
         }
       ],
       "relations": []
     }
   ],
   "lastEntityId": "14:6954862004841874046",
-  "lastIndexId": "46:6428539350284020934",
+  "lastIndexId": "49:8444118598233097927",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

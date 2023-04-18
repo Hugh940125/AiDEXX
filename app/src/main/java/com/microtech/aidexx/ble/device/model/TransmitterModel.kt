@@ -39,7 +39,8 @@ import com.microtechmd.blecomm.parser.*
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.kotlin.equal
 import io.objectbox.query.QueryBuilder
-import java.math.BigDecimal
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
@@ -112,9 +113,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     fun onMessage(message: BleMessage) {
         if (message.operation != CgmOperation.DISCOVER) {
             LogUtil.eAiDEX(
-                "operation:${message.operation}, success:${message.isSuccess}, data:${
-                    StringUtils.binaryToHexString(message.data)
-                }"
+                "operation:${message.operation}, success:${message.isSuccess}"
             )
         }
         val data = message.data
@@ -168,7 +167,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             AidexXOperation.GET_CALIBRATION -> {
                 if (UserInfoManager.instance().isLogin()) {
-                    saveCalHistory(message.data)
+                    AidexxApp.mainScope.launch(Dispatchers.IO) {
+                        saveCalHistory(message.data)
+                    }
                 }
             }
             AidexXOperation.GET_HISTORIES -> {
@@ -327,6 +328,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
+        val elapsedRealtime = SystemClock.elapsedRealtime()
+        if (elapsedRealtime - latestAdTime < 1000) {
+            return
+        }
+        latestAdTime = elapsedRealtime
         val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data)
         LogUtil.eAiDEX("Receive broadcast ----> $broadcast")
         broadcast?.let {
@@ -356,7 +362,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
         val adHistories = broadcast.history
         latestAd = broadcast
-        latestAdTime = SystemClock.elapsedRealtime()
         if (UserInfoManager.shareUserInfo != null) {
             LogUtil.eAiDEX("view sharing")
             return
@@ -387,7 +392,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (broadcastContainsNext) {
                 val historiesFromBroadcast =
                     getHistoriesFromBroadcast(nextEventIndex, adHistories)
-                saveBriefHistory(historiesFromBroadcast.asReversed(), false)
+                if (historiesFromBroadcast.isNotEmpty()) {
+                    LogUtil.eAiDEX("开始保存数据-调用1${System.currentTimeMillis()}")
+                    saveBriefHistory(historiesFromBroadcast.asReversed(), false)
+                }
             } else {
                 latestHistory?.let {
                     if (targetEventIndex > nextEventIndex) {
@@ -477,28 +485,35 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         next: Int, list: MutableList<AidexXHistoryEntity>
     ): MutableList<AidexXHistoryEntity> {
         var startIndex = 0
-        for ((index, history) in list.withIndex()) {
-            if (history.timeOffset == next) {
-                startIndex = index + 1
-                break
+        AidexxApp.mainScope.launch(Dispatchers.IO) {
+            for ((index, history) in list.withIndex()) {
+                if (history.timeOffset == next) {
+                    startIndex = index + 1
+                    break
+                }
             }
         }
         return list.subList(0, startIndex)
     }
 
     override fun saveBriefHistoryFromConnect(data: ByteArray) {
-        val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
-        if (histories.isNullOrEmpty()) return
-        if (histories.first().timeOffset == nextEventIndex) {
-            saveBriefHistory(histories)
+        AidexxApp.mainScope.launch(Dispatchers.IO) {
+            val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
+            if (histories.isNullOrEmpty()) return@launch
+            if (histories.first().timeOffset == nextEventIndex) {
+                LogUtil.eAiDEX("开始保存数据-调用2${System.currentTimeMillis()}")
+                saveBriefHistory(histories)
+            }
         }
     }
 
     override fun saveRawHistoryFromConnect(data: ByteArray) {
-        val histories = AidexXParser.getRawHistory<AidexXRawHistoryEntity>(data)
-        if (histories.isEmpty()) return
-        if (histories.first().timeOffset == nextFullEventIndex) {
-            saveRawHistory(histories)
+        AidexxApp.mainScope.launch(Dispatchers.IO) {
+            val histories = AidexXParser.getRawHistory<AidexXRawHistoryEntity>(data)
+            if (histories.isEmpty()) return@launch
+            if (histories.first().timeOffset == nextFullEventIndex) {
+                saveRawHistory(histories)
+            }
         }
     }
 
@@ -515,8 +530,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         val deviceId = TransmitterManager.instance().getDefault()?.deviceId() ?: return
         val userId = UserInfoManager.instance().userId()
         if (userId.isEmpty()) return
-        tempCalList.clear()
         ObjectBox.runAsync({
+            tempCalList.clear()
             for (calibration in aidexXCalibration) {
                 val existCalibration = calibrationBox!!.query()
                     .equal(CalibrateEntity_.eventIndex, calibration.index)
@@ -567,29 +582,20 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         histories: MutableList<AidexXHistoryEntity>,
         goon: Boolean = true
     ) {
-        tempBriefList.clear()
+        LogUtil.eAiDEX("开始保存数据-${System.currentTimeMillis()}")
         val deviceId = TransmitterManager.instance().getDefault()?.deviceId() ?: return
         val userId = UserInfoManager.instance().userId()
         if (userId.isEmpty()) return
         ObjectBox.runAsync({
             val now = TimeUtils.currentTimeMillis
+            val alertFrequency = calculateFrequency(AlertUtil.getAlertSettings().alertFrequency)
+            val alertRange = alertFrequency..2 * alertFrequency
+            val urgentFrequency =
+                calculateFrequency(AlertUtil.getAlertSettings().urgentAlertFrequency)
+            val urgentRange = urgentFrequency..2 * urgentFrequency
+            tempBriefList.clear()
             for (history in histories) {
-                val oldHistory = cgmHistoryBox!!.query()
-                    .equal(RealCgmHistoryEntity_.eventIndex, history.timeOffset)
-                    .equal(RealCgmHistoryEntity_.sensorIndex, entity.startTimeToIndex())
-                    .equal(
-                        RealCgmHistoryEntity_.deviceId,
-                        deviceId,
-                    ).equal(
-                        RealCgmHistoryEntity_.authorizationId,
-                        userId,
-                    ).orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
-                if (oldHistory != null) {
-                    continue
-                }
-                val time = getHistoryDate(history.timeOffset).dateHourMinute()
                 val historyEntity = RealCgmHistoryEntity()
-                historyEntity.deviceId = deviceId
                 if (history.isValid == 0) {
                     historyEntity.eventType = History.HISTORY_INVALID
                 } else {
@@ -605,23 +611,31 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         }
                     }
                 }
-                historyEntity.eventData = history.glucose.toFloat()
+                historyEntity.deviceId = deviceId
                 historyEntity.eventIndex = history.timeOffset
-                historyEntity.time = getHistoryDate(history.timeOffset)
-                historyEntity.deviceTime = getHistoryDate(history.timeOffset)
+                val historyDate = getHistoryDate(history.timeOffset)
+                historyEntity.time = historyDate
+                historyEntity.deviceTime = historyDate
                 historyEntity.sensorIndex = entity.startTimeToIndex()
+                historyEntity.authorizationId = userId
+                val recordUuid = historyEntity.updateRecordUUID()
+                historyEntity.recordUuid = recordUuid
+                val oldHistory = cgmHistoryBox!!.query().equal(
+                    RealCgmHistoryEntity_.recordUuid,
+                    recordUuid
+                ).build().findFirst()
+                if (oldHistory != null) {
+                    continue
+                }
                 if (history.timeOffset < 60) {
                     historyEntity.eventWarning = -1
                 }
-                val alertFrequency = calculateFrequency(AlertUtil.getAlertSettings().alertFrequency)
-                val alertRange = alertFrequency..2 * alertFrequency
-                val urgentFrequency =
-                    calculateFrequency(AlertUtil.getAlertSettings().urgentAlertFrequency)
-                val urgentRange = urgentFrequency..2 * urgentFrequency
+                val time = historyDate.dateHourMinute()
+                historyEntity.eventData = history.glucose.toFloat()
                 when (historyEntity.eventType) {
                     History.HISTORY_GLUCOSE,
                     -> {
-                        if (isMalfunction || historyEntity.eventWarning == -1) {
+                        if (isMalfunction) {
                             historyEntity.eventWarning = -1
                         } else {
                             if (historyEntity.isHighOrLow()) {
@@ -629,13 +643,15 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                 when {
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
                                         if (AlertUtil.getAlertSettings().isHyperEnable) {
-                                            lastHyperAlertTime = getLastAlertTime(
-                                                deviceId, userId, typeHyperAlert
-                                            )
+                                            if (lastHyperAlertTime == null) {
+                                                lastHyperAlertTime = getLastAlertTime(
+                                                    deviceId, userId, typeHyperAlert
+                                                )
+                                            }
                                             if (lastHyperAlertTime == null
                                                 || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
                                             ) {
-                                                historyEntity.updateEventWarning()
+                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
                                                 )
@@ -644,14 +660,16 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                         }
                                     }
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPO -> {
-                                        if (AlertUtil.getAlertSettings().isHypoEnable) if (lastHypoAlertTime == null) {
-                                            lastHypoAlertTime = getLastAlertTime(
-                                                deviceId, userId, typeHypoAlert
-                                            )
+                                        if (AlertUtil.getAlertSettings().isHypoEnable) {
+                                            if (lastHypoAlertTime == null) {
+                                                lastHypoAlertTime = getLastAlertTime(
+                                                    deviceId, userId, typeHypoAlert
+                                                )
+                                            }
                                             if (lastHypoAlertTime == null
                                                 || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
                                             ) {
-                                                historyEntity.updateEventWarning()
+                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
                                                 )
@@ -661,11 +679,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                     }
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_URGENT_HYPO -> {
                                         if (AlertUtil.getAlertSettings().isUrgentLowEnable) {
-                                            lastUrgentAlertTime =
-                                                getLastAlertTime(deviceId, userId, typeUrgentAlert)
+                                            if (lastUrgentAlertTime == null) {
+                                                lastUrgentAlertTime =
+                                                    getLastAlertTime(deviceId, userId, typeUrgentAlert)
+                                            }
                                             if (lastUrgentAlertTime == null || TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange
                                             ) {
-                                                historyEntity.updateEventWarning()
+                                                historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
                                                 )
@@ -685,26 +705,26 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         }
                     }
                 }
-                historyEntity.authorizationId = userId
-                historyEntity.updateRecordUUID()
                 tempBriefList.add(historyEntity)
             }
+            LogUtil.eAiDEX("保存数据-处理2-${System.currentTimeMillis()}")
             if (tempBriefList.isNotEmpty()) {
                 cgmHistoryBox!!.put(tempBriefList)
             }
-        }, onSuccess = {
             if (UserInfoManager.instance().isLogin()) {
                 if (UserInfoManager.shareUserInfo == null) {
                     TransmitterManager.instance().updateHistories(tempBriefList)
                 }
-                histories.sortBy { it.timeOffset }
                 entity.eventIndex = histories.last().timeOffset
                 nextEventIndex = entity.eventIndex + 1
                 transmitterBox!!.put(entity)
-                updateGlucoseTrend(tempBriefList.last().deviceTime)
+//                updateGlucoseTrend(tempBriefList.last().deviceTime)
                 tempBriefList.clear()
+                LogUtil.eAiDEX("结束保存数据-${System.currentTimeMillis()}")
                 if (goon) continueBriefFetch()
             }
+        }, onSuccess = {
+
         }, onError = {
             tempBriefList.clear()
         })
@@ -759,8 +779,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (userId.isEmpty()) {
             return
         }
-        tempRawList.clear()
         ObjectBox.runAsync({
+            tempRawList.clear()
             for (rawHistory in rawHistories) {
                 val existHistory = cgmHistoryBox!!.query()
                     .equal(RealCgmHistoryEntity_.eventIndex, rawHistory.timeOffset)
@@ -789,7 +809,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     historyEntity.dataStatus = 1
                     historyEntity.deviceId = deviceId
                     historyEntity.authorizationId = userId
-                    historyEntity.updateRecordUUID()
+                    val recordUuid = historyEntity.updateRecordUUID()
+                    historyEntity.recordUuid = recordUuid
                     tempRawList.add(historyEntity)
                 } else {
                     continue

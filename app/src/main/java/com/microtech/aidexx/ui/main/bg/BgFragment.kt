@@ -2,9 +2,10 @@ package com.microtech.aidexx.ui.main.bg
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,9 @@ import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.common.toColor
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentBgBinding
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
@@ -32,6 +35,7 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.lib.util.fromGlucoseValue
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.time.TimePicker
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.entity.BleMessage
@@ -129,6 +133,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
 
     override fun onPause() {
         super.onPause()
+        timeSlopAdapter?.clearCheck()
         MessageDistributor.instance().removeObserver(mObserver)
     }
 
@@ -309,11 +314,27 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                     return
                 }
                 val recordGlucose = glucoseValue.fromGlucoseValue()
-//                val bg = BloodGlucoseEntity(Date(selectTime), recordGlucose)
-//                if (mGlucoseType != 0) {
-//                    bg.testTag = mGlucoseType
-//                }
-//                bg.authorizationId = UserManager.instance().getUserId()
+                val bgEntity = BloodGlucoseEntity(selectDate, recordGlucose)
+                timeSlot?.let {
+                    bgEntity.testTag = it
+                }
+                bgEntity.authorizationId = UserInfoManager.instance().userId()
+                ObjectBox.runAsync({
+                    ObjectBox.bgHistoryBox!!.put(bgEntity)
+                }, {
+                    Handler(Looper.getMainLooper()).post {
+                        StandardDialog.Setter(context)
+                            .content(context?.getString(R.string.save_complete))
+                            .setPositive { dialog, _ ->
+                                dialog.dismiss()
+                                binding.etGlucoseValue.text?.clear()
+                                timeSlot = null
+                                updateLastRecord()
+                            }
+                            .setOnDismissListener { updateLastRecord() }
+                            ?.create(0)?.show()
+                    }
+                })
             }
         }
     }

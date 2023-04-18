@@ -190,4 +190,9 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         }
         isLoginByVerCode = !isLoginByVerCode
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.timeLeft.removeObservers(this)
+    }
 }

@@ -14,6 +14,7 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.AlertSettingsEntity
 import com.microtech.aidexx.db.entity.AlertSettingsEntity_
+import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.kotlin.awaitCallInTx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -114,26 +115,26 @@ object AlertUtil {
         }
     }
 
-    fun loadSettingsFromDb(): AlertSettingsEntity? {
-        AidexxApp.mainScope.launch {
-            alertSettingEntity = ObjectBox.store.awaitCallInTx {
-                ObjectBox.AlertSettingsBox!!.query()
-                    .equal(
-                        AlertSettingsEntity_.authorizationId,
-                        UserInfoManager.instance().userId()
-                    )
-                    .orderDesc(AlertSettingsEntity_.idx)
-                    .build()
-                    .findFirst()
-            }
+    suspend fun loadSettingsFromDb(): AlertSettingsEntity? {
+        return ObjectBox.store.awaitCallInTx {
+            ObjectBox.AlertSettingsBox!!.query()
+                .equal(
+                    AlertSettingsEntity_.authorizationId,
+                    UserInfoManager.instance().userId()
+                )
+                .orderDesc(AlertSettingsEntity_.idx)
+                .build()
+                .findFirst()
         }
-        return alertSettingEntity
     }
 
     @Synchronized
     fun getAlertSettings(): AlertSettingsEntity {
         if (alertSettingEntity == null) {
-            loadSettingsFromDb()
+            LogUtil.eAiDEX("开始保存数据 loadSettingsFromDb -${System.currentTimeMillis()}")
+            AidexxApp.mainScope.launch {
+                alertSettingEntity = loadSettingsFromDb() ?: AlertSettingsEntity(UserInfoManager.instance().userId())
+            }
         }
         return alertSettingEntity ?: AlertSettingsEntity(UserInfoManager.instance().userId())
     }

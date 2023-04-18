@@ -168,6 +168,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     override fun onDestroy() {
         super.onDestroy()
+        rotateAnimation.cancel()
         MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()
         AidexxApp.isPairing = false
