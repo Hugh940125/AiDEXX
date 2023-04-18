@@ -110,28 +110,11 @@ class AccountViewModel : BaseViewModel() {
         return true
     }
 
-    fun getVerCode(
-        phone: String,
-        success: (() -> Unit)? = null,
-        failure: (() -> Unit)? = null
-    ) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                when (AccountRepository.getPhoneVerCode(phone)) {
-                    is ApiResult.Success -> {
-                        withContext(Dispatchers.Main) {
-                            success?.invoke()
-                        }
-                    }
-                    is ApiResult.Failure -> {
-                        withContext(Dispatchers.Main) {
-                            failure?.invoke()
-                        }
-                    }
-                }
-            }
+    suspend fun sendRegisterPhoneVerificationCode(phone: String): Boolean =
+        when (AccountRepository.sendRegisterPhoneVerificationCode(phone)) {
+            is ApiResult.Success -> true
+            is ApiResult.Failure -> false
         }
-    }
 
     fun getChangePWDVerifyCode(phoneNumber: String) = flow {
         when (AccountRepository.sendResetPasswordPhoneVerificationCode(phoneNumber)) {

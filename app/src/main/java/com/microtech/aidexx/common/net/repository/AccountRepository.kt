@@ -12,7 +12,7 @@ object AccountRepository {
 
     private val dispatcher = Dispatchers.IO
 
-    suspend fun getPhoneVerCode(phone: String) = withContext(dispatcher) {
+    suspend fun sendRegisterPhoneVerificationCode(phone: String) = withContext(dispatcher) {
         ApiService.instance.sendRegisterPhoneVerificationCode(ReqPhoneVerCode(phone))
     }
 

@@ -35,14 +35,12 @@ const val loginOrRegisterByVerificationCodeWithPhone = "$USER_URL/loginOrRegiste
 const val loginByPassword = "$USER_URL/loginByPassword"
 const val getUserInfo = "$USER_URL/getUserInfo"
 const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordPhoneVerificationCode"
-const val resetPasswordByVerificationCode = "$USER_URL/resetPasswordByVerificationCode"
+const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
+const val setPassword = "$USER_URL/setPassword"
 // endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
-const val CHANGE_PASSWORD_VERIFICATION_CODE = "$middleUrl/change-password-verification-code" // 重置密码时
-const val CHANGE_PASSWORD = "$middleUrl/change-password" // 修改密码
-const val LOGIN = "$middleUrl/login" //登录
 const val DEVICE = "$middleUrl/cgn-device" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CGM_RECORD = "$middleUrl/cgm-record" //上传CGM

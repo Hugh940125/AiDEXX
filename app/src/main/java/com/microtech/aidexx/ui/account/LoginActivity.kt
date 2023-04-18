@@ -103,12 +103,14 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         if (user.isNotEmpty() && user.length >= 11) {
             Dialogs.showWait(getString(R.string.loading))
 
-            viewModel.getVerCode(user.trim(), {
-                viewModel.startCountDown()
-                Dialogs.dismissWait()
-            }, {
-                Dialogs.showError(getString(R.string.get_ver_code_fail))
-            })
+            lifecycleScope.launch {
+                if (viewModel.sendRegisterPhoneVerificationCode(user.trim())) {
+                    viewModel.startCountDown()
+                    Dialogs.dismissWait()
+                } else {
+                    Dialogs.showError(getString(R.string.get_ver_code_fail))
+                }
+            }
         } else {
             ToastUtil.showShort(getString(R.string.phone_error))
         }
