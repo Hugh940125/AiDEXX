@@ -131,7 +131,6 @@ object AlertUtil {
     @Synchronized
     fun getAlertSettings(): AlertSettingsEntity {
         if (alertSettingEntity == null) {
-            LogUtil.eAiDEX("开始保存数据 loadSettingsFromDb -${System.currentTimeMillis()}")
             AidexxApp.mainScope.launch {
                 alertSettingEntity = loadSettingsFromDb() ?: AlertSettingsEntity(UserInfoManager.instance().userId())
             }

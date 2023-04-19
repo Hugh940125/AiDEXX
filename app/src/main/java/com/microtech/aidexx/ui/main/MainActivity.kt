@@ -285,7 +285,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
         ActivityUtil.toSystemHome(this)
     }
 

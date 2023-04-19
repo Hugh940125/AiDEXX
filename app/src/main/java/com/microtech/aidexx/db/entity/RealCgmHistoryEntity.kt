@@ -6,7 +6,6 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.toGlucoseValue
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
-import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtechmd.blecomm.constant.History
@@ -37,10 +36,10 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         }
 
     @Index
-    var eventIndex = 0
+    var eventIndex: Int = 0
 
     @Index
-    var sensorIndex = 0
+    var sensorIndex: Long = 0
 
     @Index
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
@@ -88,7 +87,6 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
             .append(sensorIndex)
             .append(eventIndex)
             .append(eventType)
-        LogUtils.data("cgmHistory : userID:" + userID + ", deviceId :" + deviceId + " , deviceSn :" + deviceSn + ", time :" + deviceTime.time / 1000 + " ,eventData :" + eventData + " ,sensorIndex :" + sensorIndex)
         return EncryptUtils.md5(uuidStr.toString())
     }
 
@@ -100,7 +98,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         this.eventIndex = eventIndex
     }
 
-    override fun _setSensorIndex(sensorIndex: Int) {
+    override fun _setSensorIndex(sensorIndex: Long) {
         this.sensorIndex = sensorIndex
     }
 

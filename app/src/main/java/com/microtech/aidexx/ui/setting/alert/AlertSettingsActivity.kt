@@ -21,6 +21,7 @@ private const val TYPE_SET_METHOD = 1
 private const val TYPE_SET_FREQUENCY = 2
 
 class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertBinding>() {
+    private var needInit: Boolean = true
     private var alertMethod: Int = 2
     private var alertFrequency: Int = 2
     private var urgentAlertMethod: Int = 2
@@ -232,8 +233,15 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        initData()
-        initView()
-        initEvent()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (needInit) {
+            initData()
+            initView()
+            initEvent()
+            needInit = false
+        }
     }
 }

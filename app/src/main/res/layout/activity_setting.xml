@@ -190,7 +190,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_trans"
                     app:layout_constraintTop_toTopOf="parent"
                     app:title="@string/setting_transmitter" />
 
@@ -199,7 +199,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_alert"
                     app:layout_constraintTop_toBottomOf="@id/setting_trans"
                     app:title="@string/alert_setting" />
 
@@ -209,7 +209,7 @@
                     android:layout_height="wrap_content"
                     app:has_line="false"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_unit"
                     app:layout_constraintTop_toBottomOf="@id/setting_alert"
                     app:title="@string/setting_glucose_unit" />
 
@@ -230,7 +230,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_language"
                     app:layout_constraintTop_toTopOf="parent"
                     app:title="@string/setting_language" />
 
@@ -239,7 +239,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_theme"
                     app:layout_constraintTop_toBottomOf="@id/setting_language"
                     app:title="@string/setting_theme" />
 
@@ -248,7 +248,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_other"
                     app:layout_constraintTop_toBottomOf="@id/setting_theme"
                     app:title="@string/setting_other" />
 
@@ -258,7 +258,7 @@
                     android:layout_height="wrap_content"
                     app:has_line="false"
                     app:has_next="true"
-                    app:icon="@drawable/ic_trans"
+                    app:icon="@drawable/ic_setting_about"
                     app:layout_constraintTop_toBottomOf="@id/setting_other"
                     app:title="@string/setting_about" />
 

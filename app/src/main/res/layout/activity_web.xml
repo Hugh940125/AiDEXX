@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <com.microtech.aidexx.widget.ActionBarWidget
+        android:layout_marginTop="40dp"
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

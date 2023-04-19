@@ -1,12 +1,8 @@
 package com.microtech.aidexx.ui.main.bg.history
 
-import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.WindowInsets
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.base.BaseActivity
@@ -15,6 +11,7 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityBloodGlucoseHistoryBinding
 import com.microtech.aidexx.ui.main.bg.BgRepositoryApi
 import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.widget.calendar.CalendarDialog
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -78,29 +75,27 @@ class BloodGlucoseHistoryActivity : BaseActivity<BaseViewModel, ActivityBloodGlu
         dateLastMonth = Date(timeNextZero - 60 * 60 * 24 * 30 * 1000L)
     }
 
-    fun openCalendar() {
-//        CalendarDialog.show(this as AppCompatActivity, { position ->
-//            when (position) {
-//                1 -> {
-//                    update(dateLastWeek, dateToday)
-//                }
-//                2 -> {
-//                    update(dateLast14days, dateToday)
-//                }
-//                3 -> {
-//                    update(dateLastMonth, dateToday)
-//                }
-//            }
-//        }, { startDate, endDate ->
-//            update(startDate, endDate)
-//
-//        })
+    private fun openCalendar() {
+        CalendarDialog(this, { position ->
+            when (position) {
+                1 -> {
+                    update(dateLastWeek, dateToday)
+                }
+                2 -> {
+                    update(dateLast14days, dateToday)
+                }
+                3 -> {
+                    update(dateLastMonth, dateToday)
+                }
+            }
+        }, { startDate, endDate ->
+            update(startDate, endDate)
+        }).show()
     }
 
     private fun update(startDate: Date, endDate: Date) {
         val formatter =
             LanguageUnitManager.languageUnitByIndex(this).dmyFormat
-
         binding.timeBegin.text = formatter.format(startDate)
         val calendar = Calendar.getInstance()
         calendar.time = endDate

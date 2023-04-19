@@ -24,7 +24,6 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -38,7 +37,6 @@ import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 private const val DISMISS_LOADING = 2004
-private const val REFRESH_TRANS_LIST = 2005
 
 const val OPERATION_TYPE_PAIR: Int = 1
 const val OPERATION_TYPE_UNPAIR: Int = 2
@@ -80,7 +78,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         loadSavedTransmitter()
         initAnim()
         initView()
-        onDeviceDiscover()
         initEvent()
     }
 
@@ -92,7 +89,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             if (window.decorView.visibility == View.VISIBLE) {
                 if (it) {
                     Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
-                    transmitterList.clear()
                 } else {
                     TransmitterManager.instance().removeDefault()
                 }
@@ -190,6 +186,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     private fun refreshMine() {
         lifecycleScope.launch {
+            transmitterList.clear()
             withContext(Dispatchers.IO) {
                 transmitter = TransmitterManager.instance().getDefault()?.entity
             }
@@ -212,6 +209,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 AidexBleAdapter.getInstance().startBtScan(true)
                 scanStarted = true
             }
+            onDeviceDiscover()
         }
     }
 

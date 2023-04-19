@@ -153,13 +153,13 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
                                 downloadData()
                                 onLoginSuccess()
                             } else {
-                                ToastUtil.showShort(getString(R.string.login_fail))
+                                Dialogs.showError(getString(R.string.login_fail))
                             }
                         }
                     }
                 }
             } else {
-                ToastUtil.showShort(getString(R.string.login_fail))
+                Dialogs.showError(baseResponse.info.msg)
             }
         }, {
 

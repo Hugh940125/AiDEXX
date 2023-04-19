@@ -49,7 +49,6 @@ import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
 
-
 /**
  * APP-SRC-A-2-7-2
  */
@@ -393,7 +392,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 val historiesFromBroadcast =
                     getHistoriesFromBroadcast(nextEventIndex, adHistories)
                 if (historiesFromBroadcast.isNotEmpty()) {
-                    LogUtil.eAiDEX("开始保存数据-调用1${System.currentTimeMillis()}")
                     saveBriefHistory(historiesFromBroadcast.asReversed(), false)
                 }
             } else {
@@ -501,7 +499,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
             if (histories.isNullOrEmpty()) return@launch
             if (histories.first().timeOffset == nextEventIndex) {
-                LogUtil.eAiDEX("开始保存数据-调用2${System.currentTimeMillis()}")
                 saveBriefHistory(histories)
             }
         }
@@ -582,7 +579,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         histories: MutableList<AidexXHistoryEntity>,
         goon: Boolean = true
     ) {
-        LogUtil.eAiDEX("开始保存数据-${System.currentTimeMillis()}")
         val deviceId = TransmitterManager.instance().getDefault()?.deviceId() ?: return
         val userId = UserInfoManager.instance().userId()
         if (userId.isEmpty()) return
@@ -627,19 +623,16 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 if (oldHistory != null) {
                     continue
                 }
-                if (history.timeOffset < 60) {
-                    historyEntity.eventWarning = -1
-                }
                 val time = historyDate.dateHourMinute()
                 historyEntity.eventData = history.glucose.toFloat()
+                val deviceTimeMillis = historyEntity.deviceTime.time
                 when (historyEntity.eventType) {
                     History.HISTORY_GLUCOSE,
                     -> {
-                        if (isMalfunction) {
+                        if (isMalfunction || history.timeOffset < 60) {
                             historyEntity.eventWarning = -1
                         } else {
                             if (historyEntity.isHighOrLow()) {
-                                val deviceTimeMillis = historyEntity.deviceTime.time
                                 when {
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
                                         if (AlertUtil.getAlertSettings().isHyperEnable) {
@@ -698,7 +691,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         }
                     }
                     History.HISTORY_SENSOR_ERROR -> {
-                        if (now - historyEntity.deviceTime.time < 1000 * 60 * 30 && entity.needReplace) {
+                        if (entity.needReplace && now - deviceTimeMillis < TimeUtils.oneHourSeconds * 1000) {
                             alert?.invoke(
                                 "$time", AlertType.MESSAGE_TYPE_SENRORERROR
                             )
@@ -707,24 +700,19 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
                 tempBriefList.add(historyEntity)
             }
-            LogUtil.eAiDEX("保存数据-处理2-${System.currentTimeMillis()}")
             if (tempBriefList.isNotEmpty()) {
                 cgmHistoryBox!!.put(tempBriefList)
             }
-            if (UserInfoManager.instance().isLogin()) {
-                if (UserInfoManager.shareUserInfo == null) {
-                    TransmitterManager.instance().updateHistories(tempBriefList)
-                }
-                entity.eventIndex = histories.last().timeOffset
-                nextEventIndex = entity.eventIndex + 1
-                transmitterBox!!.put(entity)
-//                updateGlucoseTrend(tempBriefList.last().deviceTime)
-                tempBriefList.clear()
-                LogUtil.eAiDEX("结束保存数据-${System.currentTimeMillis()}")
-                if (goon) continueBriefFetch()
-            }
         }, onSuccess = {
-
+            if (UserInfoManager.shareUserInfo == null) {
+                TransmitterManager.instance().updateHistories(tempBriefList)
+            }
+            tempBriefList.clear()
+            entity.eventIndex = histories.last().timeOffset
+            nextEventIndex = entity.eventIndex + 1
+            transmitterBox!!.put(entity)
+//                updateGlucoseTrend(tempBriefList.last().deviceTime)
+            if (goon) continueBriefFetch()
         }, onError = {
             tempBriefList.clear()
         })

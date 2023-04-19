@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.main.bg
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -29,6 +30,7 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentBgBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.ui.main.bg.history.BloodGlucoseHistoryActivity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
@@ -169,6 +171,9 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 binding.tvTime.text = it.date2ymdhm()
             }
         }
+        binding.tvMoreHistory.setOnClickListener {
+            startActivity(Intent(requireContext(), BloodGlucoseHistoryActivity::class.java))
+        }
     }
 
     private fun updateLastRecord() {
@@ -178,9 +183,11 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 lastGlucoseRecord = BgRepositoryApi.getLastGlucoseHistory()
             }
             if (null == lastGlucoseRecord) {
+                binding.tvMoreHistory.visibility = View.INVISIBLE
                 binding.llBgRecode.llContainer.visibility = View.INVISIBLE
                 binding.tvNoneRecord.visibility = View.VISIBLE
             } else {
+                binding.tvMoreHistory.visibility = View.VISIBLE
                 binding.llBgRecode.apply {
                     llContainer.visibility = View.VISIBLE
                     tvGlucoseTime.text = lastGlucoseRecord.testTime.date2ymdhm()
