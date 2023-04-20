@@ -41,4 +41,8 @@ object AccountRepository {
         val body = ReqChangePWD(phoneNumber, pwdEncrypted, verifyCode)
         ApiService.instance.resetPasswordByVerificationCode(body)
     }
+
+    suspend fun getFollowers() = withContext(dispatcher) {
+        ApiService.instance.getFollowers()
+    }
 }

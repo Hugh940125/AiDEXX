@@ -4,6 +4,9 @@ import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 
+/**
+ * @param type 0-其他人 1-自己
+ */
 class ShareUserEntity(type: Int) : Parcelable {
 
     var lastData: RealCgmHistoryEntity? = null
@@ -18,8 +21,6 @@ class ShareUserEntity(type: Int) : Parcelable {
     var id: String? = null
     var hide: Boolean = false
 
-    var home: Boolean = false
-
     var pushState = false
     var emergeState = false
     var isLooking = false
@@ -27,13 +28,16 @@ class ShareUserEntity(type: Int) : Parcelable {
     var startUp: Long? = null
     var et: Int? = null
 
+    fun getDisplayName() = userAlias?.ifEmpty { null }
+        ?: user?.emailAddress?.ifBlank { null }
+        ?: user?.phoneNumber
+
     constructor(parcel: Parcel) : this(1) {
         itemType = parcel.readInt()
         authorizedUserAlias = parcel.readString()
         userAlias = parcel.readString()
         id = parcel.readString()
         hide = parcel.readByte() != 0.toByte()
-        home = parcel.readByte() != 0.toByte()
         pushState = parcel.readByte() != 0.toByte()
         emergeState = parcel.readByte() != 0.toByte()
         user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -56,7 +60,6 @@ class ShareUserEntity(type: Int) : Parcelable {
         parcel.writeString(userAlias)
         parcel.writeString(id)
         parcel.writeByte(if (hide) 1 else 0)
-        parcel.writeByte(if (home) 1 else 0)
         parcel.writeByte(if (pushState) 1 else 0)
         parcel.writeByte(if (emergeState) 1 else 0)
         parcel.writeParcelable(user, flags)

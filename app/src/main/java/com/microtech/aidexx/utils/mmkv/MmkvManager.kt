@@ -3,7 +3,7 @@ package com.microtech.aidexx.utils.mmkv
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.ThresholdManager
-import java.util.*
+import java.util.Date
 
 object MmkvManager {
 
@@ -11,7 +11,7 @@ object MmkvManager {
     private const val SIGNAL_NOTICE_METHOD = "SIGNAL_NOTICE_METHOD"
     private const val NOTICE_METHOD = "NOTICE_METHOD"
     private const val URGENT_NOTICE_METHOD = "URGENT_NOTICE_METHOD"
-    private const val PHONE_NUMBER = "PHONE_NUMBER"
+    private const val PHONE_NUMBER = "mobile_num"
     private const val GET_USER_ID = "GET_USER_ID"
     private const val THEME = "THEME"
     private const val GLUCOSE_UNIT = "GLUCOSE_UNIT"
@@ -35,7 +35,20 @@ object MmkvManager {
     private const val FLAG_LOGIN = "FLAG_LOGIN"
     private const val USER_AVATAR = "USER_AVATAR"
     private const val APP_CHECK_UPDATE_DATE = "APP_CHECK_UPDATE_DATE"
+    private const val NickName = "NickName"
+    private const val SurName = "SurName"
+    private const val GivenName = "GivenName"
+    private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "already_show_dialog_guide"
 
+    fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
+    fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)
+
+    fun saveNickName(name: String) = MmkvUtil.encodeString(NickName, name)
+    fun getNickName(default: String = "") = MmkvUtil.decodeString(NickName, default)
+    fun saveSurName(name: String) = MmkvUtil.encodeString(SurName, name)
+    fun getSurName(default: String = "") = MmkvUtil.decodeString(SurName, default)
+    fun saveGivenName(name: String) = MmkvUtil.encodeString(GivenName, name)
+    fun getGivenName(default: String = "") = MmkvUtil.decodeString(GivenName, default)
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
     fun isLogin(): Boolean = MmkvUtil.decodeBoolean(FLAG_LOGIN, false)

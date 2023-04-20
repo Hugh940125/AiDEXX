@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.databinding.FragmentHomeBinding
+import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
@@ -125,6 +126,11 @@ class ChartViewHolder(
             fragment.lifecycleScope.launch {
                 chartViewModel.onCgmDataChanged(it)
             }
+        }
+
+        /** 切换用户 */
+        EventBusManager.onReceive<ShareUserEntity>(EventBusKey.EVENT_SWITCH_USER, fragment) {
+            chartViewModel.reload()
         }
 
     }

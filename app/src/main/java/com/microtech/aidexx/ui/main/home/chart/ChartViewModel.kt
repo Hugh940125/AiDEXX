@@ -4,7 +4,11 @@ import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.data.CombinedData
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
@@ -12,26 +16,45 @@ import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.CalerateEntity
+import com.microtech.aidexx.db.entity.DietEntity
+import com.microtech.aidexx.db.entity.EventEntity
+import com.microtech.aidexx.db.entity.ExerciseEntity
+import com.microtech.aidexx.db.entity.InsulinEntity
+import com.microtech.aidexx.db.entity.MedicationEntity
+import com.microtech.aidexx.db.entity.OthersEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.repository.DbRepository
-import com.microtech.aidexx.db.entity.*
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.CalibrateManager
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.ThemeManager
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.widget.chart.ChartUtil
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
-import com.microtech.aidexx.widget.chart.dataset.*
+import com.microtech.aidexx.widget.chart.dataset.BgDataSet
+import com.microtech.aidexx.widget.chart.dataset.CalDataSet
+import com.microtech.aidexx.widget.chart.dataset.CurrentGlucoseDataSet
+import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
+import com.microtech.aidexx.widget.chart.dataset.IconDataSet
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Date
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 
@@ -51,10 +74,8 @@ class ChartViewModel: ViewModel() {
     private val bgSet = BgDataSet()
     private val eventSet = IconDataSet()
 
-    var timeMin: Float? = null
-        private set
-    var timeMax: Float? = null
-        private set
+    private var timeMin: Float? = null
+    private var timeMax: Float? = null
 
     class ChartChangedInfo(
         var timeMin: Float?,
@@ -94,20 +115,30 @@ class ChartViewModel: ViewModel() {
             startLoadNextPage.collect {
                 if (it) {
                     LogUtil.d("===CHART===开始加载下一页")
+                    var needNotify = true
                     withContext(Dispatchers.IO) {
                         var maxTime = Date(curPageMinDate.time - 1000) // ob between是前闭后闭
                         val curMinTime = getCurPageStartDate(curPageMinDate.time)
                         LogUtil.d("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
                         getCgmPageData(curMinTime, maxTime)?.let { d ->
-                            updateGlucoseSets(d)
-                            LogUtil.d("===CHART=== 有数据")
+                            if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                                // 如果发现uid变化了 就忽略掉
+                                LogUtil.d("===CHART=== 分页查询结束 发现换人了 终止通知")
+                                needNotify = false
+                            } else {
+                                updateGlucoseSets(d)
+                                LogUtil.d("===CHART=== 有数据")
+                            }
                         }
                         LogUtil.d("===CHART=== 加载之后 timeMin=$timeMin start=${curMinTime} end=${maxTime}")
                     }
-                    mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
-                    //重置标记
-                    val ret = startLoadNextPage.compareAndSet(true, update = false)
-                    LogUtil.d("===CHART=== 通知及标记重置了 ret=$ret")
+                    // 如果这个期间没发生用户切换就外部
+                    if (needNotify) {
+                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                        //重置标记
+                        val ret = startLoadNextPage.compareAndSet(true, update = false)
+                        LogUtil.d("===CHART=== 通知及标记重置了 ret=$ret")
+                    }
                 }
             }
         }
@@ -175,6 +206,10 @@ class ChartViewModel: ViewModel() {
      *      --通知外部刷页面
      */
     fun reload() {
+        reset()
+        viewModelScope.launch {
+            initData().collect()
+        }
     }
 
     /** 是否需要加载下一页 */
@@ -305,6 +340,30 @@ class ChartViewModel: ViewModel() {
         calSet.clear()
         timeMin = null
         timeMax = null
+    }
+
+    // todo 解配成功后调用
+    fun clearCurrentGlucose() {
+        currentSet.clear()
+    }
+
+    /**
+     * 切换用户重置数据
+     */
+    private fun reset() {
+        //重置数据
+        clearEventSets()
+        clearGlucoseSets()
+        clearCurrentGlucose()
+        combinedData.lineData.clearValues()
+        combinedData.scatterData.clearValues()
+        combinedData.clearValues()
+
+        //重置分页标记
+        val ret = startLoadNextPage.compareAndSet(true, update = false)
+        loadedMinDate = -Float.MAX_VALUE
+        curPageMinDate = Date()
+
     }
 
     private suspend fun updateGlucoseSets(cgmHistories: List<RealCgmHistoryEntity>) {
@@ -492,11 +551,6 @@ class ChartViewModel: ViewModel() {
             )
         )
         return currentSet
-    }
-
-    // 解配成功后调用
-    fun clearCurrentGlucose() {
-        currentSet.clear()
     }
 
     // 设置当前血糖值后调用

@@ -38,14 +38,6 @@ class UserInfoManager {
         MmkvManager.saveUserId(id)
     }
 
-    fun updatePhone(phone: String) {
-        MmkvManager.savePhone(phone)
-    }
-
-    fun phone(): String {
-        return MmkvManager.getPhone()
-    }
-
     fun isLogin(): Boolean {
         return MmkvManager.isLogin()
     }
@@ -58,6 +50,21 @@ class UserInfoManager {
         MmkvManager.saveProfile(profile)
     }
 
+    fun getDisplayName() = getNickName().ifEmpty { null }
+        ?: "${getSurName()}${getGivenName()}".ifEmpty { null }
+        ?: getPhone()
+
+    fun getNickName(): String = MmkvManager.getNickName()
+
+    fun getSurName(): String = MmkvManager.getSurName()
+
+    fun getGivenName(): String = MmkvManager.getGivenName()
+
+    private fun setPhone(phone: String) {
+        MmkvManager.savePhone(phone)
+    }
+    fun getPhone(): String = MmkvManager.getPhone()
+
     suspend fun onUserLogin(content: ResUserInfo): Long = withContext(Dispatchers.IO){
         var entity = AccountDbRepository.getUserInfoByUid(content.userId!!)
         if (entity == null) {
@@ -69,6 +76,8 @@ class UserInfoManager {
         entity.avatar = content.avatar
 
         AccountDbRepository.saveUser(entity)?.let {
+            updateUserId(content.userId)
+            setPhone(content.phone ?: "")
             instance().updateLoginFlag(true)
             it
         } ?: -1

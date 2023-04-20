@@ -9,6 +9,7 @@ import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.Throttle
@@ -37,6 +38,7 @@ const val getUserInfo = "$USER_URL/getUserInfo"
 const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordPhoneVerificationCode"
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
+const val getFollowers = "http://192.168.222.26:5555/backend/aidex/follows"
 // endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
@@ -75,6 +77,8 @@ interface ApiService {
 
     @POST(resetPasswordByVerificationCode)
     suspend fun resetPasswordByVerificationCode(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
+    @GET(getFollowers)
+    suspend fun getFollowers(): ApiResult<BaseResponse<BaseList<ShareUserEntity>>>
 
     //endregion
 

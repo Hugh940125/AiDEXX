@@ -14,4 +14,7 @@ object EventBusKey {
     const val EVENT_UNPAIR_SUCCESS: String = "EVENT_UNPAIR_SUCCESS"
     const val EVENT_CGM_DATA_CHANGED: String = "EVENT_CGM_DATA_CHANGED"
     const val EVENT_PAIR_SUCCESS: String = "EVENT_PAIR_SUCCESS"
+
+    /** 切换查看用户 */
+    const val EVENT_SWITCH_USER: String = "EVENT_SWITCH_USER"
 }

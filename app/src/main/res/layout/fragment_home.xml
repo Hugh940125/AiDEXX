@@ -20,6 +20,12 @@
             android:id="@+id/fcv_panel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
+
+        <include
+            android:id="@+id/frg_share"
+            layout="@layout/fragment_glucose_share"
+            android:visibility="gone" />
+
     </RelativeLayout>
 
     <View

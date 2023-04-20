@@ -1,12 +1,14 @@
 package com.microtech.aidexx.data
 
 import com.google.gson.GsonBuilder
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.scope
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
@@ -15,6 +17,8 @@ import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.reflect.ParameterizedType
 
@@ -172,4 +176,17 @@ abstract class CloudHistorySync<T : EventEntity> {
             entityBox.put(temp)
         }
     }
+
+    companion object {
+        fun downloadAllData(userId: String?, callback: ()->Unit){
+            AidexxApp.instance.scope.launch {
+                delay(3000)
+                // todo
+                callback.invoke()
+            }
+
+        }
+    }
+
+
 }
