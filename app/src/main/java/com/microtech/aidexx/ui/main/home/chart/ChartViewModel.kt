@@ -17,7 +17,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
-import com.microtech.aidexx.db.entity.CalerateEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.DietEntity
 import com.microtech.aidexx.db.entity.EventEntity
 import com.microtech.aidexx.db.entity.ExerciseEntity
@@ -397,8 +397,7 @@ class ChartViewModel: ViewModel() {
         LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
 
         if (isGp) {
-            var all: MutableList<CalibrateEntity> = mutableListOf()
-            all = CalibrateManager.getCalibrateHistorys()
+            val all: MutableList<CalibrateEntity> = CalibrateManager.getCalibrateHistorys()
             calSet.clear()
             for (item in all) {
                 updateGpCalibrationSet(item)

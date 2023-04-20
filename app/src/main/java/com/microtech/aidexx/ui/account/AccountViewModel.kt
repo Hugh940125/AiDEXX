@@ -82,7 +82,7 @@ class AccountViewModel : BaseViewModel() {
                 }
             }
             is ApiResult.Failure -> {
-                emit(-1 to "登录请求失败 code=${apiResult.code}")
+                emit(-2 to apiResult.msg)
             }
             else -> emit(-1 to "暂不支持该方式登录")
         }

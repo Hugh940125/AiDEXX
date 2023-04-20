@@ -1,31 +1,31 @@
 package com.microtech.aidexx.utils
 
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.dao.CalibrateDao
+import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.repository.DbRepository
-import com.microtech.aidexx.db.dao.CalerateDao
-import com.microtech.aidexx.db.entity.CalerateEntity
 
 
 object CalibrateManager {
 
-    suspend fun getCalibrateHistorys(): MutableList<CalerateEntity> {
+    suspend fun getCalibrateHistorys(): MutableList<CalibrateEntity> {
 
-        val mutableListOf = mutableListOf<CalerateEntity>()
+        val mutableListOf = mutableListOf<CalibrateEntity>()
 
         val uid = UserInfoManager.shareUserInfo?.id ?: UserInfoManager.instance().userId()
 
         val calListFromHistory = DbRepository.queryCgmByUid(uid) ?: mutableListOf()
 
         for (history in calListFromHistory) {
-            val calerateEntity = CalerateEntity()
-            calerateEntity.deviceId = history.deviceId ?: ""
-            calerateEntity.calTime = history.deviceTime
-            calerateEntity.sensorIndex = history.sensorIndex
-            calerateEntity.referenceGlucose = history.eventData ?: 0f
-            mutableListOf.add(calerateEntity)
+            val calibrateEntity = CalibrateEntity()
+            calibrateEntity.deviceId = history.deviceId ?: ""
+            calibrateEntity.calTime = history.deviceTime
+            calibrateEntity.sensorIndex = history.sensorIndex
+            calibrateEntity.referenceGlucose = history.eventData ?: 0f
+            mutableListOf.add(calibrateEntity)
         }
 
-        val calList = CalerateDao.queryByUid(uid) ?: mutableListOf()
+        val calList = CalibrateDao.queryByUid(uid) ?: mutableListOf()
 
         LogUtils.eAiDex("-----2|||$mutableListOf")
         mutableListOf.addAll(calList)

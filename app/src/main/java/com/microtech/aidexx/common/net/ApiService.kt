@@ -150,7 +150,7 @@ interface ApiService {
                             EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                         }
                     }
-                    ret = BizException(code, message = msg)
+                    ret = BizException(code, message = msg?.ifBlank { null } ?: "$code")
                 }
             }
             return ret

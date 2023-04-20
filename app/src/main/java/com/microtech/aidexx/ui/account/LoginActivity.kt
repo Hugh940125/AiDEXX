@@ -12,6 +12,7 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.LOGIN_TYPE_PWD
 import com.microtech.aidexx.common.LOGIN_TYPE_VER_CODE
 import com.microtech.aidexx.common.LoginType
+import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.databinding.ActivityLoginBinding
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
@@ -160,7 +161,8 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
                 when (it.first) {
                     1 -> Dialogs.showWait("假装正在-"+getString(R.string.download_data))
                     2 -> onLoginSuccess()
-                    -1 -> ToastUtil.showShort(getString(R.string.login_fail))
+                    -1 -> getString(R.string.login_fail).toastShort()
+                    -2 -> it.second.toastShort()
                 }
                 LogUtil.d(it.second, TAG)
             }

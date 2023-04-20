@@ -35,8 +35,8 @@ android {
             debuggable true
             buildConfigField("Boolean", "isPre", "false")
             buildConfigField("Boolean", "enableEncrypt", "false")
-            buildConfigField("String", "baseUrl", "\"https://china.pancares.com/\"")
-            buildConfigField("String", "updateUrl", "\"https://china.pancares.com/\"")
+            buildConfigField("String", "baseUrl", "\"http://192.168.222.26:5555/\"")
+            buildConfigField("String", "updateUrl", "\"http://192.168.222.26:5555/\"")
             buildConfigField("String", "logUploadUrl", "\"http://192.168.222.26:5555/\"")
         }
     }
