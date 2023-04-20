@@ -73,6 +73,14 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertise
 
 /*
  * Class:     com_microtechmd_blecomm_BleAdapter
+ * Method:    onAdvertiseWithAndroidRawBytes
+ * Signature: (Ljava/lang/String;I[B)V
+ */
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertiseWithAndroidRawBytes
+        (JNIEnv *, jobject, jstring, jint, jbyteArray);
+
+/*
+ * Class:     com_microtechmd_blecomm_BleAdapter
  * Method:    onConnectSuccess
  * Signature: ()V
  */
@@ -110,6 +118,15 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData___3
  */
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData__I_3B
         (JNIEnv *, jobject, jint, jbyteArray);
+
+
+/*
+ * Class:     com_microtechmd_blecomm_BleAdapter
+ * Method:    getBleState
+ * Signature: ()V
+ */
+JNIEXPORT jint JNICALL
+Java_com_microtechmd_blecomm_BleAdapter_getBleState(JNIEnv *env, jobject obj);
 
 #ifdef __cplusplus
 }

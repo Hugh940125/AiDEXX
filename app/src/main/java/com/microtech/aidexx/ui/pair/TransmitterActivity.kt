@@ -10,8 +10,6 @@ import android.view.View.OnClickListener
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import androidx.core.util.forEach
-import androidx.core.util.valueIterator
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
@@ -19,27 +17,26 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
+import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
-import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.ToastUtil
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import io.objectbox.reactive.DataObserver
 import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 private const val DISMISS_LOADING = 2004
-private const val REFRESH_TRANS_LIST = 2005
 
 const val OPERATION_TYPE_PAIR: Int = 1
 const val OPERATION_TYPE_UNPAIR: Int = 2
@@ -48,14 +45,14 @@ const val BLE_INFO = "info"
 
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(),
     OnClickListener {
-    private var mObserver: Job? = null
+    private var needSetMessageCallback = true
     private var scanStarted = false
     private lateinit var rotateAnimation: RotateAnimation
     private var subscription: DataSubscription? = null
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
     private var transmitter: TransmitterEntity? = null
-    private val transmitterList = mutableListOf<BleControllerInfo>()
+    private lateinit var transmitterList: MutableList<BleControllerInfo>
 
     class TransmitterHandler(val activity: TransmitterActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
@@ -64,65 +61,57 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (!it.isFinishing) {
                     when (msg.what) {
                         DISMISS_LOADING -> {
-                            sendEmptyMessage(REFRESH_TRANS_LIST)
                             Dialogs.dismissWait()
                         }
-                        REFRESH_TRANS_LIST -> {
-                            activity.refreshList()
-                        }
                     }
                 }
             }
         }
-    }
-
-    fun refreshList() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val deviceStore = AidexBleAdapter.getInstance().deviceStore
-            for (result in deviceStore.deviceMap.values) {
-                val name = AdvertisingParser.getName(result.scanRecord?.bytes)
-                val device = result.device
-                if (name.contains("AiDEX X")) {
-                    if (name.length < 6) {
-                        LogUtil.eAiDEX("Device name length less than 6")
-                        return@launch
-                    }
-//                    val manufacturerSpecificData = result.scanRecord?.manufacturerSpecificData
-//                    manufacturerSpecificData?.forEach { key, value ->
-//                        LogUtil.eAiDEX("getManufacturerSpecificData---$$key--->${StringUtils.binaryToHexString(value)}")
-//                    }
-                    val sn = name.substring(name.length - 6)
-                    val address = device.address
-                    val bleControllerInfo =
-                        BleControllerInfo(address, name, sn, result.rssi + 130)
-                    if (transmitter != null && address == transmitter?.deviceMac) {
-                        continue
-                    }
-                    if (!transmitterList.contains(bleControllerInfo)) {
-                        transmitterList.add(bleControllerInfo)
-                    }
-                }
-            }
-        }
-        transmitterAdapter.setList(transmitterList)
-        transmitterHandler.sendEmptyMessageDelayed(REFRESH_TRANS_LIST, 3000)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         AidexxApp.isPairing = true
+        transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
         loadSavedTransmitter()
-        if (transmitter == null || transmitter?.accessId == null) {
-            AidexBleAdapter.getInstance().startBtScan(false)
-            scanStarted = true
-            Dialogs.showWait(getString(R.string.loading))
-            transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
-        }
         initAnim()
         initView()
-        observeMessage()
+        initEvent()
+    }
+
+    private fun initEvent() {
+        EventBusManager.onReceive<Boolean>(
+            EventBusKey.EVENT_PAIR_RESULT,
+            this
+        ) {
+            if (window.decorView.visibility == View.VISIBLE) {
+                if (it) {
+                    Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
+                } else {
+                    TransmitterManager.instance().removeDefault()
+                }
+            }
+        }
+    }
+
+    private fun onDeviceDiscover() {
+        AidexBleAdapter.getInstance().onDeviceDiscover = {
+            if (needSetMessageCallback) {
+                PairUtil.observeMessage(this, lifecycleScope)
+                needSetMessageCallback = false
+            }
+            if (it.name.contains("AiDEX X")) {
+                val address = it.address
+                if ((transmitter == null || address != transmitter?.deviceMac)
+                    && !transmitterList.contains(it)
+                ) {
+                    transmitterList.add(it)
+                }
+                transmitterAdapter.setList(transmitterList)
+            }
+        }
     }
 
     private fun initAnim() {
@@ -136,24 +125,15 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         rotateAnimation.repeatCount = Animation.INFINITE
         rotateAnimation.repeatMode = Animation.RESTART
         rotateAnimation.duration = 1500
+        binding.ivRefreshScan.startAnimation(rotateAnimation)
     }
 
     override fun onResume() {
         super.onResume()
-        binding.ivRefreshScan.startAnimation(rotateAnimation)
     }
 
     override fun onPause() {
         super.onPause()
-        binding.ivRefreshScan.clearAnimation()
-    }
-
-    private fun observeMessage() {
-        mObserver = PairUtil.observe(this, lifecycleScope) {
-            transmitterList.clear()
-            transmitterHandler.removeMessages(REFRESH_TRANS_LIST)
-            transmitterHandler.sendEmptyMessage(REFRESH_TRANS_LIST)
-        }
     }
 
     private fun initView() {
@@ -173,20 +153,25 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                         }
                     }
                 }
-                PairUtil.startPair(this@TransmitterActivity,it)
+                PairUtil.startPair(this@TransmitterActivity, it)
             }
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
         binding.rvOtherTrans.adapter = transmitterAdapter
+        Dialogs.showWait(getString(R.string.loading))
+        transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        rotateAnimation.cancel()
+        MessageDistributor.instance().removeObserver()
+        binding.ivRefreshScan.clearAnimation()
         AidexxApp.isPairing = false
-        if (scanStarted) {
+        if ((transmitter == null || transmitter?.accessId == null) && scanStarted) {
             AidexBleAdapter.getInstance().stopBtScan(false)
         }
-        transmitterHandler.removeCallbacksAndMessages(null)
+        transmitterHandler.removeMessages(DISMISS_LOADING)
         subscription?.cancel()
     }
 
@@ -201,6 +186,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     private fun refreshMine() {
         lifecycleScope.launch {
+            transmitterList.clear()
             withContext(Dispatchers.IO) {
                 transmitter = TransmitterManager.instance().getDefault()?.entity
             }
@@ -219,13 +205,26 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                     binding.layoutMyTrans.tvTransPairState.text = "已配对"
                 }
             }
+            if (transmitter == null || transmitter?.accessId == null) {
+                AidexBleAdapter.getInstance().startBtScan(true)
+                scanStarted = true
+            }
+            onDeviceDiscover()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 1) {
+            PairUtil.observeMessage(this, lifecycleScope)
         }
     }
 
     override fun onClick(v: View?) {
         when (v) {
             binding.layoutMyTrans.transItem -> {
-                val intent = Intent(this,TransOperationActivity::class.java)
+                MessageDistributor.instance().removeObserver()
+                val intent = Intent(this, TransOperationActivity::class.java)
                 intent.putExtra(
                     BLE_INFO,
                     BleControllerInfo(
@@ -240,7 +239,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 } else {
                     intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
                 }
-                startActivity(intent)
+                startActivityForResult(intent, 1)
             }
         }
     }

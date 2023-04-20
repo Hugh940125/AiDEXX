@@ -1,10 +1,15 @@
 package com.microtech.aidexx
 
+import android.app.Activity
 import android.app.Application
+import android.hardware.display.DisplayManager
+import android.os.Bundle
+import android.view.Display
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.utils.CrashHandler
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
@@ -12,8 +17,11 @@ import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
+    private var activityAliveCount: AtomicInteger = AtomicInteger(0)
+
     companion object {
         var isPairing: Boolean = false
         lateinit var instance: AidexxApp
@@ -32,15 +40,50 @@ class AidexxApp : Application() {
                 Admin(ObjectBox.store).start(this)
             }
         }
-
+        registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
     }
 
     private fun initSdks() {
+        AlertUtil.init(this)
         MMKV.initialize(this)
         ObjectBox.init(this)
         DialogX.init(this)
         AidexBleAdapter.init(this)
         BleController.setBleAdapter(AidexBleAdapter.getInstance())
-        AlertUtil.init(this)
+        AidexBleAdapter.getInstance().setDiscoverCallback()
     }
+
+    fun isDisplayOn(): Boolean {
+        val displayManager = this.getSystemService(DISPLAY_SERVICE) as DisplayManager
+        for (display in displayManager.displays) {
+            if (display.state != Display.STATE_OFF) {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun isForeground(): Boolean {
+        if (activityAliveCount.get() != 0) {
+            return true
+        }
+        return false
+    }
+
+    private val activityLifecycleCallbacks: ActivityLifecycleCallbacks =
+        object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityStarted(activity: Activity) {
+                activityAliveCount.incrementAndGet()
+            }
+
+            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {
+                activityAliveCount.decrementAndGet()
+            }
+
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {}
+        }
 }

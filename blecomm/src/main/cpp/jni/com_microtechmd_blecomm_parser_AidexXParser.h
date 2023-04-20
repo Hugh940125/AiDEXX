@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
         (JNIEnv *, jclass, jbyteArray);
 
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getHistories
@@ -18,7 +18,7 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getHi
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getRawHistory
         (JNIEnv *, jclass, jbyteArray);
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXCalbration
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXCalibration
         (JNIEnv *, jclass, jbyteArray);
 
 JNIEXPORT jfloatArray JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getParam

@@ -269,6 +269,20 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onScanRespond
     }
 }
 
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertiseWithAndroidRawBytes
+        (JNIEnv *env, jobject obj, jstring address, jint rssi, jbyteArray data) {
+    JniBleAdapter *ptr = getPtr(env, obj);
+    if (ptr) {
+        const char *caddress = env->GetStringUTFChars(address, JNI_FALSE);
+        jbyte *cdata = env->GetByteArrayElements(data, JNI_FALSE);
+        int length = env->GetArrayLength(data);
+
+        ptr->onAdvertiseWithAndroidRawBytes(string(caddress), rssi, (const char *) cdata, length);
+
+        env->ReleaseStringUTFChars(address, caddress);
+        env->ReleaseByteArrayElements(data, cdata, JNI_FALSE);
+    }
+}
 
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onAdvertise
         (JNIEnv *env, jobject obj, jstring address, jint rssi, jbyteArray data) {
@@ -340,3 +354,13 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_BleAdapter_onReceiveData__I_
     }
 }
 
+
+JNIEXPORT jint JNICALL
+Java_com_microtechmd_blecomm_BleAdapter_getBleState(JNIEnv *env, jobject obj) {
+    JniBleAdapter *ptr = getPtr(env, obj);
+    jint ret = 0;
+    if (ptr) {
+        ret = ptr->getBleState();
+    }
+    return ret;
+}

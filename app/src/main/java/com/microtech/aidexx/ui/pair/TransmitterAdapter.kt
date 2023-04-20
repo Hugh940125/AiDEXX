@@ -12,7 +12,7 @@ class TransmitterAdapter :
     var onPairClick: ((item: BleControllerInfo) -> Unit)? = null
     override fun convert(holder: BaseViewHolder, item: BleControllerInfo) {
         holder.apply {
-            setText(R.id.tv_sn, item.name)
+            setText(R.id.tv_sn, "${item.name}-${item.sn}")
             setGone(R.id.tv_trans_pair_state, true)
             val transItem = getView<LinearLayout>(R.id.trans_item)
             transItem.setOnClickListener {

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -68,22 +69,21 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
+        judgeState()
         HomeStateManager.onHomeStateChange = {
             replaceFragment(it)
         }
+        HomeBackGroundSelector.instance().onLevelChange = { bg->
+            binding.homeRoot.setBackgroundResource(bg)
+        }
         TransmitterManager.setOnTransmitterChangeListener {
             judgeState()
-            AidexBleAdapter.getInstance().startBtScan(true)
-        }
-        lifecycleScope.launch {
-            TransmitterManager.instance().loadTransmitter()
         }
     }
 
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
-        judgeState()
     }
 
     override fun onPause() {
@@ -106,9 +106,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         chartViewHolder = ChartViewHolder(binding, this) {
             if (switchOrientation == 2) {
                 orientation(initOrientation)
-                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY,true, 500)
+                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY, true, 500)
             } else {
-                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY,true)
+                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY, true)
             }
         }
 
@@ -130,6 +130,17 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             switchUserData.setOnClickListener {
                 FollowSwitchDialog.Setter()
                     .create(requireActivity(), homeViewModel.mFollowers)?.show()
+            }
+        }
+
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_UNPAIR_RESULT, this) {
+            if (it) {
+                HomeStateManager.instance().setState(needPair)
+            }
+        }
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT, this) {
+            if (it) {
+                HomeStateManager.instance().setState(glucosePanel)
             }
         }
 
@@ -187,6 +198,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
             }
         }
+
     }
 
     private fun judgeState() {

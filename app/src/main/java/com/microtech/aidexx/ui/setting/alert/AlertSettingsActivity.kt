@@ -7,7 +7,6 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivitySettingsAlertBinding
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.SettingItemWidget
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.bottom.ThresholdSelectView
@@ -22,6 +21,7 @@ private const val TYPE_SET_METHOD = 1
 private const val TYPE_SET_FREQUENCY = 2
 
 class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertBinding>() {
+    private var needInit: Boolean = true
     private var alertMethod: Int = 2
     private var alertFrequency: Int = 2
     private var urgentAlertMethod: Int = 2
@@ -32,19 +32,6 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
 
     override fun getViewBinding(): ActivitySettingsAlertBinding {
         return ActivitySettingsAlertBinding.inflate(layoutInflater)
-    }
-
-    private fun methodPreview(index: Int, isUrgent: Boolean) {
-        when (index) {
-            0 -> AlertUtil.playSound(if (isUrgent) URGENT_NOTICE else COMMON_NOTICE)
-            1 -> AlertUtil.vibrate(this, isUrgent)
-            2 -> {
-                AlertUtil.apply {
-                    this.playSound(if (isUrgent) URGENT_NOTICE else COMMON_NOTICE)
-                    this.vibrate(this@AlertSettingsActivity, isUrgent)
-                }
-            }
-        }
     }
 
     private fun setMethodOrFrequency(
@@ -59,21 +46,21 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
                 TYPE_SET_METHOD -> {
                     settingItem.setValue(list[it])
                     if (isUrgent) {
-                        MmkvManager.saveUrgentAlertMethod(it)
+                        AlertUtil.setUrgentAlertMethod(it)
                         urgentAlertMethod = it
                     } else {
-                        MmkvManager.saveAlertMethod(it)
+                        AlertUtil.setAlertMethod(it)
                         alertMethod = it
                     }
-                    methodPreview(it, isUrgent)
+                    AlertUtil.alert(this, it, isUrgent)
                 }
                 TYPE_SET_FREQUENCY -> {
                     settingItem.setValue(getString(R.string.notice_inner, list[it]))
                     if (isUrgent) {
-                        MmkvManager.saveUrgentAlertFrequency(it)
+                        AlertUtil.setUrgentFrequency(it)
                         urgentAlertFrequency = it
                     } else {
-                        MmkvManager.saveAlertFrequency(it)
+                        AlertUtil.setAlertFrequency(it)
                         alertFrequency = it
                     }
                 }
@@ -98,7 +85,7 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         binding.actionBar.getLeftIcon().setOnClickListener {
             finish()
         }
-        alertMethod = MmkvManager.getAlertMethod()
+        alertMethod = AlertUtil.getAlertSettings().alertMethod
         binding.noticeMethod.setValue(listOfMethod[alertMethod])
         binding.noticeMethod.setOnClickListener {
             setMethodOrFrequency(
@@ -110,7 +97,7 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
             )
         }
         //
-        alertFrequency = MmkvManager.getAlertFrequency()
+        alertFrequency = AlertUtil.getAlertSettings().alertFrequency
         binding.noticeFrequency.setValue(
             getString(R.string.notice_inner, listOfFrequency[alertFrequency])
         )
@@ -124,7 +111,7 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
             )
         }
         //
-        urgentAlertMethod = MmkvManager.getUrgentAlertMethod()
+        urgentAlertMethod = AlertUtil.getAlertSettings().urgentAlertMethod
         binding.noticeMethodUrgent.setValue(listOfMethod[urgentAlertMethod])
         binding.noticeMethodUrgent.setOnClickListener {
             setMethodOrFrequency(
@@ -136,7 +123,7 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
             )
         }
         //
-        urgentAlertFrequency = MmkvManager.getUrgentAlertFrequency()
+        urgentAlertFrequency = AlertUtil.getAlertSettings().urgentAlertFrequency
         binding.noticeFrequencyUrgent.setValue(
             getString(R.string.notice_inner, listOfFrequency[urgentAlertFrequency])
         )
@@ -147,90 +134,98 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
             )
         }
         //
-        val hypoAlertEnable = MmkvManager.isHypoAlertEnable()
+        val hypoAlertEnable = AlertUtil.getAlertSettings().isHypoEnable
         binding.hypoAlertSwitch.getSwitch().isChecked = hypoAlertEnable
         binding.hypoAlertSwitch.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.setHypoAlertEnable(isChecked)
+            AlertUtil.setHypoEnable(isChecked)
         }
         //
-        val highNoticeEnable = MmkvManager.isHyperAlertEnable()
+        val highNoticeEnable = AlertUtil.getAlertSettings().isHyperEnable
         binding.hyperAlertSwitch.getSwitch().isChecked = highNoticeEnable
         binding.hyperAlertSwitch.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.setHyperAlertEnable(isChecked)
+            AlertUtil.setHyperEnable(isChecked)
         }
         //
         binding.hyperThreshold.setValue(ThresholdManager.hyper.toGlucoseStringWithUnit())
         binding.hypoThreshold.setValue(ThresholdManager.hypo.toGlucoseStringWithUnit())
         //
-        binding.switchRaiseAlert.getSwitch().isChecked = MmkvManager.isFastUpAlertEnable()
+        binding.switchRaiseAlert.getSwitch().isChecked = AlertUtil.getAlertSettings().isFastUpEnable
         binding.switchRaiseAlert.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.setFastUpAlertEnable(isChecked)
+            AlertUtil.setFastUpEnable(isChecked)
         }
-        binding.switchFallAlert.getSwitch().isChecked = MmkvManager.isFastDownAlertEnable()
+        binding.switchFallAlert.getSwitch().isChecked = AlertUtil.getAlertSettings().isFastDownEnable
         binding.switchFallAlert.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.setFastDownAlertEnable(isChecked)
+            AlertUtil.setFastDownEnable(isChecked)
         }
         //
-        binding.switchUrgentAlert.getSwitch().isChecked = MmkvManager.isUrgentAlertEnable()
+        binding.switchUrgentAlert.getSwitch().isChecked = AlertUtil.getAlertSettings().isUrgentLowEnable
         binding.switchUrgentAlert.getSwitch().setOnCheckedChangeListener { _, isChecked ->
             if (!isChecked) {
                 Dialogs.showWhether(this@AlertSettingsActivity, content = getString(
                     R.string.content_close_urgent,
                     if (UnitManager.glucoseUnit.index == 1) "3.0mmol/L" else "54mg/dL"
                 ), confirm = {
-                    MmkvManager.setUrgentAlertEnable(false)
+                    AlertUtil.setUrgentEnable(false)
                 }, cancel = {
-                    binding.switchUrgentAlert.getSwitch().isChecked = false
-                    MmkvManager.setUrgentAlertEnable(false)
+                    binding.switchUrgentAlert.getSwitch().isChecked = true
+                    AlertUtil.setUrgentEnable(true)
                 })
+            } else {
+                AlertUtil.setUrgentEnable(true)
             }
         }
         binding.lowUrgentValue.setValue(ThresholdManager.URGENT_HYPO.toGlucoseStringWithUnit())
         //
-        binding.switchSignalLoss.getSwitch().isChecked = MmkvManager.isUrgentAlertEnable()
+        binding.switchSignalLoss.getSwitch().isChecked = AlertUtil.getAlertSettings().isSignalLossEnable
         binding.switchSignalLoss.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-            MmkvManager.setUrgentAlertEnable(isChecked)
+            AlertUtil.setSignalLossEnable(isChecked)
         }
         //
         binding.noticeMethodSignalLoss.setValue(
-            listOfMethod[MmkvManager.signalLossAlertMethod()]
+            listOfMethod[AlertUtil.getAlertSettings().signalLossMethod]
         )
         binding.noticeMethodSignalLoss.setOnClickListener {
-            val signalLossAlertMethod = MmkvManager.signalLossAlertMethod()
-            Dialogs.Picker(this@AlertSettingsActivity).singlePick(listOf(), signalLossAlertMethod) {
+            val signalLossAlertMethod = AlertUtil.getAlertSettings().signalLossMethod
+            Dialogs.Picker(this@AlertSettingsActivity).singlePick(listOfMethod, signalLossAlertMethod) {
                 binding.noticeMethodSignalLoss.setValue(listOfMethod[it])
-                methodPreview(it, false)
-                MmkvManager.setSignalLossMethod(it)
+                AlertUtil.alert(this, it, false)
+                AlertUtil.setSignalLossMethod(it)
             }
         }
         //
+        val signalLossAlertFrequency = AlertUtil.getAlertSettings().signalLossFrequency
         val subList = listOfFrequency.subList(1, listOfFrequency.size)
         binding.noticeFrequencySignal.setValue(
             getString(
-                R.string.notice_inner, subList[MmkvManager.signalLossAlertFrequency()]
+                R.string.notice_inner, subList[signalLossAlertFrequency]
             )
         )
         binding.noticeFrequencySignal.setOnClickListener {
-            val signalLossAlertFrequency = MmkvManager.signalLossAlertFrequency()
-            Dialogs.Picker(this@AlertSettingsActivity).singlePick(subList,signalLossAlertFrequency){
-                binding.noticeFrequencySignal.setValue(getString(R.string.notice_inner, subList[it]))
-                MmkvManager.setSignalLossAlertFrequency(it)
-            }
+            Dialogs.Picker(this@AlertSettingsActivity)
+                .singlePick(subList, signalLossAlertFrequency) {
+                    binding.noticeFrequencySignal.setValue(
+                        getString(
+                            R.string.notice_inner,
+                            subList[it]
+                        )
+                    )
+                    AlertUtil.setSignalLossFrequency(it)
+                }
         }
     }
 
     private fun initEvent() {
         binding.hypoThreshold.setOnClickListener {
-            val methodSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPO) {
+            val hypoSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPO) {
                 binding.hypoThreshold.setValue(it)
             }
-            methodSelectView.show()
+            hypoSelectView.show()
         }
         binding.hyperThreshold.setOnClickListener {
-            val methodSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPER) {
+            val hyperSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPER) {
                 binding.hyperThreshold.setValue(it)
             }
-            methodSelectView.show()
+            hyperSelectView.show()
         }
     }
 
@@ -238,100 +233,15 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        listOf(
-            getString(R.string.five), getString(R.string.fifteen), getString(
-                R.string.thirty
-            ), getString(R.string.halfAndQuarter), getString(R.string.oneHour)
-        )
-        initData()
-        initView()
-        initEvent()
-
-
-//        val subList = listOfFrequency.subList(1, listOfFrequency.size)
-//        vb.noticeFrequencySignal.setValue(
-//            getString(
-//                R.string.notice_inner, subList[MMKV.defaultMMKV().decodeInt(
-//                    LocalPreference.SIGNAL_NOTICE_FREQUENCY,
-//                    0
-//                )]
-//            )
-//        )
-//        vb.noticeFrequencySignal.setOnClickListener {
-//            OptionsDialog.show(this, subList, null) { index ->
-//                vb.noticeFrequencySignal.setValue(getString(R.string.notice_inner, subList[index]))
-//                MMKV.defaultMMKV().encode(LocalPreference.SIGNAL_NOTICE_FREQUENCY, index)
-//            }
-//        }
-//        vm.getUserBgSetting()
-//        vm.mUserBg.observe(this, Observer { list ->
-//            list.records.let {
-//                if (list.records.isNotEmpty()) {
-//                    recordID = it[0].id
-//                }
-//            }
-//        })
-//
-//        //报警消息弹框
-//        LiveEventBus
-//            .get(
-//                EventKey.ALERT_TIP, AlertEvent::
-//                class.java
-//            )
-//            .observe(this, androidx.lifecycle.Observer
-//            {
-//                runOnUiThread {
-//
-//                    if (!isAlert) {
-//                        isAlert = true
-//                        com.microtechmd.cgms.dialog.MessageDialog.show(
-//                            this,
-//                            getString(R.string.message_alert_error),
-//                            null
-//                        )
-//                    }
-//                }
-//            })
     }
 
     override fun onResume() {
         super.onResume()
-//        vb.lowUrgentValue.setValue(CgmModel.URGENT_HYPO.toGlucoseStringWithUnit(resources))
-//        LogUtils.debug("model high :" + ThresholdManager.hyperThreshold)
-//        LogUtils.debug("model low :" + ThresholdManager.hypoThreshold)
-//
-//        vb.siwLow.setValue(
-//            (ThresholdManager.hypoThreshold).toGlucoseStringWithUnit(
-//                resources
-//            )
-//        )
-//        vb.siwHigh.setValue(
-//            (ThresholdManager.hyperThreshold).toGlucoseStringWithUnit(
-//                resources
-//            )
-//        )
-//
-//        vb.siwUrgent.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.URGENT_NOTICE_ENABLE, true)
-//        vb.siwUrgent.getSwitch().setOnCheckedChangeListener { _, isChecked ->
-//            MMKV.defaultMMKV().encode(LocalPreference.URGENT_NOTICE_ENABLE, isChecked)
-//            if (!isChecked) {
-//                ConfirmDialog.showCloseUrgent(
-//                    this, {
-//                        MMKV.defaultMMKV().encode(LocalPreference.URGENT_NOTICE_ENABLE, isChecked)
-//                    }, {
-//                        MMKV.defaultMMKV().encode(LocalPreference.URGENT_NOTICE_ENABLE, !isChecked)
-//                        vb.siwUrgent.getSwitch().isChecked = !isChecked
-//                    }
-//                )
-//            }
-//        }
-//
-//        vb.siwRaise.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.RAISE_ALERT, true)
-//        vb.siwFall.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.FALL_ALERT, true)
-//        vb.siwSignal.getSwitch().isChecked =
-//            MMKV.defaultMMKV().decodeBool(LocalPreference.LOSS_ALERT, true)
+        if (needInit) {
+            initData()
+            initView()
+            initEvent()
+            needInit = false
+        }
     }
 }

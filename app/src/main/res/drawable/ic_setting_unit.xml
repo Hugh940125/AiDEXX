@@ -1,0 +1,46 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="20"
+    android:viewportHeight="20">
+  <path
+      android:pathData="M15.69,0C17.899,-0 19.69,1.791 19.69,4L19.691,12.17C19.386,11.52 19.008,10.836 18.556,10.119L18.554,4.3C18.554,2.643 17.211,1.3 15.554,1.3L4.19,1.3C2.533,1.3 1.19,2.643 1.19,4.3L1.19,15.8C1.19,17.457 2.533,18.8 4.19,18.8L10.673,18.8C11.004,19.276 11.414,19.676 11.903,20.001L3.844,20C1.635,20 -0.156,18.209 -0.156,16L-0.156,4C-0.156,1.791 1.635,0 3.844,0L15.69,0Z"
+      android:strokeWidth="1"
+      android:fillColor="?homeIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M0.774,5.5L9.279,5.5"
+      android:strokeWidth="1.3"
+      android:fillColor="#00000000"
+      android:strokeColor="?homeIconColor"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M0.774,9.5L6.444,9.5"
+      android:strokeWidth="1.3"
+      android:fillColor="#00000000"
+      android:strokeColor="?homeIconColor"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M0.774,13.5L3.609,13.5"
+      android:strokeWidth="1.3"
+      android:fillColor="#00000000"
+      android:strokeColor="?homeIconColor"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M14.683,8.61C14.916,8.33 15.133,8.33 15.332,8.61C18.094,11.86 19.275,14.394 18.876,16.212C18.476,18.029 17.212,19.025 15.083,19.2C12.953,19.025 11.689,18.029 11.29,16.212C10.89,14.394 12.022,11.86 14.683,8.61Z"
+      android:strokeWidth="1.2"
+      android:fillColor="#00000000"
+      android:strokeColor="?homeIconColor"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M13.506,13.8C12.534,15.388 12.728,16.588 14.089,17.4"
+      android:strokeWidth="1"
+      android:fillColor="#00000000"
+      android:strokeColor="?homeIconColor"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+</vector>

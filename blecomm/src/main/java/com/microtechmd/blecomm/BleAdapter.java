@@ -24,6 +24,7 @@ public abstract class BleAdapter {
         super.finalize();
     }
 
+    public abstract void setDiscoverCallback();
     public abstract void executeStartScan();
 
     public abstract void executeStopScan();
@@ -50,6 +51,8 @@ public abstract class BleAdapter {
 
     public native int getCharacteristicUUID();
 
+    public native int getBleState();
+
     public native int getPrivateCharacteristicUUID();
 
     public native void setDiscoverTimeoutSeconds(int seconds);
@@ -57,6 +60,8 @@ public abstract class BleAdapter {
     public native void onScanRespond(String address, int rssi, byte[] data);
 
     public native void onAdvertise(String address, int rssi, byte[] data);
+
+    public native void onAdvertiseWithAndroidRawBytes(String address, int rssi, byte[] data);
 
     public native void onConnectSuccess();
 

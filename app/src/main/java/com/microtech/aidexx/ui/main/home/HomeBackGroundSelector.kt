@@ -73,7 +73,7 @@ class HomeBackGroundSelector private constructor() {
     }
 
     fun getHomeBg(level: DeviceModel.GlucoseLevel?) {
-        if (level != lastLevel && ThemeManager.isLight()) {
+        if (ThemeManager.isLight()) {
             val homeBg = when (level) {
                 DeviceModel.GlucoseLevel.HIGH -> R.drawable.bg_home_yellow
                 DeviceModel.GlucoseLevel.LOW -> R.drawable.bg_home_red
@@ -81,7 +81,6 @@ class HomeBackGroundSelector private constructor() {
                 else -> 0
             }
             onLevelChange?.invoke(homeBg)
-            lastLevel = level
         }
     }
 }

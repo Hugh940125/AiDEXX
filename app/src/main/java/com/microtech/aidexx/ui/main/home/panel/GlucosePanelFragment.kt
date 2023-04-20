@@ -3,15 +3,16 @@ package com.microtech.aidexx.ui.main.home.panel
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.ble.MessageDispatcher
+import com.microtech.aidexx.ble.MessageDistributor
+import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -21,21 +22,29 @@ import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithLowAndHigh
 import com.microtechmd.blecomm.constant.History
+import com.microtechmd.blecomm.entity.BleMessage
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 import kotlin.concurrent.schedule
 
 private const val REFRESH_PANEL = 2006
+
 class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBinding>() {
-
     private val chartViewModel: ChartViewModel by viewModels(ownerProducer = { requireActivity() })
-
     private var timer: Timer? = null
-    private val handler = Handler(Looper.getMainLooper()) {
-        update()
-        false
+    private val handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            update()
+        }
+    }
+    private val mObserver = object : MessageObserver {
+        override fun onMessage(message: BleMessage) {
+            handler.sendEmptyMessage(REFRESH_PANEL)
+        }
     }
 
     override fun onCreateView(
@@ -51,13 +60,10 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         super.onCreate(savedInstanceState)
         timer = Timer()
         timer?.schedule(0, 60000) {
+            handler.removeMessages(REFRESH_PANEL)
             handler.sendEmptyMessage(REFRESH_PANEL)
         }
-        MessageDispatcher.instance().observer(lifecycleScope){
-            Throttle.instance().emit(2000, REFRESH_PANEL) {
-                update()
-            }
-        }
+        MessageDistributor.instance().observer(mObserver)
     }
 
     override fun onResume() {
@@ -71,6 +77,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
     override fun onDestroy() {
         super.onDestroy()
         timer?.cancel()
+        MessageDistributor.instance().removeObserver(mObserver)
     }
 
     companion object {
@@ -103,8 +110,8 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             context?.let {
                 binding.tvGlucoseValue.text =
                     deviceModel.glucose?.toGlucoseStringWithLowAndHigh(resources)
+                binding.tvUnit.text = UnitManager.glucoseUnit.text
             }
-
             //设置当前血糖值
             chartViewModel.setCurrentGlucose(deviceModel.lastHistoryTime, deviceModel.glucose)
 
@@ -114,10 +121,12 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 else -> 0f
             }
             binding.bgPanel.setBackgroundResource(
-                HomeBackGroundSelector.instance().getBgForTrend(deviceModel.glucoseTrend, deviceModel.glucoseLevel)
+                HomeBackGroundSelector.instance()
+                    .getBgForTrend(deviceModel.glucoseTrend, deviceModel.glucoseLevel)
             )
-            if (UserInfoManager.shareUserInfo == null)
+            if (UserInfoManager.shareUserInfo == null) {
                 HomeBackGroundSelector.instance().getHomeBg(deviceModel.glucoseLevel)
+            }
         } else {
             binding.tvValueTime.text = ""
             binding.tvGlucoseValue.text = "--"
@@ -157,7 +166,6 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         }
         if (activity != null && !requireActivity().isFinishing) {
             val remainingTime = deviceModel.getSensorRemainingTime()
-            LogUtil.eAiDEX("Sensor remaining : $remainingTime hour")
             if (remainingTime == null || remainingTime < 0) {
                 binding.tvSensorRemainTime.visibility = View.GONE
             } else if (remainingTime == 0) {
@@ -176,7 +184,10 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 }
                 binding.tvSensorRemainTime.visibility = View.VISIBLE
             } else if (remainingTime <= deviceModel.entity.expirationTime * TimeUtils.oneDayHour) {
-                val days = BigDecimal(remainingTime).divide(BigDecimal(TimeUtils.oneDayHour)).toInt()
+                val days = BigDecimal(remainingTime).divide(
+                    BigDecimal(TimeUtils.oneDayHour),
+                    RoundingMode.HALF_UP
+                ).toInt()
                 binding.tvSensorRemainTime.text =
                     String.format(resources.getString(R.string.expiring_in_days), days)
                 binding.tvSensorRemainTime.visibility = View.VISIBLE

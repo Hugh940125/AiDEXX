@@ -188,4 +188,9 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
     companion object {
         private const val TAG = "LoginActivity"
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.timeLeft.removeObservers(this)
+    }
 }

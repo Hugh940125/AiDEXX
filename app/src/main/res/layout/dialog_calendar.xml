@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent"
+    android:gravity="bottom"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorDialog"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:layout_marginStart="5dp"
+                android:id="@+id/bt_cancel"
+                style="@style/btnDialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="12dp"
+                android:src="@drawable/ic_close_dialog"
+                android:text="@string/btn_cancel"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:textSize="20sp" />
+
+            <TextView
+                android:textSize="17sp"
+                android:layout_alignParentEnd="true"
+                android:id="@+id/bt_ok"
+                style="@style/btnDialog"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:gravity="center"
+                android:padding="12dp"
+                android:text="@string/btn_ok" />
+
+        </RelativeLayout>
+
+        <RadioGroup
+            android:layout_marginBottom="12dp"
+            android:id="@+id/rg_switch"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/btn_7"
+                style="@style/RadioButtonDays"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_weight="1"
+                android:checked="false"
+                android:text="@string/trend_7days" />
+
+            <RadioButton
+                android:id="@+id/btn_14"
+                style="@style/RadioButtonDays"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_weight="1"
+                android:text="@string/trend_14days" />
+
+            <RadioButton
+                android:id="@+id/btn_30"
+                style="@style/RadioButtonDays"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_weight="1"
+                android:text="@string/trend_30days" />
+
+        </RadioGroup>
+
+        <com.haibin.calendarview.CalendarView
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="35dp"
+            android:id="@+id/calendarView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:calendar_height="50dp"
+            app:current_day_lunar_text_color="?appColorAccent"
+            app:current_day_text_color="?appColorAccent"
+            app:current_month_lunar_text_color="?textColorPrimary"
+            app:current_month_text_color="?textColorPrimary"
+            app:max_select_range="-1"
+            app:min_select_range="-1"
+            app:month_view="com.microtech.aidexx.widget.calendar.CustomRangeMonthView"
+            app:other_month_lunar_text_color="?textColorHint"
+            app:other_month_text_color="?textColorHint"
+            app:select_mode="range_mode"
+            app:selected_lunar_text_color="?colorAccent"
+            app:selected_text_color="@color/white"
+            app:selected_theme_color="?appColorAccent"
+            app:week_background="?containerBackground"
+            app:week_bar_height="25dp"
+            app:week_text_color="?textColorPrimary" />
+    </LinearLayout>
+</FrameLayout>

@@ -33,19 +33,18 @@ class AboutActivity : BaseActivity<BaseViewModel, ActivityAboutBinding>() {
             launcher.setOnClickListener{
             }
 
-            settingSoftVersion.setValue("V${BuildConfig.VERSION_NAME}")
+            settingSoftVersion.setValue("v${BuildConfig.VERSION_NAME}")
             settingName.setValue(getString(R.string.software_name))
-            settingOpenVersion.setValue("V1")
+            settingOpenVersion.setValue("v1")
             settingType.setValue("AiDEX-X")
             settingService.setOnClickListener {
-
                 val bundle = Bundle()
                 bundle.putString(
-                    IntentKey.INTENT_URL,
+                    IntentKey.WEB_URL,
                     resources.getString(R.string.Terms_of_Service_url)
                 )
                 bundle.putString(
-                    IntentKey.INTENT_TITLE,
+                    IntentKey.WEB_TITLE,
                     resources.getString(R.string.Terms_of_Service)
                 )
                 startActivity(bundle, WebActivity::class.java)
@@ -57,17 +56,15 @@ class AboutActivity : BaseActivity<BaseViewModel, ActivityAboutBinding>() {
                         AppUpdateFragment(it).show(supportFragmentManager, AppUpdateFragment.TAG)
                     }
                 }
-
             }
 
             settingProtocal.setOnClickListener {
-
                 val bundle = Bundle()
                 bundle.putString(
-                    IntentKey.INTENT_URL,
+                    IntentKey.WEB_URL,
                     resources.getString(R.string.Privacy_Policy_url)
                 )
-                bundle.putString(IntentKey.INTENT_TITLE, resources.getString(R.string.Privacy_Policy))
+                bundle.putString(IntentKey.WEB_TITLE, resources.getString(R.string.Privacy_Policy))
                 startActivity(bundle, WebActivity::class.java)
             }
         }
@@ -75,11 +72,11 @@ class AboutActivity : BaseActivity<BaseViewModel, ActivityAboutBinding>() {
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo(true)?.let {
                 binding.settingCheckVersion.setValue(null)
-                val textVerion = binding.settingCheckVersion.getSecondTextView()
-                textVerion.text = getString(R.string.txt_new)
-                textVerion.setTextColor(Color.WHITE)
-                textVerion.textSize = 13f
-                textVerion.setBackgroundResource(R.drawable.shape_version_new); textVerion.setPadding(
+                val textVersion = binding.settingCheckVersion.getSecondTextView()
+                textVersion.text = getString(R.string.txt_new)
+                textVersion.setTextColor(Color.WHITE)
+                textVersion.textSize = 13f
+                textVersion.setBackgroundResource(R.drawable.shape_version_new); textVersion.setPadding(
                 18,
                 2,
                 18,

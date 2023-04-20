@@ -1,13 +1,17 @@
 package com.microtech.aidexx.ui.main.bg
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -15,23 +19,29 @@ import com.google.android.flexbox.JustifyContent
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.ble.MessageDispatcher
+import com.microtech.aidexx.ble.MessageDistributor
+import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.common.toColor
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentBgBinding
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.ui.main.bg.history.BloodGlucoseHistoryActivity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.widget.dialog.lib.util.fromGlucoseValue
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.time.TimePicker
 import com.microtechmd.blecomm.constant.AidexXOperation
+import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
@@ -41,7 +51,9 @@ import kotlin.math.roundToInt
 private const val ANTI_FAST_RESUME = 1
 
 class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClickListener {
-    private var observerJob: Job? = null
+    private var minGlucose: Double = 0.0
+    private var maxGlucose: Double = 0.0
+    private var inputHint: String = ""
     private var timeSlot: Int? = null
     private lateinit var selectDate: Date
     private var defaultMode: DeviceModel? = null
@@ -49,6 +61,36 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
     private var timeSlopAdapter: TimeSlopAdapter? = null
     private var appColorAccent: Int = 0
     private var buttonPressColor: Int = 0
+    private val mObserver = object : MessageObserver {
+        override fun onMessage(message: BleMessage) {
+            when (message.operation) {
+                AidexXOperation.DISCONNECT -> {
+                    Dialogs.dismissWait()
+                }
+                AidexXOperation.DISCOVER -> {
+                    if (!message.isSuccess) {
+                        Dialogs.showError(getString(R.string.Search_Timeout))
+                        MessageDistributor.instance().removeObserver(this)
+                    }
+                }
+                AidexXOperation.CONNECT -> {
+                    if (!message.isSuccess) {
+                        Dialogs.showError(getString(R.string.Connecting_Failed))
+                        MessageDistributor.instance().removeObserver(this)
+                    }
+                }
+                AidexXOperation.SET_CALIBRATION -> {
+                    if (message.isSuccess) {
+                        Dialogs.showSuccess(getString(R.string.calibration_success))
+                        binding.etGlucoseValue.setText("")
+                    } else {
+                        Dialogs.showSuccess(getString(R.string.calibration_fail))
+                    }
+                    MessageDistributor.instance().removeObserver(this)
+                }
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,42 +108,6 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
         refreshView()
         throttle.emit(3000, ANTI_FAST_RESUME) {
             updateLastRecord()
-        }
-        observeMessage()
-    }
-
-    private fun observeMessage() {
-        observerJob = MessageDispatcher.instance().observer(lifecycleScope) {
-            when (it.operation) {
-                AidexXOperation.DISCONNECT -> {
-                    Dialogs.dismissWait()
-                }
-                AidexXOperation.DISCOVER -> {
-                    if (!it.isSuccess) {
-                        Dialogs.showError(getString(R.string.Search_Timeout))
-                    }
-                }
-                AidexXOperation.BOND -> {
-                    if (!it.isSuccess) {
-                        Dialogs.showError(getString(R.string.Connecting_Failed))
-                    }
-                }
-                AidexXOperation.CONNECT -> {
-                    if (!it.isSuccess) {
-                        Dialogs.showError(getString(R.string.Connecting_Failed))
-                    } else {
-                        Dialogs.showWait(getString(R.string.Connecting))
-                    }
-                }
-
-                AidexXOperation.SET_CALIBRATION -> {
-                    if (it.isSuccess) {
-                        Dialogs.showSuccess(getString(R.string.calibration_success))
-                    } else {
-                        Dialogs.showSuccess(getString(R.string.calibration_fail))
-                    }
-                }
-            }
         }
     }
 
@@ -129,7 +135,8 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
 
     override fun onPause() {
         super.onPause()
-        observerJob?.cancel()
+        timeSlopAdapter?.clearCheck()
+        MessageDistributor.instance().removeObserver(mObserver)
     }
 
     override fun onDestroy() {
@@ -164,6 +171,9 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 binding.tvTime.text = it.date2ymdhm()
             }
         }
+        binding.tvMoreHistory.setOnClickListener {
+            startActivity(Intent(requireContext(), BloodGlucoseHistoryActivity::class.java))
+        }
     }
 
     private fun updateLastRecord() {
@@ -173,9 +183,11 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 lastGlucoseRecord = BgRepositoryApi.getLastGlucoseHistory()
             }
             if (null == lastGlucoseRecord) {
+                binding.tvMoreHistory.visibility = View.INVISIBLE
                 binding.llBgRecode.llContainer.visibility = View.INVISIBLE
                 binding.tvNoneRecord.visibility = View.VISIBLE
             } else {
+                binding.tvMoreHistory.visibility = View.VISIBLE
                 binding.llBgRecode.apply {
                     llContainer.visibility = View.VISIBLE
                     tvGlucoseTime.text = lastGlucoseRecord.testTime.date2ymdhm()
@@ -194,18 +206,17 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
     }
 
     private fun initGlucoseValueEditor() {
-        binding.etGlucoseValue.onFocusChangeListener = View.OnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus) {
-                val manager: InputMethodManager =
-                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                manager.hideSoftInputFromWindow(
-                    view.windowToken,
-                    InputMethodManager.HIDE_NOT_ALWAYS
-                )
+        binding.etGlucoseValue.onFocusChangeListener =
+            View.OnFocusChangeListener { view, hasFocus ->
+                if (!hasFocus) {
+                    val manager: InputMethodManager =
+                        requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    manager.hideSoftInputFromWindow(
+                        view.windowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS
+                    )
+                }
             }
-        }
-        val minGlucose: Double
-        val maxGlucose: Double
         if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
             minGlucose = 0.6
             maxGlucose = 33.3
@@ -217,13 +228,13 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
             BigDecimal(minGlucose.toString()).stripTrailingZeros().toPlainString()
         val maxGlucoseString =
             BigDecimal(maxGlucose.toString()).stripTrailingZeros().toPlainString()
-        val hint = String.format(
+        inputHint = String.format(
             Locale.getDefault(),
             getString(R.string.input_glucose_value),
             minGlucoseString,
             maxGlucoseString
         )
-        binding.etGlucoseValue.hint = hint
+        binding.etGlucoseValue.hint = inputHint
         binding.etGlucoseValue.filters = arrayOf(GlucoseInputFilter().apply {
             isIntOnly = UnitManager.glucoseUnit != UnitManager.GlucoseUnit.MMOL_PER_L
         })
@@ -279,17 +290,20 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                             Dialogs.showWhether(
                                 requireContext(), content = String.format(
                                     getString(R.string.content_format_calibrate),
-                                    "$glucoseValue" + UnitManager.glucoseUnit.text
+                                    "$glucoseValue " + UnitManager.glucoseUnit.text
                                 ), confirm = {
                                     Dialogs.showWait()
                                     val value =
                                         (if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L)
                                             (glucoseValue!! * 18)
                                         else glucoseValue!!).roundToInt()
-                                    model.calibration(CalibrationInfo(value, model.latestHistory!!.timeOffset))
-                                    model.onCalibrationCallback = {
-                                        if (it) Dialogs.showSuccess("")
-                                    }
+                                    MessageDistributor.instance().observer(mObserver)
+                                    model.calibration(
+                                        CalibrationInfo(
+                                            value,
+                                            model.latestHistory!!.timeOffset
+                                        )
+                                    )
                                 })
                         }
                     }
@@ -297,12 +311,47 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                     Dialogs.showMessage(requireContext(), content = getString(R.string.bg_pair))
                 }
             }
+            binding.buttonRecord -> {
+                val glucoseValue = binding.etGlucoseValue.text.toString().toFloatOrNull()
+                if (null == glucoseValue || glucoseValue > maxGlucose || glucoseValue < minGlucose) {
+                    Dialogs.showMessage(
+                        activity as AppCompatActivity,
+                        inputHint, null
+                    )
+                    return
+                }
+                val recordGlucose = glucoseValue.fromGlucoseValue()
+                val bgEntity = BloodGlucoseEntity(selectDate, recordGlucose)
+                timeSlot?.let {
+                    bgEntity.testTag = it
+                }
+                bgEntity.authorizationId = UserInfoManager.instance().userId()
+                ObjectBox.runAsync({
+                    ObjectBox.bgHistoryBox!!.put(bgEntity)
+                }, {
+                    Handler(Looper.getMainLooper()).post {
+                        StandardDialog.Setter(context)
+                            .content(context?.getString(R.string.save_complete))
+                            .setPositive { dialog, _ ->
+                                dialog.dismiss()
+                                binding.etGlucoseValue.text?.clear()
+                                timeSlot = null
+                                updateLastRecord()
+                            }
+                            .setOnDismissListener { updateLastRecord() }
+                            ?.create(0)?.show()
+                    }
+                })
+            }
         }
     }
 
     private fun isBgExpired(): Boolean {
         if (TimeUtils.currentTimeMillis - selectDate.time > 5 * 60 * 1000) {
-            Dialogs.showMessage(requireContext(), content = getString(R.string.calibration_with_in_notice))
+            Dialogs.showMessage(
+                requireContext(),
+                content = getString(R.string.calibration_with_in_notice)
+            )
             return true
         }
         return false

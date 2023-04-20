@@ -87,28 +87,27 @@ public class BlurView extends View {
 
     private void init(Context context, AttributeSet attrs) {
         if (!isInit) {
-            try (TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BlurView)) {
-                mBlurRadius = a.getDimension(
-                        R.styleable.BlurView_realtimeBlurRadius,
-                        TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35, context.getResources().getDisplayMetrics())
-                );
-                mDownsampleFactor = a.getFloat(R.styleable.BlurView_realtimeDownsampleFactor, 4);
-                mOverlayColor = a.getColor(R.styleable.BlurView_realtimeOverlayColor, 0x00ffffff);
+            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BlurView);
+            mBlurRadius = a.getDimension(
+                    R.styleable.BlurView_realtimeBlurRadius,
+                    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35, context.getResources().getDisplayMetrics())
+            );
+            mDownsampleFactor = a.getFloat(R.styleable.BlurView_realtimeDownsampleFactor, 4);
+            mOverlayColor = a.getColor(R.styleable.BlurView_realtimeOverlayColor, 0x00ffffff);
 
-                //ready rounded corner
-                mPaint = new Paint();
-                mPaint.setAntiAlias(true);
-                mRectF = new RectF();
+            //ready rounded corner
+            mPaint = new Paint();
+            mPaint.setAntiAlias(true);
+            mRectF = new RectF();
 
-                cutPaint = new Paint();
-                cutPaint.setAntiAlias(true);
-                cutPaint.setColor(mOverlayColor);
+            cutPaint = new Paint();
+            cutPaint.setAntiAlias(true);
+            cutPaint.setColor(mOverlayColor);
 
-                overlayPaint = new Paint();
-                overlayPaint.setAntiAlias(true);
+            overlayPaint = new Paint();
+            overlayPaint.setAntiAlias(true);
 
-                mRadius = a.getDimension(R.styleable.BlurView_radius, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 15, context.getResources().getDisplayMetrics()));
-            }
+            mRadius = a.getDimension(R.styleable.BlurView_radius, TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 15, context.getResources().getDisplayMetrics()));
             isInit = true;
 
             if (!isCompatMode()) {

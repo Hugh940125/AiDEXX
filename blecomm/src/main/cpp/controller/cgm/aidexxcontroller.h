@@ -78,6 +78,7 @@ protected:
     void setSendTimeout(int msec);
     bool sendCommand(uint8 op, uint8 *data, uint16 length, bool instantly = false);
     bool handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length) override;
+    void onReceive(uint16 op, bool success, const uint8 *data = 0, uint16 length = 0) override;
 
 private:
     class LongAttribute

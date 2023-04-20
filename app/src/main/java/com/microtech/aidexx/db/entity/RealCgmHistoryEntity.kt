@@ -3,11 +3,9 @@ package com.microtech.aidexx.db.entity
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.toGlucoseValue
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
-import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtechmd.blecomm.constant.History
@@ -26,20 +24,29 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index
     override var state: Int = 0
     override var id: String? = null
+
     @Index
     var deviceSn: String? = null
+
     @Index
     var deviceTime = Date()
         set(value) {
             field = value
-            deviceTimeLong = deviceTime.time/1000
+            deviceTimeLong = deviceTime.time / 1000
         }
-    var eventIndex = 0
-    var sensorIndex = 0
+
+    @Index
+    var eventIndex: Int = 0
+
+    @Index
+    var sensorIndex: Long = 0
+
     @Index
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
+
     @Index
     override var recordIndex: Long? = null
+
     @Index
     override var deleteStatus: Int = 0
     var eventType: Int = History.HISTORY_INVALID
@@ -47,14 +54,21 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var eventDataOrgin: Float? = null
     var calFactor: Float = 1f //校准系数
     var calOffset: Float = 0f //校准偏移量
+
+    @Index
     var eventWarning: Int = 0  //0默认 1高血糖 2低血糖
+
+    @Index
     var deviceId: String? = null
     var type = 0; // type为0正常数据，1代表占位数据
     var deviceTimeLong: Long? = null
+
     @Transient
     override var createTime: Date = Date()
+
     @Transient
     override var language: String = ""
+
     @Index
     override var authorizationId: String? = null
 
@@ -63,19 +77,17 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index
     var recordUuid: String? = null
 
-    fun updateRecordUUID() {
-        var userID = UserInfoManager.instance().userId();
-        var deviceId = TransmitterManager.instance().getDefault()?.deviceId()
-        var uuidStr = StringBuffer();
+    fun updateRecordUUID(): String {
+        val userID = UserInfoManager.instance().userId();
+        val deviceId = TransmitterManager.instance().getDefault()?.deviceId()
+        val uuidStr = StringBuffer()
         uuidStr.append(userID)
             .append(deviceId)
             .append(deviceTime.time / 1000)
             .append(sensorIndex)
             .append(eventIndex)
             .append(eventType)
-
-        LogUtils.data("cgmHistory : userID:" + userID + ", deviceId :" + deviceId + " , deviceSn :" + deviceSn + ", time :" + deviceTime.time / 1000 + " ,eventData :" + eventData + " ,sensorIndex :" + sensorIndex)
-        recordUuid = EncryptUtils.md5(uuidStr.toString())
+        return EncryptUtils.md5(uuidStr.toString())
     }
 
     override fun _setDatetime(datetime: Long) {
@@ -86,7 +98,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         this.eventIndex = eventIndex
     }
 
-    override fun _setSensorIndex(sensorIndex: Int) {
+    override fun _setSensorIndex(sensorIndex: Long) {
         this.sensorIndex = sensorIndex
     }
 
@@ -164,7 +176,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
                 R.string.bg_description,
                 eventData?.toGlucoseValue()
             ) + UnitManager.glucoseUnit.text
-            0, null -> when (eventType) {
+            0 -> when (eventType) {
                 History.HISTORY_HYPER -> res.getString(
                     R.string.hyper_description,
                     eventData?.toGlucoseValue()
@@ -204,31 +216,25 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
 
     fun getHighOrLowGlucoseType(): Int {
-        val model = TransmitterManager.instance().getDefault()
-        if (model != null) {
-            if (eventData!! > ThresholdManager.hyper) {
-                return 2
-            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= DeviceModel.URGENT_HYPO) {
-                return 1
-            } else if (eventData!! < DeviceModel.URGENT_HYPO) {
-                return 3
-            }
+        if (eventData!! > ThresholdManager.hyper * 18) {
+            return 2
+        } else if (eventData!! < ThresholdManager.hypo * 18 && eventData!! >= ThresholdManager.URGENT_HYPO * 18) {
+            return 1
+        } else if (eventData!! < ThresholdManager.URGENT_HYPO * 18) {
+            return 3
         }
         return 0
     }
 
 
     fun updateEventWarning() {
-        val model = TransmitterManager.instance().getDefault()
         eventWarning = History.HISTORY_LOCAL_NORMAL
-        if (model != null) {
-            if (eventData!! > ThresholdManager.hyper) {
-                eventWarning = History.HISTORY_LOCAL_HYPER
-            } else if (eventData!! < ThresholdManager.hypo && eventData!! >= DeviceModel.URGENT_HYPO) {
-                eventWarning = History.HISTORY_LOCAL_HYPO
-            } else if (eventData!! < DeviceModel.URGENT_HYPO) {
-                eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
-            }
+        if (eventData!! > ThresholdManager.hyper * 18) {
+            eventWarning = History.HISTORY_LOCAL_HYPER
+        } else if (eventData!! < ThresholdManager.hypo * 18 && eventData!! >= ThresholdManager.URGENT_HYPO * 18) {
+            eventWarning = History.HISTORY_LOCAL_HYPO
+        } else if (eventData!! < ThresholdManager.URGENT_HYPO * 18) {
+            eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
         }
     }
 

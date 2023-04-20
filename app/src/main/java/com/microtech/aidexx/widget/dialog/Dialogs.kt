@@ -21,10 +21,6 @@ import com.microtech.aidexx.widget.selector.option.OptionsPickerView
 object Dialogs {
     private var dialogList = mutableListOf<StandardDialog>()
 
-//    fun showBottom(onBindView: OnBindView<BottomDialog?>): BottomDialog {
-//        return NoSlideBottomDialog(onBindView).show()
-//    }
-
     class Picker(private val context: Context) {
 
         private lateinit var pickBuilder: OptionsPickerView<String>

@@ -208,8 +208,8 @@ void Ble::onAdvertise(string address, int32 rssi, const char *data, uint16 lengt
         }
         uint8 flag = data[i++];
         if (flag == 0xFF && len > 4) {
-            if (data[i+len-2] == LibChecksum_GetChecksum8Bit((const uint8 *)data+i+2, len-4))
-                controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)data+i+2, len-4);
+            if (data[i+len-1-1] == LibChecksum_GetChecksum8Bit((const uint8 *)data+i+2, len-1-2-1))
+                controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)data+i+2, len-1-2-1);
         }
         i+=len-1;
     }
@@ -230,6 +230,92 @@ void Ble::onAdvertiseDecoded(string address, string name, int32 rssi, const char
 
     if (length > 2) {
 	    controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)data+2, length-2);
+    }
+}
+
+void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char *data, uint16 length) {
+    //if (state != SCANNING) return;
+    string name;
+    string sn;
+    vector<uint8> params;
+
+    uint8 bufferLength = 0;
+    char buffer[40] = {0};
+    
+    bool isFirstManufactureData = true;
+    for (int i = 0; i < length;) {
+        int len = data[i++];
+        if (len == 0 || i + len > length) {
+            break;
+        }
+        uint8 flag = data[i++];
+        if (flag == 0x09) {
+            name = ByteUtils::bytesToUtf8String(data+i, len-1);
+            string delimiter = "-";
+            string tmp = name;
+            string::size_type pos = tmp.find(delimiter);
+            if (pos != string::npos) {
+                tmp.erase(0, pos + delimiter.length());
+                sn = ByteUtils::trim(tmp);
+                name.erase(pos, tmp.length() + delimiter.length());
+                name = ByteUtils::trim(name);
+            }
+        } else if (flag == 0xFF) {
+            if (isFirstManufactureData) {
+                if (len > 4 && data[i+len-1-1] == LibChecksum_GetChecksum8Bit((const uint8 *)data+i+2, len-1-2-1)) {
+                    ByteUtils::copy(buffer+bufferLength, (const char*)data+i + 2, len-1-2);
+                    bufferLength += len-1-2;
+                }
+            } else {
+                if (sn.empty()) {
+                    if (len == 7) {//无 Manufacture ID 的情况
+                        sn = ByteUtils::bytesToSnString(data+i, 6);
+                    } else if (len >= 9) {
+                        sn = ByteUtils::bytesToSnString(data+i+2, 6);
+                        params = vector<uint8>(data+i+8, data+i+len-1);
+                    }
+                } else {
+                    ByteUtils::copy(buffer+bufferLength, (const char*)data+i + 2, len-1-2);
+                    bufferLength += len-1-2;
+                }
+            }
+            isFirstManufactureData = false;
+        }
+        i+=len-1;
+    }
+        
+    if (sn.empty() || name.empty()) {
+        return;
+    }
+    
+    BleControllerInfo info;
+    info.address = address;
+    info.name = name;
+    info.sn = sn;
+    info.rssi = rssi;
+    info.params = vector<uint8>(params);
+
+    std::map<string, BleController*>::iterator iter = controllers.find(address);
+    if (iter!=controllers.end()) {
+        BleController *controller = iter->second;
+        controller->setInfo(info);
+        controller->setRssi(rssi);
+        controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)buffer, bufferLength);
+    }
+
+    if (connectWhenDiscovered) {
+        if(isFoundCurrent(address, name, sn)) {
+            pSearchTimer->Cancel();
+            LOGD("executeStopScan 1");
+            executeStopScan();
+            executeConnect(address);
+        }
+        return;
+    }
+
+    LOGD("name: %s sn: %s", name.data(), sn.data());
+    if (discoverCallback != NULL) {
+        discoverCallback(info);
     }
 }
 
@@ -390,7 +476,6 @@ void Ble::startScan() {
 
 void Ble::stopScan() {
     state = IDLE;
-    LOGD("executeStopScan 3");
     executeStopScan();
 }
 
@@ -690,6 +775,10 @@ void Ble::continueSending() {
         });
         LOGI("pAckTimer SET %d", ok);
     }
+}
+
+uint16 Ble::getBleState() {
+    return state;
 }
 
 Ble::ReceiveBuffer::ReceiveBuffer(int maxLength) {

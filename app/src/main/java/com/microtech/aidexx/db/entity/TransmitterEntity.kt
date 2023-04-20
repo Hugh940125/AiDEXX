@@ -1,6 +1,5 @@
 package com.microtech.aidexx.db.entity
 
-import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -10,8 +9,11 @@ import java.util.*
 
 const val TYPE_G7 = 1
 const val TYPE_X = 2
+
 @Entity
 class TransmitterEntity {
+    var calIndex: Int = 0
+
     @Id
     var idx: Long? = null
     var id: String? = null
@@ -47,8 +49,8 @@ class TransmitterEntity {
         deviceSn = sn
     }
 
-    fun startTimeToIndex(): Int {
-        return sensorStartTime?.time?.millisToMinutes()!!
+    fun startTimeToIndex(): Long {
+        return sensorStartTime?.time ?: 0L
     }
 
     override fun toString(): String {

@@ -18,20 +18,23 @@ import androidx.core.app.ActivityCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.ClientReleaseTool
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
 import com.microtech.aidexx.common.toIntBigEndian
 import com.microtech.aidexx.common.toUuid
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtil.Companion.eAiDEX
-import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.StringUtils.binaryToHexString
 import com.microtech.aidexx.utils.TimeUtils.currentTimeMillis
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager.send
 import com.microtechmd.blecomm.BleAdapter
 import com.microtechmd.blecomm.BluetoothDeviceStore
+import com.microtechmd.blecomm.controller.BleController
+import com.microtechmd.blecomm.controller.BleControllerInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -42,7 +45,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     var retryNum = 0
     var workHandler: Handler? = null
     var lastDisConnectTime: Long = 0
-    var mCharacteristic: BluetoothGattCharacteristic? = null
+    var onDeviceDiscover: ((info: BleControllerInfo) -> Unit)? = null
+    private var mCharacteristic: BluetoothGattCharacteristic? = null
     private lateinit var mContext: Context
 
     //蓝牙设备
@@ -60,9 +64,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     //设置蓝牙扫描设置
     private var scanSettingBuilder: ScanSettings.Builder? = null
     private val bluetoothDeviceStore = BluetoothDeviceStore()
-    var isScaning = false
     private var isOnConnectState = false
-    private var timerTask: TimerTask? = null
     private var characteristicsMap = hashMapOf<Int, BluetoothGattCharacteristic>()
     private val bluetoothAdapter: BluetoothAdapter
         get() {
@@ -75,20 +77,28 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         return bluetoothDeviceStore
     }
 
+    override fun setDiscoverCallback() {
+        BleController.setDiscoveredCallback { info ->
+            onDeviceDiscover?.invoke(info)
+        }
+    }
+
     private val scanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
             val scanRecord = result.scanRecord!!.bytes
             val address = result.device.address
             val rssi = result.rssi + 130
-            onScanRespond(address, rssi, scanRecord)
-            onAdvertise(address, rssi, scanRecord)
-            bluetoothDeviceStore.add(result)
+            bluetoothDeviceStore.add(result.device)
+            onAdvertiseWithAndroidRawBytes(address, rssi, scanRecord)
         }
 
         override fun onScanFailed(errorCode: Int) {
             super.onScanFailed(errorCode)
             eAiDEX("onScanFailed errorCode:$errorCode")
+            if (errorCode == 2) {
+                ClientReleaseTool.releaseAllScanClient()
+            }
         }
     }
 
@@ -104,9 +114,13 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 super.handleMessage(msg)
                 val arg1 = msg.arg1
                 when (msg.what) {
+                    BLE_IDLE_DISCONNECT -> {
+                        executeDisconnect()
+                    }
                     BLE_CONNECT_TIME_OUT, CONNECT_FAILURE -> {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
                         refreshConnectState(false)
+                        closeGatt()
                         onConnectFailure()
                     }
                     DISCONNECT_GATT -> {
@@ -120,12 +134,9 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                                 return
                             }
                         }
-                        if (mBluetoothGatt != null) {
-                            mBluetoothGatt!!.disconnect()
-                        }
+                        mBluetoothGatt?.disconnect()
                     }
                     CONNECT_DISCONNECTED -> {
-                        refreshConnectState(false)
                         onDisconnected()
                     }
                     CONNECT_SUCCESS -> {
@@ -136,28 +147,26 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         startBtScan(true)
                     }
                     FOUND_SERVER -> {
-                        val status = msg.obj as Int
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            //根据指定的服务uuid获取指定的服务
-                            val gattService = mBluetoothGatt!!.getService(serviceUUID.toUuid())
-                            //根据指定特征值uuid获取指定的特征值
-                            if (gattService != null) {
-                                val normalCharacteristic =
-                                    gattService.getCharacteristic(characteristicUUID.toUuid())
-                                if (normalCharacteristic != null) {
-                                    characteristicsMap[characteristicUUID] = normalCharacteristic
-                                }
-                                val privateCharacteristic =
-                                    gattService.getCharacteristic(privateCharacteristicUUID.toUuid())
-                                if (privateCharacteristic != null) {
-                                    characteristicsMap[privateCharacteristicUUID] =
-                                        privateCharacteristic
-                                }
-                                if (normalCharacteristic == null || privateCharacteristic == null) {
-                                    eAiDEX("specific characteristic not found")
-                                    return
-                                }
-                                //设置特征值通知,即设备的值有变化时会通知该特征值，即回调方法onCharacteristicChanged会有该通知
+                        //根据指定的服务uuid获取指定的服务
+                        val gattService = mBluetoothGatt!!.getService(serviceUUID.toUuid())
+                        //根据指定特征值uuid获取指定的特征值
+                        if (gattService != null) {
+                            val normalCharacteristic =
+                                gattService.getCharacteristic(characteristicUUID.toUuid())
+                            if (normalCharacteristic != null) {
+                                characteristicsMap[characteristicUUID] = normalCharacteristic
+                            }
+                            val privateCharacteristic =
+                                gattService.getCharacteristic(privateCharacteristicUUID.toUuid())
+                            if (privateCharacteristic != null) {
+                                characteristicsMap[privateCharacteristicUUID] =
+                                    privateCharacteristic
+                            }
+                            //设置特征值通知,即设备的值有变化时会通知该特征值，即回调方法onCharacteristicChanged会有该通知
+                            if (privateCharacteristic == null) {
+                                mCharacteristic = null
+                                setNotify(normalCharacteristic)
+                            } else {
                                 for ((key, characteristic) in characteristicsMap) {
                                     if (key == characteristicUUID) {
                                         mCharacteristic = characteristic
@@ -166,11 +175,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                                     setNotify(characteristic)
                                 }
                             }
-                            return
-                        }
-                        if (status == 133) { //需要清除Gatt缓存并断开连接和关闭Gatt，然后重新连接
-                            workHandler!!.sendEmptyMessage(CLOSE_GATT)
-                            retry()
                         }
                     }
                     CONNECT_GATT -> {
@@ -184,14 +188,14 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                                 return
                             }
                         }
-                        workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
-                        workHandler!!.sendEmptyMessageDelayed(
+                        workHandler?.removeMessages(BLE_CONNECT_TIME_OUT)
+                        workHandler?.sendEmptyMessageDelayed(
                             BLE_CONNECT_TIME_OUT,
                             BLE_CONNECT_TIME_LIMIT
                         )
-                        eAiDEX("Start connect " + mBluetoothDevice!!.address)
-                        //closeGatt()
-                        mBluetoothGatt = mBluetoothDevice!!.connectGatt(
+                        closeGatt()
+//                        refreshDeviceCache()
+                        mBluetoothGatt = mBluetoothDevice?.connectGatt(
                             context,
                             false,
                             bluetoothGattCallback,
@@ -199,20 +203,21 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         )
                     }
                     DISCOVER_SERVICES -> if (mBluetoothGatt != null) {
-                        mBluetoothGatt!!.discoverServices()
+                        mBluetoothGatt?.discoverServices()
                     }
                     CLOSE_GATT -> {
                         refreshConnectState(false)
                         closeGatt()
+//                        refreshDeviceCache()
                     }
                     SEND_DATA -> sendData(arg1, msg.obj as ByteArray)
-                    RECEIVER_DATA -> if (arg1 == 0) onReceiveData(msg.obj as ByteArray) else onReceiveData(
-                        arg1,
-                        msg.obj as ByteArray
-                    )
-                    READ_CHARACTERISTIC -> if (arg1 != 0) mBluetoothGatt!!.readCharacteristic(
-                        characteristicsMap[arg1]
-                    )
+                    RECEIVER_DATA -> if (arg1 == 0) onReceiveData(msg.obj as ByteArray)
+                    else onReceiveData(arg1, msg.obj as ByteArray)
+                    READ_CHARACTERISTIC ->
+                        if (arg1 != 0 && characteristicsMap[arg1] != null)
+                            mBluetoothGatt?.readCharacteristic(
+                                characteristicsMap[arg1]
+                            )
                 }
             }
         }
@@ -224,7 +229,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         val enable = mBluetoothGatt!!.setCharacteristicNotification(characteristic, true)
         if (enable) {
             for (descriptor in characteristic.descriptors) {
-                if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0) {
+                if (characteristic.properties and PROPERTY_NOTIFY != 0) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         mBluetoothGatt!!.writeDescriptor(
                             descriptor,
@@ -239,11 +244,25 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         }
     }
 
+    fun refreshDeviceCache() {
+        if (mBluetoothGatt != null) {
+            try {
+                val localBluetoothGatt = mBluetoothGatt
+                val localMethod = localBluetoothGatt?.javaClass?.getMethod(
+                    "refresh", *arrayOfNulls(0)
+                )
+                val result = localMethod?.invoke(localBluetoothGatt, *arrayOfNulls(0))
+                eAiDEX("Refresh bluetooth gatt device cache-->$result")
+            } catch (localException: java.lang.Exception) {
+                eAiDEX("An exception occurred while refreshing device")
+            }
+        }
+    }
+
     @SuppressLint("MissingPermission")
     private fun closeGatt() {
         if (mBluetoothGatt != null) {
-            mBluetoothGatt!!.close()
-            mBluetoothGatt = null
+            mBluetoothGatt?.close()
         }
     }
 
@@ -258,67 +277,63 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     @SuppressLint("MissingPermission")
     @Synchronized
     private fun sendData(arg1: Int, data: ByteArray) {
-        eAiDEX("try send data ----> ${StringUtils.binaryToHexString(data)}")
-        try {
-            val gattCharacteristic = characteristicsMap[arg1]
-            if (data.size <= 20) {
-                if (gattCharacteristic == null) {
-                    eAiDEX("send data error ----> characteristic is null")
-                    return
-                }
-                if (mBluetoothGatt == null) {
-                    eAiDEX("send data error ----> gatt is null")
-                    return
-                }
-                sleep()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
-                        mBluetoothGatt!!.writeCharacteristic(
-                            gattCharacteristic,
-                            data,
-                            WRITE_TYPE_NO_RESPONSE
-                        )
-                    } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
-                        mBluetoothGatt!!.writeCharacteristic(
-                            gattCharacteristic,
-                            data,
-                            WRITE_TYPE_DEFAULT
-                        )
+        AidexxApp.mainScope.launch(Dispatchers.IO) {
+            eAiDEX("try send data ----> ${binaryToHexString(data)}")
+            try {
+                val gattCharacteristic = characteristicsMap[arg1]
+                if (data.size <= 20) {
+                    if (gattCharacteristic == null) {
+                        eAiDEX("send data error ----> characteristic is null")
+                        return@launch
                     }
+                    if (mBluetoothGatt == null) {
+                        eAiDEX("send data error ----> gatt is null")
+                        return@launch
+                    }
+                    sleep()
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
+                            mBluetoothGatt!!.writeCharacteristic(
+                                gattCharacteristic,
+                                data,
+                                WRITE_TYPE_NO_RESPONSE
+                            )
+                        } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
+                            mBluetoothGatt!!.writeCharacteristic(
+                                gattCharacteristic,
+                                data,
+                                WRITE_TYPE_DEFAULT
+                            )
+                        }
+                    } else {
+                        if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
+                            gattCharacteristic.value = data
+                            gattCharacteristic.writeType = WRITE_TYPE_NO_RESPONSE
+                            mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
+                        } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
+                            gattCharacteristic.value = data
+                            gattCharacteristic.writeType = WRITE_TYPE_DEFAULT
+                            mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
+                        }
+                    }
+                    eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
+                    workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
+                    workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
                 } else {
-                    if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
-                        gattCharacteristic.value = data
-                        gattCharacteristic.writeType = WRITE_TYPE_NO_RESPONSE
-                        mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
-                    } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
-                        gattCharacteristic.value = data
-                        gattCharacteristic.writeType = WRITE_TYPE_DEFAULT
-                        mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
+                    val pieces = data.size % 20
+                    for (i in 0 until pieces) {
+                        val array = ByteArray(20)
+                        System.arraycopy(data, 20 * i, array, 0, 20)
+                        sendData(arg1, array)
                     }
+                    val dataLeft = ByteArray(data.size - 20)
+                    System.arraycopy(data, 20, dataLeft, 0, data.size - 20 * pieces)
+                    sendData(arg1, dataLeft)
                 }
-                eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
-                if (timerTask != null) {
-                    timerTask!!.cancel()
-                    timerTask = null
-                }
-                val timer = Timer()
-                timerTask = object : TimerTask() {
-                    override fun run() {
-                        executeDisconnect()
-                    }
-                }
-                timer.schedule(timerTask, 1000)
-            } else {
-                val b1 = ByteArray(20)
-                val b2 = ByteArray(data.size - 20)
-                System.arraycopy(data, 0, b1, 0, 20)
-                System.arraycopy(data, 20, b2, 0, data.size - 20)
-                sendData(arg1, b1)
-                sendData(arg1, b2)
+            } catch (e: Exception) {
+                eAiDEX("send data error ----> $e")
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            eAiDEX("send data error ----> $e")
-            e.printStackTrace()
         }
     }
 
@@ -361,7 +376,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     override fun startBtScan(isPeriodic: Boolean) {
-        val bluetoothAdapter = bluetoothAdapter
         if (bluetoothAdapter.bluetoothLeScanner == null) {
             return
         }
@@ -394,6 +408,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     override fun stopBtScan(isPeriodic: Boolean) {
+        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
+        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
         val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
         if (bluetoothLeScanner != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -408,7 +424,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             }
             bluetoothLeScanner.stopScan(scanCallback)
         }
-        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
         val default = TransmitterManager.instance().getDefault()
         if (default != null && default.entity.accessId != null && !isOnConnectState && isPeriodic) {
             val scanWorker: OneTimeWorkRequest =
@@ -421,29 +436,20 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     override fun executeStopScan() {
-        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
-        WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
         stopBtScan(true)
     }
 
     override fun isReadyToConnect(mac: String): Boolean {
         val result = bluetoothDeviceStore.deviceMap[mac]
-        var bluetoothLeDevice: BluetoothDevice? = null
-        if (result != null) {
-            bluetoothLeDevice = result.device
-        }
-        eAiDEX("Device " + mac + " isReadyToConnect: " + (bluetoothLeDevice != null))
-        return bluetoothLeDevice != null
+        eAiDEX("Device " + mac + " isReadyToConnect: " + (result != null))
+        return result != null
     }
 
     override fun executeConnect(mac: String) {
         refreshConnectState(true)
         eAiDEX("Connecting to $mac")
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
-        val result = bluetoothDeviceStore.deviceMap[mac]
-        if (result != null) {
-            mBluetoothDevice = result.device
-        }
+        mBluetoothDevice = bluetoothDeviceStore.deviceMap[mac]
         val duration = currentTimeMillis / 1000 - lastDisConnectTime
         if (duration >= TIME_BETWEEN_CONNECT) {
             workHandler!!.sendEmptyMessage(CONNECT_GATT)
@@ -458,7 +464,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     override fun executeDisconnect() {
         eAiDEX("Disconnecting")
         if (mBluetoothGatt != null) {
-            workHandler!!.sendEmptyMessage(DISCONNECT_GATT)
+            workHandler?.sendEmptyMessage(DISCONNECT_GATT)
         } else {
             eAiDEX("Gatt is null,call onDisconnected directly")
             onDisconnected()
@@ -470,7 +476,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         message.what = SEND_DATA
         message.obj = data
         message.arg1 = characteristicUUID
-        workHandler!!.sendMessage(message)
+        workHandler?.sendMessage(message)
     }
 
     override fun executeWriteCharacteristic(uuid: Int, data: ByteArray) {
@@ -478,14 +484,14 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         message.what = SEND_DATA
         message.obj = data
         message.arg1 = uuid
-        workHandler!!.sendMessage(message)
+        workHandler?.sendMessage(message)
     }
 
     override fun executeReadCharacteristic(uuid: Int) {
         val message = Message.obtain()
         message.what = READ_CHARACTERISTIC
         message.arg1 = uuid
-        workHandler!!.sendMessage(message)
+        workHandler?.sendMessage(message)
     }
 
     /**
@@ -505,50 +511,50 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                retryNum = 0
                 when (newState) {
                     BluetoothProfile.STATE_DISCONNECTED -> {
-                        workHandler!!.sendEmptyMessage(CLOSE_GATT)
+                        workHandler?.sendEmptyMessage(CLOSE_GATT)
                         lastDisConnectTime = currentTimeMillis / 1000
-                        workHandler!!.sendEmptyMessageDelayed(CONNECT_DISCONNECTED, 2000)
+                        workHandler?.sendEmptyMessageDelayed(CONNECT_DISCONNECTED, 2000)
                     }
-                    BluetoothProfile.STATE_CONNECTED -> workHandler!!.sendEmptyMessage(
-                        DISCOVER_SERVICES
-                    )
+                    BluetoothProfile.STATE_CONNECTED -> {
+                        workHandler?.sendEmptyMessage(
+                            DISCOVER_SERVICES
+                        )
+                    }
                 }
-                retryNum = 0
                 return
             }
             if (status == 257) {
-                workHandler!!.sendEmptyMessage(CLOSE_GATT)
-                workHandler!!.sendEmptyMessage(CONNECT_DISCONNECTED)
+                workHandler?.sendEmptyMessage(CLOSE_GATT)
+                workHandler?.sendEmptyMessage(CONNECT_DISCONNECTED)
                 send(EventBusKey.EVENT_RESTART_BLUETOOTH, true)
-            }
-            if (status == 133) {
+            } else if (status == 133) {
                 if (retryNum < 2) { //需要清除Gatt缓存并断开连接和关闭Gatt，然后重新连接
                     workHandler!!.sendEmptyMessage(CLOSE_GATT)
                     retry()
                 } else {
                     retryNum = 0
-                    workHandler!!.sendEmptyMessage(CLOSE_GATT)
-                    workHandler!!.sendEmptyMessage(CONNECT_FAILURE)
+                    workHandler?.sendEmptyMessage(CLOSE_GATT)
+                    workHandler?.sendEmptyMessage(CONNECT_FAILURE)
                 }
                 return
             }
-            workHandler!!.sendEmptyMessage(CLOSE_GATT)
-            workHandler!!.sendEmptyMessage(CONNECT_FAILURE)
+            workHandler?.sendEmptyMessage(CLOSE_GATT)
+            workHandler?.sendEmptyMessage(CONNECT_FAILURE)
         }
 
         //发现服务成功后，会触发该回调方法。status：远程设备探索是否成功
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             super.onServicesDiscovered(gatt, status)
-            mBluetoothGatt = gatt
+            //mBluetoothGatt = gatt
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 val message = Message.obtain()
                 message.what = FOUND_SERVER
-                message.obj = status
-                workHandler!!.sendMessage(message)
+                workHandler?.sendMessage(message)
             } else {
-                workHandler!!.sendEmptyMessage(CONNECT_FAILURE)
+                workHandler?.sendEmptyMessage(CONNECT_FAILURE)
             }
         }
 
@@ -558,15 +564,16 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
             eAiDEX("onCharacteristicChanged --> " + binaryToHexString(characteristic?.value))
-            if (mBluetoothGatt == null) {
-                eAiDEX("onCharacteristicChanged --> Gatt is null")
-                return
-            }
+//            if (mBluetoothGatt == null) {
+//                eAiDEX("onCharacteristicChanged --> Gatt is null")
+//                workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
+//                return
+//            }
             val message = Message.obtain()
             message.what = RECEIVER_DATA
             message.obj = characteristic?.value
-            message.arg1 = characteristic?.uuid?.toIntBigEndian()!!
-            workHandler!!.sendMessage(message)
+            message.arg1 = characteristic?.uuid?.toIntBigEndian() ?: 0
+            workHandler?.sendMessage(message)
         }
 
         @SuppressLint("MissingPermission")
@@ -578,7 +585,9 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             super.onCharacteristicWrite(gatt, characteristic, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 eAiDEX("Characteristic write success --> uuid:${characteristic.uuid}")
-            } else eAiDEX("Send data fail")
+            } else {
+                eAiDEX("Send data fail")
+            }
         }
 
         override fun onCharacteristicChanged(
@@ -596,7 +605,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             message.what = RECEIVER_DATA
             message.obj = value
             message.arg1 = characteristic.uuid.toIntBigEndian()
-            workHandler!!.sendMessage(message)
+            workHandler?.sendMessage(message)
         }
 
         override fun onCharacteristicRead(
@@ -606,12 +615,12 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             status: Int
         ) {
             super.onCharacteristicRead(gatt, characteristic, value, status)
-            eAiDEX("onDescriptorRead -->" + "status:" + status + " uuid" + characteristic.uuid)
+            eAiDEX("onDescriptorRead -->" + "status:" + status + " uuid:" + characteristic.uuid)
             val message = Message.obtain()
             message.what = RECEIVER_DATA
             message.obj = value
             message.arg1 = characteristic.uuid.toIntBigEndian()
-            workHandler!!.sendMessage(message)
+            workHandler?.sendMessage(message)
         }
 
         @Deprecated("Deprecated in Java")
@@ -626,7 +635,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             message.what = RECEIVER_DATA
             message.obj = characteristic?.value
             message.arg1 = characteristic?.uuid?.toIntBigEndian() ?: 0
-            workHandler!!.sendMessage(message)
+            workHandler?.sendMessage(message)
         }
 
         //设置Descriptor后回调
@@ -638,16 +647,16 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             super.onDescriptorWrite(gatt, descriptor, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 eAiDEX("onDescriptorWrite -->" + "Descriptor enable success. uuid:" + descriptor.characteristic.uuid)
-                if (descriptor.characteristic != mCharacteristic) {
+                if (mCharacteristic != null && descriptor.characteristic != mCharacteristic) {
                     mCharacteristic?.let {
                         setNotify(it)
                     }
                 } else {
-                    workHandler!!.sendEmptyMessage(CONNECT_SUCCESS)
+                    workHandler?.sendEmptyMessage(CONNECT_SUCCESS)
                 }
             } else {
-                workHandler!!.sendEmptyMessage(CLOSE_GATT)
-                workHandler!!.sendEmptyMessage(CONNECT_FAILURE)
+                workHandler?.sendEmptyMessage(CLOSE_GATT)
+                workHandler?.sendEmptyMessage(CONNECT_FAILURE)
                 eAiDEX("onDescriptorWrite -->" + "Descriptor enable fail")
             }
         }
@@ -686,6 +695,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         private const val CONNECT_SUCCESS = 1010
         private const val FOUND_SERVER = 1012
         private const val READ_CHARACTERISTIC = 1013
+        private const val BLE_IDLE_DISCONNECT = 1014
         private const val BLE_CONNECT_TIME_OUT = 1100 //连接超时
         private const val BLE_CONNECT_TIME_LIMIT = (30 * 1000).toLong() //连接超时30S
 
@@ -695,8 +705,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             }
         }
 
-        fun getInstance(): BleAdapter {
-            return instance
+        fun getInstance(): AidexBleAdapter {
+            return instance as AidexBleAdapter
         }
     }
 }

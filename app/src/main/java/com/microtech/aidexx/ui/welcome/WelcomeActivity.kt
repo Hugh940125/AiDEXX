@@ -1,7 +1,9 @@
 package com.microtech.aidexx.ui.welcome
 
 import android.os.Bundle
+import android.os.UserManager
 import android.view.View
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -12,6 +14,8 @@ import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.lib.DialogX
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 

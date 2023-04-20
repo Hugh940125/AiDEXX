@@ -10,15 +10,13 @@ import java.util.*
  *
  * */
 @Entity
-class CalerateEntity : EventEntity {
-
+class CalibrateEntity : EventEntity {
     @Id
     override var idx: Long? = null
     override var state: Int = 0
     override var authorizationId: String? = null
     var calTime: Date = Date()
     override var createTime: Date = Date()
-
     override var recordId: String? = null
 
     @Transient
@@ -35,19 +33,19 @@ class CalerateEntity : EventEntity {
         }
     override var id: String? = null
     var deviceId: String = ""
-
+    var eventIndex = 0
     override var recordIndex: Long? = 0L
     override var deleteStatus: Int = 0
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
-    var sensorIndex: Int = 0
+    var sensorIndex: Long = 0
 
     var referenceGlucose: Float = 0f
     var indexBeforeCal: Int = 0
     var indexAfterCal: Int = 0
     var calFactor: Float = 1f //校准系数
     var calOffset: Float = 0f //校准偏移量
+    var isValid = false
     override fun getEventDescription(res: Resources): String {
-
         return ""
     }
 
@@ -56,8 +54,6 @@ class CalerateEntity : EventEntity {
     }
 
     override fun toString(): String {
-        return "CalerateEntity(idx=$idx, authorizationId=$authorizationId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$recordUuid, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$calFactor, calOffset=$calOffset)"
+        return "CalibrateEntity(idx=$idx, authorizationId=$authorizationId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$recordUuid, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$calFactor, calOffset=$calOffset)"
     }
-
-
 }

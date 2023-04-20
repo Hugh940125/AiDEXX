@@ -9,7 +9,7 @@
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/top_round_white"
+        android:background="@drawable/top_round"
         android:orientation="vertical"
         android:paddingTop="20dp">
 
@@ -26,7 +26,7 @@
             android:visibility="visible"
             tools:text="这个是标题" />
 
-        <com.microtech.aidexx.widget.JustifyTextView
+        <com.microtech.aidexx.widget.text.JustifyTextView
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
     <LinearLayout
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/bottom_round_white"
+        android:background="@drawable/bottom_round"
         android:orientation="vertical"
         android:paddingBottom="10dp">
 

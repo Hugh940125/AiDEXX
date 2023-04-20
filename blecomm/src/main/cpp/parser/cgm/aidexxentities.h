@@ -44,6 +44,8 @@ typedef struct {
     uint16 timeOffset;        // minutes, based on Session Start Time
     float32 referenceGlucose; // mg/dL
     bool isValid;             // false: data loss
+    int16 cf;        // minutes, based on Session Start Time
+    int16 offset;        // minutes, based on Session Start Time
 } AidexXCalibrationEntity;
 
 /* NewSensor:         (status & AidexxStatus::SESSION_STOPPED) && (calTemp & AidexxCalTemp::TIME_SYNCHRONIZATION_REQUIRED)
@@ -57,6 +59,24 @@ typedef struct {
     uint8 calTemp;                  // AidexxCalTemp in aidexxconstants.h
     int8 trend;                     // mg/dL/min; -128: Unknow
 } AidexXBroadcastEntity;
+
+typedef struct {
+    uint16 calTimeOffset;           // minutes, based on Session Start Time
+    bool isPaired;                  // true: Ble pairing information saved
+    bool isInitialized;             // true: AES_Key is initialized
+} AidexXScanResponseEntity;
+
+typedef struct {
+    AidexXHistoryEntity history[4];
+    uint16 historyTimeOffset;       // minutes, based on Session Start Time
+    uint16 calTimeOffset;           // minutes, based on Session Start Time
+    bool isPaired;                  // true: Ble pairing information saved
+    bool isInitialized;             // true: AES_Key is initialized
+    uint8 historyCount;             // count of history entities in this broadcast
+    uint8 status;                   // AidexxStatus in aidexxconstants.h
+    uint8 calTemp;                  // AidexxCalTemp in aidexxconstants.h
+    int8 trend;                     // mg/dL/min; -128: Unknow
+} AidexXFullBroadcastEntity;
 
 #endif // AIDEXXENTITIES_H
 

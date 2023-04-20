@@ -1,5 +1,11 @@
 package com.microtech.aidexx.ui.main.home
 
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import java.util.*
 
 /**
@@ -7,18 +13,20 @@ import java.util.*
  *@author Hugh
  *@desc
  */
+
+private const val RESET_HOME_STATE: Int = 110
+
 class HomeStateManager private constructor() {
     private var timer: Timer? = null
     private var timeLeft: Int? = null
+    val handler: Handler
     private var currentState = glucosePanel
 
     init {
-        timer = Timer()
-    }
-
-    private val timeTask = object : TimerTask() {
-        override fun run() {
-            setState(glucosePanel)
+        handler = object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message) {
+                setState(glucosePanel)
+            }
         }
     }
 
@@ -39,6 +47,7 @@ class HomeStateManager private constructor() {
     fun setState(tag: String) {
         if (tag != glucosePanel) {
             countDownToReset()
+            EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
         }
         if (tag == warmingUp) {
             timeLeft = null
@@ -57,8 +66,8 @@ class HomeStateManager private constructor() {
 
     @Synchronized
     private fun countDownToReset() {
-        timeTask.cancel()
-        timer?.schedule(timeTask, 5 * 60 * 1000)
+        handler.removeMessages(RESET_HOME_STATE)
+        handler.sendEmptyMessageDelayed(RESET_HOME_STATE, 5 * 60 * 1000)
     }
 
     fun cancel() {

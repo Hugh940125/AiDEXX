@@ -13,10 +13,12 @@ public:
     using Ble::setDiscoverTimeoutSeconds;
     using Ble::onScanRespond;
     using Ble::onAdvertise;
+    using Ble::onAdvertiseWithAndroidRawBytes;
     using Ble::onConnectSuccess;
     using Ble::onConnectFailure;
     using Ble::onDisconnected;
     using Ble::onReceiveData;
+    using Ble::getBleState;
 
 protected:
     void executeStartScan();

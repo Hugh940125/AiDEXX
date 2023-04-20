@@ -7,19 +7,21 @@
 #include "../parser/cgm/aidexxcalibrationsparser.h"
 #include "../parser/cgm/aidexxdefaultparamsparser.h"
 #include "../cgmscomm.h"
+#include "../parser/cgm/aidexxfullbroadcastparser.h"
 
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
         (JNIEnv *env, jclass, jbyteArray bytes) {
     const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
     jint length = env->GetArrayLength(bytes);
-    AidexXBroadcastParser cgmBroadcastParser((const char *) data, length);
-    jclass broad_cls = env->FindClass("com/microtechmd/blecomm/parser/AidexXBroadcastEntity");
+    AidexXFullBroadcastParser aidexXFullBroadcastParser((const char *) data, length);
+    jclass broad_cls = env->FindClass("com/microtechmd/blecomm/parser/AidexXFullBroadcastEntity");
     jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXHistoryEntity");
 
-    jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>", "(IIIIILjava/util/List;)V");
+    jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>",
+                                                   "(Ljava/util/List;IIIIIIII)V");
     jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIII)V");
-    const AidexXBroadcastEntity *cbroadcast = cgmBroadcastParser.getBroadcast();
+    const AidexXFullBroadcastEntity *cbroadcast = aidexXFullBroadcastParser.getFullBroadcast();
 
     jobject listObj = newList(env);
     for (int i = 0; i < cbroadcast->historyCount; i++) {
@@ -29,14 +31,17 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBr
                                                history.quality, history.isValid);
         env->CallBooleanMethod(listObj, listAdd, historyObject);
     }
-
     return env->NewObject(broad_cls, broadConstructMId,
-                          cbroadcast->timeOffset,
+                          listObj,
+                          cbroadcast->historyTimeOffset,
+                          cbroadcast->calTimeOffset,
+                          cbroadcast->isPaired,
+                          cbroadcast->isInitialized,
                           cbroadcast->historyCount,
                           cbroadcast->status,
                           cbroadcast->calTemp,
-                          cbroadcast->trend,
-                          listObj);
+                          cbroadcast->trend
+    );
 }
 
 
@@ -66,14 +71,16 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getRa
     const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
     jint length = env->GetArrayLength(bytes);
     AidexXHistoriesParser rawHistoryParser((const char *) data, length);
-    jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXRawHistoryEntity");
+    jclass history_Class = env->FindClass(
+            "com/microtechmd/blecomm/parser/AidexXRawHistoryEntity");
     jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IFFFZ)V");
     jobject listObj = newList(env);
     while (rawHistoryParser.hasNext()) {
         const AidexXRawHistoryEntity *history = rawHistoryParser.getRawHistory();
         if (history != nullptr) {
             jobject historyObject = env->NewObject(history_Class, historyConstructMId,
-                                                   history->timeOffset, history->i1, history->i2,
+                                                   history->timeOffset, history->i1,
+                                                   history->i2,
                                                    history->vc, history->isValid);
             env->CallBooleanMethod(listObj, listAdd, historyObject);
         }
@@ -82,21 +89,25 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getRa
 }
 
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXCalbration
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXCalibration
         (JNIEnv *env, jclass, jbyteArray bytes) {
     const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
     jint length = env->GetArrayLength(bytes);
     AidexXCalibrationsParser calibrationsParser((const char *) data, length);
-    jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXCalibrationEntity");
-    jmethodID caliConstructMId = env->GetMethodID(history_Class, "<init>", "(IIFZ)V");
+    jclass history_Class = env->FindClass(
+            "com/microtechmd/blecomm/parser/AidexXCalibrationEntity");
+    jmethodID caliConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIIFZ)V");
 
     jobject listObj = newList(env);
     while (calibrationsParser.hasNext()) {
         const AidexXCalibrationEntity *calbration = calibrationsParser.getCalibration();
         if (calbration != nullptr) {
+            LOGE("calbration : %d",calbration->offset);
             jobject historyObject = env->NewObject(history_Class, caliConstructMId,
                                                    calbration->index,
                                                    calbration->timeOffset,
+                                                   calbration->cf,
+                                                   calbration->offset,
                                                    calbration->referenceGlucose,
                                                    calbration->isValid);
             env->CallBooleanMethod(listObj, listAdd, historyObject);

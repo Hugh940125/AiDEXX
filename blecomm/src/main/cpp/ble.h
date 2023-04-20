@@ -20,6 +20,8 @@ class Ble
 public:
     static const uint8 DEVICE_TYPE = Comm::PARAM_PAIR_DEVICE_1;
 
+    enum BleState {IDLE, SCANNING, CONNECTING, CONNECTED, DISCONNECTING};
+
     explicit Ble();
     virtual ~Ble();
 
@@ -36,19 +38,24 @@ protected:
 
     // 服务UUID
     uint16 getServiceUUID();
-    // 特征UUID
-    uint16 getPrivateCharacteristicUUID();
+    
     // 特征UUID
     uint16 getCharacteristicUUID();
-
+    
+    // 私有特征UUID
+    uint16 getPrivateCharacteristicUUID();
+    
     // 第一次连接前的扫描超时设置
     void setDiscoverTimeoutSeconds(uint16 seconds);
+
+    uint16 getBleState();
 
     // 蓝牙状态发生变化时需调用以下函数
     void onScanRespond(string address, int32 rssi, const char *data, uint16 length);
     void onScanRespondDecoded(string address, string name, int32 rssi, const char *data, uint16 length);
     void onAdvertise(string address, int32 rssi, const char *data, uint16 length);
     void onAdvertiseDecoded(string address, string name, int32 rssi, const char *data, uint16 length);
+    void onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char *data, uint16 length);
     void onConnectSuccess();
     void onConnectFailure();
     void onDisconnected();
@@ -81,8 +88,6 @@ private:
         uint8 param;
         vector<uint8> data;
     };
-
-    enum BleState {IDLE, SCANNING, CONNECTING, CONNECTED, DISCONNECTING};
 
     uint32 discoverTimeoutSeconds;
 
