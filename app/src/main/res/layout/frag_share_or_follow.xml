@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.scwang.smart.refresh.layout.SmartRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/share_refreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.scwang.smart.refresh.header.ClassicsHeader
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        app:srlTextRefreshing="@string/refresh_loading"
+        app:srlTextPulling="@string/refresh_can_loading"
+        app:srlTextLoading="@string/refresh_loading"
+        app:srlTextFailed="@string/refresh_failed"
+        app:srlTextFinish="@string/refresh_complete"
+        app:srlTextUpdate="@string/refresh_last_time"
+        app:srlTextRelease="@string/refresh_release"
+        app:srlTextSecondary="@string/refresh_send_floor"
+        />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_share"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:background="@drawable/shape_rounded_setting"
+                android:orientation="vertical"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintBottom_toTopOf="@id/ll_btn"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:itemCount="50" />
+
+            <LinearLayout
+                android:id="@+id/ll_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:paddingBottom="40dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/list_share">
+
+                <com.flyco.roundview.RoundTextView
+                    android:id="@+id/btn_account_add"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:layout_marginBottom="10dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:text="@string/author_account_user"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toTopOf="@id/btn_account_add"
+                    app:rv_backgroundColor="@color/green_65"
+                    app:rv_backgroundPressColor="@color/green_7400"
+                    app:rv_cornerRadius="4dp"
+                    app:rv_strokeWidth="1dp" />
+
+                <com.flyco.roundview.RoundTextView
+                    android:id="@+id/btn_wechat_add"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginTop="15dp"
+                    android:layout_marginEnd="30dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:text="@string/author_wechat_user"
+                    android:textColor="@color/green_65"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toTopOf="@id/share_tv_tip"
+                    app:layout_constraintTop_toBottomOf="@id/btn_account_add"
+                    app:rv_backgroundColor="?bgNav"
+                    app:rv_backgroundPressColor="@color/green_7400"
+                    app:rv_cornerRadius="4dp"
+                    app:rv_strokeColor="@color/green_65"
+                    app:rv_strokeWidth="1dp" />
+
+                <TextView
+                    android:id="@+id/share_tv_tip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawablePadding="4dp"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/share_tip_author"
+                    android:textColor="@color/gray_1d"
+                    android:textSize="12sp"
+                    app:drawableStartCompat="@drawable/ic_question"
+                    app:drawableTint="@color/gray_1d"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/btn_wechat_add" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</com.scwang.smart.refresh.layout.SmartRefreshLayout>
+

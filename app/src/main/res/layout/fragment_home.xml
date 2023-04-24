@@ -239,7 +239,6 @@
             android:contentDescription="welfare center"
             android:padding="3dp"
             android:src="@drawable/ic_gift"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/home_logo"
             app:layout_constraintEnd_toStartOf="@id/user_center"
             app:layout_constraintTop_toTopOf="@id/home_logo"

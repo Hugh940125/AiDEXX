@@ -100,6 +100,13 @@ dependencies {
     implementation 'com.contrarywind:wheelview:4.1.0'
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
     implementation 'com.haibin:calendarview:3.7.1'
+
+//    implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.5.1'
+    implementation  'io.github.scwang90:refresh-layout-kernel:2.0.5'
+    implementation  'io.github.scwang90:refresh-header-classics:2.0.5'    //经典刷新头
+
+    implementation 'com.github.bumptech.glide:glide:4.13.2'
+    implementation 'com.flyco.roundview:FlycoRoundView_Lib:1.1.4@aar'
 }
 
 apply plugin: 'io.objectbox'

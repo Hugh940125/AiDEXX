@@ -91,6 +91,28 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.share.ShareFollowActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.share.ShareAddUserActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.share.ShareAddUserByWechatActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.share.ShareAndFollowEditActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity android:name=".ui.main.bg.history.BloodGlucoseHistoryActivity"
             android:exported="false"

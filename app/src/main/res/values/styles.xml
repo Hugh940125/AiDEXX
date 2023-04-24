@@ -469,6 +469,7 @@
         <item name="android:layout_marginEnd">40dp</item>
     </style>
 
+    <!-- widget/ScrollTab.kt -->
     <declare-styleable name="lib_pub_ScrollTab">
         <attr name="lib_pub_stab_type">
             <enum name="view" value="0" />

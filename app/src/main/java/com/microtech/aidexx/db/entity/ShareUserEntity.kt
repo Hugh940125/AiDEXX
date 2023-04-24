@@ -4,18 +4,14 @@ import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 
-/**
- * @param type 0-其他人 1-自己
- */
-class ShareUserEntity(type: Int) : Parcelable {
+class ShareUserEntity() : Parcelable {
 
     var lastData: RealCgmHistoryEntity? = null
-    var itemType = 1
 
-    var authorizedUser: UserEntity? = null
+//    var authorizedUser: UserEntity? = null
     var user: UserEntity? = null
 
-    var authorizedUserAlias: String? = null
+//    var authorizedUserAlias: String? = null
     var userAlias: String? = null
 
     var id: String? = null
@@ -27,14 +23,13 @@ class ShareUserEntity(type: Int) : Parcelable {
     var sn: String? = null
     var startUp: Long? = null
     var et: Int? = null
+    var source: Int = 0
 
     fun getDisplayName() = userAlias?.ifEmpty { null }
         ?: user?.emailAddress?.ifBlank { null }
         ?: user?.phoneNumber
 
-    constructor(parcel: Parcel) : this(1) {
-        itemType = parcel.readInt()
-        authorizedUserAlias = parcel.readString()
+    constructor(parcel: Parcel) : this() {
         userAlias = parcel.readString()
         id = parcel.readString()
         hide = parcel.readByte() != 0.toByte()
@@ -50,13 +45,7 @@ class ShareUserEntity(type: Int) : Parcelable {
         }
     }
 
-    init {
-        this.itemType = type
-    }
-
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(itemType)
-        parcel.writeString(authorizedUserAlias)
         parcel.writeString(userAlias)
         parcel.writeString(id)
         parcel.writeByte(if (hide) 1 else 0)

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragment.shareandfollow.ShareAndFollowEditActivity">
+
+    <com.microtech.aidexx.widget.ActionBarWidget
+        android:id="@+id/share_and_follow_edit_actionbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:leftIcon="@drawable/ic_back"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:id="@+id/cl_edit_content"
+        app:layout_constraintTop_toBottomOf="@id/share_and_follow_edit_actionbar"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:paddingTop="16dp"
+            android:id="@+id/cl_info"
+            android:paddingBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/shape_rounded_setting"
+            app:layout_constraintBaseline_toTopOf="parent" >
+
+            <TextView
+                android:id="@+id/tv_account_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:text="@string/account"
+                android:textColor="?trendSmallTextColor"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_account_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textColor="?mainTabIconColor"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_account_title"
+                tools:text="17326038125" />
+
+            <View
+                android:id="@+id/share_and_follow_edit_divider1"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="20dp"
+                android:background="?attr/colorLine"
+                app:layout_constraintTop_toBottomOf="@id/tv_account_value" />
+
+            <TextView
+                android:id="@+id/tv_alias_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/alias_optional"
+                android:textColor="?trendSmallTextColor"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/share_and_follow_edit_divider1" />
+
+            <EditText
+                android:textColorHint="?textColorHint"
+                android:maxLength="12"
+                android:singleLine="true"
+                android:drawableEnd="@drawable/ic_edit_svg"
+                android:background="@color/transparent"
+                android:id="@+id/et_alias_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textColor="?mainTabIconColor"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_alias_edit"
+                tools:text="用户1" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <LinearLayout
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:orientation="vertical"
+            android:id="@+id/cl_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/shape_rounded_setting"
+            app:layout_constraintTop_toBottomOf="@id/cl_info" >
+
+            <include layout="@layout/layout_switch_edit"
+                android:id="@+id/show_or_hide"/>
+
+            <include layout="@layout/layout_switch_edit"
+                android:id="@+id/normal_notice"/>
+
+            <include layout="@layout/layout_switch_edit"
+                android:id="@+id/urgent_notice"/>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <com.flyco.roundview.RoundTextView
+        android:layout_marginTop="40dp"
+        android:id="@+id/btn_edit_save"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="20dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="@string/save"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        app:layout_constraintTop_toBottomOf="@id/cl_edit_content"
+        app:rv_backgroundColor="@color/green_65"
+        app:rv_backgroundPressColor="@color/green_7400"
+        app:rv_cornerRadius="4dp"
+        app:rv_strokeWidth="1dp" />
+
+    <com.flyco.roundview.RoundTextView
+        android:layout_marginTop="20dp"
+        android:id="@+id/btn_edit_delete"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="20dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        tools:text="@string/save"
+        android:textColor="@color/green_65"
+        android:textSize="17sp"
+        app:layout_constraintTop_toBottomOf="@id/btn_edit_save"
+        app:rv_backgroundPressColor="@color/gray_d8"
+        app:rv_backgroundColor="?bgNav"
+        app:rv_cornerRadius="4dp"
+        app:rv_strokeWidth="1dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

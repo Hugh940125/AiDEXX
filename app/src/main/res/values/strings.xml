@@ -202,7 +202,7 @@
     <string name="refresh_release">松开立即刷新</string>
     <string name="refresh_complete">刷新完成</string>
     <string name="refresh_failed">刷新失败</string>
-    <string name="refresh_last_time">上次更新 </string>
+    <string name="refresh_last_time">\'上次更新\' M-d HH:mm</string>
     <string name="bg_top">请注意用于校准的血糖值的检出时间最好控制在5分钟内，不要超过10分钟。</string>
     <string name="bg_limit">校准请在指血测量值检出后5分钟内完成</string>
     <string name="bg_pair">请先配对发射器</string>
@@ -622,4 +622,8 @@
     <string name="txt_new">NEW</string>
     <!-- 关于 -->
 
+    <!-- 关注分享 -->
+    <string name="author_wechat_user">+ 微信授权</string>
+    <string name="title_share_file">分享文件</string>
+    <!-- 关注分享 -->
 </resources>

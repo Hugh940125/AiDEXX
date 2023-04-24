@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?bgNav"
+    android:orientation="vertical">
+
+    <com.microtech.aidexx.widget.ActionBarWidget
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:leftIcon="@drawable/ic_back"
+        app:titleText="@string/add_share_user" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_marginTop="10dp"
+        android:paddingTop="16dp"
+        android:id="@+id/cl_info"
+        android:paddingBottom="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="?bgSetting">
+
+        <TextView
+            android:id="@+id/tv_account_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="@string/follower_account"
+            android:textColor="?trendSmallTextColor"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:background="@color/transparent"
+            android:id="@+id/et_add_account_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textColor="?mainTabIconColor"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_account_title"
+            android:hint="@string/hint_share_add_account"
+            android:textColorHint="?textColorHint"/>
+
+        <View
+            android:id="@+id/share_and_follow_edit_divider1"
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="20dp"
+            android:background="?colorLine"
+            app:layout_constraintTop_toBottomOf="@id/et_add_account_value" />
+
+        <TextView
+            android:id="@+id/tv_alias_add"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/alias_optional"
+            android:textColor="?trendSmallTextColor"
+            android:textSize="16sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/share_and_follow_edit_divider1" />
+
+        <EditText
+            android:singleLine="true"
+            android:maxLength="12"
+            android:hint="@string/hint_input_alias"
+            android:textColorHint="?textColorHint"
+            android:drawableEnd="@drawable/ic_edit_svg"
+            android:background="@color/transparent"
+            android:id="@+id/et_add_alias_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:textColor="?mainTabIconColor"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_alias_add" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.flyco.roundview.RoundTextView
+        android:layout_marginTop="40dp"
+        android:id="@+id/btn_add_share_save"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="20dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:text="@string/save"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        app:rv_backgroundColor="@color/green_65"
+        app:rv_backgroundPressColor="@color/green_7400"
+        app:rv_cornerRadius="4dp"
+        app:rv_strokeWidth="1dp" />
+
+</LinearLayout>

@@ -1,8 +1,6 @@
 package com.microtech.aidexx.base
 
 import android.app.AlertDialog
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -17,7 +15,6 @@ import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding

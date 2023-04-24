@@ -111,7 +111,7 @@ class FollowSwitchDialog : Dialog {
                     if (UserInfoManager.shareUserInfo != null) {
 
                         UserInfoManager.shareUserInfo = null
-                        val shareUserEntity = ShareUserEntity(1)
+                        val shareUserEntity = ShareUserEntity()
                         shareUserEntity.id = UserInfoManager.instance().userId()
 
                         LiveEventBus
