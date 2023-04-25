@@ -41,6 +41,7 @@ import io.objectbox.kotlin.equal
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
@@ -92,18 +93,19 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
+    var isSensorExpired: Boolean = false
     private val typeHyperAlert = 1
     private val typeHypoAlert = 2
     private val typeUrgentAlert = 3
     private var newestEventIndex: Int = 0
     private var newestCalIndex: Int = 0
-    var isSensorExpired: Boolean = false
     private var rawRangeStartIndex: Int = 0
     private var briefRangeStartIndex: Int = 0
     private var calRangeStartIndex: Int = 0
     private var lastHyperAlertTime: Long? = null
     private var lastHypoAlertTime: Long? = null
     private var lastUrgentAlertTime: Long? = null
+    private var alertSetting: AlertSettingsEntity? = null
     private val cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
@@ -389,10 +391,15 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (nextEventIndex <= targetEventIndex) {
             val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
             if (broadcastContainsNext) {
-                val historiesFromBroadcast =
-                    getHistoriesFromBroadcast(nextEventIndex, adHistories)
-                if (historiesFromBroadcast.isNotEmpty()) {
-                    saveBriefHistory(historiesFromBroadcast.asReversed(), false)
+                AidexxApp.mainScope.launch {
+                    val historiesFromBroadcast: MutableList<AidexXHistoryEntity>
+                    withContext(Dispatchers.IO) {
+                        historiesFromBroadcast = getHistoriesFromBroadcast(nextEventIndex, adHistories)
+                    }
+                    if (historiesFromBroadcast.isNotEmpty()) {
+                        alertSetting = AlertUtil.getAlertSettings()
+                        saveBriefHistory(historiesFromBroadcast.asReversed(), false)
+                    }
                 }
             } else {
                 latestHistory?.let {
@@ -483,12 +490,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         next: Int, list: MutableList<AidexXHistoryEntity>
     ): MutableList<AidexXHistoryEntity> {
         var startIndex = 0
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            for ((index, history) in list.withIndex()) {
-                if (history.timeOffset == next) {
-                    startIndex = index + 1
-                    break
-                }
+        for ((index, history) in list.withIndex()) {
+            if (history.timeOffset == next) {
+                startIndex = index + 1
+                break
             }
         }
         return list.subList(0, startIndex)
@@ -498,6 +503,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
             if (histories.isNullOrEmpty()) return@launch
+            alertSetting = AlertUtil.getAlertSettings()
             if (histories.first().timeOffset == nextEventIndex) {
                 saveBriefHistory(histories)
             }
@@ -558,10 +564,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 calibrationBox!!.put(tempCalList)
             }
         }, {
-            aidexXCalibration.sortBy { it.index }
             entity.calIndex = aidexXCalibration.last().index
             nextCalIndex = entity.calIndex + 1
             transmitterBox!!.put(entity)
+            tempCalList.clear()
             continueCalFetch()
         }, {
             tempCalList.clear()
@@ -584,10 +590,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (userId.isEmpty()) return
         ObjectBox.runAsync({
             val now = TimeUtils.currentTimeMillis
-            val alertFrequency = calculateFrequency(AlertUtil.getAlertSettings().alertFrequency)
+            val alertFrequency = calculateFrequency(alertSetting?.alertFrequency ?: 2)
             val alertRange = alertFrequency..2 * alertFrequency
             val urgentFrequency =
-                calculateFrequency(AlertUtil.getAlertSettings().urgentAlertFrequency)
+                calculateFrequency(alertSetting?.urgentAlertFrequency ?: 0)
             val urgentRange = urgentFrequency..2 * urgentFrequency
             tempBriefList.clear()
             for (history in histories) {
@@ -635,7 +641,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             if (historyEntity.isHighOrLow()) {
                                 when {
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
-                                        if (AlertUtil.getAlertSettings().isHyperEnable) {
+                                        if (alertSetting?.isHyperEnable == true) {
                                             if (lastHyperAlertTime == null) {
                                                 lastHyperAlertTime = getLastAlertTime(
                                                     deviceId, userId, typeHyperAlert
@@ -653,7 +659,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                         }
                                     }
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPO -> {
-                                        if (AlertUtil.getAlertSettings().isHypoEnable) {
+                                        if (alertSetting?.isHypoEnable == true) {
                                             if (lastHypoAlertTime == null) {
                                                 lastHypoAlertTime = getLastAlertTime(
                                                     deviceId, userId, typeHypoAlert
@@ -671,7 +677,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                         }
                                     }
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_URGENT_HYPO -> {
-                                        if (AlertUtil.getAlertSettings().isUrgentLowEnable) {
+                                        if (alertSetting?.isUrgentLowEnable == true) {
                                             if (lastUrgentAlertTime == null) {
                                                 lastUrgentAlertTime =
                                                     getLastAlertTime(deviceId, userId, typeUrgentAlert)
@@ -707,11 +713,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (UserInfoManager.shareUserInfo == null) {
                 TransmitterManager.instance().updateHistories(tempBriefList)
             }
-            tempBriefList.clear()
             entity.eventIndex = histories.last().timeOffset
             nextEventIndex = entity.eventIndex + 1
             transmitterBox!!.put(entity)
 //                updateGlucoseTrend(tempBriefList.last().deviceTime)
+            tempBriefList.clear()
             if (goon) continueBriefFetch()
         }, onError = {
             tempBriefList.clear()

@@ -33,8 +33,6 @@ import com.microtechmd.blecomm.BleAdapter
 import com.microtechmd.blecomm.BluetoothDeviceStore
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerInfo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -277,63 +275,60 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     @SuppressLint("MissingPermission")
     @Synchronized
     private fun sendData(arg1: Int, data: ByteArray) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            eAiDEX("try send data ----> ${binaryToHexString(data)}")
-            try {
-                val gattCharacteristic = characteristicsMap[arg1]
-                if (data.size <= 20) {
-                    if (gattCharacteristic == null) {
-                        eAiDEX("send data error ----> characteristic is null")
-                        return@launch
-                    }
-                    if (mBluetoothGatt == null) {
-                        eAiDEX("send data error ----> gatt is null")
-                        return@launch
-                    }
-                    sleep()
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
-                            mBluetoothGatt!!.writeCharacteristic(
-                                gattCharacteristic,
-                                data,
-                                WRITE_TYPE_NO_RESPONSE
-                            )
-                        } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
-                            mBluetoothGatt!!.writeCharacteristic(
-                                gattCharacteristic,
-                                data,
-                                WRITE_TYPE_DEFAULT
-                            )
-                        }
-                    } else {
-                        if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
-                            gattCharacteristic.value = data
-                            gattCharacteristic.writeType = WRITE_TYPE_NO_RESPONSE
-                            mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
-                        } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
-                            gattCharacteristic.value = data
-                            gattCharacteristic.writeType = WRITE_TYPE_DEFAULT
-                            mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
-                        }
-                    }
-                    eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
-                    workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
-                    workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
-                } else {
-                    val pieces = data.size % 20
-                    for (i in 0 until pieces) {
-                        val array = ByteArray(20)
-                        System.arraycopy(data, 20 * i, array, 0, 20)
-                        sendData(arg1, array)
-                    }
-                    val dataLeft = ByteArray(data.size - 20)
-                    System.arraycopy(data, 20, dataLeft, 0, data.size - 20 * pieces)
-                    sendData(arg1, dataLeft)
+        try {
+            val gattCharacteristic = characteristicsMap[arg1]
+            if (data.size <= 20) {
+                if (gattCharacteristic == null) {
+                    eAiDEX("send data error ----> characteristic is null")
+                    return
                 }
-            } catch (e: Exception) {
-                eAiDEX("send data error ----> $e")
-                e.printStackTrace()
+                if (mBluetoothGatt == null) {
+                    eAiDEX("send data error ----> gatt is null")
+                    return
+                }
+//                sleep()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
+                        mBluetoothGatt!!.writeCharacteristic(
+                            gattCharacteristic,
+                            data,
+                            WRITE_TYPE_NO_RESPONSE
+                        )
+                    } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
+                        mBluetoothGatt!!.writeCharacteristic(
+                            gattCharacteristic,
+                            data,
+                            WRITE_TYPE_DEFAULT
+                        )
+                    }
+                } else {
+                    if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
+                        gattCharacteristic.value = data
+                        gattCharacteristic.writeType = WRITE_TYPE_NO_RESPONSE
+                        mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
+                    } else if (gattCharacteristic.properties and PROPERTY_WRITE != 0) {
+                        gattCharacteristic.value = data
+                        gattCharacteristic.writeType = WRITE_TYPE_DEFAULT
+                        mBluetoothGatt!!.writeCharacteristic(gattCharacteristic)
+                    }
+                }
+                eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
+                workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
+                workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
+            } else {
+                val pieces = data.size % 20
+                for (i in 0 until pieces) {
+                    val array = ByteArray(20)
+                    System.arraycopy(data, 20 * i, array, 0, 20)
+                    sendData(arg1, array)
+                }
+                val dataLeft = ByteArray(data.size - 20)
+                System.arraycopy(data, 20, dataLeft, 0, data.size - 20 * pieces)
+                sendData(arg1, dataLeft)
             }
+        } catch (e: Exception) {
+            eAiDEX("send data error ----> $e")
+            e.printStackTrace()
         }
     }
 
@@ -532,7 +527,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 send(EventBusKey.EVENT_RESTART_BLUETOOTH, true)
             } else if (status == 133) {
                 if (retryNum < 2) { //需要清除Gatt缓存并断开连接和关闭Gatt，然后重新连接
-                    workHandler!!.sendEmptyMessage(CLOSE_GATT)
+                    refreshConnectState(false)
+                    closeGatt()
                     retry()
                 } else {
                     retryNum = 0
