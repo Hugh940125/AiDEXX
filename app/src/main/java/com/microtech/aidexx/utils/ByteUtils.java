@@ -33,6 +33,7 @@ public class ByteUtils {
         ca.set(Calendar.HOUR_OF_DAY, hour);
         ca.set(Calendar.MINUTE, min);
         ca.set(Calendar.SECOND, s);
+        ca.set(Calendar.MILLISECOND, 0);
         return ca.getTime();
     }
 }
