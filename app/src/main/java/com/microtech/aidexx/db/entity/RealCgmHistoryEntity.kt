@@ -39,7 +39,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var eventIndex: Int = 0
 
     @Index
-    var sensorIndex: Long = 0
+    var sensorIndex: Int = 0
 
     @Index
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
@@ -98,7 +98,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         this.eventIndex = eventIndex
     }
 
-    override fun _setSensorIndex(sensorIndex: Long) {
+    override fun _setSensorIndex(sensorIndex: Int) {
         this.sensorIndex = sensorIndex
     }
 

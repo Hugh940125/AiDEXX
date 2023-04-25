@@ -37,7 +37,7 @@ class CalibrateEntity : EventEntity {
     override var recordIndex: Long? = 0L
     override var deleteStatus: Int = 0
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
-    var sensorIndex: Long = 0
+    var sensorIndex: Int = 0
 
     var referenceGlucose: Float = 0f
     var indexBeforeCal: Int = 0

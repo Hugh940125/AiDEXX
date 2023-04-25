@@ -49,8 +49,11 @@ class TransmitterEntity {
         deviceSn = sn
     }
 
-    fun startTimeToIndex(): Long {
-        return sensorStartTime?.time ?: 0L
+    fun startTimeToIndex(): Int {
+        if (sensorStartTime == null) return 0
+        val instance = Calendar.getInstance()
+        instance.time = sensorStartTime!!
+        return instance.get(Calendar.SECOND)
     }
 
     override fun toString(): String {
