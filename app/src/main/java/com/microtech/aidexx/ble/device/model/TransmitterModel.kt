@@ -623,7 +623,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 if (oldHistory != null) {
                     continue
                 }
-                val time = historyDate.dateHourMinute()
                 historyEntity.eventData = history.glucose.toFloat()
                 val deviceTimeMillis = historyEntity.deviceTime.time
                 when (historyEntity.eventType) {
@@ -645,6 +644,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
+                                                val time = historyDate.dateHourMinute()
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
                                                 )
@@ -663,6 +663,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
+                                                val time = historyDate.dateHourMinute()
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
                                                 )
@@ -679,6 +680,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                             if (lastUrgentAlertTime == null || TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
+                                                val time = historyDate.dateHourMinute()
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
                                                 )
@@ -692,6 +694,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                     History.HISTORY_SENSOR_ERROR -> {
                         if (entity.needReplace && now - deviceTimeMillis < TimeUtils.oneHourSeconds * 1000) {
+                            val time = historyDate.dateHourMinute()
                             alert?.invoke(
                                 "$time", AlertType.MESSAGE_TYPE_SENRORERROR
                             )
