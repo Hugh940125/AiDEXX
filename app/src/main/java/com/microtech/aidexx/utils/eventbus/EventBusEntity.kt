@@ -1,5 +1,6 @@
 package com.microtech.aidexx.utils.eventbus
 
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 
 data class AlertInfo(
@@ -13,3 +14,4 @@ enum class DataChangedType {
 }
 
 typealias CgmDataChangedInfo = Pair<DataChangedType, List<RealCgmHistoryEntity>>
+typealias BgDataChangedInfo = Pair<DataChangedType, List<BloodGlucoseEntity>>

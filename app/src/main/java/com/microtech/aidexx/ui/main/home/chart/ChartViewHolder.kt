@@ -11,6 +11,7 @@ import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -125,6 +126,11 @@ class ChartViewHolder(
         EventBusManager.onReceive<CgmDataChangedInfo>(EventBusKey.EVENT_CGM_DATA_CHANGED,fragment) {
             fragment.lifecycleScope.launch {
                 chartViewModel.onCgmDataChanged(it)
+            }
+        }
+        EventBusManager.onReceive<BgDataChangedInfo>(EventBusKey.EVENT_BG_DATA_CHANGED,fragment) {
+            fragment.lifecycleScope.launch {
+                chartViewModel.onBgDataChanged(it)
             }
         }
 

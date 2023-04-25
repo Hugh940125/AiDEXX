@@ -1,12 +1,13 @@
 package com.microtech.aidexx.db.repository
 
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.dao.BloodGlucoseDao
 import com.microtech.aidexx.db.dao.CgmHistoryDao
 import java.util.Date
 
-object DbRepository {
+object CgmCalibBgRepository {
 
-    suspend fun queryCgmByUid(
+    suspend fun queryAllCgm(
         uid: String = UserInfoManager.instance().userId()
     ) = CgmHistoryDao.queryByUid(uid)
 
@@ -16,8 +17,15 @@ object DbRepository {
         uid: String = UserInfoManager.instance().userId()
     ) = CgmHistoryDao.query(startDate,endDate,uid)
 
-    suspend fun queryLatestOne(
+    suspend fun queryCgmLatestOne(
         uid: String = UserInfoManager.instance().userId()
     ) = CgmHistoryDao.queryLatest(uid)
+
+    suspend fun queryBgByPage(
+        startDate: Date,
+        endDate: Date,
+        uid: String = UserInfoManager.instance().userId()
+    ) = BloodGlucoseDao.query(startDate, endDate, uid)
+
 
 }

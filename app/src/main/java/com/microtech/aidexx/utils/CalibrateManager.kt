@@ -3,7 +3,7 @@ package com.microtech.aidexx.utils
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.dao.CalibrateDao
 import com.microtech.aidexx.db.entity.CalibrateEntity
-import com.microtech.aidexx.db.repository.DbRepository
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 
 
 object CalibrateManager {
@@ -14,7 +14,7 @@ object CalibrateManager {
 
         val uid = UserInfoManager.shareUserInfo?.id ?: UserInfoManager.instance().userId()
 
-        val calListFromHistory = DbRepository.queryCgmByUid(uid) ?: mutableListOf()
+        val calListFromHistory = CgmCalibBgRepository.queryAllCgm(uid) ?: mutableListOf()
 
         for (history in calListFromHistory) {
             val calibrateEntity = CalibrateEntity()

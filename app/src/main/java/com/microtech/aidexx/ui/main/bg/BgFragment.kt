@@ -34,6 +34,10 @@ import com.microtech.aidexx.ui.main.bg.history.BloodGlucoseHistoryActivity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.lib.util.fromGlucoseValue
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
@@ -45,7 +49,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToInt
 
 private const val ANTI_FAST_RESUME = 1
@@ -337,6 +342,10 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                                 binding.etGlucoseValue.text?.clear()
                                 timeSlot = null
                                 updateLastRecord()
+
+                                EventBusManager.send(EventBusKey.EVENT_BG_DATA_CHANGED,
+                                    BgDataChangedInfo(DataChangedType.ADD, listOf(bgEntity)))
+
                             }
                             .setOnDismissListener { updateLastRecord() }
                             ?.create(0)?.show()

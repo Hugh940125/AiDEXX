@@ -25,7 +25,7 @@ import com.microtech.aidexx.db.entity.InsulinEntity
 import com.microtech.aidexx.db.entity.MedicationEntity
 import com.microtech.aidexx.db.entity.OthersEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.repository.DbRepository
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.CalibrateManager
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
@@ -33,6 +33,7 @@ import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.widget.chart.ChartUtil
@@ -47,6 +48,8 @@ import com.microtech.aidexx.widget.chart.dataset.IconDataSet
 import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -120,16 +123,9 @@ class ChartViewModel: ViewModel() {
                         var maxTime = Date(curPageMinDate.time - 1000) // ob between是前闭后闭
                         val curMinTime = getCurPageStartDate(curPageMinDate.time)
                         LogUtil.d("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
-                        getCgmPageData(curMinTime, maxTime)?.let { d ->
-                            if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
-                                // 如果发现uid变化了 就忽略掉
-                                LogUtil.d("===CHART=== 分页查询结束 发现换人了 终止通知")
-                                needNotify = false
-                            } else {
-                                updateGlucoseSets(d)
-                                LogUtil.d("===CHART=== 有数据")
-                            }
-                        }
+
+                        needNotify = loadNextPageData(curMinTime, maxTime)
+
                         LogUtil.d("===CHART=== 加载之后 timeMin=$timeMin start=${curMinTime} end=${maxTime}")
                     }
                     // 如果这个期间没发生用户切换就外部
@@ -138,6 +134,8 @@ class ChartViewModel: ViewModel() {
                         //重置标记
                         val ret = startLoadNextPage.compareAndSet(true, update = false)
                         LogUtil.d("===CHART=== 通知及标记重置了 ret=$ret")
+                    } else {
+                        LogUtil.e("===CHART=== 分页查询结束 发现换人了 终止通知")
                     }
                 }
             }
@@ -149,19 +147,15 @@ class ChartViewModel: ViewModel() {
      */
     fun initData() = flow {
 
-        val latestOne = DbRepository.queryLatestOne(UserInfoManager.getCurShowUserId()) //"f03550ef07a7b2164f06deaef597ce37"
-        val endDate = latestOne?.let {
+        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(UserInfoManager.getCurShowUserId()) //"f03550ef07a7b2164f06deaef597ce37"
+        val cgmMaxDate = latestOne?.let {
             it.deviceTime
         } ?: Date()
 
-        // 加载一页cgm数据
-        val cgmData = getCgmPageData(getCurPageStartDate(endDate.time), endDate)
+        val minDate = getCurPageStartDate(cgmMaxDate.time)
 
-        cgmData?.let {
-            updateGlucoseSets(it)
-        }
-
-        //todo 加载一页事件等数据
+        // 加载所有该日期区间的数据
+        loadNextPageData(minDate, Date())
 
         val lineDataSets: ArrayList<ILineDataSet> = ArrayList()
         lineDataSets.addAll(generateLimitLines())
@@ -242,7 +236,7 @@ class ChartViewModel: ViewModel() {
                 DataChangedType.ADD -> {
                     val rets = data.second.filter {
                         checkCgmHistory(it)
-                                && it.deviceTime.time > (ChartUtil.xToSecond(timeMin?:0f) * 1000)
+                                && it.deviceTime.time > curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
                         updateGlucoseSets(rets)
@@ -254,9 +248,67 @@ class ChartViewModel: ViewModel() {
         }
     }
 
+    /**
+     * 外部有数据变动通知过来后进行清洗合并
+     */
+    suspend fun onBgDataChanged(data: BgDataChangedInfo) {
+        withContext(Dispatchers.IO) {
+            when (data.first) {
+                DataChangedType.ADD -> {
+                    val rets = data.second.filter {
+                        it.testTime.time >= curXMinTimeMillis()
+                    }
+                    if (rets.isNotEmpty()) {
+                        addBgSet(rets)
+                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    /**
+     * 加载下一页数据到图表集合
+     * @return false-正在加载时 发现切换用户了
+     */
+    private suspend fun loadNextPageData(startDate: Date, endDate: Date): Boolean =
+        withContext(Dispatchers.IO) {
+            timeMin = ChartUtil.dateToX(startDate)
+            var isSuccess = true
+
+            val cgmDataTask = async {
+                getCgmPageData(startDate, endDate)?.let { d ->
+                    if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                        isSuccess = false
+                    } else {
+                        updateGlucoseSets(d)
+                    }
+                }
+            }
+
+            val bgDataTask = async {
+                CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
+                    if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                        isSuccess = false
+                    } else {
+                        addBgSet(d)
+                    }
+                }
+            }
+            // todo 分页加载其他事件相关数据
+            awaitAll(cgmDataTask, bgDataTask)
+            isSuccess
+        }
+
+
+    /**
+     * 当前x轴显示的最小的日期 毫秒
+     */
+    private fun curXMinTimeMillis() = ChartUtil.xToSecond(timeMin?:0f) * 1000
 
     private suspend fun getCgmPageData(startDate: Date, endDate: Date) =
-        DbRepository.queryCgmByPage(
+        CgmCalibBgRepository.queryCgmByPage(
             startDate,
             endDate,
 //            "f03550ef07a7b2164f06deaef597ce37"
@@ -366,6 +418,9 @@ class ChartViewModel: ViewModel() {
 
     }
 
+    /**
+     * 新增更新血糖数据
+     */
     private suspend fun updateGlucoseSets(cgmHistories: List<RealCgmHistoryEntity>) {
         if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
         if (cgmHistories.isEmpty()) {
@@ -412,38 +467,24 @@ class ChartViewModel: ViewModel() {
                 || History.HISTORY_CALIBRATION == cgm.eventType )
                 && (cgm.eventData != null && cgm.eventWarning != -1)
 
-    fun initBgSet(bgs: List<BloodGlucoseEntity>) {
+    private fun initBgSet(bgs: List<BloodGlucoseEntity>) {
         LogUtils.error("initBgSet")
         bgSet.clear()
-        for (bg in bgs) {
-            val dateTime = ChartUtil.dateToX(bg.testTime)
-//            val entry = Entry(
-//                dateTime,
-//                bg.bloodGlucose.toGlucoseValue()
-//            )
-            val entry = getGlucoseEntity(dateTime, bg)
-
-            entry.data = bg
-            entry.icon = BgDataSet.icon
-            bgSet.addEntryOrdered(entry)
-
-            xMaxMin(dateTime)
-        }
+        addBgSet(bgs)
     }
 
-    fun updateBgSet(bgs: List<BloodGlucoseEntity>) {
+    /**
+     * 新增指血数据
+     */
+    private fun addBgSet(bgs: List<BloodGlucoseEntity>) {
         for (bg in bgs) {
             val dateTime = ChartUtil.dateToX(bg.testTime)
-//            val entry = Entry(
-//                dateTime,
-//                bg.bloodGlucose.toGlucoseValue()
-//            )
             val entry = getGlucoseEntity(dateTime, bg)
             entry.data = bg
             entry.icon = BgDataSet.icon
             bgSet.addEntryOrdered(entry)
-
             xMaxMin(dateTime)
+            calDateMaxMin(bg.testTime)
         }
     }
 
