@@ -420,7 +420,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             bluetoothLeScanner.stopScan(scanCallback)
         }
         val default = TransmitterManager.instance().getDefault()
-        if (default != null && default.entity.accessId != null && !isOnConnectState && isPeriodic) {
+        if (default != null && default.isPaired() && !isOnConnectState && isPeriodic) {
             val scanWorker: OneTimeWorkRequest =
                 OneTimeWorkRequest.Builder(StartScanWorker::class.java)
                     .setInitialDelay(2, TimeUnit.SECONDS).addTag(

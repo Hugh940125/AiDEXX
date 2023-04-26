@@ -13,6 +13,8 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
+import com.tencent.mars.xlog.Log
+import com.tencent.mars.xlog.Xlog
 import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +46,7 @@ class AidexxApp : Application() {
     }
 
     private fun initSdks() {
+        initXlog()
         AlertUtil.init(this)
         MMKV.initialize(this)
         ObjectBox.init(this)
@@ -51,6 +54,50 @@ class AidexxApp : Application() {
         AidexBleAdapter.init(this)
         BleController.setBleAdapter(AidexBleAdapter.getInstance())
         AidexBleAdapter.getInstance().setDiscoverCallback()
+    }
+
+    private fun initXlog() {
+        val cacheDays = 15
+        val namePrefix = "AiDEX"
+        System.loadLibrary("c++_shared")
+        System.loadLibrary("marsxlog")
+        val root = externalCacheDir?.absolutePath
+        val logPath = "$root/aidex/log"
+        val cachePath = "${this.filesDir}/xlog"
+        val logConfig = Xlog.XLogConfig()
+        logConfig.mode = Xlog.AppednerModeAsync
+        logConfig.logdir = logPath
+        logConfig.nameprefix = namePrefix
+        logConfig.pubkey = ""
+        logConfig.compressmode = Xlog.ZLIB_MODE
+        logConfig.compresslevel = 0
+        logConfig.cachedir = cachePath
+        logConfig.cachedays = cacheDays
+        val xlog = Xlog()
+        Log.setLogImp(xlog)
+        if (ProcessUtil.isMainProcess(this)) {
+            if (BuildConfig.DEBUG) {
+                Log.setConsoleLogOpen(true)
+                Log.appenderOpen(
+                    Xlog.LEVEL_DEBUG,
+                    Xlog.AppednerModeAsync,
+                    "",
+                    logPath,
+                    namePrefix,
+                    0
+                )
+            } else {
+                Log.setConsoleLogOpen(false)
+                Log.appenderOpen(
+                    Xlog.LEVEL_DEBUG,
+                    Xlog.AppednerModeAsync,
+                    "",
+                    logPath,
+                    namePrefix,
+                    cacheDays
+                )
+            }
+        }
     }
 
     fun isDisplayOn(): Boolean {

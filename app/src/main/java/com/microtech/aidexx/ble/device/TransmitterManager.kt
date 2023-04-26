@@ -57,6 +57,7 @@ class TransmitterManager private constructor() {
 
     fun removeDefault() {
         default = null
+        notifyTransmitterChange(null)
     }
 
     fun set(model: DeviceModel) {
@@ -73,7 +74,7 @@ class TransmitterManager private constructor() {
         }
     }
 
-    private fun notifyTransmitterChange(model: DeviceModel) {
+    private fun notifyTransmitterChange(model: DeviceModel?) {
         for (listener in listenerList) {
             listener?.invoke(model)
         }
@@ -93,9 +94,9 @@ class TransmitterManager private constructor() {
 
     companion object {
 
-        private val listenerList = mutableListOf<((model: DeviceModel) -> Unit)?>()
+        private val listenerList = mutableListOf<((model: DeviceModel?) -> Unit)?>()
 
-        fun setOnTransmitterChangeListener(listener: ((model: DeviceModel) -> Unit)?) {
+        fun setOnTransmitterChangeListener(listener: ((model: DeviceModel?) -> Unit)?) {
             listenerList.add(listener)
         }
 

@@ -6,10 +6,49 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.os.Process
 import android.text.TextUtils
 import java.io.Serializable
 
 object ActivityUtil {
+
+    fun isServiceRunning(context: Context?, serviceClass: Class<*>): Boolean {
+        if (context == null) {
+            return false
+        }
+        val appContext = context.applicationContext
+        val manager = appContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val infos = manager.getRunningServices(Int.MAX_VALUE)
+        if (infos != null && !infos.isEmpty()) {
+            for (service in infos) {
+                // 添加Uid验证, 防止服务重名, 当前服务无法启动
+                if (getUid(context) == service.uid) {
+                    if (serviceClass.name == service.service.className) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    private fun getUid(context: Context?): Int {
+        if (context == null) {
+            return -1
+        }
+        val pid = Process.myPid()
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val infos = manager.runningAppProcesses
+        if (infos != null && !infos.isEmpty()) {
+            for (processInfo in infos) {
+                if (processInfo.pid == pid) {
+                    return processInfo.uid
+                }
+            }
+        }
+        return -1
+    }
+
     /**
      * 判断某个界面是否在前台
      *

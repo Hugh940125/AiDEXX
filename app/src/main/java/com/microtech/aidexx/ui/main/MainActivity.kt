@@ -12,7 +12,6 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
-import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -27,7 +26,6 @@ import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.tencent.mars.xlog.Log
-import com.tencent.mars.xlog.Xlog
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -91,7 +89,9 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         try {
-            startService(Intent(this, MainService::class.java))
+            if (!ActivityUtil.isServiceRunning(this, MainService::class.java)) {
+                startService(Intent(this, MainService::class.java))
+            }
         } catch (e: Exception) {
             LogUtil.eAiDEX(e.message.toString())
         }
@@ -173,8 +173,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     private fun initSDKs() {
         //Bugly初始化
 //        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
-        //Xlog初始化
-        initXlog()
         ContextUtil.init(this)
     }
 
@@ -238,50 +236,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     override fun onDestroy() {
         super.onDestroy()
         Log.appenderClose()
-    }
-
-    private fun initXlog() {
-        val cacheDays = 15
-        val namePrefix = "AiDEX"
-        System.loadLibrary("c++_shared")
-        System.loadLibrary("marsxlog")
-        val root = externalCacheDir?.absolutePath
-        val logPath = "$root/aidex/log"
-        val cachePath = "${this.filesDir}/xlog"
-        val logConfig = Xlog.XLogConfig()
-        logConfig.mode = Xlog.AppednerModeAsync
-        logConfig.logdir = logPath
-        logConfig.nameprefix = namePrefix
-        logConfig.pubkey = ""
-        logConfig.compressmode = Xlog.ZLIB_MODE
-        logConfig.compresslevel = 0
-        logConfig.cachedir = cachePath
-        logConfig.cachedays = cacheDays
-        val xlog = Xlog()
-        Log.setLogImp(xlog)
-        if (ProcessUtil.isMainProcess(this)) {
-            if (BuildConfig.DEBUG) {
-                Log.setConsoleLogOpen(true)
-                Log.appenderOpen(
-                    Xlog.LEVEL_DEBUG,
-                    Xlog.AppednerModeAsync,
-                    "",
-                    logPath,
-                    namePrefix,
-                    0
-                )
-            } else {
-                Log.setConsoleLogOpen(false)
-                Log.appenderOpen(
-                    Xlog.LEVEL_DEBUG,
-                    Xlog.AppednerModeAsync,
-                    "",
-                    logPath,
-                    namePrefix,
-                    cacheDays
-                )
-            }
-        }
     }
 
     override fun onBackPressed() {

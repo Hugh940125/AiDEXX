@@ -129,7 +129,7 @@ object AlertUtil {
 
     suspend fun getAlertSettings(): AlertSettingsEntity {
         if (alertSettingEntity == null) {
-            alertSettingEntity = loadSettingsFromDb()
+            alertSettingEntity = loadSettingsFromDb() ?: AlertSettingsEntity(UserInfoManager.instance().userId())
         }
         return alertSettingEntity ?: AlertSettingsEntity(UserInfoManager.instance().userId())
     }

@@ -30,10 +30,6 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     @Index
     var deviceTime = Date()
-        set(value) {
-            field = value
-            deviceTimeLong = deviceTime.time / 1000
-        }
 
     @Index
     var eventIndex: Int = 0
@@ -61,7 +57,6 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index
     var deviceId: String? = null
     var type = 0; // type为0正常数据，1代表占位数据
-    var deviceTimeLong: Long? = null
 
     @Transient
     override var createTime: Date = Date()

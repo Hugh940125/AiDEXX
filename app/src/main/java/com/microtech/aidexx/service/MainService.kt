@@ -1,10 +1,13 @@
 package com.microtech.aidexx.service
 
 import android.app.*
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.drawable.Icon
-import android.os.Build
-import android.os.IBinder
+import android.os.*
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -33,9 +36,20 @@ import kotlinx.coroutines.*
  *@desc
  */
 
-private const val FOREGROUND_ID: Int = 10010
+private const val LOCK_TIME_INTERVAL = 5 * 60 * 1000L
+private const val FOREGROUND_ID = 10010
+private const val LOCK_ACTION = "com.aidex.keep-alive"
+private const val LOAD_TRANSMITTER = 10011
 
 class MainService : Service(), LifecycleOwner {
+    private lateinit var serviceHandler: Handler
+    private var lockPendingIntent: PendingIntent? = null
+    private lateinit var alarmManager: AlarmManager
+    private lateinit var foregroundNotification: Notification
+    private lateinit var serviceMainScope: CoroutineScope
+    private val alertChannelId = "com.microtech.aidexx.alert"
+    private val foregroundChannelId = "com.microtech.aidexx.foreground"
+    private val mLifecycleRegistry = LifecycleRegistry(this)
     private var smallIcon: IconCompat? = null
         get() {
             if (field == null) {
@@ -44,12 +58,7 @@ class MainService : Service(), LifecycleOwner {
             }
             return field
         }
-    private lateinit var foregroundNotification: Notification
-    private lateinit var serviceMainScope: CoroutineScope
-    private val alertChannelId = "com.microtech.aidexx.alert"
-    private val foregroundChannelId = "com.microtech.aidexx.foreground"
-    private val mLifecycleRegistry = LifecycleRegistry(this)
-    private var pendingIntent: PendingIntent? = null
+    private var notificationPendingIntent: PendingIntent? = null
         get() {
             if (field == null) {
                 field = PendingIntent.getActivity(
@@ -69,21 +78,77 @@ class MainService : Service(), LifecycleOwner {
             return field
         }
 
+    private var receiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            val action = intent.action
+            if (LOCK_ACTION == action) {
+                val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+                val wakeLock = powerManager.newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK, "wake_lock:receiver"
+                )
+                wakeLock?.acquire(LOCK_TIME_INTERVAL)
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + LOCK_TIME_INTERVAL,
+                    lockPendingIntent
+                )
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
+        Log.e("mainservice onCreate", "mainservice onCreate")
+        getWakeLock()
         serviceMainScope = MainScope()
+        serviceHandler = object : Handler(Looper.getMainLooper()) {
+            override fun handleMessage(msg: Message) {
+                lifecycleScope.launch {
+                    TransmitterManager.instance().loadTransmitter()
+                }
+                TransmitterManager.setOnTransmitterChangeListener {
+                    it?.let {
+                        if (it.isPaired()) {
+                            observeAlert(it)
+                            AidexBleAdapter.getInstance().stopBtScan(true)
+                        }
+                    }
+                }
+            }
+        }
+        serviceHandler.removeMessages(LOAD_TRANSMITTER)
+        serviceHandler.sendEmptyMessageDelayed(LOAD_TRANSMITTER, 500)
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) initNotificationChannel()
         EventBusManager.onReceive<Boolean>(EventBusKey.UPDATE_NOTIFICATION, this) {
-            if (AidexxApp.instance.isDisplayOn()){
+            if (AidexxApp.instance.isDisplayOn()) {
                 updateNotification(it)
             }
         }
     }
 
+    private fun getWakeLock() {
+        val intentFilter = IntentFilter(LOCK_ACTION)
+        registerReceiver(receiver, intentFilter)
+        val mIntent = Intent()
+        mIntent.action = LOCK_ACTION
+        lockPendingIntent = PendingIntent.getBroadcast(
+            this@MainService,
+            0,
+            mIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime(),
+            lockPendingIntent
+        )
+    }
+
     private fun startForeground() {
         val remoteViews = ForegroundServiceNotification(
-            this, pendingIntent!!, packageName
+            this, notificationPendingIntent!!, packageName
         )
         buildNotification(remoteViews)
         startForeground(FOREGROUND_ID, foregroundNotification)
@@ -102,15 +167,15 @@ class MainService : Service(), LifecycleOwner {
     private fun initNotificationChannel() {
         val foregroundChannel = NotificationChannel(
             foregroundChannelId,
-            getString(R.string.title_natification_foreground),
+            getString(R.string.title_notification_foreground),
             NotificationManager.IMPORTANCE_LOW
         )
+        notificationManager?.createNotificationChannel(foregroundChannel)
         val alertChannel = NotificationChannel(
             alertChannelId,
-            getString(R.string.title_natification_alarm),
+            getString(R.string.title_notification_alarm),
             NotificationManager.IMPORTANCE_HIGH
         )
-        notificationManager?.createNotificationChannel(foregroundChannel)
         notificationManager?.createNotificationChannel(alertChannel)
     }
 
@@ -119,16 +184,10 @@ class MainService : Service(), LifecycleOwner {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.e("mainservice onStartCommand", "mainservice onStartCommand")
         startForeground()
-        lifecycleScope.launch {
-            TransmitterManager.instance().loadTransmitter()
-        }
-        TransmitterManager.setOnTransmitterChangeListener {
-            if (it.isPaired()) {
-                observeAlert(it)
-                AidexBleAdapter.getInstance().stopBtScan(true)
-            }
-        }
+        serviceHandler.removeMessages(LOAD_TRANSMITTER)
+        serviceHandler.sendEmptyMessageDelayed(LOAD_TRANSMITTER, 500)
         return START_STICKY
     }
 
@@ -137,7 +196,7 @@ class MainService : Service(), LifecycleOwner {
         model?.let {
             if (::foregroundNotification.isInitialized) {
                 val remoteViews = ForegroundServiceNotification(
-                    this, pendingIntent!!, packageName
+                    this, notificationPendingIntent!!, packageName
                 )
                 if (model.isDataValid() && normal) {
                     remoteViews.setGlucose(
@@ -221,7 +280,7 @@ class MainService : Service(), LifecycleOwner {
             .setContentTitle(getString(R.string.app_name)).setContentText(content)
             .setVibrate((longArrayOf(0, 180, 80, 120)))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setSmallIcon(R.mipmap.ic_launcher_weitai2).setContentIntent(pendingIntent)
+            .setSmallIcon(R.mipmap.ic_launcher_weitai2).setContentIntent(notificationPendingIntent)
             .setAutoCancel(true).build()
         notificationManager?.notify(type, notification)
     }

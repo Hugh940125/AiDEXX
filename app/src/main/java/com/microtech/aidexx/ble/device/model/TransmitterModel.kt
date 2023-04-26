@@ -709,6 +709,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (tempBriefList.isNotEmpty()) {
                 cgmHistoryBox!!.put(tempBriefList)
             }
+            LogUtil.eAiDEX("save histories takes : ${TimeUtils.currentTimeMillis - now} ms")
         }, onSuccess = {
             if (UserInfoManager.shareUserInfo == null) {
                 TransmitterManager.instance().updateHistories(tempBriefList)

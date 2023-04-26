@@ -394,8 +394,8 @@
     <string name="dialog_content_tir">葡萄糖目标范围内时间/百分比，目标范围通常为%s,或为%s。\n\n高：指葡萄糖高于目标范围的时间或其所占的百分比，参考值&lt;25%%。\n\n正常：指葡萄糖在目标范围内的时间或其所占的百分比，参考值&gt;70%% 。\n\n低：指葡萄糖低于目标范围的时间或其所占的百分比，参考值&lt;4%%。</string>
     <string name="dialog_content_agp">动态葡萄糖图谱，CGM 监测期间所有葡萄糖读数经过算法处理，描绘成的葡萄糖图谱，可以识别个人血糖特征。生成AGP图谱需要5天及以上CGM 数据。</string>
     <string name="title_update_version">发现新版本 %s</string>
-    <string name="title_natification_alarm">提醒通知</string>
-    <string name="title_natification_foreground">前台通知</string>
+    <string name="title_notification_alarm">提醒通知</string>
+    <string name="title_notification_foreground">前台通知</string>
     <string name="alert_error_embedding">传感器植入异常，请取下传感器和发射器，并更换新传感器。</string>
     <string name="insert_sensor_error">请更换传感器</string>
     <string name="content_ignore_battery">为保证“微泰动态”可以在后台持续获取数据，请允许应用始终在后台运行并忽略电池优化。</string>
