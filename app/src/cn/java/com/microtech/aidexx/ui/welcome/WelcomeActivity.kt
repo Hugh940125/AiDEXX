@@ -1,15 +1,12 @@
-package com.microtech.aidexx.ui.wecome
+package com.microtech.aidexx.ui.welcome
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.isVisible
-import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityWelcomeBinding
 import com.microtech.aidexx.ui.account.LoginActivity
-import com.microtech.aidexx.ui.account.RegisterActivity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
