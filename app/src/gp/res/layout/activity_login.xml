@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:background="@color/main_bg"
+    android:orientation="vertical">
+
+    <com.microtech.aidexx.widget.ActionBarWidget
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:leftIcon="@drawable/ic_back"
+        app:titleText="@string/login" />
+
+    <FrameLayout
+        android:id="@+id/fl_bg"
+        android:layout_width="match_parent"
+        android:layout_height="200dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_marginBottom="30dp"
+            android:background="@drawable/ic_brand_logo" />
+    </FrameLayout>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_username"
+        style="@style/MyEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:drawableStart="@drawable/ic_fun_5"
+        android:drawablePadding="10dp"
+        android:background="@color/main_bg"
+        android:gravity="start"
+        android:hint="@string/email"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:singleLine="true" />
+
+    <include layout="@layout/layout_line" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_pwd"
+        style="@style/MyEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:drawableStart="@drawable/ic_fun_6"
+        android:drawablePadding="10dp"
+        android:background="@color/main_bg"
+        android:hint="@string/password"
+        android:inputType="textPassword"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:singleLine="true" />
+
+    <include layout="@layout/layout_line" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="11dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <CheckBox
+            android:id="@+id/check_protocal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/LoginCheckBox" />
+
+        <TextView
+            android:id="@+id/txt_user_protocal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            tools:text="我已阅读" />
+
+    </LinearLayout>
+
+    <com.microtech.aidexx.widget.button.StateButton
+        android:id="@+id/button_login"
+        style="@style/StateButtonRaised"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginRight="20dp"
+        android:text="@string/login" />
+
+
+    <TextView
+        android:id="@+id/tv_forget"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="@string/Forget_Password"
+        android:textColor="?colorAccent" />
+
+</LinearLayout>

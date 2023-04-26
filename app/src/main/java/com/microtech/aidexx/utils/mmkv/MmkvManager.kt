@@ -87,8 +87,8 @@ object MmkvManager {
 
     fun getHyper() = MmkvUtil.decodeFloat(HYPER, ThresholdManager.DEFAULT_HYPER)
 
-    fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, true)
-    fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, false)
+    fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, false)
+    fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, true)
     fun getUserId() = MmkvUtil.decodeString(GET_USER_ID, "")
     fun saveUserId(id: String) = MmkvUtil.encodeString(GET_USER_ID, id)
     fun getPhone() = MmkvUtil.decodeString(PHONE_NUMBER, "")

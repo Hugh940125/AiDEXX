@@ -2,6 +2,7 @@ package com.microtech.aidexx.common.net.repository
 
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.ReqChangePWD
+import com.microtech.aidexx.common.net.entity.ReqEmailRegister
 import com.microtech.aidexx.common.net.entity.ReqPhoneCodeLogin
 import com.microtech.aidexx.common.net.entity.ReqPhoneVerCode
 import com.microtech.aidexx.common.net.entity.ReqPwdLogin
@@ -12,6 +13,13 @@ object AccountRepository {
 
     private val dispatcher = Dispatchers.IO
 
+    suspend fun sendRegisterEmailVerificationCode(email: String) = withContext(dispatcher) {
+        ApiService.instance.sendRegisterEmailVerificationCode(email)
+    }
+
+    suspend fun registerByVerificationCodeWithEmail(email: String, code: String, password: String) = withContext(dispatcher) {
+        ApiService.instance.registerByVerificationCodeWithEmail(ReqEmailRegister(email, password, code))
+    }
     suspend fun sendRegisterPhoneVerificationCode(phone: String) = withContext(dispatcher) {
         ApiService.instance.sendRegisterPhoneVerificationCode(ReqPhoneVerCode(phone))
     }

@@ -416,6 +416,7 @@
         <item name="normalStrokeColor">?appColorAccent</item>
         <item name="normalTextColor">?appColorAccent</item>
         <item name="pressedStrokeWidth">1dp</item>
+        <item name="bgRadius">5dp</item>
         <item name="pressedStrokeColor">?colorPrimary</item>
         <item name="pressedTextColor">?appColorAccent</item>
     </style>

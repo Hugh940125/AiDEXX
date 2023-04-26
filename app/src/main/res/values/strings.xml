@@ -8,6 +8,8 @@
     </string-array>
 
     <string name="app_name">微泰动态</string>
+    <string name="Register_Title_Register">Register</string>
+    <string name="Button_Register">Register</string>
     <string name="title_home">首页</string>
     <string name="title_history">历史</string>
     <string name="title_trends">趋势</string>

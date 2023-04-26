@@ -16,6 +16,8 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList
 import sun.misc.Unsafe
 import java.lang.reflect.Field
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
@@ -51,6 +53,7 @@ open class ResourceIdTask: DefaultTask() {
                 if (!aaptParams.contains("--stable-ids")) {
                     log("开始配置 --stable-ids aaptParams=$aaptParams")
                 } else {
+                    initTmpPublic(applicationId)
                     log("aapt配置已经存在 --stable-ids 这里终止 aaptParams=$aaptParams")
                 }
             } else {
@@ -225,4 +228,26 @@ open class ResourceIdTask: DefaultTask() {
         sortedLines.sort()
         return sortedLines
     }
+
+
+    /**
+     * 由于flavor中无法根据包名配置public.txt 所以在这里打包前把内容复制到一个指定文件
+     * 把当前包名对应的public.txt内容写入tmp-public.txt中
+     */
+    private fun initTmpPublic(applicationId: String) {
+        val distDir = "${project.buildDir.parent}/dist"
+        val targetPublicTxtFile = project.file("$distDir/${applicationId}-public.txt")
+        val distPublicTxtFile = project.file("$distDir/public.txt")
+        if (targetPublicTxtFile.exists()) {
+            if (distPublicTxtFile.exists()) {
+                distPublicTxtFile.delete()
+            } else {
+                distPublicTxtFile.mkdirs()
+            }
+            Files.copy(targetPublicTxtFile.toPath(), distPublicTxtFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            log("${applicationId}-public.txt 内容成功写入tmp-public.txt")
+        }
+
+    }
+
 }
