@@ -3,7 +3,7 @@ package com.microtech.aidexx.db.entity
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.LanguageUnitManager
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import java.util.*

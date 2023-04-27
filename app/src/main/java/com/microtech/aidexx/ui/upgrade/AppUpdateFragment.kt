@@ -8,7 +8,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.dp2px
-import com.microtech.aidexx.common.net.entity.AppUpdateInfo
+import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.data.AppUpgradeManager.DOWNLOAD_STATUS_DONE
 import com.microtech.aidexx.data.AppUpgradeManager.DOWNLOAD_STATUS_ERROR
@@ -17,11 +17,10 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ToastUtil
 import kotlinx.coroutines.launch
 
-class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment() {
+class AppUpdateFragment(private val updateInfo: UpgradeInfo): DialogFragment() {
 
     companion object {
         const val TAG = "AppUpdateFragment"
-        const val LABEL_FORCE: Int = 1
     }
 
     lateinit var binding: DialogAppUpdateBinding
@@ -44,7 +43,7 @@ class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment()
                     when (ret.first) {
                         DOWNLOAD_STATUS_DONE -> {
                             //do something
-                            if (updateInfo.data.force != LABEL_FORCE) {
+                            if (!updateInfo.appUpdateInfo!!.isForce) {
                                 dismissAllowingStateLoss()
                             } else {
                                 binding.run {
@@ -76,13 +75,13 @@ class AppUpdateFragment(private val updateInfo: AppUpdateInfo): DialogFragment()
 
         binding.run {
 
-            tvTitle.text = String.format(getString(R.string.title_update_version), updateInfo.data.version)
-            tvContent.text = updateInfo.data.description
+            tvTitle.text = String.format(getString(R.string.title_update_version), updateInfo.appUpdateInfo!!.info.version)
+            tvContent.text = updateInfo.appUpdateInfo.info.description
 
             btOk.setOnClickListener {
                 AppUpgradeManager.startUpgrade(updateInfo)
             }
-            btCancel.visibility = if (updateInfo.data.force == LABEL_FORCE) View.GONE else View.VISIBLE
+            btCancel.visibility = if (updateInfo.appUpdateInfo.isForce) View.GONE else View.VISIBLE
             btCancel.setOnClickListener {
                 dismissAllowingStateLoss()
                 LogUtil.xLogE("暂不更新", TAG)

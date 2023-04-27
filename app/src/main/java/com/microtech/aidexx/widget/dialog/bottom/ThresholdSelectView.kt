@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.ThresholdManager
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.ruler.RulerWidget
 
 class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onValue: ((value: String) -> Unit)) :

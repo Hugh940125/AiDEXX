@@ -11,7 +11,7 @@ import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.net.repository.ApiRepository
 import com.microtech.aidexx.common.net.ApiResult
-import com.microtech.aidexx.common.net.entity.AppUpdateInfo
+import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.common.scope
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
@@ -40,7 +40,7 @@ object AppUpgradeManager {
      * 1：启动状态
      * 0：停止状态
      */
-    private val mUpgradeState: MutableStateFlow<AppUpdateInfo?> = MutableStateFlow(null)
+    private val mUpgradeState: MutableStateFlow<UpgradeInfo?> = MutableStateFlow(null)
 
     /**
      * 更新进度 <进度，msg>
@@ -66,10 +66,10 @@ object AppUpgradeManager {
                             return@launch
                         }
 
-                        val fileName = "app_${it.data.version}.apk"
+                        val fileName = "app_${it.appUpdateInfo!!.info.version}.apk"
                         val downloadPath = getDownloadDir("downloads")
                         // 启动下载
-                        ApiRepository.downloadFile(it.data.downloadpath, downloadPath, fileName).collect { ret ->
+                        ApiRepository.downloadFile(it.appUpdateInfo.info.downloadpath, downloadPath, fileName).collect { ret ->
                             when (ret) {
                                 is ApiRepository.NetResult.Loading -> {
                                     mUpgradeProgress.emit(ret.value to "正在下载")
@@ -99,15 +99,16 @@ object AppUpgradeManager {
      */
     suspend fun fetchVersionInfo(
         isManual: Boolean = false
-    ): AppUpdateInfo? = withContext(Dispatchers.IO) {
+    ): UpgradeInfo? = withContext(Dispatchers.IO) {
 
         if (needCheckNewVersion(isManual)) {
             when (val apiResult = ApiRepository.checkAppUpdate()) {
                 is ApiResult.Success -> {
                     MmkvManager.updateAppCheckVersionTime()
                     val info = apiResult.result
-                    if (StringUtils.versionCompare(BuildConfig.VERSION_NAME, info.data.version)) {
-                        info
+                    if (StringUtils.versionCompare(BuildConfig.VERSION_NAME,
+                            info.data?.appUpdateInfo?.info?.version ?: "")) {
+                        info.data
                     } else null
                 }
                 is ApiResult.Failure -> null
@@ -118,7 +119,7 @@ object AppUpgradeManager {
     /**
      * 启动升级
      */
-    fun startUpgrade(appUpdateInfo: AppUpdateInfo): Boolean {
+    fun startUpgrade(appUpdateInfo: UpgradeInfo): Boolean {
         val ret = mUpgradeState.compareAndSet(null, appUpdateInfo)
         LogUtil.xLogI("启动升级 ret=$ret", TAG)
         return ret

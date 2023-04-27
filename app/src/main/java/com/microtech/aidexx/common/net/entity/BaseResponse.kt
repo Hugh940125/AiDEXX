@@ -1,5 +1,7 @@
 package com.microtech.aidexx.common.net.entity
 
+import android.icu.util.VersionInfo
+
 const val RESULT_OK = 200
 
 data class BaseResponse<T>(
@@ -37,15 +39,19 @@ data class ResUserInfo(
 //endregion
 
 
-data class AppUpdateInfo(
-    val code: Int = 0,
-    val data: UpdateData = UpdateData(),
-    val msg: String = ""
+data class UpgradeInfo(
+    val appUpdateInfo: VersionInfo?,
+    val resourceUpdateInfo: VersionInfo?,
 ) {
-    data class UpdateData(
+    data class VersionInfo(
+        val isForce: Boolean,
+        val info: VersionData
+    )
+    data class VersionData(
         val version: String = "",
         val downloadpath: String = "",
         val description: String = "",
-        val force: Int = 0
+        val force: Int = 0,
+        val configId: Int = 0
     )
 }

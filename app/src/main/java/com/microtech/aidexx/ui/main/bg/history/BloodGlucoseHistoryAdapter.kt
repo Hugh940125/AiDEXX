@@ -5,7 +5,7 @@ import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 
 
 class BloodGlucoseHistoryAdapter :

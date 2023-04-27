@@ -9,7 +9,6 @@
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
         app:leftIcon="@drawable/ic_back"
         app:titleText="@string/setting_about" />
 
