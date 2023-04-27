@@ -19,7 +19,7 @@ public class StartScanWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        LogUtil.eAiDEX("WorkManager start scan");
+        LogUtil.eAiDEX("Start ble scan");
         AidexBleAdapter.getInstance().executeStartScan();
         return Result.success();
     }

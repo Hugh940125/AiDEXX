@@ -19,7 +19,7 @@ public class StopScanWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        LogUtil.eAiDEX("WorkManager stop scan");
+        LogUtil.eAiDEX("Stop ble scan");
         AidexBleAdapter.getInstance().executeStopScan();
         return Result.success();
     }

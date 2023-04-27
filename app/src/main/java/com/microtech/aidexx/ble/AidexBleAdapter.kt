@@ -286,7 +286,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     eAiDEX("send data error ----> gatt is null")
                     return
                 }
-//                sleep()
+                sleep()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     if (gattCharacteristic.properties and PROPERTY_WRITE_NO_RESPONSE != 0) {
                         mBluetoothGatt!!.writeCharacteristic(

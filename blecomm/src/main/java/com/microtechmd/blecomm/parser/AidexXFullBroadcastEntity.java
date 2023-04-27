@@ -1,5 +1,7 @@
 package com.microtechmd.blecomm.parser;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 public class AidexXFullBroadcastEntity {
@@ -26,9 +28,10 @@ public class AidexXFullBroadcastEntity {
         this.trend = trend;
     }
 
+    @NonNull
     @Override
     public String toString() {
-        return "AidexXFullBroadcastEntity{" +
+        return '{' +
                 "history=" + history +
                 ", historyTimeOffset=" + historyTimeOffset +
                 ", calTimeOffset=" + calTimeOffset +

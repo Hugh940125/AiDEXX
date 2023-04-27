@@ -173,7 +173,6 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
     private fun initSDKs() {
         //Bugly初始化
 //        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
-        ContextUtil.init(this)
     }
 
     fun fitOrientation() {

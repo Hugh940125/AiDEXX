@@ -5,6 +5,7 @@ import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
 import java.util.*
 
 
@@ -23,7 +24,7 @@ class OthersEntity : EventEntity, EventActions {
     @Index
     override var deleteStatus: Int = 0
 
-    @Index
+    @Index(type = IndexType.HASH)
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
 
     override var recordId: String? = null
@@ -39,7 +40,7 @@ class OthersEntity : EventEntity, EventActions {
             }
         }
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
 
     override var language: String = ""

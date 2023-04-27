@@ -105,7 +105,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             binding.homeRoot.setBackgroundResource(bg)
         }
         TransmitterManager.setOnTransmitterChangeListener {
-            judgeState()
+            lifecycleScope.launch {
+                judgeState()
+            }
         }
         binding.ivScale.setOnClickListener {
             orientation(switchOrientation)

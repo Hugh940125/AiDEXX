@@ -8,6 +8,7 @@ import android.view.Display
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
+import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.CrashHandler
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
@@ -48,6 +49,7 @@ class AidexxApp : Application() {
     private fun initSdks() {
         initXlog()
         AlertUtil.init(this)
+        ContextUtil.init(this)
         MMKV.initialize(this)
         ObjectBox.init(this)
         DialogX.init(this)

@@ -7,10 +7,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.drawable.Icon
 import android.os.*
-import android.util.Log
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.Lifecycle
@@ -24,11 +22,13 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.ContextUtil
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.*
+import java.util.*
 
 /**
  *@date 2023/3/6
@@ -36,13 +36,15 @@ import kotlinx.coroutines.*
  *@desc
  */
 
-private const val LOCK_TIME_INTERVAL = 5 * 60 * 1000L
 private const val FOREGROUND_ID = 10010
-private const val LOCK_ACTION = "com.aidex.keep-alive"
 private const val LOAD_TRANSMITTER = 10011
+private const val LOCK_TIME_INTERVAL = 5 * 60 * 1000L
+private const val LOCK_ACTION = "com.aidex.keep-alive"
 
 class MainService : Service(), LifecycleOwner {
-    private lateinit var serviceHandler: Handler
+    private var mainServiceTimer: Timer? = null
+    private var mainServiceTask: TimerTask? = null
+    private var timeChangeReceiver: TimeChangeReceiver? = null
     private var lockPendingIntent: PendingIntent? = null
     private lateinit var alarmManager: AlarmManager
     private lateinit var foregroundNotification: Notification
@@ -73,11 +75,27 @@ class MainService : Service(), LifecycleOwner {
         get() {
             if (field == null) {
                 field =
-                    getSystemService(AppCompatActivity.NOTIFICATION_SERVICE) as NotificationManager
+                    getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             }
             return field
         }
-
+    private var serviceHandler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            scheduleTask()
+            lifecycleScope.launch {
+                TransmitterManager.instance().loadTransmitter()
+            }
+            TransmitterManager.setOnTransmitterChangeListener {
+                it?.let {
+                    if (it.isPaired()) {
+                        observeAlert(it)
+                        AidexBleAdapter.getInstance().stopBtScan(true)
+                        registerTimeChangeReceiver()
+                    }
+                }
+            }
+        }
+    }
     private var receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             val action = intent.action
@@ -87,6 +105,7 @@ class MainService : Service(), LifecycleOwner {
                     PowerManager.PARTIAL_WAKE_LOCK, "wake_lock:receiver"
                 )
                 wakeLock?.acquire(LOCK_TIME_INTERVAL)
+                LogUtil.eAiDEX("Acquire wake lock")
                 alarmManager.setExactAndAllowWhileIdle(
                     AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + LOCK_TIME_INTERVAL,
@@ -98,24 +117,8 @@ class MainService : Service(), LifecycleOwner {
 
     override fun onCreate() {
         super.onCreate()
-        Log.e("mainservice onCreate", "mainservice onCreate")
         getWakeLock()
         serviceMainScope = MainScope()
-        serviceHandler = object : Handler(Looper.getMainLooper()) {
-            override fun handleMessage(msg: Message) {
-                lifecycleScope.launch {
-                    TransmitterManager.instance().loadTransmitter()
-                }
-                TransmitterManager.setOnTransmitterChangeListener {
-                    it?.let {
-                        if (it.isPaired()) {
-                            observeAlert(it)
-                            AidexBleAdapter.getInstance().stopBtScan(true)
-                        }
-                    }
-                }
-            }
-        }
         serviceHandler.removeMessages(LOAD_TRANSMITTER)
         serviceHandler.sendEmptyMessageDelayed(LOAD_TRANSMITTER, 500)
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -125,6 +128,34 @@ class MainService : Service(), LifecycleOwner {
                 updateNotification(it)
             }
         }
+    }
+
+    fun scheduleTask() {
+        var count = 0
+        mainServiceTask = object : TimerTask() {
+            override fun run() {
+                count++
+                if (count % 3 == 0) {
+
+                }
+                if (count % 4 == 0) {
+
+                }
+                if (count == 9) {
+                    count = 0
+                }
+            }
+        }
+        mainServiceTimer = Timer()
+        mainServiceTimer?.schedule(mainServiceTask, 10 * 1000, 10 * 1000)
+    }
+
+    private fun registerTimeChangeReceiver() {
+        timeChangeReceiver = TimeChangeReceiver()
+        val mFilter = IntentFilter()
+        mFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        mFilter.addAction(Intent.ACTION_TIME_CHANGED)
+        registerReceiver(timeChangeReceiver, mFilter)
     }
 
     private fun getWakeLock() {
@@ -141,7 +172,7 @@ class MainService : Service(), LifecycleOwner {
         alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime(),
+            SystemClock.elapsedRealtime() + 1000,
             lockPendingIntent
         )
     }
@@ -184,7 +215,6 @@ class MainService : Service(), LifecycleOwner {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e("mainservice onStartCommand", "mainservice onStartCommand")
         startForeground()
         serviceHandler.removeMessages(LOAD_TRANSMITTER)
         serviceHandler.sendEmptyMessageDelayed(LOAD_TRANSMITTER, 500)
@@ -194,22 +224,20 @@ class MainService : Service(), LifecycleOwner {
     private fun updateNotification(normal: Boolean) {
         val model = TransmitterManager.instance().getDefault()
         model?.let {
-            if (::foregroundNotification.isInitialized) {
-                val remoteViews = ForegroundServiceNotification(
-                    this, notificationPendingIntent!!, packageName
+            val remoteViews = ForegroundServiceNotification(
+                this, notificationPendingIntent!!, packageName
+            )
+            if (model.isDataValid() && normal) {
+                remoteViews.setGlucose(
+                    if (model.minutesAgo == 0) "" else "${model.minutesAgo.toString()}${
+                        ContextUtil.getResources()?.getString(R.string.min_ago)
+                    }", model.glucose
                 )
-                if (model.isDataValid() && normal) {
-                    remoteViews.setGlucose(
-                        if (model.minutesAgo == 0) "" else "${model.minutesAgo.toString()}${
-                            ContextUtil.getResources()?.getString(R.string.min_ago)
-                        }", model.glucose
-                    )
-                } else {
-                    remoteViews.setGlucose("--", null)
-                }
-                buildNotification(remoteViews)
-                notificationManager?.notify(FOREGROUND_ID, foregroundNotification)
+            } else {
+                remoteViews.setGlucose("--", null)
             }
+            buildNotification(remoteViews)
+            notificationManager?.notify(FOREGROUND_ID, foregroundNotification)
         }
     }
 
@@ -305,7 +333,12 @@ class MainService : Service(), LifecycleOwner {
     override fun onDestroy() {
         super.onDestroy()
         serviceMainScope.cancel()
+        mainServiceTask?.cancel()
+        mainServiceTimer?.cancel()
         mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        timeChangeReceiver?.let {
+            unregisterReceiver(timeChangeReceiver)
+        }
     }
 
     override val lifecycle: Lifecycle

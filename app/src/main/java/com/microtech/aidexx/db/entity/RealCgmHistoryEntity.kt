@@ -10,10 +10,9 @@ import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
+import io.objectbox.annotation.*
 import java.util.*
+import kotlin.jvm.Transient
 
 @Entity
 class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
@@ -25,7 +24,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     override var state: Int = 0
     override var id: String? = null
 
-    @Index
+    @Index(type = IndexType.HASH)
     var deviceSn: String? = null
 
     @Index
@@ -54,7 +53,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index
     var eventWarning: Int = 0  //0默认 1高血糖 2低血糖
 
-    @Index
+    @Index(type = IndexType.HASH)
     var deviceId: String? = null
     var type = 0; // type为0正常数据，1代表占位数据
 
@@ -64,12 +63,13 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Transient
     override var language: String = ""
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
 
     override var recordId: String? = null
 
-    @Index
+    @Index(type = IndexType.HASH)
+    @Unique(onConflict = ConflictStrategy.REPLACE)
     var recordUuid: String? = null
 
     fun updateRecordUUID(): String {

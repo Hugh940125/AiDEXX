@@ -335,14 +335,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
         latestAdTime = elapsedRealtime
         val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data)
-        LogUtil.eAiDEX("Receive broadcast ----> $broadcast")
+        LogUtil.eAiDEX("Advertising ----> $broadcast")
         broadcast?.let {
             val refreshSensorState = refreshSensorState(broadcast)
             if (refreshSensorState) return
         }
-        if (entity.sensorStartTime == null || abs(TimeUtils.currentTimeMillis - entity.sensorStartTime!!.time)
-            > TimeUtils.oneDayMillis * 15
-        ) {
+        if (entity.sensorStartTime == null) {
             getController().startTime
             return
         }
@@ -447,7 +445,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     override fun getSensorRemainingTime(): Int? {
         val days = entity.expirationTime
         return when {
-            isSensorExpired -> 0
+            isSensorExpired -> -1
             entity.sensorStartTime == null || latestAdTime == 0L || (SystemClock.elapsedRealtime() - latestAdTime).millisToMinutes() > 15 -> null
             else -> {
                 (days * TimeUtils.oneDayMillis - (TimeUtils.currentTimeMillis - entity.sensorStartTime?.time!!)).millisToHours()
@@ -622,13 +620,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 historyEntity.authorizationId = userId
                 val recordUuid = historyEntity.updateRecordUUID()
                 historyEntity.recordUuid = recordUuid
-                val oldHistory = cgmHistoryBox!!.query().equal(
-                    RealCgmHistoryEntity_.recordUuid,
-                    recordUuid
-                ).build().findFirst()
-                if (oldHistory != null) {
-                    continue
-                }
                 val time = historyDate.dateHourMinute()
                 historyEntity.eventData = history.glucose.toFloat()
                 val deviceTimeMillis = historyEntity.deviceTime.time
@@ -709,7 +700,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (tempBriefList.isNotEmpty()) {
                 cgmHistoryBox!!.put(tempBriefList)
             }
-            LogUtil.eAiDEX("save histories takes : ${TimeUtils.currentTimeMillis - now} ms")
+            LogUtil.eAiDEX("save brief histories takes : ${TimeUtils.currentTimeMillis - now} ms")
         }, onSuccess = {
             if (UserInfoManager.shareUserInfo == null) {
                 TransmitterManager.instance().updateHistories(tempBriefList)
