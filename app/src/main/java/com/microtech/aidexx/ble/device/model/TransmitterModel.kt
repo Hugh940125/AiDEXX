@@ -298,6 +298,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override suspend fun deletePair() {
         entity.accessId = null
+        entity.sensorStartTime = null
         controller?.sn = null
         controller?.mac = null
         controller?.id = null
@@ -470,7 +471,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (it.status == History.SESSION_STOPPED && it.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
                 HomeStateManager.instance().setState(newOrUsedSensor)
                 return true
-            } else if (it.historyTimeOffset in 1..59) {
+            } else if (it.historyTimeOffset in 0..59) {
                 HomeStateManager.instance().setState(warmingUp)
                 HomeStateManager.instance().setWarmingUpTimeLeft(it.historyTimeOffset)
             } else {
@@ -700,7 +701,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (tempBriefList.isNotEmpty()) {
                 cgmHistoryBox!!.put(tempBriefList)
             }
-            LogUtil.eAiDEX("save brief histories takes : ${TimeUtils.currentTimeMillis - now} ms")
+            LogUtil.eAiDEX("Save ${histories.size} brief histories takes : ${TimeUtils.currentTimeMillis - now} ms")
         }, onSuccess = {
             if (UserInfoManager.shareUserInfo == null) {
                 TransmitterManager.instance().updateHistories(tempBriefList)

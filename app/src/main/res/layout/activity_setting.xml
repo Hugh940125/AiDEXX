@@ -10,7 +10,6 @@
         android:id="@+id/cl_setting_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_setting_header"
         app:layout_constraintTop_toTopOf="parent">
 
         <RelativeLayout

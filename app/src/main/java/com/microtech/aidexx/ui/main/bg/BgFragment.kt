@@ -100,6 +100,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
 
     override fun onResume() {
         super.onResume()
+        initGlucoseValueEditor()
         defaultMode = TransmitterManager.instance().getDefault()
         defaultMode?.onCalibrationPermitChange = {
             calibrationAllowed = it
@@ -155,7 +156,6 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
     private fun initView() {
         binding.buttonCalibration.setOnClickListener(this)
         binding.buttonRecord.setOnClickListener(this)
-        initGlucoseValueEditor()
         val layoutManager = FlexboxLayoutManager(context)
         layoutManager.justifyContent = JustifyContent.FLEX_START
         layoutManager.alignItems = AlignItems.CENTER
@@ -174,38 +174,6 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
         binding.tvMoreHistory.setOnClickListener {
             startActivity(Intent(requireContext(), BloodGlucoseHistoryActivity::class.java))
         }
-    }
-
-    private fun updateLastRecord() {
-        lifecycleScope.launch {
-            val lastGlucoseRecord: BloodGlucoseEntity?
-            withContext(Dispatchers.IO) {
-                lastGlucoseRecord = BgRepositoryApi.getLastGlucoseHistory()
-            }
-            if (null == lastGlucoseRecord) {
-                binding.tvMoreHistory.visibility = View.INVISIBLE
-                binding.llBgRecode.llContainer.visibility = View.INVISIBLE
-                binding.tvNoneRecord.visibility = View.VISIBLE
-            } else {
-                binding.tvMoreHistory.visibility = View.VISIBLE
-                binding.llBgRecode.apply {
-                    llContainer.visibility = View.VISIBLE
-                    tvGlucoseTime.text = lastGlucoseRecord.testTime.date2ymdhm()
-                    var tagText = lastGlucoseRecord.getTagText(requireContext().resources)
-                    if (tagText.isNullOrEmpty()) {
-                        tagText = "— —"
-                    }
-                    tvGlucoseDescribe.text = tagText
-                    tvGlucoseRecordValue.text =
-                        lastGlucoseRecord.bloodGlucose.toGlucoseStringWithUnit()
-                    glucoseHistoryDivider.visibility = View.GONE
-                }
-                binding.tvNoneRecord.visibility = View.GONE
-            }
-        }
-    }
-
-    private fun initGlucoseValueEditor() {
         binding.etGlucoseValue.onFocusChangeListener =
             View.OnFocusChangeListener { view, hasFocus ->
                 if (!hasFocus) {
@@ -217,27 +185,6 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                     )
                 }
             }
-        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
-            minGlucose = 0.6
-            maxGlucose = 33.3
-        } else {
-            minGlucose = 10.0
-            maxGlucose = 600.0
-        }
-        val minGlucoseString =
-            BigDecimal(minGlucose.toString()).stripTrailingZeros().toPlainString()
-        val maxGlucoseString =
-            BigDecimal(maxGlucose.toString()).stripTrailingZeros().toPlainString()
-        inputHint = String.format(
-            Locale.getDefault(),
-            getString(R.string.input_glucose_value),
-            minGlucoseString,
-            maxGlucoseString
-        )
-        binding.etGlucoseValue.hint = inputHint
-        binding.etGlucoseValue.filters = arrayOf(GlucoseInputFilter().apply {
-            isIntOnly = UnitManager.glucoseUnit != UnitManager.GlucoseUnit.MMOL_PER_L
-        })
         binding.etGlucoseValue.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
@@ -271,6 +218,59 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
 
             override fun afterTextChanged(s: Editable?) {
             }
+        })
+    }
+
+    private fun updateLastRecord() {
+        lifecycleScope.launch {
+            val lastGlucoseRecord: BloodGlucoseEntity?
+            withContext(Dispatchers.IO) {
+                lastGlucoseRecord = BgRepositoryApi.getLastGlucoseHistory()
+            }
+            if (null == lastGlucoseRecord) {
+                binding.tvMoreHistory.visibility = View.INVISIBLE
+                binding.llBgRecode.llContainer.visibility = View.INVISIBLE
+                binding.tvNoneRecord.visibility = View.VISIBLE
+            } else {
+                binding.tvMoreHistory.visibility = View.VISIBLE
+                binding.llBgRecode.apply {
+                    llContainer.visibility = View.VISIBLE
+                    tvGlucoseTime.text = lastGlucoseRecord.testTime.date2ymdhm()
+                    var tagText = lastGlucoseRecord.getTagText(requireContext().resources)
+                    if (tagText.isNullOrEmpty()) {
+                        tagText = "— —"
+                    }
+                    tvGlucoseDescribe.text = tagText
+                    tvGlucoseRecordValue.text =
+                        lastGlucoseRecord.bloodGlucose.toGlucoseStringWithUnit()
+                    glucoseHistoryDivider.visibility = View.GONE
+                }
+                binding.tvNoneRecord.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun initGlucoseValueEditor() {
+        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
+            minGlucose = 0.6
+            maxGlucose = 33.3
+        } else {
+            minGlucose = 10.0
+            maxGlucose = 600.0
+        }
+        val minGlucoseString =
+            BigDecimal(minGlucose.toString()).stripTrailingZeros().toPlainString()
+        val maxGlucoseString =
+            BigDecimal(maxGlucose.toString()).stripTrailingZeros().toPlainString()
+        inputHint = String.format(
+            Locale.getDefault(),
+            getString(R.string.input_glucose_value),
+            minGlucoseString,
+            maxGlucoseString
+        )
+        binding.etGlucoseValue.hint = inputHint
+        binding.etGlucoseValue.filters = arrayOf(GlucoseInputFilter().apply {
+            isIntOnly = UnitManager.glucoseUnit != UnitManager.GlucoseUnit.MMOL_PER_L
         })
     }
 

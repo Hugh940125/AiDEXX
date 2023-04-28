@@ -11,8 +11,8 @@ object UnitManager {
         val unit: String,
         val formatter: DecimalFormat
     ) {
-        MMOL_PER_L(1, "mmol/L", "mmol", DecimalFormat("0.0")),
-        MG_PER_DL(2, "mg/dL", "mg", DecimalFormat("0"))
+        MMOL_PER_L(0, "mmol/L", "mmol", DecimalFormat("0.0")),
+        MG_PER_DL(1, "mg/dL", "mg", DecimalFormat("0"))
     }
 
 

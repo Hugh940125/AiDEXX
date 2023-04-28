@@ -134,7 +134,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (ThemeManager.theme.index == 1) {
+        if (ThemeManager.isLight()) {
             StatusBarHelper.setStatusBarLightMode(this)
         } else {
             StatusBarHelper.setStatusBarDarkMode(this)

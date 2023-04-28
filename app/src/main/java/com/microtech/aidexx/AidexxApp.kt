@@ -10,7 +10,6 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.CrashHandler
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
@@ -23,6 +22,7 @@ import kotlinx.coroutines.MainScope
 import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
+    var activityStack = mutableListOf<Activity>()
     private var activityAliveCount: AtomicInteger = AtomicInteger(0)
 
     companion object {
@@ -121,7 +121,10 @@ class AidexxApp : Application() {
 
     private val activityLifecycleCallbacks: ActivityLifecycleCallbacks =
         object : ActivityLifecycleCallbacks {
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                activityStack.add(activity)
+            }
+
             override fun onActivityStarted(activity: Activity) {
                 activityAliveCount.incrementAndGet()
             }
@@ -133,6 +136,8 @@ class AidexxApp : Application() {
             }
 
             override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-            override fun onActivityDestroyed(activity: Activity) {}
+            override fun onActivityDestroyed(activity: Activity) {
+                activityStack.remove(activity)
+            }
         }
 }

@@ -18,7 +18,6 @@ import androidx.core.app.ActivityCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.ClientReleaseTool
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
@@ -95,7 +94,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             super.onScanFailed(errorCode)
             eAiDEX("onScanFailed errorCode:$errorCode")
             if (errorCode == 2) {
-                ClientReleaseTool.releaseAllScanClient()
+                //ClientReleaseTool.releaseAllScanClient()
+
             }
         }
     }
@@ -384,19 +384,23 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                 return
             }
         }
-        bluetoothAdapter.bluetoothLeScanner.startScan(
-            buildScanFilters(),
-            buildScanSettings(),
-            scanCallback
-        )
+        try {
+            bluetoothAdapter.bluetoothLeScanner.startScan(
+                buildScanFilters(),
+                buildScanSettings(),
+                scanCallback
+            )
+        } catch (e: Exception) {
+            eAiDEX("Start scan error ----> $e")
+        }
         if (!isOnConnectState && isPeriodic) {
             WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
             if (TransmitterManager.instance().getDefault() != null) {
                 val scanWorker: OneTimeWorkRequest =
                     OneTimeWorkRequest.Builder(StopScanWorker::class.java)
-                        .setInitialDelay(30, TimeUnit.SECONDS).addTag(
+                        .setInitialDelay(20, TimeUnit.SECONDS).addTag(
                             STOP_SCAN.toString()
-                        ).build() //30s以后停止扫描
+                        ).build() //20s以后停止扫描
                 WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
             }
         }
@@ -417,7 +421,11 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     return
                 }
             }
-            bluetoothLeScanner.stopScan(scanCallback)
+            try {
+                bluetoothLeScanner.stopScan(scanCallback)
+            } catch (e: Exception) {
+                eAiDEX("Stop scan error ----> $e")
+            }
         }
         val default = TransmitterManager.instance().getDefault()
         if (default != null && default.isPaired() && !isOnConnectState && isPeriodic) {

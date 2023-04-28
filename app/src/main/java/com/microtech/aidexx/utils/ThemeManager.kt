@@ -8,9 +8,8 @@ import com.microtech.aidexx.utils.mmkv.MmkvManager
 object ThemeManager {
 
     enum class Theme(val index: Int, val id: Int) {
-        DARK(0, R.style.AppThemeDark),
-        LIGHT(1, R.style.AppThemeLight)
-    }
+        LIGHT(0, R.style.AppThemeLight),
+        DARK(1, R.style.AppThemeDark) }
 
     var theme: Theme = themeByIndex(
         MmkvManager.getTheme()
@@ -22,13 +21,13 @@ object ThemeManager {
 
 
     fun isLight(): Boolean {
-        return theme.index == 1
+        return theme.index == 0
     }
 
     fun themeByIndex(index: Int): Theme {
         return when (index) {
-            0 -> Theme.DARK
-            1 -> Theme.LIGHT
+            0 -> Theme.LIGHT
+            1 -> Theme.DARK
             else -> Theme.LIGHT
         }
     }
