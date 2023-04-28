@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.microtech.aidexx" >
+    package="com.microtech.aidexx">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission
@@ -32,8 +33,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppThemeLight"
         android:usesCleartextTraffic="true"
-        tools:targetApi="31" >
-        <activity android:name=".ui.setting.alert.AlertSettingsActivity"
+        tools:targetApi="31">
+        <activity
+            android:name=".ui.setting.alert.AlertSettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
@@ -62,7 +64,7 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.SplashScreen.Aidex"
-            tools:ignore="LockedOrientationActivity" >
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -70,20 +72,20 @@
             </intent-filter>
         </activity>
         <activity
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
             android:name=".ui.main.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|uiMode|fontScale|fontWeightAdjustment|locale|keyboard|layoutDirection|density|navigation|smallestScreenSize|mcc|mnc|touchscreen"
-            android:exported="true" />
+            android:exported="true"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
-            android:exported="false"
             android:name=".ui.web.WebActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
         <activity
-            android:exported="false"
             android:name=".ui.setting.AboutActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
@@ -114,11 +116,17 @@
             android:exported="false"
             tools:ignore="LockedOrientationActivity" />
 
-        <activity android:name=".ui.main.bg.history.BloodGlucoseHistoryActivity"
+        <activity
+            android:name=".ui.main.bg.history.BloodGlucoseHistoryActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
-        <service android:name=".service.MainService" />
+
+        <service
+            android:name=".service.MainService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="aidex-main-service" />
 
         <provider
             android:name=".widget.CgmFileProvider"
@@ -130,6 +138,9 @@
                 android:resource="@xml/file_paths_public" />
         </provider>
 
+        <receiver
+            android:name=".service.TimeChangeReceiver"
+            android:exported="false" />
     </application>
 
 </manifest>

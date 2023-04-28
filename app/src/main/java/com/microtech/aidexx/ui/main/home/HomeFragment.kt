@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -17,7 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
@@ -69,16 +67,10 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
-        judgeState()
-        HomeStateManager.onHomeStateChange = {
-            replaceFragment(it)
-        }
-        HomeBackGroundSelector.instance().onLevelChange = { bg->
-            binding.homeRoot.setBackgroundResource(bg)
-        }
-        TransmitterManager.setOnTransmitterChangeListener {
-            judgeState()
-        }
+    }
+
+    fun showSn(sn: String) {
+        binding.tvSn.text = sn
     }
 
     override fun onResume() {
@@ -99,7 +91,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         binding = FragmentHomeBinding.inflate(layoutInflater)
         initView()
         initData()
@@ -111,12 +102,23 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY, true)
             }
         }
-
         initEvent()
         return binding.root
     }
 
     private fun initView() {
+        judgeState()
+        HomeStateManager.onHomeStateChange = {
+            replaceFragment(it)
+        }
+        HomeBackGroundSelector.instance().onLevelChange = { bg ->
+            binding.homeRoot.setBackgroundResource(bg)
+        }
+        TransmitterManager.setOnTransmitterChangeListener {
+            lifecycleScope.launch {
+                judgeState()
+            }
+        }
         binding.ivScale.setOnClickListener {
             orientation(switchOrientation)
         }
@@ -203,7 +205,12 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private fun judgeState() {
         val default = TransmitterManager.instance().getDefault()
-        if ((default != null && default.isPaired())) {
+        if (default != null) {
+            binding.tvSn.text = default.entity.deviceSn
+        } else {
+            binding.tvSn.text = ""
+        }
+        if (default != null && default.isPaired()) {
             replaceFragment(glucosePanel)
         } else {
             replaceFragment(needPair)

@@ -13,29 +13,18 @@ import kotlinx.coroutines.flow.flow
  *@author Hugh
  *@desc
  */
-fun <T> Flow<T>.throttle(thresholdMillis: Long): Flow<T> = flow {
-    var lastTime = 0L
-    collect { upstream ->
-        val currentTime = SystemClock.elapsedRealtime()
-        if (currentTime - lastTime >= thresholdMillis) {
-            lastTime = currentTime
-            emit(upstream)
-        }
-    }
-}
-
-fun View.clickFlow() = callbackFlow {
-    setOnClickListener { trySend(Unit).onFailure { e -> e?.printStackTrace() } }
-    awaitClose { setOnClickListener(null) }
-}
-
 class Throttle private constructor() {
     private var lastTimeMap = hashMapOf<Int, Long>()
 
     companion object {
+        private var instance: Throttle? = null
+
         @Synchronized
         fun instance(): Throttle {
-            return Throttle()
+            if (instance == null) {
+                instance = Throttle()
+            }
+            return instance!!
         }
     }
 

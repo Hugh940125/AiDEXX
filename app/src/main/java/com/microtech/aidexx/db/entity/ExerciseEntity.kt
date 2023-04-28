@@ -4,12 +4,10 @@ import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.utils.LanguageUnitManager
-import io.objectbox.annotation.Convert
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
+import io.objectbox.annotation.*
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.jvm.Transient
 
 
 @Entity
@@ -22,7 +20,7 @@ class ExerciseEntity : EventEntity {
     @Index
     override var state: Int = 0
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var id: String? = null
 
     @Index
@@ -31,7 +29,7 @@ class ExerciseEntity : EventEntity {
     @Index
     override var deleteStatus: Int = 0
 
-    @Index
+    @Index(type = IndexType.HASH)
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
 
     @Index
@@ -45,7 +43,7 @@ class ExerciseEntity : EventEntity {
     @Convert(converter = ExerciseDetailEntity::class, dbType = String::class)
     var relList: MutableList<ExerciseDetailEntity> = ArrayList()
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
 
     @Transient

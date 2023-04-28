@@ -21,7 +21,6 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="17dp"
             android:padding="8dp"
-            android:textColor="@color/event_unit_color"
             android:text="@string/btn_cancel" />
 
         <TextView

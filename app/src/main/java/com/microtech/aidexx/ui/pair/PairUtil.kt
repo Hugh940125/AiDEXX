@@ -1,6 +1,9 @@
 package com.microtech.aidexx.ui.pair
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
@@ -8,18 +11,24 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 object PairUtil {
+
+    private const val DISMISS_DIALOG = 1
+    private const val TIMEOUT_MILLIS = 60 * 1000L
+
+    val handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            Dialogs.dismissWait()
+        }
+    }
 
     private var isForceUnpair: Boolean = false
 
@@ -101,6 +110,7 @@ object PairUtil {
 
     fun startPair(context: Context, controllerInfo: BleControllerInfo) {
         Dialogs.showWait(context.getString(R.string.Searching))
+        handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val buildModel =
             TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
         buildModel.getController().pair()
@@ -110,6 +120,7 @@ object PairUtil {
     fun startUnpair(context: Context, isForce: Boolean) {
         isForceUnpair = isForce
         Dialogs.showWait(context.getString(R.string.Searching))
+        handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val model = TransmitterManager.instance().getDefault()
         model?.getController()?.clearPair()
     }

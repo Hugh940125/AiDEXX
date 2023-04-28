@@ -65,6 +65,9 @@ fun Long.millisToMinutes(): Int =
 fun Long.millisToSeconds(): Long =
     BigDecimal(this).divide(BigDecimal(1000), RoundingMode.HALF_UP).toLong()
 
+fun Long.millisToIntSeconds(): Int =
+    BigDecimal(this).divide(BigDecimal(1000), RoundingMode.HALF_UP).toInt()
+
 fun Long.millisToHours(): Int =
     BigDecimal(this).divide(BigDecimal(60 * 60 * 1000), RoundingMode.HALF_UP).toInt()
 

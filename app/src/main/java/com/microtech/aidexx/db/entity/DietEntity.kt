@@ -4,12 +4,9 @@ import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.utils.LanguageUnitManager
-import io.objectbox.annotation.Convert
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
+import io.objectbox.annotation.*
 import java.util.*
-import kotlin.collections.ArrayList
+import kotlin.jvm.Transient
 
 
 @Entity
@@ -17,6 +14,7 @@ class DietEntity : EventEntity {
 
     @Id
     override var idx: Long? = null
+
     @Index
     override var state: Int = 0
     override var id: String? = null
@@ -32,7 +30,7 @@ class DietEntity : EventEntity {
     @Index
     var mealTime: Date = Date()
 
-    @Index
+    @Index(type = IndexType.HASH)
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
     var mealRemark: String? = null
     var carbohydrate: Int? = null
@@ -45,7 +43,7 @@ class DietEntity : EventEntity {
     var relList: MutableList<DietDetailEntity> = ArrayList()
     var momentType: Int = 0
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
 
     @Transient
@@ -59,10 +57,12 @@ class DietEntity : EventEntity {
         }
 
     override var language: String = ""
+
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
-    constructor(mealRemark: String? = null, carbohydrate: Int? = null): this() {
+
+    constructor(mealRemark: String? = null, carbohydrate: Int? = null) : this() {
         this.mealRemark = mealRemark
         this.carbohydrate = carbohydrate
     }

@@ -30,12 +30,12 @@ class InsulinEntity : EventEntity {
     var injectionTime: Date = Date()
     var insulinName: String? = null
 
-    @Index
+    @Index(type = IndexType.HASH)
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
     var insulinDosage: Float? = null
     var isPreset: Boolean = false
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
 
     @Convert(converter = InsulinDetailEntity::class, dbType = String::class)

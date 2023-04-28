@@ -16,22 +16,21 @@ object LanguageUnitManager {
         val dmyhmFormat: SimpleDateFormat,
         val monthDayDateFormat: SimpleDateFormat,
     ) {
-
-        LANGUAGE_EN(
-            0,
-            "en-US",
-            SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-            SimpleDateFormat("HH:mm", Locale.ENGLISH),
-            SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-            SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        ),
         LANGUAGE_CN(
-            1,
+            0,
             "zh-cn",
             SimpleDateFormat("yyyy/MM/dd", Locale.CHINA),
             SimpleDateFormat("HH:mm", Locale.CHINA),
             SimpleDateFormat("yyyy/MM/dd H:mm", Locale.CHINA),
             SimpleDateFormat("MM/dd", Locale.CHINA),
+        ),
+        LANGUAGE_EN(
+            1,
+            "en-US",
+            SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
+            SimpleDateFormat("HH:mm", Locale.ENGLISH),
+            SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
+            SimpleDateFormat("dd/MM", Locale.ENGLISH),
         )
     }
 

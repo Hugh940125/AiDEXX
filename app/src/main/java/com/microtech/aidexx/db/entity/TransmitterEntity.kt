@@ -1,5 +1,6 @@
 package com.microtech.aidexx.db.entity
 
+import com.microtech.aidexx.common.millisToIntSeconds
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -51,9 +52,7 @@ class TransmitterEntity {
 
     fun startTimeToIndex(): Int {
         if (sensorStartTime == null) return 0
-        val instance = Calendar.getInstance()
-        instance.time = sensorStartTime!!
-        return instance.get(Calendar.SECOND)
+        return sensorStartTime?.time?.millisToIntSeconds() ?: 0
     }
 
     override fun toString(): String {

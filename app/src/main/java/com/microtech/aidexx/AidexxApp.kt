@@ -8,11 +8,13 @@ import android.view.Display
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
+import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.CrashHandler
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
+import com.tencent.mars.xlog.Log
+import com.tencent.mars.xlog.Xlog
 import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +22,7 @@ import kotlinx.coroutines.MainScope
 import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
+    var activityStack = mutableListOf<Activity>()
     private var activityAliveCount: AtomicInteger = AtomicInteger(0)
 
     companion object {
@@ -44,13 +47,59 @@ class AidexxApp : Application() {
     }
 
     private fun initSdks() {
+        initXlog()
         AlertUtil.init(this)
+        ContextUtil.init(this)
         MMKV.initialize(this)
         ObjectBox.init(this)
         DialogX.init(this)
         AidexBleAdapter.init(this)
         BleController.setBleAdapter(AidexBleAdapter.getInstance())
         AidexBleAdapter.getInstance().setDiscoverCallback()
+    }
+
+    private fun initXlog() {
+        val cacheDays = 15
+        val namePrefix = "AiDEX"
+        System.loadLibrary("c++_shared")
+        System.loadLibrary("marsxlog")
+        val root = externalCacheDir?.absolutePath
+        val logPath = "$root/aidex/log"
+        val cachePath = "${this.filesDir}/xlog"
+        val logConfig = Xlog.XLogConfig()
+        logConfig.mode = Xlog.AppednerModeAsync
+        logConfig.logdir = logPath
+        logConfig.nameprefix = namePrefix
+        logConfig.pubkey = ""
+        logConfig.compressmode = Xlog.ZLIB_MODE
+        logConfig.compresslevel = 0
+        logConfig.cachedir = cachePath
+        logConfig.cachedays = cacheDays
+        val xlog = Xlog()
+        Log.setLogImp(xlog)
+        if (ProcessUtil.isMainProcess(this)) {
+            if (BuildConfig.DEBUG) {
+                Log.setConsoleLogOpen(true)
+                Log.appenderOpen(
+                    Xlog.LEVEL_DEBUG,
+                    Xlog.AppednerModeAsync,
+                    "",
+                    logPath,
+                    namePrefix,
+                    0
+                )
+            } else {
+                Log.setConsoleLogOpen(false)
+                Log.appenderOpen(
+                    Xlog.LEVEL_DEBUG,
+                    Xlog.AppednerModeAsync,
+                    "",
+                    logPath,
+                    namePrefix,
+                    cacheDays
+                )
+            }
+        }
     }
 
     fun isDisplayOn(): Boolean {
@@ -72,7 +121,10 @@ class AidexxApp : Application() {
 
     private val activityLifecycleCallbacks: ActivityLifecycleCallbacks =
         object : ActivityLifecycleCallbacks {
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                activityStack.add(activity)
+            }
+
             override fun onActivityStarted(activity: Activity) {
                 activityAliveCount.incrementAndGet()
             }
@@ -84,6 +136,8 @@ class AidexxApp : Application() {
             }
 
             override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
-            override fun onActivityDestroyed(activity: Activity) {}
+            override fun onActivityDestroyed(activity: Activity) {
+                activityStack.remove(activity)
+            }
         }
 }

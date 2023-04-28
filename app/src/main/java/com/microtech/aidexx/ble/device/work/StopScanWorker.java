@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.microtech.aidexx.ble.AidexBleAdapter;
 import com.microtech.aidexx.utils.LogUtil;
 import com.microtechmd.blecomm.controller.BleController;
 
@@ -18,8 +19,8 @@ public class StopScanWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        LogUtil.eAiDEX("WorkManager stop scan");
-        BleController.stopScan();
+        LogUtil.eAiDEX("Stop ble scan");
+        AidexBleAdapter.getInstance().executeStopScan();
         return Result.success();
     }
 }

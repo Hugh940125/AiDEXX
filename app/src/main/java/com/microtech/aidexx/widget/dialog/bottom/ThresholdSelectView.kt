@@ -31,6 +31,6 @@ class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onV
             dismiss()
         }
         setKeyBackCancelable(true)
-        setOutSideCancelable(false)
+        setOutSideCancelable(true)
     }
 }

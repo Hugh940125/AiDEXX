@@ -1,6 +1,9 @@
 package com.microtech.aidexx.utils
 
+import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.db.entity.AlertSettingsEntity
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
+import kotlinx.coroutines.launch
 
 object ThresholdManager {
 
@@ -17,20 +20,33 @@ object ThresholdManager {
     const val FAST_UP = 0.11
     const val SUPER_FAST_UP = 0.17
 
+    lateinit var alertSetting: AlertSettingsEntity
+
+    init {
+        AidexxApp.mainScope.launch {
+            alertSetting = AlertUtil.getAlertSettings()
+        }
+    }
+
     var hyper: Float = 0f
         set(value) {
             AlertUtil.setHyperThreshold(value)
         }
         get() {
-            field = AlertUtil.getAlertSettings().hyperThreshold
+            if (this::alertSetting.isInitialized) {
+                field = alertSetting.hyperThreshold
+            }
             return field
         }
+
     var hypo: Float = 0f
         set(value) {
             AlertUtil.setHypoThreshold(value)
         }
         get() {
-            field = AlertUtil.getAlertSettings().hypoThreshold
+            if (this::alertSetting.isInitialized) {
+                field = alertSetting.hypoThreshold
+            }
             return field
         }
 }

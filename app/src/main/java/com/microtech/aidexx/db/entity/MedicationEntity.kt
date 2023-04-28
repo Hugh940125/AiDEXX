@@ -28,11 +28,11 @@ class MedicationEntity :
     @Index
     override var deleteStatus: Int = 0
 
-    @Index
+    @Index(type = IndexType.HASH)
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
     var takenTime: Date = Date()
 
-    @Index
+    @Index(type = IndexType.HASH)
     var medicineName: String? = null
 
 //    @Uid(499736593101406176L)
@@ -44,7 +44,7 @@ class MedicationEntity :
     var relList: MutableList<MedicationDetailEntity> = ArrayList()
     var momentType: Int = 0
 
-    @Index
+    @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
 
     override var recordId: String? = null
