@@ -5,7 +5,7 @@ import android.content.Context
 import android.widget.RemoteViews
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithLowAndHigh
+import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
 
 class ForegroundServiceNotification(
     val context: Context,

@@ -37,6 +37,7 @@ open class SaveAndInitResourceIdTxtTask: DefaultTask() {
         println("$tag $msg")
     }
 
+
     @TaskAction
     fun justDoIt() {
         logI("开始生成public.txt buildType=${buildType.name} flavor=$flavorName")
@@ -104,7 +105,7 @@ open class SaveAndInitResourceIdTxtTask: DefaultTask() {
         if (!ret.first) {
             logE("public.txt文件生成失败：${ret.second}")
         } else {
-            val distPublicTxtFile = project.file("$distDir/public.txt")
+            val distPublicTxtFile = project.file("$distDir/${applicationVariant.applicationId}-public.txt")
             Files.copy(targetPublicTxtFile.toPath(), distPublicTxtFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             logI("public.txt 文件生成成功 ${targetPublicTxtFile.absolutePath}")
         }

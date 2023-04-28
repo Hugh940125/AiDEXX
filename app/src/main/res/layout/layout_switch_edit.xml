@@ -27,13 +27,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
-        android:button="@drawable/bt_switch_selector"
         android:checked="true"
-        android:thumb="@null"
+        android:thumb="@drawable/switch_thumb"
         app:layout_constraintBottom_toBottomOf="@id/switch_edit_title"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/switch_edit_title"
-        app:track="@null" />
+        app:track="@drawable/switch_track" />
 
     <TextView
         android:id="@+id/edit_item_info"

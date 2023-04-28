@@ -133,13 +133,13 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
             if (account.isEmpty()) {
                 ToastUtil.showShort(getString(R.string.account_empty))
             } else {
-                login(account, code, LOGIN_TYPE_VER_CODE)
+                login(account, "", code, LOGIN_TYPE_VER_CODE)
             }
         } else {
             if (account.isEmpty() || password.isEmpty()) {
                 ToastUtil.showShort(getString(R.string.email_password_empty))
             } else {
-                login(account, EncryptUtils.md5(password), LOGIN_TYPE_PWD)
+                login(account, EncryptUtils.md5(password), "", LOGIN_TYPE_PWD)
             }
         }
     }
@@ -148,7 +148,7 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
      * @param name 手机号或者邮箱
      * @param type 1-验证码登录 2-密码登录
      */
-    private fun login(name: String, pwdOrCode: String, @LoginType type: Int) {
+    private fun login(name: String, password: String, verCode: String, @LoginType type: Int) {
         if (!NetUtil.isNetAvailable(this)) {
             ToastUtil.showShort(getString(R.string.net_error))
             return
@@ -156,7 +156,7 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         Dialogs.showWait(getString(R.string.Login_loging))
 
         lifecycleScope.launch {
-            viewModel.login(name, pwdOrCode, type).collect {
+            viewModel.login(name, password, verCode, type).collect {
                 Dialogs.dismissWait()
                 when (it.first) {
                     1 -> Dialogs.showWait("假装正在-"+getString(R.string.download_data))

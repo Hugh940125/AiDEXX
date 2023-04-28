@@ -4,6 +4,7 @@ import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.LOGIN_TYPE_EMAIL_VER_CODE
 import com.microtech.aidexx.common.LOGIN_TYPE_PWD
 import com.microtech.aidexx.common.LOGIN_TYPE_VER_CODE
 import com.microtech.aidexx.common.LoginType
@@ -12,6 +13,7 @@ import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.AccountRepository
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_.type
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
@@ -49,11 +51,12 @@ class AccountViewModel : BaseViewModel() {
     /**
      * @param type
      */
-    fun login(name: String, pwdOrCode: String, @LoginType type: Int) = flow {
+    fun login(name: String, password: String = "", verCode: String = "", @LoginType type: Int) = flow {
 
         val apiResult = when (type) {
-            LOGIN_TYPE_VER_CODE -> AccountRepository.loginOrRegisterByVerificationCodeWithPhone(name, pwdOrCode)
-            LOGIN_TYPE_PWD -> AccountRepository.loginByPassword(name, pwdOrCode)
+            LOGIN_TYPE_VER_CODE -> AccountRepository.loginOrRegisterByVerificationCodeWithPhone(name, verCode)
+            LOGIN_TYPE_PWD -> AccountRepository.loginByPassword(name, password)
+            LOGIN_TYPE_EMAIL_VER_CODE -> AccountRepository.registerByVerificationCodeWithEmail(name, verCode, password)
             else -> null
         }
 
@@ -183,6 +186,15 @@ class AccountViewModel : BaseViewModel() {
     fun startCountDown() {
         countDownTimer.start()
     }
+
+    suspend fun sendRegisterEmailVerificationCode(phone: String): Boolean =
+        when (AccountRepository.sendRegisterEmailVerificationCode(phone)) {
+            is ApiResult.Success -> {
+                countDownTimer.start()
+                true
+            }
+            is ApiResult.Failure -> false
+        }
 
     override fun onCleared() {
         super.onCleared()

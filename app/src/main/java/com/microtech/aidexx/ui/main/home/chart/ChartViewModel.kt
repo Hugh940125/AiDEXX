@@ -45,7 +45,7 @@ import com.microtech.aidexx.widget.chart.dataset.CalDataSet
 import com.microtech.aidexx.widget.chart.dataset.CurrentGlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.IconDataSet
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseValue
+import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -467,35 +467,19 @@ class ChartViewModel: ViewModel() {
                 || History.HISTORY_CALIBRATION == cgm.eventType )
                 && (cgm.eventData != null && cgm.eventWarning != -1)
 
-    private fun initBgSet(bgs: List<BloodGlucoseEntity>) {
-        LogUtils.error("initBgSet")
-        bgSet.clear()
-        addBgSet(bgs)
-    }
-
     /**
      * 新增指血数据
      */
     private fun addBgSet(bgs: List<BloodGlucoseEntity>) {
         for (bg in bgs) {
             val dateTime = ChartUtil.dateToX(bg.testTime)
-            val entry = getGlucoseEntity(dateTime, bg)
+            val entry = Entry(dateTime, getGlucoseValue(bg))
             entry.data = bg
             entry.icon = BgDataSet.icon
             bgSet.addEntryOrdered(entry)
             xMaxMin(dateTime)
             calDateMaxMin(bg.testTime)
         }
-    }
-
-    private fun getGlucoseEntity(
-        dateTime: Float,
-        bg: BloodGlucoseEntity,
-    ): Entry {
-        return Entry(
-            dateTime,
-            getGlucoseValue(bg)
-        )
     }
 
     private fun getGlucoseValue(bg: BloodGlucoseEntity): Float {

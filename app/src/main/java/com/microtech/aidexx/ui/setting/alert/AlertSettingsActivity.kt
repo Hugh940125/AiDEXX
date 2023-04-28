@@ -11,7 +11,7 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.widget.SettingItemWidget
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.bottom.ThresholdSelectView
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.ruler.RulerWidget
 import kotlinx.coroutines.launch
 

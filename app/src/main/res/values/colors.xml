@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <color name="main_bg">#F6F6F6</color>
+
     <color name="gray_cf">#cfcfcf</color>
     <color name="green_7400">#007400</color>
     <color name="green_65">#70BD65</color>

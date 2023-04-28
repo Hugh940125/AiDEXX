@@ -39,7 +39,15 @@ const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordP
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
 const val getFollowers = "http://192.168.222.26:5555/backend/aidex/follows"
+//gp
+const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
+const val registerByVerificationCodeWithEmail = "$USER_URL/registerByVerificationCodeWithEmail"
+const val sendUpdatePasswordEmailVerificationCode = "$USER_URL/sendUpdatePasswordEmailVerificationCode"
 // endregion
+
+//region 版本升级
+const val getAppVersionList = "$middleUrl/appVersionControl/v2/getAppVersionList" //APP版本升级检查
+//endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
@@ -48,9 +56,7 @@ const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CGM_RECORD = "$middleUrl/cgm-record" //上传CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
 const val CGM_LIST_RECENT = "$middleUrl/cgm-record/list-recent"
-
 const val vcsMiddleUrl = "backend/vcs"
-const val CHECK_APP_UPDATE = "$vcsMiddleUrl/version/getAppConfig" //APP版本升级检查
 const val LOG_UPLOAD = "$vcsMiddleUrl/log/uploadLog" //上传日志
 
 interface ApiService {
@@ -77,11 +83,30 @@ interface ApiService {
 
     @POST(resetPasswordByVerificationCode)
     suspend fun resetPasswordByVerificationCode(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
+
     @GET(getFollowers)
     suspend fun getFollowers(): ApiResult<BaseResponse<BaseList<ShareUserEntity>>>
 
+    //gp-start
+    @GET(sendRegisterEmailVerificationCode)
+    suspend fun sendRegisterEmailVerificationCode(@Query("email") email: String): ApiResult<BaseResponse<String>>
+    @POST(registerByVerificationCodeWithEmail)
+    suspend fun registerByVerificationCodeWithEmail(@Body body: ReqEmailRegister): ApiResult<BaseResponse<ResLogin>>
+    @GET(sendUpdatePasswordEmailVerificationCode)
+    suspend fun sendUpdatePasswordEmailVerificationCode(@Query("email") email: String): ApiResult<BaseResponse<String>>
+    //gp-end
     //endregion
 
+    //region 版本升级
+    @GET(getAppVersionList)
+    suspend fun checkAppUpdate(
+        @Query("appId") appId: String,
+        @Query("project") project: String = "aidex",
+        @Query("os") os: String = "android",
+        @Query("appVersion") appVersion: String = BuildConfig.VERSION_NAME,
+        @Query("resourceVersion") resourceVersion: String = "",
+    ): ApiResult<BaseResponse<UpgradeInfo>>
+    //endregion
 
 
 
@@ -109,13 +134,6 @@ interface ApiService {
 
     @POST(API_DEVICE_UNREGISTER)
     suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>
-
-    @GET(BuildConfig.updateUrl + CHECK_APP_UPDATE)
-    suspend fun checkAppUpdate(
-        @Query("appId") appId: String,
-        @Query("project") project: String = "aidex",
-        @Query("os") os: String = "android"
-    ): ApiResult<AppUpdateInfo>
 
     @Streaming
     @GET

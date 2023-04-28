@@ -10,6 +10,8 @@ import android.view.View
 import com.microtech.aidexx.IntentKey
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.web.WebActivity
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 const val WELCOME = 1
 const val LOGIN = 2
@@ -153,6 +155,23 @@ object StringUtils {
 
         //MyLog.debug_s("setupVer: "+setupVer+",onLineVer="+onLineVer);
         return onLineVer.toInt() > setupVer.toInt()
+    }
+
+    /**
+     * 验证邮箱地址是否正确
+     * @param email
+     * @return
+     */
+    fun checkEmail(email: String?): Boolean {
+        return try {
+            val check =
+                "^\\s*\\w+(?:\\.{0,1}[\\w-]+)*@[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*\\.[a-zA-Z]+\\s*$"
+            val regex: Pattern = Pattern.compile(check)
+            val matcher: Matcher = regex.matcher(email)
+            matcher.matches()
+        } catch (e: Exception) {
+            false
+        }
     }
 
 }

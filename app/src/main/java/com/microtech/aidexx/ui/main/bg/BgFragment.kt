@@ -39,8 +39,8 @@ import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.util.fromGlucoseValue
-import com.microtech.aidexx.widget.dialog.lib.util.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.fromGlucoseValue
+import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.time.TimePicker
 import com.microtechmd.blecomm.constant.AidexXOperation

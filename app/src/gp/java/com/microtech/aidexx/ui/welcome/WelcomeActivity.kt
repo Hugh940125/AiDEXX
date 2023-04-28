@@ -1,21 +1,20 @@
 package com.microtech.aidexx.ui.welcome
 
+import android.content.Intent
 import android.os.Bundle
-import android.os.UserManager
-import android.view.View
-import androidx.lifecycle.lifecycleScope
+import androidx.core.view.isVisible
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityWelcomeBinding
 import com.microtech.aidexx.ui.account.LoginActivity
+import com.microtech.aidexx.ui.account.RegisterActivity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.lib.DialogX
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 
@@ -34,10 +33,10 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
     }
 
     private fun initView() {
-        val appFirstLaunch = MmkvManager.isAppFirstLaunch()
-        if (appFirstLaunch) {
-            binding.viewAgreeProtocal.visibility = View.VISIBLE
+        if (MmkvManager.isAppFirstLaunch()) {
+            binding.viewAgreeProtocal.isVisible = true
             binding.viewAgreeProtocal.onClick = {
+                binding.viewAgreeProtocal.isVisible = false
                 MmkvManager.saveAppLaunched()
                 greenLight()
             }
@@ -51,8 +50,16 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
             ActivityUtil.toActivity(this, MainActivity::class.java)
             finish()
         } else {
-            ActivityUtil.toActivity(this, LoginActivity::class.java)
-            finish()
+            binding.apply {
+                buttonLogin.setOnClickListener {
+                    startActivity(Intent(this@WelcomeActivity, LoginActivity::class.java))
+                }
+                buttonRegist.setOnClickListener {
+                    startActivity(Intent(this@WelcomeActivity, RegisterActivity::class.java))
+                }
+                buttonLogin.isVisible = true
+                buttonRegist.isVisible = true
+            }
         }
     }
 

@@ -25,4 +25,11 @@ data class ReqChangePWD(
     val code: String
 ): ReqEntity()
 
+data class ReqEmailRegister(
+    val email: String,
+    /** 小写32位MD5值 */
+    val password: String,
+    val code: String
+): ReqEntity()
+
 //endregion

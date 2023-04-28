@@ -44,11 +44,74 @@ android {
     aaptOptions {
         File publicTxtFile = project.rootProject.file('app/dist/public.txt')
         if (publicTxtFile.exists()) {
-            project.logger.info "${publicTxtFile} exists, apply it."
+            project.logger.error "${publicTxtFile} exists, apply it."
             aaptOptions.additionalParameters "--stable-ids", "${publicTxtFile.absolutePath}"
         } else {
             project.logger.error "${publicTxtFile} not exists"
 //            aaptOptions.additionalParameters "--emit-ids", "${publicTxtFile.absolutePath}"
+        }
+    }
+
+    flavorDimensions "AREA", "BRAND", "GLUCOSE_UNIT"
+    productFlavors {
+        cn {
+            dimension "AREA"
+        }
+        gp {
+            dimension "AREA"
+        }
+
+
+        medmmoltrust {
+            dimension "BRAND"
+            applicationIdSuffix ".medmmoltrust"
+        }
+        medmgtrust {
+            dimension "BRAND"
+            applicationIdSuffix ".medmgtrust"
+        }
+        aidex {
+            dimension "BRAND"
+        }
+
+
+        cnmg {
+            dimension "GLUCOSE_UNIT"
+        }
+        mg {
+            dimension "GLUCOSE_UNIT"
+            applicationIdSuffix ".mg"
+        }
+        mmol {
+            dimension "GLUCOSE_UNIT"
+            applicationIdSuffix ".mmol"
+        }
+    }
+
+    variantFilter { variant ->
+        def flavors = variant.flavors
+
+        def area = flavors[0].name
+        def brand = flavors[1].name
+        def unit = flavors[2].name
+
+        if (area == "cn") {
+            //只保留cn aidex mg版本
+            setIgnore(brand != "aidex" || unit != "cnmg")
+        } else {
+            // gp 没有cnmg版本
+            if (unit == "cnmg") {
+                setIgnore(true)
+            }
+            if (brand == "medmmoltrust") {
+                if (unit == "mg") {
+                    setIgnore(true)
+                }
+            } else if (brand == "medmgtrust") {
+                if (unit == "mmol") {
+                    setIgnore(true)
+                }
+            }
         }
     }
 

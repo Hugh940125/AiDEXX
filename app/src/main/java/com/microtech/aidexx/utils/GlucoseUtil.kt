@@ -1,9 +1,7 @@
-package com.microtech.aidexx.widget.dialog.lib.util
+package com.microtech.aidexx.utils
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.utils.ThresholdManager
-import com.microtech.aidexx.utils.UnitManager
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
