@@ -39,40 +39,41 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
             tvShare.setOnClickListener {
                 startActivity(Intent(this@SettingActivity, ShareFollowActivity::class.java))
             }
-        val default = TransmitterManager.instance().getDefault()
-        binding.clSettingHeader.background =
-            ContextCompat.getDrawable(
-                this, if (ThemeManager.theme.index == 0)
-                    R.drawable.bg_setting_header_light else R.drawable.bg_setting_header_dark
-            )
-        binding.ivSettingBack.setOnClickListener { finish() }
-        binding.settingTrans.setValue(default?.entity?.deviceSn ?: "")
-        binding.settingTrans.setOnClickListener {
-            startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
-        }
-        binding.settingAlert.setOnClickListener {
-            startActivity(Intent(this@SettingActivity, AlertSettingsActivity::class.java))
-        }
-        binding.settingUnit.setValue(UnitManager.glucoseUnit.text)
-        binding.settingUnit.setOnClickListener {
-            Dialogs.Picker(this).singlePick(units, UnitManager.glucoseUnit.index) {
-                binding.settingUnit.setValue(units[it])
-                UnitManager.glucoseUnit = UnitManager.getUnitByIndex(it)
+            val default = TransmitterManager.instance().getDefault()
+            clSettingHeader.background =
+                ContextCompat.getDrawable(
+                    this@SettingActivity, if (ThemeManager.theme.index == 0)
+                        R.drawable.bg_setting_header_light else R.drawable.bg_setting_header_dark
+                )
+            ivSettingBack.setOnClickListener { finish() }
+            settingTrans.setValue(default?.entity?.deviceSn ?: "")
+            settingTrans.setOnClickListener {
+                startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
             }
-        }
-        val themes = listOf(getString(R.string.theme_light), getString(R.string.theme_dark))
-        binding.settingTheme.setValue(themes[ThemeManager.theme.index])
-        binding.settingTheme.setOnClickListener {
-            Dialogs.Picker(this).singlePick(themes, ThemeManager.theme.index) {
-                binding.settingTheme.setValue(themes[it])
-                ThemeManager.theme = ThemeManager.themeByIndex(it)
-                for (activity in AidexxApp.instance.activityStack) {
-                    activity.recreate()
+            settingAlert.setOnClickListener {
+                startActivity(Intent(this@SettingActivity, AlertSettingsActivity::class.java))
+            }
+            settingUnit.setValue(UnitManager.glucoseUnit.text)
+            settingUnit.setOnClickListener {
+                Dialogs.Picker(this@SettingActivity).singlePick(units, UnitManager.glucoseUnit.index) {
+                    settingUnit.setValue(units[it])
+                    UnitManager.glucoseUnit = UnitManager.getUnitByIndex(it)
                 }
             }
-        }
-        binding.settingAbout.setOnClickListener {
-            startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
+            val themes = listOf(getString(R.string.theme_light), getString(R.string.theme_dark))
+            settingTheme.setValue(themes[ThemeManager.theme.index])
+            settingTheme.setOnClickListener {
+                Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.theme.index) {
+                    settingTheme.setValue(themes[it])
+                    ThemeManager.theme = ThemeManager.themeByIndex(it)
+                    for (activity in AidexxApp.instance.activityStack) {
+                        activity?.recreate()
+                    }
+                }
+            }
+            settingAbout.setOnClickListener {
+                startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
+            }
         }
     }
 

@@ -30,15 +30,14 @@ import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.parser.*
-import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.kotlin.equal
-import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -224,28 +223,21 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         entity.deviceModel = model
         entity.version = version
         entity.deviceName = controller?.name
-        entity.deviceSn?.let {
-            val existTrans = ObjectBox.store.awaitCallInTx {
-                transmitterBox!!.query()
-                    .equal(
-                        TransmitterEntity_.deviceSn, it,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                    .build()
-                    .findFirst()
-            }
-            if (existTrans != null) {
-                entity.eventIndex = existTrans.eventIndex
-                entity.fullEventIndex = existTrans.fullEventIndex
-                entity.id = existTrans.id
-                entity.idx = existTrans.idx
-            }
-            targetEventIndex = entity.eventIndex
-            nextEventIndex = entity.eventIndex + 1
-            nextFullEventIndex = entity.fullEventIndex + 1
-        }
-        //向服务器请求注册设备
-        when (val apiResult = ApiService.instance.deviceRegister(entity)) {
+        entity.accessId = controller?.id
+        val map = hashMapOf<String, Any?>()
+        map["deviceModel"] = model
+        map["sensorId"] = entity.sensorId
+        map["sensorStartUp"] = entity.sensorStartTime
+        map["startUpTimeZone"] = TimeUtils.getTimeZoneId()
+        map["sensorIndex"] = entity.startTimeToIndex()
+        map["deviceSn"] = entity.deviceSn
+        map["deviceMac"] = entity.deviceMac
+        map["deviceKey"] = entity.encryptionKey
+        map["registerTime"] = Date()
+        map["et"] = entity.et
+        val apiResult = ApiService.instance.deviceRegister(map)
+        Dialogs.dismissWait()
+        when (apiResult) {
             is ApiResult.Success -> {
                 apiResult.result.run {
                     this.data?.let {
@@ -254,21 +246,18 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         entity.eventIndex = it.eventIndex
                         entity.fullEventIndex = it.fullEventIndex
                     }
-                    entity.accessId = controller?.id
-                    targetEventIndex = entity.eventIndex
-                    nextEventIndex = entity.eventIndex + 1
-                    nextFullEventIndex = entity.fullEventIndex + 1
                     ObjectBox.runAsync({
-                        transmitterBox!!.removeAll()
                         transmitterBox!!.put(entity)
                     }, {
                         TransmitterManager.instance().set(this@TransmitterModel)
                         EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, true)
+                    }, {
+                        EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
                     })
                 }
             }
             is ApiResult.Failure -> {
-                EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, true)
+                EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
             }
         }
     }
@@ -640,7 +629,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             if (historyEntity.isHighOrLow()) {
                                 when {
                                     historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
-                                        if (AlertUtil.getAlertSettings().isHyperEnable) {
+                                        if (alertSetting?.isHyperEnable == true) {
                                             if (lastHyperAlertTime == null) {
                                                 lastHyperAlertTime = getLastAlertTime(
                                                     deviceId, userId, typeHyperAlert

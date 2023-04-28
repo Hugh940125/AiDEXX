@@ -22,7 +22,7 @@ import kotlinx.coroutines.MainScope
 import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
-    var activityStack = mutableListOf<Activity>()
+    var activityStack = mutableListOf<Activity?>()
     private var activityAliveCount: AtomicInteger = AtomicInteger(0)
 
     companion object {

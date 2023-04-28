@@ -1,6 +1,8 @@
 package com.microtech.aidexx.db.entity
 
 import com.microtech.aidexx.common.millisToIntSeconds
+import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -26,6 +28,11 @@ class TransmitterEntity {
     var accessId: ByteArray? = null
     var encryptionKey: ByteArray? = null
     var sensorStartTime: Date? = null //开始时间
+        set(value) {
+            field = value
+            val startTime = startTimeToIndex().toString()
+            sensorId = EncryptUtils.md5(startTime + UserInfoManager.instance().userId() + startTime)
+        }
     var needReplace = false
     var deviceModel: Int = 0
     var expirationTime: Int = 15
@@ -43,6 +50,7 @@ class TransmitterEntity {
     var et: Int = 0
     var deviceName: String? = null
     var deviceType: Int = TYPE_X
+    var sensorId: String? = null
 
     constructor()
 

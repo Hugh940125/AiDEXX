@@ -20,7 +20,7 @@
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
         "org.gradle.jvm.environment": "standard-jvm",
-        "org.gradle.jvm.version": 17,
+        "org.gradle.jvm.version": 11,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-api",
         "org.jetbrains.kotlin.platform.type": "jvm"
@@ -30,10 +30,10 @@
           "name": "aidexPlugin-1.0.0.jar",
           "url": "aidexPlugin-1.0.0.jar",
           "size": 40112,
-          "sha512": "61c51615b186e0ac9e90dab515e1b5c44c6c20f1ac1110c374da639dd3b0f542411a101868455a0a3db3151333d17dbac33c56804b1654c3aa873b7995e26f10",
-          "sha256": "10653e0a6eec93c3bbe35d1db91b6463f9eca6c28e2fd5f618017f384c09a5f5",
-          "sha1": "b6d9a57ea455cc13c1df8e5e34edd3dc0b7b34d5",
-          "md5": "8f118965a16211362de2cf65ae85106d"
+          "sha512": "3cb9c1e3b94349d579979b980a959aca83c604648831dc8478da5c267ac0ed9430923aa2012578d34c19640d82c6f3339a2a7d8db3e8e83a290eec7633d23e2d",
+          "sha256": "962e6110e09ca10355e2e22330524c0ff7f570ff3b9c05e8389a96d5afba3b37",
+          "sha1": "9b86be89f70a8907655880a5477186478f20b7d2",
+          "md5": "fd3ec7589abfff501def2a06d25dc02f"
         }
       ]
     },
@@ -43,7 +43,7 @@
         "org.gradle.category": "library",
         "org.gradle.dependency.bundling": "external",
         "org.gradle.jvm.environment": "standard-jvm",
-        "org.gradle.jvm.version": 17,
+        "org.gradle.jvm.version": 11,
         "org.gradle.libraryelements": "jar",
         "org.gradle.usage": "java-runtime",
         "org.jetbrains.kotlin.platform.type": "jvm"
@@ -62,10 +62,10 @@
           "name": "aidexPlugin-1.0.0.jar",
           "url": "aidexPlugin-1.0.0.jar",
           "size": 40112,
-          "sha512": "61c51615b186e0ac9e90dab515e1b5c44c6c20f1ac1110c374da639dd3b0f542411a101868455a0a3db3151333d17dbac33c56804b1654c3aa873b7995e26f10",
-          "sha256": "10653e0a6eec93c3bbe35d1db91b6463f9eca6c28e2fd5f618017f384c09a5f5",
-          "sha1": "b6d9a57ea455cc13c1df8e5e34edd3dc0b7b34d5",
-          "md5": "8f118965a16211362de2cf65ae85106d"
+          "sha512": "3cb9c1e3b94349d579979b980a959aca83c604648831dc8478da5c267ac0ed9430923aa2012578d34c19640d82c6f3339a2a7d8db3e8e83a290eec7633d23e2d",
+          "sha256": "962e6110e09ca10355e2e22330524c0ff7f570ff3b9c05e8389a96d5afba3b37",
+          "sha1": "9b86be89f70a8907655880a5477186478f20b7d2",
+          "md5": "fd3ec7589abfff501def2a06d25dc02f"
         }
       ]
     }

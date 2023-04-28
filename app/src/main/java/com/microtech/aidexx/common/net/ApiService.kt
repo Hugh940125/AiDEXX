@@ -49,7 +49,7 @@ const val sendUpdatePasswordEmailVerificationCode = "$USER_URL/sendUpdatePasswor
 const val getAppVersionList = "$middleUrl/appVersionControl/v2/getAppVersionList" //APP版本升级检查
 //endregion
 
-const val API_DEVICE_REGISTER = "$middleUrl/cgm-device/register" //注册设备
+const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
 const val DEVICE = "$middleUrl/cgn-device" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
@@ -130,7 +130,7 @@ interface ApiService {
     suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
 
     @POST(API_DEVICE_REGISTER)
-    suspend fun deviceRegister(@Body entity: TransmitterEntity): ApiResult<BaseResponse<TransmitterEntity>>
+    suspend fun deviceRegister(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<TransmitterEntity>>
 
     @POST(API_DEVICE_UNREGISTER)
     suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>

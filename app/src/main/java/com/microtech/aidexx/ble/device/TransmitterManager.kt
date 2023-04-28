@@ -7,6 +7,7 @@ import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity_
+import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder

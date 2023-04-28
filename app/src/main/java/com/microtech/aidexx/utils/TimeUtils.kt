@@ -33,4 +33,8 @@ object TimeUtils {
 
     fun Date.dateHourMinute(pattern: String = "MM-dd HH:mm"): String? =
         SimpleDateFormat(pattern, Locale.getDefault()).format(this)
+
+    fun getTimeZoneId(): String? {
+        return TimeZone.getDefault().id
+    }
 }

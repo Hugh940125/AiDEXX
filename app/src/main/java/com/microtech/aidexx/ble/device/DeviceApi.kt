@@ -15,44 +15,6 @@ import kotlinx.coroutines.withContext
  */
 object DeviceApi : BaseApi() {
 
-    suspend fun deviceRegister(
-        entity: TransmitterEntity,
-        success: ((entity: TransmitterEntity?) -> Unit)? = null,
-        failure: (() -> Unit)? = null
-    ) = withContext(dispatcher) {
-        when(val apiResult = ApiService.instance.deviceRegister(entity)){
-            is ApiResult.Success -> {
-                apiResult.result.run {
-                    success?.invoke(this.data)
-                }
-            }
-            is ApiResult.Failure -> {
-                apiResult.msg.run {
-                    failure?.invoke()
-                }
-            }
-        }
-    }
-
-    suspend fun deviceUnregister(
-        map: HashMap<String, String>,
-        success: ((entity: TransmitterEntity) -> Unit)? = null,
-        failure: ((msg: String) -> Unit)? = null
-    ) = withContext(dispatcher) {
-        when (val apiResult = ApiService.instance.deviceUnregister(map)) {
-            is ApiResult.Success -> {
-                apiResult.result.run {
-                    success?.invoke(this)
-                }
-            }
-            is ApiResult.Failure -> {
-                apiResult.msg.run {
-                    failure?.invoke(this)
-                }
-            }
-        }
-    }
-
     suspend fun getDevice(
         success: ((info: BaseResponse<TransmitterEntity>) -> Unit)? = null,
         failure: (() -> Unit)? = null
