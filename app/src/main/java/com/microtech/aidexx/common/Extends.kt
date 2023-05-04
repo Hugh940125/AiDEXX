@@ -105,20 +105,6 @@ fun Float.toGlucoseString2(): String {
     }
 }
 
-fun Float.toGlucoseValue(): Float {
-    return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this * 18f
-    }
-}
-
-fun Float.fromGlucoseValue(): Float {
-    return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this / 18
-    }
-}
-
 fun String.convertPointer(): String {
     val POINTER =
         DecimalFormatSymbols.getInstance(LocalManageUtil.getSetLanguageLocale(AidexxApp.instance)).decimalSeparator.toString()

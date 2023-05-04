@@ -268,9 +268,8 @@ class GlucoseChart : MyChart {
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
 
-        // 血糖高低区间设置
-        gridBackgroundStart = extraParams?.lowerLimit() ?: 0f
-        gridBackgroundEnd = extraParams?.upperLimit() ?: 0f
+        updateYaxisMaxMin()
+        updateGlucoseStartEndValue()
 
         data.notifyDataChanged()
         notifyDataSetChanged()
@@ -321,8 +320,31 @@ class GlucoseChart : MyChart {
         setDrawGridBackground(true)
         val color = ThemeManager.getTypeValue(context, R.attr.bgHomeGlucose)
         setGridBackgroundColor(color)
+        updateGlucoseStartEndValue()
+    }
+
+    /**
+     * 更新血糖阈值区间
+     */
+    private fun updateGlucoseStartEndValue(){
         gridBackgroundStart = extraParams?.lowerLimit() ?: 0f
         gridBackgroundEnd = extraParams?.upperLimit() ?: 0f
+    }
+
+    /**
+     * 更新y轴最大最小值
+     */
+    private fun updateYaxisMaxMin() {
+        when (UnitManager.glucoseUnit) {
+            UnitManager.GlucoseUnit.MMOL_PER_L -> {
+                axisRight.axisMinimum = 0f
+                axisRight.axisMaximum = 30f
+            }
+            UnitManager.GlucoseUnit.MG_PER_DL -> {
+                axisRight.axisMinimum = 0f
+                axisRight.axisMaximum = 600f
+            }
+        }
     }
 
     private fun initChartAxisX() {
@@ -379,16 +401,8 @@ class GlucoseChart : MyChart {
         val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
         yAxis.gridColor = color
         yAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART)
-        when (UnitManager.glucoseUnit) {
-            UnitManager.GlucoseUnit.MMOL_PER_L -> {
-                yAxis.axisMinimum = 0f
-                yAxis.axisMaximum = 30f
-            }
-            UnitManager.GlucoseUnit.MG_PER_DL -> {
-                yAxis.axisMinimum = 0f
-                yAxis.axisMaximum = 600f
-            }
-        }
+
+        updateYaxisMaxMin()
 
         yAxis.setLabelCount(6, true)
 //        yAxis.granularity = 5f

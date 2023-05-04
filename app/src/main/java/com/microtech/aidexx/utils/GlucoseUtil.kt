@@ -13,6 +13,13 @@ fun Float.toGlucoseValue(): Float {
     }
 }
 
+fun Float.fromGlucoseValue(): Float {
+    return when (UnitManager.glucoseUnit) {
+        UnitManager.GlucoseUnit.MMOL_PER_L -> this
+        UnitManager.GlucoseUnit.MG_PER_DL -> this / 18
+    }
+}
+
 fun Float.toCgatInt(): String {
     return BigDecimal("${this.toGlucoseValue()}").setScale(0, RoundingMode.DOWN).toPlainString()
 }
@@ -31,13 +38,6 @@ fun Double.toGlucoseValue(): Double {
     return when (UnitManager.glucoseUnit) {
         UnitManager.GlucoseUnit.MMOL_PER_L -> this
         UnitManager.GlucoseUnit.MG_PER_DL -> this * 18
-    }
-}
-
-fun Float.fromGlucoseValue(): Float {
-    return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this / 18
     }
 }
 

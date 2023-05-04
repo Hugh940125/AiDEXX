@@ -12,6 +12,7 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -148,7 +149,7 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
             return@checkPermissions
         }
         mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-        mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, 15 * 1000)
+        mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, (if (BuildConfig.DEBUG) 150L else 15L) * 1000)
     }
 
     private fun initView() {

@@ -3,11 +3,11 @@ package com.microtech.aidexx.db.entity
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.common.toGlucoseValue
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
 import io.objectbox.annotation.*

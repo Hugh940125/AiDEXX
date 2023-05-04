@@ -13,7 +13,6 @@ import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.AccountRepository
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_.type
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
