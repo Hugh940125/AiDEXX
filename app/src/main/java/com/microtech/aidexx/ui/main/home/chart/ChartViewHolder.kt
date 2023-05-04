@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
@@ -32,9 +33,7 @@ class ChartViewHolder(
     private val chartViewModel: ChartViewModel by fragment.viewModels(ownerProducer = { fragment.requireActivity() })
 
     init {
-
         vb.run {
-
             touchView.setOnTouchListener { _, event ->
                 touchView.performClick()
                 if (MyAnimatedZoomJob.animators > 0) true
@@ -100,8 +99,17 @@ class ChartViewHolder(
                 launch {
                     chartViewModel.granularityFlow.collectLatest {
                         it?.let {
+                            // 重建后恢复之前的选中tab
+                            homeTimeTab.changeWithoutTabChangeListener(when(it){
+                                MyChart.G_HALF_DAY -> 1
+                                MyChart.G_ONE_DAY -> 2
+                                else -> 0
+                            })
                             chart.updateGranularity(it)
-                            chart.notifyChanged()
+                            // 重建了后 viewModel中granular不为null
+                            if (chart.data != null) {
+                                chart.notifyChanged()
+                            }
                         }
                     }
                 }

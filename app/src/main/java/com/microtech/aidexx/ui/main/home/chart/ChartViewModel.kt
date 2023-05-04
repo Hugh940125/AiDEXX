@@ -69,7 +69,7 @@ class ChartViewModel: ViewModel() {
     /**
      * 图表数据总集
      */
-    private val combinedData = CombinedData()
+    private lateinit var combinedData: CombinedData
 
     private val currentSet = CurrentGlucoseDataSet()
     private val glucoseSets: MutableList<LineDataSet> = CopyOnWriteArrayList()
@@ -145,8 +145,15 @@ class ChartViewModel: ViewModel() {
     /**
      * 首次 加载第一页数据
      */
-    fun initData() = flow {
+    fun initData(needReloadData: Boolean = false) = flow {
 
+        if (::combinedData.isInitialized && !needReloadData) {
+            emit(combinedData)
+            return@flow
+        }
+        if (!::combinedData.isInitialized) {
+            combinedData = CombinedData()
+        }
         val latestOne = CgmCalibBgRepository.queryCgmLatestOne(UserInfoManager.getCurShowUserId()) //"f03550ef07a7b2164f06deaef597ce37"
         val cgmMaxDate = latestOne?.let {
             it.deviceTime
@@ -202,7 +209,7 @@ class ChartViewModel: ViewModel() {
     fun reload() {
         reset()
         viewModelScope.launch {
-            initData().collect()
+            initData(true).collect()
         }
     }
 
