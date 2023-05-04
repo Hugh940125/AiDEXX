@@ -75,7 +75,7 @@ android {
         }
 
 
-        cnmg {
+        mgmo {
             dimension "GLUCOSE_UNIT"
         }
         mg {
@@ -97,10 +97,10 @@ android {
 
         if (area == "cn") {
             //只保留cn aidex mg版本
-            setIgnore(brand != "aidex" || unit != "cnmg")
+            setIgnore(brand != "aidex" || unit != "mgmo")
         } else {
             // gp 没有cnmg版本
-            if (unit == "cnmg") {
+            if (unit == "mgmo") {
                 setIgnore(true)
             }
             if (brand == "medmmoltrust") {
