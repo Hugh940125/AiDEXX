@@ -46,7 +46,7 @@ const val sendUpdatePasswordEmailVerificationCode = "$USER_URL/sendUpdatePasswor
 // endregion
 
 //region 版本升级
-const val getAppVersionList = "$middleUrl/appVersionControl/v2/getAppVersionList" //APP版本升级检查
+const val getAppVersionList = "$middleUrl/appVersionControl/v2/passCheckToken/getAppVersionList" //APP版本升级检查
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备

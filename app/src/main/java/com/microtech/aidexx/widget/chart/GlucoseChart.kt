@@ -268,6 +268,10 @@ class GlucoseChart : MyChart {
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
 
+        // 血糖高低区间设置
+        gridBackgroundStart = extraParams?.lowerLimit() ?: 0f
+        gridBackgroundEnd = extraParams?.upperLimit() ?: 0f
+
         data.notifyDataChanged()
         notifyDataSetChanged()
 

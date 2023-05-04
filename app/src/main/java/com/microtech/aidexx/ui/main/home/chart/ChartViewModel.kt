@@ -209,7 +209,9 @@ class ChartViewModel: ViewModel() {
     fun reload() {
         reset()
         viewModelScope.launch {
-            initData(true).collect()
+            initData(true).collect {
+                mDataChangedFlow.emit(ChartChangedInfo(timeMin, true))
+            }
         }
     }
 
@@ -376,12 +378,12 @@ class ChartViewModel: ViewModel() {
         return ChartUtil.secondToX(Date().time / 1000) + xMargin()
     }
 
-    var upperLimit = 12f.toGlucoseValue()
+    var upperLimit = ThresholdManager.DEFAULT_HYPER.toGlucoseValue()
         get() {
             return ThresholdManager.hyper.toGlucoseValue()
         }
         private set
-    var lowerLimit = 4f.toGlucoseValue()
+    var lowerLimit = ThresholdManager.DEFAULT_HYPO.toGlucoseValue()
         get() {
             return ThresholdManager.hypo.toGlucoseValue()
         }

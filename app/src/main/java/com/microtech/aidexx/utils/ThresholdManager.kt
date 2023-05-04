@@ -28,8 +28,12 @@ object ThresholdManager {
         }
     }
 
-    var hyper: Float = 0f
+    var hyper: Float = DEFAULT_HYPER
         set(value) {
+            if (value == field) {
+                return
+            }
+            alertSetting.hyperThreshold = value
             AlertUtil.setHyperThreshold(value)
         }
         get() {
@@ -39,8 +43,12 @@ object ThresholdManager {
             return field
         }
 
-    var hypo: Float = 0f
+    var hypo: Float = DEFAULT_HYPO
         set(value) {
+            if (value == field) {
+                return
+            }
+            alertSetting.hypoThreshold = value
             AlertUtil.setHypoThreshold(value)
         }
         get() {

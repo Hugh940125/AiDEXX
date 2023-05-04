@@ -8,6 +8,8 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivitySettingsAlertBinding
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.SettingItemWidget
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.bottom.ThresholdSelectView
@@ -31,6 +33,7 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
 
     private lateinit var listOfMethod: List<String>
     private lateinit var listOfFrequency: List<String>
+    private var isHypChanged = false
 
     override fun getViewBinding(): ActivitySettingsAlertBinding {
         return ActivitySettingsAlertBinding.inflate(layoutInflater)
@@ -222,13 +225,21 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
     private fun initEvent() {
         binding.hypoThreshold.setOnClickListener {
             val hypoSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPO) {
-                binding.hypoThreshold.setValue(it)
+                if (it != ThresholdManager.hypo) {
+                    ThresholdManager.hypo = it
+                    binding.hypoThreshold.setValue(it.toGlucoseStringWithUnit())
+                    isHypChanged = true
+                }
             }
             hypoSelectView.show()
         }
         binding.hyperThreshold.setOnClickListener {
             val hyperSelectView = ThresholdSelectView(this, RulerWidget.RulerType.HYPER) {
-                binding.hyperThreshold.setValue(it)
+                if (it != ThresholdManager.hyper) {
+                    ThresholdManager.hyper = it
+                    binding.hyperThreshold.setValue(it.toGlucoseStringWithUnit())
+                    isHypChanged = true
+                }
             }
             hyperSelectView.show()
         }
@@ -247,6 +258,13 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
             initView()
             initEvent()
             needInit = false
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (isHypChanged) {
+            EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
         }
     }
 }

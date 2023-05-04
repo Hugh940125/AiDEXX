@@ -19,4 +19,7 @@ object EventBusKey {
 
     /** 切换查看用户 */
     const val EVENT_SWITCH_USER: String = "EVENT_SWITCH_USER"
+
+    /** 血糖阈值变动 */
+    const val EVENT_HYP_CHANGE: String = "EVENT_HYP_CHANGE"
 }
