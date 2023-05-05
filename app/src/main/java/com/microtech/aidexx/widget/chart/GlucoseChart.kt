@@ -27,7 +27,7 @@ import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 import kotlin.math.roundToInt
 
 /**
@@ -268,6 +268,10 @@ class GlucoseChart : MyChart {
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
 
+        // 如果初始化比较慢 新来的数据优先调到这里
+        if (data == null) {
+            return
+        }
         updateYaxisMaxMin()
         updateGlucoseStartEndValue()
 

@@ -36,6 +36,7 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
@@ -45,14 +46,12 @@ import com.microtech.aidexx.widget.chart.dataset.CalDataSet
 import com.microtech.aidexx.widget.chart.dataset.CurrentGlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.IconDataSet
-import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -118,7 +117,7 @@ class ChartViewModel: ViewModel() {
             startLoadNextPage.collect {
                 if (it) {
                     LogUtil.d("===CHART===开始加载下一页")
-                    var needNotify = true
+                    var needNotify: Boolean
                     withContext(Dispatchers.IO) {
                         var maxTime = Date(curPageMinDate.time - 1000) // ob between是前闭后闭
                         val curMinTime = getCurPageStartDate(curPageMinDate.time)

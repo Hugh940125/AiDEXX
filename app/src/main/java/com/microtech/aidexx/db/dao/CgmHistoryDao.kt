@@ -8,7 +8,7 @@ import com.microtechmd.blecomm.constant.History
 import io.objectbox.kotlin.boxFor
 import io.objectbox.kotlin.equal
 import io.objectbox.query.QueryBuilder.StringOrder
-import java.util.*
+import java.util.Date
 
 object CgmHistoryDao {
 
@@ -47,5 +47,10 @@ object CgmHistoryDao {
                 .orderDesc(RealCgmHistoryEntity_.deviceTime)
                 .build()
                 .findFirst()
+        }
+
+    suspend fun insert(list: List<RealCgmHistoryEntity>) =
+        awaitCallInTx {
+            box.put(list)
         }
 }

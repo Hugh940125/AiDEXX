@@ -2,16 +2,16 @@ package com.microtech.aidexx.common.user
 
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.common.net.entity.ResUserInfo
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.UserEntity_
 import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.kotlin.awaitCallInTx
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -103,6 +103,15 @@ class UserInfoManager {
         entity.phoneNumber = content.phone
         entity.emailAddress = content.email
         entity.avatar = content.avatar
+
+        this@UserInfoManager.entity?.let {
+            it.id = entity.id
+            it.phoneNumber = entity.phoneNumber
+            it.emailAddress = entity.emailAddress
+            it.avatar = entity.emailAddress
+        } ?:let {
+            this@UserInfoManager.entity = entity
+        }
 
         AccountDbRepository.saveUser(entity)?.let {
             updateUserId(content.userId)

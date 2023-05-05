@@ -17,7 +17,7 @@
         android:id="@+id/share_nav"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/bg_container_color"
+        android:background="@color/transparent"
         app:lib_pub_stab_avag="true"
         app:lib_pub_stab_indicatorColor="@color/light_colorAccent"
         app:lib_pub_stab_indicatorPadding="37dp"

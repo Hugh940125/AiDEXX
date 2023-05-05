@@ -49,6 +49,12 @@ const val sendUpdatePasswordEmailVerificationCode = "$USER_URL/sendUpdatePasswor
 const val getAppVersionList = "$middleUrl/appVersionControl/v2/passCheckToken/getAppVersionList" //APP版本升级检查
 //endregion
 
+//region 数据事件相关
+const val CGM_URL = "$middleUrl/cgmRecord"
+const val getCgmRecordsByPageInfo =  "$CGM_URL/getCgmRecordsByPageInfo"
+//endregion
+
+
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
 const val DEVICE = "$middleUrl/cgn-device" //获取设备
@@ -108,7 +114,11 @@ interface ApiService {
     ): ApiResult<BaseResponse<UpgradeInfo>>
     //endregion
 
+    //region 数据事件相关
+    @GET(getCgmRecordsByPageInfo)
+    suspend fun getCgmRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
 
+    //endregion
 
     @GET("$CGM_LIST_RECENT?{params}")
     suspend fun getRecentHistories(@Path("params") params: String)

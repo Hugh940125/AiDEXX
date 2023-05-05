@@ -14,30 +14,25 @@ class HeaderInterceptor : Interceptor {
 
         val original = chain.request()
         var newRequest = original.newBuilder()
-        val method = original.method
-        if (method.equals("get", ignoreCase = true)) { //Get请求
-            val newUrl = original.url.newBuilder()
-                .addQueryParameter("pageSize", "200")
-                .addQueryParameter("sortOrder", "DESC")
-                .build()
-            newRequest = newRequest.url(newUrl)
-        }
+
         if (BuildConfig.isPre) {
             newRequest.header("version", "test")
         }
         val token = MmkvManager.getToken()
-        val select = 0
         if (token.isNotEmpty()) {
             newRequest.header("x-token", token) //添加公共请求头
         }
         newRequest.header("version", "watch-code")
         newRequest.header("encryption", if (BuildConfig.enableEncrypt) "enabled" else "disable")
         newRequest.header("app-info", "${BuildConfig.APPLICATION_ID},${BuildConfig.VERSION_NAME}")
+
+        val select = 0 // todo 多语言
         when (select) {
             0 -> newRequest.header("Accept-Language", "zh-cn")
             1 -> newRequest.header("Accept-Language", "en-US")
             else -> newRequest.header("Accept-Language", "zh-cn")
         }
+
         return chain.proceed(newRequest.build())
     }
 }
