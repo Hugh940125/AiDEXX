@@ -6,9 +6,9 @@ public class AidexXRawHistoryEntity {
     public float i1;
     public float i2;
     public float vc;
-    public boolean isValid;
+    public int isValid;
 
-    public AidexXRawHistoryEntity(int timeOffset, float i1, float i2, float vc, boolean isValid) {
+    public AidexXRawHistoryEntity(int timeOffset, float i1, float i2, float vc, int isValid) {
         this.timeOffset = timeOffset;
         this.i1 = i1;
         this.i2 = i2;

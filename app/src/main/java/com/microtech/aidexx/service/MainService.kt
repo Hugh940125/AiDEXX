@@ -20,6 +20,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.data.CloudHistorySync
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.LogUtil
@@ -136,7 +137,7 @@ class MainService : Service(), LifecycleOwner {
             override fun run() {
                 count++
                 if (count % 3 == 0) {
-
+                    CloudHistorySync
                 }
                 if (count % 4 == 0) {
 

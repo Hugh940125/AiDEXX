@@ -2,16 +2,16 @@ package com.microtech.aidexx.common.user
 
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.common.net.entity.ResUserInfo
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.UserEntity_
 import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.kotlin.awaitCallInTx
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -20,11 +20,11 @@ import kotlinx.coroutines.withContext
  *@desc 用户信息管理
  */
 class UserInfoManager {
-    private var entity: UserEntity? = null
+    private var userEntity: UserEntity? = null
 
     init {
         AidexxApp.mainScope.launch {
-            entity = ObjectBox.store.awaitCallInTx {
+            userEntity = ObjectBox.store.awaitCallInTx {
                 ObjectBox.userBox!!.query().orderDesc(UserEntity_.idx)
                     .build().findFirst()
             }
@@ -35,16 +35,20 @@ class UserInfoManager {
 
         var shareUserInfo: ShareUserEntity? = null
 
-        private val INSTANCE = UserInfoManager()
+        private var INSTANCE: UserInfoManager? = null
 
+        @Synchronized
         fun instance(): UserInfoManager {
-            return INSTANCE
+            if (INSTANCE == null){
+                INSTANCE = UserInfoManager()
+            }
+            return INSTANCE!!
         }
 
         /**
          * 获取当前展示的用户id 自己的或者共享中的用户
          */
-        fun getCurShowUserId() = shareUserInfo?.id ?: INSTANCE.userId()
+        fun getCurShowUserId() = shareUserInfo?.id ?: instance().userId()
     }
 
     suspend fun loadUserInfo() {
@@ -52,7 +56,7 @@ class UserInfoManager {
     }
 
     fun userId(): String {
-        return entity?.id ?: ""
+        return userEntity?.id ?: ""
     }
 
     fun updateUserId(id: String) {
@@ -94,7 +98,7 @@ class UserInfoManager {
         } ?: UserEntity()
     }
 
-    suspend fun onUserLogin(content: ResUserInfo): Long = withContext(Dispatchers.IO){
+    suspend fun onUserLogin(content: ResUserInfo): Long = withContext(Dispatchers.IO) {
         var entity = AccountDbRepository.getUserInfoByUid(content.userId!!)
         if (entity == null) {
             entity = UserEntity()

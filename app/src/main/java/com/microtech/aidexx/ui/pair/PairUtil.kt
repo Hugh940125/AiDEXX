@@ -119,7 +119,7 @@ object PairUtil {
 
     fun startUnpair(context: Context, isForce: Boolean) {
         isForceUnpair = isForce
-        Dialogs.showWait(context.getString(R.string.Searching))
+        Dialogs.showWait(context.getString(R.string.Connecting))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val model = TransmitterManager.instance().getDefault()
         model?.getController()?.clearPair()

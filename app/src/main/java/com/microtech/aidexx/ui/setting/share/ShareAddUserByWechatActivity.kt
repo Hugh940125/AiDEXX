@@ -19,6 +19,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityShareAddUserByWechatBinding
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.widget.dialog.lib.WaitDialog
 import kotlinx.coroutines.launch
@@ -55,7 +56,7 @@ class ShareAddUserByWechatActivity :
                 android.util.Base64.decode(img.toByteArray(), android.util.Base64.NO_WRAP)
             return BitmapFactory.decodeByteArray(dec, 0, dec.size)
         } catch (e: Exception) {
-            LogUtils.eAiDex("二维码解析错误：${e.printStackTrace()}")
+            LogUtil.eAiDEX("${e.printStackTrace()}")
         }
         return null
     }

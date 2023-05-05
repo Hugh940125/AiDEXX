@@ -190,7 +190,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
                     val a = RealCgmHistoryEntity()
                     a.deviceTime = Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60*10))
-                    a.eventData = (i % 36).toFloat()
+                    a.glucose = (i % 36).toFloat()
                     a.eventType = History.HISTORY_GLUCOSE
 
                     EventBusManager.send(EventBusKey.EVENT_CGM_DATA_CHANGED, CgmDataChangedInfo(

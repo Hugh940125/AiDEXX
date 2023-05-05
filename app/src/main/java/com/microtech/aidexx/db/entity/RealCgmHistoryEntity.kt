@@ -16,9 +16,11 @@ import kotlin.jvm.Transient
 
 @Entity
 class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
-
     @Id(assignable = true)
     override var idx: Long? = null
+    var briefUploadState = 0 //0原始转态 1更新待上传 2已上传
+    var rawUploadState = 0
+    var calUploadState = 0
 
     @Index
     override var state: Int = 0
@@ -26,6 +28,13 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     @Index(type = IndexType.HASH)
     var deviceSn: String? = null
+    var cgmRecordId: String? = null
+
+    @Index(type = IndexType.HASH)
+    var sensorId: String? = null
+
+    @Index(type = IndexType.HASH)
+    var userId: String? = null
 
     @Index
     var deviceTime = Date()
@@ -45,13 +54,25 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index
     override var deleteStatus: Int = 0
     var eventType: Int = History.HISTORY_INVALID
-    var eventData: Float? = null
-    var eventDataOrgin: Float? = null
-    var calFactor: Float = 1f //校准系数
-    var calOffset: Float = 0f //校准偏移量
+    var glucose: Float? = null
+    var eventDataOrigin: Float? = null
+    var cf: Float = 1f //校准系数
+    var offset: Float = 0f //校准偏移量
+    var calibrationIsValid: Int = 0
+    var index: Int = 0
+    var rawIsValid: Int = 0
+    var glucoseIsValid: Int = 0
+    var quality: Int = 0
+    var status: Int = 0
+    var autoIncrementColumn: Int = 0
+    var timeOffset: Int = 0
+    var rawOne: Float? = null
+    var rawTwo: Float? = null
+    var rawVc: Float? = null
 
     @Index
     var eventWarning: Int = 0  //0默认 1高血糖 2低血糖
+    var referenceGlucose: Float = 0f
 
     @Index(type = IndexType.HASH)
     var deviceId: String? = null
@@ -61,17 +82,18 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     override var createTime: Date = Date()
 
     @Transient
+    var updateTime: Date = Date()
+
+    @Transient
     override var language: String = ""
 
     @Index(type = IndexType.HASH)
     override var authorizationId: String? = null
-
     override var recordId: String? = null
 
     @Index(type = IndexType.HASH)
     @Unique(onConflict = ConflictStrategy.REPLACE)
-    var recordUuid: String? = null
-
+    var frontRecordId: String? = null
     fun updateRecordUUID(): String {
         val userID = UserInfoManager.instance().userId();
         val deviceId = TransmitterManager.instance().getDefault()?.deviceId()
@@ -102,7 +124,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     }
 
     override fun _setEventValue(eventValue: Float) {
-        this.eventData = eventValue
+        this.glucose = eventValue
     }
 
     var rawData1: Float? = null
@@ -161,24 +183,24 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
         return when (eventWarning) {
             History.HISTORY_LOCAL_HYPER -> res.getString(
                 R.string.hyper_description,
-                eventData?.toGlucoseValue()
+                glucose?.toGlucoseValue()
             ) + UnitManager.glucoseUnit.text
             History.HISTORY_LOCAL_HYPO -> res.getString(
                 R.string.hypo_description,
-                eventData?.toGlucoseValue()
+                glucose?.toGlucoseValue()
             ) + UnitManager.glucoseUnit.text
             History.HISTORY_BLOOD_GLUCOSE -> res.getString(
                 R.string.bg_description,
-                eventData?.toGlucoseValue()
+                glucose?.toGlucoseValue()
             ) + UnitManager.glucoseUnit.text
             0 -> when (eventType) {
                 History.HISTORY_HYPER -> res.getString(
                     R.string.hyper_description,
-                    eventData?.toGlucoseValue()
+                    glucose?.toGlucoseValue()
                 ) + UnitManager.glucoseUnit.text
                 History.HISTORY_HYPO -> res.getString(
                     R.string.hypo_description,
-                    eventData?.toGlucoseValue()
+                    glucose?.toGlucoseValue()
                 ) + UnitManager.glucoseUnit.text
                 else -> ""
             }
@@ -187,7 +209,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     }
 
     fun isHighOrLow(): Boolean {
-        eventData?.let {
+        glucose?.let {
             if (it > ThresholdManager.hyper) {
                 return true
             } else if (it < ThresholdManager.hypo) {
@@ -200,9 +222,9 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     fun isHighOrLowGlucose(): Boolean {
         val model = TransmitterManager.instance().getDefault()
         if (model != null) {
-            if (eventData!! > ThresholdManager.hyper) {
+            if (glucose!! > ThresholdManager.hyper) {
                 return true
-            } else if (eventData!! < ThresholdManager.hypo) {
+            } else if (glucose!! < ThresholdManager.hypo) {
                 return true
             }
         }
@@ -211,11 +233,11 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
 
     fun getHighOrLowGlucoseType(): Int {
-        if (eventData!! > ThresholdManager.hyper * 18) {
+        if (glucose!! > ThresholdManager.hyper * 18) {
             return 2
-        } else if (eventData!! < ThresholdManager.hypo * 18 && eventData!! >= ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.hypo * 18 && glucose!! >= ThresholdManager.URGENT_HYPO * 18) {
             return 1
-        } else if (eventData!! < ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.URGENT_HYPO * 18) {
             return 3
         }
         return 0
@@ -224,17 +246,17 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     fun updateEventWarning() {
         eventWarning = History.HISTORY_LOCAL_NORMAL
-        if (eventData!! > ThresholdManager.hyper * 18) {
+        if (glucose!! > ThresholdManager.hyper * 18) {
             eventWarning = History.HISTORY_LOCAL_HYPER
-        } else if (eventData!! < ThresholdManager.hypo * 18 && eventData!! >= ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.hypo * 18 && glucose!! >= ThresholdManager.URGENT_HYPO * 18) {
             eventWarning = History.HISTORY_LOCAL_HYPO
-        } else if (eventData!! < ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.URGENT_HYPO * 18) {
             eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
         }
     }
 
     override fun toString(): String {
-        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, eventData=$eventData, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, recordUuid=$recordUuid, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
+        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, glucose=$glucose, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, frontRecordId=${this.frontRecordId}, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
     }
 
 }

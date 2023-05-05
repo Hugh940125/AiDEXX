@@ -30,7 +30,6 @@ class HeaderInterceptor : Interceptor {
         if (token.isNotEmpty()) {
             newRequest.header("x-token", token) //添加公共请求头
         }
-        newRequest.header("version", "watch-code")
         newRequest.header("encryption", if (BuildConfig.enableEncrypt) "enabled" else "disable")
         newRequest.header("app-info", "${BuildConfig.APPLICATION_ID},${BuildConfig.VERSION_NAME}")
         when (select) {
