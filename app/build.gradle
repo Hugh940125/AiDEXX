@@ -170,6 +170,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.13.2'
     implementation 'com.flyco.roundview:FlycoRoundView_Lib:1.1.4@aar'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 }
 
 apply plugin: 'io.objectbox'

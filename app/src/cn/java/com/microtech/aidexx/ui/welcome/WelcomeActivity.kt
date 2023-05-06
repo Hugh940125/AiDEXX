@@ -30,6 +30,8 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
     }
 
     private fun initView() {
+//        binding.buttonRegist.isVisible = true
+//        binding.buttonLogin.isVisible = true
         if (MmkvManager.isAppFirstLaunch()) {
             binding.viewAgreeProtocal.isVisible = true
             binding.viewAgreeProtocal.onClick = {
@@ -40,6 +42,11 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
         } else {
             greenLight()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.viewAgreeProtocal.removeClick()
     }
 
     private fun greenLight() {

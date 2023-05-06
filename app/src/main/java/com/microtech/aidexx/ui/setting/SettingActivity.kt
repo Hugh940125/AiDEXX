@@ -24,6 +24,12 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
         initView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val default = TransmitterManager.instance().getDefault()
+        binding.settingTrans.setValue(default?.entity?.deviceSn ?: "")
+    }
+
     private fun initView() {
         binding.apply {
             ivSettingBack.setOnClickListener { finish() }
@@ -39,14 +45,12 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
             tvShare.setOnClickListener {
                 startActivity(Intent(this@SettingActivity, ShareFollowActivity::class.java))
             }
-            val default = TransmitterManager.instance().getDefault()
             clSettingHeader.background =
                 ContextCompat.getDrawable(
                     this@SettingActivity, if (ThemeManager.theme.index == 0)
                         R.drawable.bg_setting_header_light else R.drawable.bg_setting_header_dark
                 )
             ivSettingBack.setOnClickListener { finish() }
-            settingTrans.setValue(default?.entity?.deviceSn ?: "")
             settingTrans.setOnClickListener {
                 startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
             }

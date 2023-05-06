@@ -4,8 +4,9 @@ import com.microtechmd.blecomm.entity.AidexXDatetimeEntity;
 import com.microtechmd.blecomm.entity.NewSensorEntity;
 
 public class AidexXController extends BleControllerProxy {
+
     static {
-        System.loadLibrary("blecomm-lib");
+        new Thread(() -> System.loadLibrary("blecomm-lib"));
     }
 
     private static class SingletonHolder{

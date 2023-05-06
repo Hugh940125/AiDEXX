@@ -62,8 +62,7 @@
         android:layout_marginBottom="24dp"
         android:text="@string/login"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/button_regist"
-        />
+        app:layout_constraintBottom_toTopOf="@+id/button_regist" />
 
     <com.microtech.aidexx.widget.button.StateButton
         android:id="@+id/button_regist"
@@ -75,8 +74,7 @@
         android:layout_marginRight="30dp"
         android:text="@string/Button_Register"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-         />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <com.microtech.aidexx.ui.welcome.UserAgreeView
         android:id="@+id/view_agree_protocal"

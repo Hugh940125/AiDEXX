@@ -80,6 +80,10 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         }
     }
 
+    fun removeDiscoverCallback() {
+        onDeviceDiscover = null
+    }
+
     private val scanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
