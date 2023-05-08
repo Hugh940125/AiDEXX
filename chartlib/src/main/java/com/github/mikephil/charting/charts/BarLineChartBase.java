@@ -47,6 +47,11 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
         extends Chart<T> implements BarLineScatterCandleBubbleDataProvider {
 
     /**
+     * 是否需要画lineDataSets中的value和icon
+     */
+    public boolean needDrawLineDataSetValuesAndIcons = true;
+
+    /**
      * the maximum number of entries to which values will be drawn
      * (entry numbers greater than this value will cause value-labels to disappear)
      */

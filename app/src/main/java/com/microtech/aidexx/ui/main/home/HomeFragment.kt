@@ -37,11 +37,10 @@ import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
-import kotlin.time.Duration.Companion.seconds
+import kotlin.concurrent.fixedRateTimer
 
 /**
  *@date 2023/2/15
@@ -185,17 +184,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         lifecycleScope.launch {
             withContext(Dispatchers.IO){
 
-                for (i in 0..100) {
-                    delay(2.seconds)
-
+                fixedRateTimer("", false, 0, 60 * 1000) {
                     val a = RealCgmHistoryEntity()
-                    a.deviceTime = Date(Date().time - (1000 * 60 * 60 * 6) + (i * 1000 * 60*10))
-                    a.eventData = (i % 36).toFloat()
+                    a.deviceTime = Date()
+                    a.eventData = (13 + ((a.deviceTime.time % 10) - 5)).toFloat()
                     a.eventType = History.HISTORY_GLUCOSE
 
                     EventBusManager.send(EventBusKey.EVENT_CGM_DATA_CHANGED, CgmDataChangedInfo(
                         DataChangedType.ADD, listOf(a)))
-
                 }
 
             }

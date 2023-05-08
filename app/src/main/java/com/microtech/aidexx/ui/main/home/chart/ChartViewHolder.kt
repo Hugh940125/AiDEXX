@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
@@ -86,8 +85,9 @@ class ChartViewHolder(
                 }
 
                 override fun onToEndLeft() {
-                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                    LogUtils.debug(TAG,"===CHART===onToEndLeft do=$ret")
+                    LogUtils.debug(TAG,"===CHART===onToEndLeft ")
+                    chartViewModel.applyNextPageData()
+//                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
                 }
 
                 override fun onToEndRight() {

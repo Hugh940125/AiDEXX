@@ -22,13 +22,13 @@ import com.microtech.aidexx.common.dateAndTimeHour
 import com.microtech.aidexx.common.toGlucoseString2
 import com.microtech.aidexx.db.entity.EventEntity
 import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.Date
-import kotlin.math.roundToInt
 
 /**
  * Home页中的图表
@@ -129,12 +129,14 @@ class GlucoseChart : MyChart {
         initBackground()
         initChartAxisX()
         initChartAxisY()
+
+        needDrawLineDataSetValuesAndIcons = false
+
         minOffset = 0f
         extraTopOffset = 10f
         extraBottomOffset = 21f
         extraLeftOffset = 10f
         extraRightOffset = 10f
-        mMaxVisibleCount = 2000
 
         description.isEnabled = false
         description.textColor = textColor!!
@@ -272,9 +274,9 @@ class GlucoseChart : MyChart {
         if (data == null) {
             return
         }
+        LogUtil.d("===CHART===  highestVisibleX=${highestVisibleX} max=${xAxis.axisMaximum} min=${xAxis.axisMinimum}")
         updateYaxisMaxMin()
         updateGlucoseStartEndValue()
-
         data.notifyDataChanged()
         notifyDataSetChanged()
 
@@ -292,18 +294,27 @@ class GlucoseChart : MyChart {
     }
 
     private fun isAtLatestPosition(highestVisibleX: Float): Boolean {
-        val cur = (highestVisibleX * 1000).roundToInt().toFloat() / 1000
-        val max = (xChartMax * 1000).roundToInt().toFloat() / 1000
-        return cur >= max
+        return highestVisibleX >= xChartMax
     }
 
     private fun refresh() {
         touchable = false
+
+        val curMin = xAxis.axisMinimum
+        val curRange = visibleXRange
+        val targetX = highestVisibleX - curRange
+
         xAxis.axisMaximum = extraParams?.xMax() ?: 0f
         xAxis.axisMinimum = extraParams?.xMin() ?: 0f
         visibleXRange = extraParams?.xRange() ?: 0f
 //        visibleXRange = extraParams?.xRange() ?: 0f // should zoom twice
-        autoScaleY()
+
+        LogUtil.d("===CHART=== tar=$targetX hi=$highestVisibleX  cr=$curRange rang=$visibleXRange max=${xAxis.axisMaximum} curmin=$curMin min=${xAxis.axisMinimum}")
+
+        // 保持当前位置
+        moveViewToX(targetX)
+        delayAutoScaleY(100)
+
     }
 
     private fun refreshAndMove() {

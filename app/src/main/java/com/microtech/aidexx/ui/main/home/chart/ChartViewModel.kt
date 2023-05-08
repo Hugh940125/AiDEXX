@@ -79,6 +79,9 @@ class ChartViewModel: ViewModel() {
     private var timeMin: Float? = null
     private var timeMax: Float? = null
 
+    @Volatile
+    private var isDataInit = false
+
     class ChartChangedInfo(
         var timeMin: Float?,
         var needScrollToLatest: Boolean
@@ -119,23 +122,33 @@ class ChartViewModel: ViewModel() {
                     LogUtil.d("===CHART===开始加载下一页")
                     var needNotify: Boolean
                     withContext(Dispatchers.IO) {
+
                         var maxTime = Date(curPageMinDate.time - 1000) // ob between是前闭后闭
+                        //获取当前最小日期前的最近一条数据时间 因为可能有断层 导致图表无法滚动
+                        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(
+                            UserInfoManager.getCurShowUserId(),
+                            maxTime
+                        )
+                        maxTime = latestOne?.let { rche ->
+                            rche.deviceTime
+                        } ?: maxTime
+
                         val curMinTime = getCurPageStartDate(curPageMinDate.time)
                         LogUtil.d("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
 
-                        needNotify = loadNextPageData(curMinTime, maxTime)
+                        needNotify = loadNextPageData(curMinTime, maxTime, false)
 
                         LogUtil.d("===CHART=== 加载之后 timeMin=$timeMin start=${curMinTime} end=${maxTime}")
                     }
                     // 如果这个期间没发生用户切换就外部
                     if (needNotify) {
-                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
-                        //重置标记
-                        val ret = startLoadNextPage.compareAndSet(true, update = false)
-                        LogUtil.d("===CHART=== 通知及标记重置了 ret=$ret")
+//                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     } else {
                         LogUtil.e("===CHART=== 分页查询结束 发现换人了 终止通知")
                     }
+                    //重置标记
+                    val ret = startLoadNextPage.compareAndSet(true, update = false)
+                    LogUtil.d("===CHART=== 通知及标记重置了 ret=$ret")
                 }
             }
         }
@@ -153,7 +166,10 @@ class ChartViewModel: ViewModel() {
         if (!::combinedData.isInitialized) {
             combinedData = CombinedData()
         }
-        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(UserInfoManager.getCurShowUserId()) //"f03550ef07a7b2164f06deaef597ce37"
+        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(
+            UserInfoManager.getCurShowUserId(),
+            Date()
+        ) //"f03550ef07a7b2164f06deaef597ce37"
         val cgmMaxDate = latestOne?.let {
             it.deviceTime
         } ?: Date()
@@ -182,7 +198,13 @@ class ChartViewModel: ViewModel() {
         scatterDataSets.add(bgSet)
         scatterDataSets.add(eventSet)
 
-        combinedData.setData(LineData(lineDataSets))
+        combinedData.setData(LineData(lineDataSets).also {
+            // 不需要渲染数值及icon 提升性能
+            it.dataSets.forEach { ld ->
+                ld.setDrawIcons(false)
+                ld.setDrawValues(false)
+            }
+        })
         combinedData.setData(ScatterData(scatterDataSets))
 
         if (timeMax == null) {
@@ -194,6 +216,7 @@ class ChartViewModel: ViewModel() {
         }
 
         emit(combinedData)
+        isDataInit = true
 
     }.flowOn(Dispatchers.IO)
 
@@ -206,6 +229,7 @@ class ChartViewModel: ViewModel() {
      *      --通知外部刷页面
      */
     fun reload() {
+        if (!isDataInit) return
         reset()
         viewModelScope.launch {
             initData(true).collect {
@@ -217,10 +241,10 @@ class ChartViewModel: ViewModel() {
     /** 是否需要加载下一页 */
     fun needLoadNextPage(isLtr: Boolean, visibleLeftX: Float, xAxisMin: Float): Boolean {
 
-        if (isLtr) return false
-
-        if(loadedMinDate >= xAxisMin) {
-            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
+        if (isLtr || !isDataInit) return false
+//        LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发 loadedmin=$loadedMinDate xAxisMin=$xAxisMin vf=$visibleLeftX" )
+        if(loadedMinDate == xAxisMin) {
+//            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
             return false
         }
 
@@ -276,11 +300,28 @@ class ChartViewModel: ViewModel() {
         }
     }
 
+    fun applyNextPageData() {
+        viewModelScope.launch {
+            var needNotify = false
+            if (nextPageCgmData.isNotEmpty()) {
+                LogUtil.d("===CHART=== 下一页数据 size=${nextPageCgmData.size}")
+                updateGlucoseSets(nextPageCgmData)
+                nextPageCgmData.clear()
+                needNotify = true
+            }
+            if (needNotify) {
+                LogUtil.d("===CHART=== 下一页数据已添加到图表待刷新")
+                mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+            }
+        }
+    }
+
+    val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
      */
-    private suspend fun loadNextPageData(startDate: Date, endDate: Date): Boolean =
+    private suspend fun loadNextPageData(startDate: Date, endDate: Date, needApply: Boolean = true): Boolean =
         withContext(Dispatchers.IO) {
             timeMin = ChartUtil.dateToX(startDate)
             var isSuccess = true
@@ -290,7 +331,12 @@ class ChartViewModel: ViewModel() {
                     if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
                         isSuccess = false
                     } else {
-                        updateGlucoseSets(d)
+                        if (needApply) {
+                            updateGlucoseSets(d)
+                        } else {
+                            LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
+                            nextPageCgmData.addAll(d)
+                        }
                     }
                 }
             }

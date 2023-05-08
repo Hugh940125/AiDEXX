@@ -19,8 +19,9 @@ object CgmCalibBgRepository {
     ) = CgmHistoryDao.query(startDate,endDate,uid)
 
     suspend fun queryCgmLatestOne(
-        uid: String = UserInfoManager.instance().userId()
-    ) = CgmHistoryDao.queryLatest(uid)
+        uid: String = UserInfoManager.instance().userId(),
+        targetDate: Date
+    ) = CgmHistoryDao.queryLatest(uid, targetDate)
 
     suspend fun queryBgByPage(
         startDate: Date,

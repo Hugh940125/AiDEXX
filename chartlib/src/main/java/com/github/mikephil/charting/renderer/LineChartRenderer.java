@@ -665,10 +665,24 @@ public class LineChartRenderer extends LineRadarRenderer {
         }
     }
 
+    /**
+     * CGM数据量较大 目前不需要渲染values 可提前判断是否需要画values
+     * @return
+     */
+    private boolean needDrawValues() {
+        List<ILineDataSet> dataSets = mChart.getLineData().getDataSets();
+        for (int i = 0; i < dataSets.size(); i++) {
+            if (shouldDrawValues(dataSets.get(i)) && dataSets.get(i).getEntryCount() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void drawValues(Canvas c) {
-
-        if (isDrawingValuesAllowed(mChart)) {
+//
+        if (needDrawValues() && isDrawingValuesAllowed(mChart)) {
 
             List<ILineDataSet> dataSets = mChart.getLineData().getDataSets();
             mPositions = new ArrayList<>();
