@@ -44,7 +44,7 @@ object CgmHistoryDao {
         awaitCallInTx {
             box.query()
                 .equal( RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
-                .greater(RealCgmHistoryEntity_.deviceTime, targetDate)
+                .less(RealCgmHistoryEntity_.deviceTime, targetDate)
                 .orderDesc(RealCgmHistoryEntity_.deviceTime)
                 .build()
                 .findFirst()

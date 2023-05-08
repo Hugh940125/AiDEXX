@@ -80,14 +80,13 @@ class ChartViewHolder(
                 ) {
                     if (chartViewModel.needLoadNextPage(isLtr, visibleLeftX, xAxisMin)) {
                         val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                        LogUtils.debug(TAG,"===CHART===onXAxisVisibleAreaChanged do=$ret")
+                        LogUtils.debug(TAG,"===CHART=== startLoadNextPage: $ret")
                     }
                 }
 
                 override fun onToEndLeft() {
-                    LogUtils.debug(TAG,"===CHART===onToEndLeft ")
-                    chartViewModel.applyNextPageData()
-//                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
+                    val ret = chartViewModel.startApplyNextPageData.compareAndSet(expect = false, true)
+                    LogUtils.debug(TAG,"===CHART===onToEndLeft start applyData: $ret")
                 }
 
                 override fun onToEndRight() {

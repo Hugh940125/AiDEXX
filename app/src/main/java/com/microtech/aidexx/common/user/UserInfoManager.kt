@@ -108,13 +108,13 @@ class UserInfoManager {
         entity.emailAddress = content.email
         entity.avatar = content.avatar
 
-        this@UserInfoManager.entity?.let {
+        this@UserInfoManager.userEntity?.let {
             it.id = entity.id
             it.phoneNumber = entity.phoneNumber
             it.emailAddress = entity.emailAddress
             it.avatar = entity.emailAddress
         } ?:let {
-            this@UserInfoManager.entity = entity
+            this@UserInfoManager.userEntity = entity
         }
 
         AccountDbRepository.saveUser(entity)?.let {

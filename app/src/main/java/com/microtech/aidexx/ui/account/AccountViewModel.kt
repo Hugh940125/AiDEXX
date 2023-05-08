@@ -124,7 +124,8 @@ class AccountViewModel : BaseViewModel() {
 
                     LogUtil.d("开始插入 ${Date().time}", TAG)
                     var isSuccess = true
-                    data.chunked(5000).forEach { d ->
+                    // todo 分块大小需进一步确定 others有影响
+                    data.chunked(1000).forEach { d ->
                         isSuccess = CgmCalibBgRepository.insert(d)?.let {
                             LogUtil.d("开始插入 ${Date().time}", TAG)
                             isSuccess
@@ -134,6 +135,7 @@ class AccountViewModel : BaseViewModel() {
                             false
                         }
                     }
+
                     isSuccess
                 }
             }
@@ -209,14 +211,14 @@ class AccountViewModel : BaseViewModel() {
     }
 
     private fun testData(userId: String): List<RealCgmHistoryEntity> {
-        val c = 15 * 24 * 60 // 两周21600
+        val c = 15 * 15 * 24 * 60 // 两周21600
         val cur = Date().time / 1000
 
         LogUtil.d("开始生成插入 ${Date().time}", TAG)
         val data = (0 until c).flatMap { t ->
             listOf(RealCgmHistoryEntity().also {
                 it.deviceTime = Date((cur - (t * 60)) * 1000)
-                it.eventData = (t % 40).toFloat()
+                it.glucose = (t % 40).toFloat()
                 it.eventType = History.HISTORY_GLUCOSE
                 it.createTime = it.deviceTime
                 it.authorizationId = userId
@@ -234,10 +236,8 @@ class AccountViewModel : BaseViewModel() {
                 it.rawData7 = 0.1f
                 it.rawData8 = 0.1f
                 it.rawData9 = 0.1f
-                it.recordUuid = "recordUuidrecordUuid$t"
                 it.sensorIndex = 1
                 it.eventIndex = t
-                it.recordId = it.recordUuid
                 it.id = it.recordId
             })
         }
