@@ -102,7 +102,7 @@ object MmkvManager {
 
     fun saveEnquireFlag(flag: String, value: Boolean) = MmkvUtil.encodeBoolean(flag, value)
 
-    fun getTheme(): Int = MmkvUtil.decodeInt(THEME, 1)
+    fun getTheme(): Int = MmkvUtil.decodeInt(THEME, 0)
 
     fun saveTheme(index: Int) = MmkvUtil.encodeInt(THEME, index)
 

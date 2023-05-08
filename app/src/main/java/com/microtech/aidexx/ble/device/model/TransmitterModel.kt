@@ -2,6 +2,7 @@ package com.microtech.aidexx.ble.device.model
 
 import android.os.SystemClock
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
@@ -14,10 +15,12 @@ import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
-import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.*
+import com.microtech.aidexx.db.entity.AlertSettingsEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
@@ -25,7 +28,10 @@ import com.microtech.aidexx.ui.main.home.warmingUp
 import com.microtech.aidexx.ui.setting.alert.AlertType
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.setting.alert.AlertUtil.calculateFrequency
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.ByteUtils
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -108,7 +114,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private val cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
-    private val tempCalList = mutableListOf<CalibrateEntity>()
+    private val tempCalList = mutableListOf<RealCgmHistoryEntity>()
 
     fun onMessage(message: BleMessage) {
         if (message.operation != CgmOperation.DISCOVER) {
@@ -148,21 +154,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             AidexXOperation.GET_HISTORY_RANGE -> {
                 message.data.let {
-                    briefRangeStartIndex =
-                        ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
-                    rawRangeStartIndex =
-                        ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
-                    newestEventIndex =
-                        ((it[5].toInt() and 0xff) shl 8).plus((it[4].toInt() and 0xff))
-                    LogUtils.eAiDex("GET_HISTORY_RANGE --- $briefRangeStartIndex--$rawRangeStartIndex--$newestEventIndex")
+                    briefRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
+                    rawRangeStartIndex = ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
+                    newestEventIndex = ((it[5].toInt() and 0xff) shl 8).plus((it[4].toInt() and 0xff))
+                    LogUtil.eAiDEX("get history range ----> brief start:$briefRangeStartIndex, raw start:$rawRangeStartIndex, newest:$newestEventIndex")
                 }
             }
             AidexXOperation.GET_CALIBRATION_RANGE -> {
                 message.data.let {
-                    calRangeStartIndex =
-                        ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
+                    calRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
                     newestCalIndex = ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
-                    LogUtils.eAiDex("GET_CALIBRATION_RANGE --- $calRangeStartIndex--$newestCalIndex")
+                    LogUtil.eAiDEX("get calibration range --- cal start:$calRangeStartIndex, cal newest:$newestCalIndex")
                 }
             }
             AidexXOperation.GET_CALIBRATION -> {
@@ -241,10 +243,35 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             is ApiResult.Success -> {
                 apiResult.result.run {
                     this.data?.let {
-                        entity.id = it.id
-                        entity.deviceSn = it.deviceSn
-                        entity.eventIndex = it.eventIndex
-                        entity.fullEventIndex = it.fullEventIndex
+                        val record = it.record
+                        if (record != null) {
+                            targetEventIndex = record.timeOffset
+                            nextEventIndex = record.timeOffset + 1
+                            entity.eventIndex = record.timeOffset
+                        } else {
+                            targetEventIndex = 1
+                            nextEventIndex = 1
+                            entity.eventIndex = 0
+                        }
+                        val originRecord = it.originRecord
+                        if (originRecord != null) {
+                            nextFullEventIndex = originRecord.timeOffset + 1
+                            entity.fullEventIndex = originRecord.timeOffset
+                        } else {
+                            nextFullEventIndex = 1
+                            entity.fullEventIndex = 0
+                        }
+                        val calibrationRecord = it.calibrationRecord
+                        if (calibrationRecord != null) {
+                            nextCalIndex = calibrationRecord.timeOffset + 1
+                            entity.calIndex = calibrationRecord.timeOffset
+                        } else {
+                            nextCalIndex = 1
+                            entity.calIndex = 0
+                        }
+                        it.deviceId?.let { id ->
+                            entity.id = id
+                        }
                     }
                     ObjectBox.runAsync({
                         transmitterBox!!.put(entity)
@@ -286,30 +313,34 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override suspend fun deletePair() {
-        entity.accessId = null
-        entity.sensorStartTime = null
-        controller?.sn = null
-        controller?.mac = null
-        controller?.id = null
-        controller?.unregister()
-        TransmitterManager.instance().removeDb()
-        TransmitterManager.instance().removeDefault()
-        EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, true)
-//        entity.id?.let {
-//            when (val apiResult = ApiService.instance.deviceUnregister(hashMapOf("id" to it))) {
-//                is ApiResult.Success -> {
-//                    apiResult.result.run {
-//
-//                    }
-//                }
-//                is ApiResult.Failure -> {
-//                    apiResult.msg.run {
-//                        Dialogs.showError(this)
-//                        EventBusManager.send(EventBusKey.EVENT_UNPAIR_SUCCESS, false)
-//                    }
-//                }
-//            }
-//        }
+        entity.id?.let {
+            when (val apiResult = ApiService.instance.deviceUnregister(hashMapOf("deviceId" to it))) {
+                is ApiResult.Success -> {
+                    apiResult.result.run {
+                        controller?.sn = null
+                        controller?.mac = null
+                        controller?.id = null
+                        controller?.unregister()
+                        entity.accessId = null
+                        entity.sensorStartTime = null
+                        entity.id = null
+                        entity.eventIndex = 0
+                        entity.fullEventIndex = 0
+                        entity.calIndex = 0
+                        TransmitterManager.instance().removeDb()
+                        TransmitterManager.instance().removeDefault()
+                        AidexBleAdapter.getInstance().stopBtScan(false)
+                        EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, true)
+                    }
+                }
+                is ApiResult.Failure -> {
+                    apiResult.msg.run {
+                        Dialogs.showError(this)
+                        EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, false)
+                    }
+                }
+            }
+        }
     }
 
     private fun getHistoryDate(timeOffset: Int): Date {
@@ -375,7 +406,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 lastHistoryTime = historyDate
             }
         }
-        targetEventIndex = latestHistory?.timeOffset ?: 0
+        targetEventIndex = latestHistory?.timeOffset ?: 1
         if (nextEventIndex <= targetEventIndex) {
             val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
             if (broadcastContainsNext) {
@@ -518,38 +549,30 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         val aidexXCalibration = AidexXParser.getAidexXCalibration<AidexXCalibrationEntity>(data)
         if (aidexXCalibration.isEmpty()) return
         if (aidexXCalibration.first().timeOffset != nextEventIndex) return
-        val deviceId = TransmitterManager.instance().getDefault()?.deviceId() ?: return
         val userId = UserInfoManager.instance().userId()
         if (userId.isEmpty()) return
         ObjectBox.runAsync({
             tempCalList.clear()
             for (calibration in aidexXCalibration) {
-                val existCalibration = calibrationBox!!.query()
-                    .equal(CalibrateEntity_.eventIndex, calibration.index)
-                    .equal(CalibrateEntity_.sensorIndex, entity.startTimeToIndex())
+                val existHistory = cgmHistoryBox!!.query()
+                    .equal(RealCgmHistoryEntity_.timeOffset, calibration.timeOffset)
+                    .equal(RealCgmHistoryEntity_.sensorId, entity.sensorId ?: "")
                     .equal(
-                        CalibrateEntity_.deviceId,
-                        deviceId,
-                    ).equal(
-                        CalibrateEntity_.authorizationId,
+                        RealCgmHistoryEntity_.userId,
                         userId,
-                    ).orderDesc(CalibrateEntity_.idx).build().findFirst()
-                if (existCalibration != null) {
-                    continue
+                    ).orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
+                if (existHistory != null) {
+                    existHistory.calibrationIsValid = calibration.isValid
+                    existHistory.cf = calibration.cf
+                    existHistory.offset = calibration.offset
+                    existHistory.index = calibration.index
+                    existHistory.referenceGlucose = calibration.referenceGlucose
+                    existHistory.calUploadState = 1
+                    tempCalList.add(existHistory)
                 }
-                val calibrateEntity = CalibrateEntity()
-                calibrateEntity.eventIndex = calibration.index
-                calibrateEntity.deviceId = deviceId
-                calibrateEntity.sensorIndex = entity.startTimeToIndex()
-                calibrateEntity.authorizationId = userId
-                calibrateEntity.calTime = getHistoryDate(calibration.timeOffset)
-                calibrateEntity.isValid = calibration.isValid
-                calibrateEntity.calFactor = calibration.cf
-                calibrateEntity.calOffset = calibration.offset
-                tempCalList.add(calibrateEntity)
             }
             if (tempCalList.isNotEmpty()) {
-                calibrationBox!!.put(tempCalList)
+                cgmHistoryBox!!.put(tempCalList)
             }
         }, {
             entity.calIndex = aidexXCalibration.last().index
@@ -601,24 +624,20 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         }
                     }
                 }
-                historyEntity.deviceId = deviceId
-                historyEntity.eventIndex = history.timeOffset
+                historyEntity.timeOffset = history.timeOffset
                 val historyDate = getHistoryDate(history.timeOffset)
                 historyEntity.time = historyDate
                 historyEntity.deviceTime = historyDate
+                historyEntity.sensorId = entity.sensorId
                 historyEntity.sensorIndex = entity.startTimeToIndex()
-                historyEntity.authorizationId = userId
+                historyEntity.userId = userId
+                historyEntity.status = history.status
+                historyEntity.quality = history.quality
+                historyEntity.glucoseIsValid = history.isValid
                 val recordUuid = historyEntity.updateRecordUUID()
-                historyEntity.recordUuid = recordUuid
-                val oldHistory = cgmHistoryBox!!.query().equal(
-                    RealCgmHistoryEntity_.recordUuid,
-                    recordUuid
-                ).build().findFirst()
-                if (oldHistory != null) {
-                    continue
-                }
+                historyEntity.frontRecordId = recordUuid
                 val time = historyDate.dateHourMinute()
-                historyEntity.eventData = history.glucose.toFloat()
+                historyEntity.glucose = history.glucose.toFloat()
                 val deviceTimeMillis = historyEntity.deviceTime.time
                 when (historyEntity.eventType) {
                     History.HISTORY_GLUCOSE,
@@ -757,7 +776,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     private fun saveRawHistory(rawHistories: List<AidexXRawHistoryEntity>) {
-        val deviceId = TransmitterManager.instance().getDefault()?.deviceId() ?: return
         val userId = UserInfoManager.instance().userId()
         if (userId.isEmpty()) {
             return
@@ -766,37 +784,19 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             tempRawList.clear()
             for (rawHistory in rawHistories) {
                 val existHistory = cgmHistoryBox!!.query()
-                    .equal(RealCgmHistoryEntity_.eventIndex, rawHistory.timeOffset)
-                    .equal(RealCgmHistoryEntity_.sensorIndex, entity.startTimeToIndex())
+                    .equal(RealCgmHistoryEntity_.timeOffset, rawHistory.timeOffset)
+                    .equal(RealCgmHistoryEntity_.sensorId, entity.sensorId ?: "")
                     .equal(
-                        RealCgmHistoryEntity_.deviceId,
-                        deviceId,
-                    ).equal(
-                        RealCgmHistoryEntity_.authorizationId,
+                        RealCgmHistoryEntity_.userId,
                         userId,
                     ).orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
                 if (existHistory != null) {
-                    val historyEntity = RealCgmHistoryEntity()
-                    historyEntity.eventIndex = existHistory.eventIndex
-                    historyEntity.deviceTime = existHistory.deviceTime
-                    historyEntity.rawData1 = rawHistory.i1
-                    historyEntity.rawData2 = rawHistory.i2
-                    historyEntity.rawData3 = rawHistory.vc
-                    historyEntity.sensorIndex = existHistory.sensorIndex
-                    historyEntity.recordIndex = existHistory.recordIndex
-                    historyEntity.id = existHistory.id
-                    historyEntity.idx = existHistory.idx
-                    historyEntity.eventWarning = existHistory.eventWarning
-                    historyEntity.eventData = existHistory.eventData
-                    historyEntity.eventType = existHistory.eventType
-                    historyEntity.dataStatus = 1
-                    historyEntity.deviceId = deviceId
-                    historyEntity.authorizationId = userId
-                    val recordUuid = historyEntity.updateRecordUUID()
-                    historyEntity.recordUuid = recordUuid
-                    tempRawList.add(historyEntity)
-                } else {
-                    continue
+                    existHistory.rawOne = rawHistory.i1
+                    existHistory.rawTwo = rawHistory.i2
+                    existHistory.rawVc = rawHistory.vc
+                    existHistory.rawIsValid = rawHistory.isValid
+                    existHistory.rawUploadState = 1
+                    tempRawList.add(existHistory)
                 }
             }
             if (tempRawList.isNotEmpty()) {
@@ -837,7 +837,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
                 val i =
                     ((dateTime.time - history.deviceTime.time).toDouble() / 1000 / 300f).roundToInt()
-                val glu = history.eventData ?: 0f
+                val glu = history.glucose ?: 0f
                 if (i < 0) {
                     continue@loop
                 } else if (i >= size) {

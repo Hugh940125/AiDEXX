@@ -80,6 +80,10 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         }
     }
 
+    fun removeDiscoverCallback() {
+        onDeviceDiscover = null
+    }
+
     private val scanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
@@ -95,7 +99,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             eAiDEX("onScanFailed errorCode:$errorCode")
             if (errorCode == 2) {
                 //ClientReleaseTool.releaseAllScanClient()
-
             }
         }
     }
@@ -338,8 +341,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             // 通过服务 uuid 过滤自己要连接的设备过滤器搜索GATT服务UUID
             scanFilterBuilder = ScanFilter.Builder()
             val parcelUuidMask = ParcelUuid.fromString("0000181F-0000-1000-8000-00805F9B34FB")
-            val parcelUuid = ParcelUuid.fromString("00002AFF-0000-1000-8000-00805F9B34FB")
-            //        scanFilterBuilder.setServiceUuid(parcelUuid, parcelUuidMask);
+            scanFilterBuilder?.setServiceUuid(parcelUuidMask)
             scanFilterList?.add(scanFilterBuilder!!.build())
         }
         return scanFilterList!!
@@ -371,20 +373,21 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     override fun startBtScan(isPeriodic: Boolean) {
-        if (bluetoothAdapter.bluetoothLeScanner == null) {
-            return
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ActivityCompat.checkSelfPermission(
-                    AidexxApp.instance,
-                    Manifest.permission.BLUETOOTH_SCAN
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                eAiDEX("permission denied ----> Manifest.permission.BLUETOOTH_SCAN")
+        try {
+            if (bluetoothAdapter.bluetoothLeScanner == null) {
+                eAiDEX("Start scan fail, bluetoothLeScanner is null")
                 return
             }
-        }
-        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (ActivityCompat.checkSelfPermission(
+                        AidexxApp.instance,
+                        Manifest.permission.BLUETOOTH_SCAN
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    eAiDEX("Start scan fail, permission denied")
+                    return
+                }
+            }
             bluetoothAdapter.bluetoothLeScanner.startScan(
                 buildScanFilters(),
                 buildScanSettings(),
@@ -392,16 +395,17 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             )
         } catch (e: Exception) {
             eAiDEX("Start scan error ----> $e")
-        }
-        if (!isOnConnectState && isPeriodic) {
-            WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
-            if (TransmitterManager.instance().getDefault() != null) {
-                val scanWorker: OneTimeWorkRequest =
-                    OneTimeWorkRequest.Builder(StopScanWorker::class.java)
-                        .setInitialDelay(20, TimeUnit.SECONDS).addTag(
-                            STOP_SCAN.toString()
-                        ).build() //20s以后停止扫描
-                WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
+        } finally {
+            if (!isOnConnectState && isPeriodic) {
+                WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
+                if (TransmitterManager.instance().getDefault() != null) {
+                    val scanWorker: OneTimeWorkRequest =
+                        OneTimeWorkRequest.Builder(StopScanWorker::class.java)
+                            .setInitialDelay(30, TimeUnit.SECONDS).addTag(
+                                STOP_SCAN.toString()
+                            ).build() //20s以后停止扫描
+                    WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
+                }
             }
         }
     }
@@ -410,31 +414,34 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(STOP_SCAN.toString())
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
         val bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-        if (bluetoothLeScanner != null) {
+        try {
+            if (bluetoothAdapter.bluetoothLeScanner == null) {
+                eAiDEX("Stop scan fail, permission denied")
+                return
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (ActivityCompat.checkSelfPermission(
                         AidexxApp.instance,
                         Manifest.permission.BLUETOOTH_SCAN
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    eAiDEX("permission denied---->Manifest.permission.BLUETOOTH_SCAN")
+                    eAiDEX("Stop scan fail, permission denied")
                     return
                 }
             }
-            try {
-                bluetoothLeScanner.stopScan(scanCallback)
-            } catch (e: Exception) {
-                eAiDEX("Stop scan error ----> $e")
+            bluetoothLeScanner.stopScan(scanCallback)
+        } catch (e: Exception) {
+            eAiDEX("Stop scan error ----> $e")
+        } finally {
+            val default = TransmitterManager.instance().getDefault()
+            if (default != null && default.isPaired() && !isOnConnectState && isPeriodic) {
+                val scanWorker: OneTimeWorkRequest =
+                    OneTimeWorkRequest.Builder(StartScanWorker::class.java)
+                        .setInitialDelay(2, TimeUnit.SECONDS).addTag(
+                            START_SCAN.toString()
+                        ).build() //2S后开启扫描
+                WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
             }
-        }
-        val default = TransmitterManager.instance().getDefault()
-        if (default != null && default.isPaired() && !isOnConnectState && isPeriodic) {
-            val scanWorker: OneTimeWorkRequest =
-                OneTimeWorkRequest.Builder(StartScanWorker::class.java)
-                    .setInitialDelay(2, TimeUnit.SECONDS).addTag(
-                        START_SCAN.toString()
-                    ).build() //2S后开启扫描
-            WorkManager.getInstance(AidexxApp.instance).enqueue(scanWorker)
         }
     }
 

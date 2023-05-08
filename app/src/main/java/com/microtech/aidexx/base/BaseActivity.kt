@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.setting.alert.*
@@ -31,9 +32,7 @@ import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.customerservice.CustomerServiceDialog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import java.lang.reflect.ParameterizedType
 
 abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatActivity() {
@@ -43,14 +42,13 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
     lateinit var mainScope: CoroutineScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        LogUtil.eAiDEX("onCreate ----> ${this::class.java.name}")
-        setTheme(ThemeManager.theme.id)
+        setTheme(AidexxApp.themeId)
         binding = getViewBinding()
-        mainScope = MainScope()
         initWindow()
+        mainScope = MainScope()
         initViewModel()
         observe()
+        super.onCreate(savedInstanceState)
     }
 
     private fun initWindow() {
@@ -117,6 +115,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
             }
         }
     }
+
     abstract fun getViewBinding(): VB
 
     override fun onResume() {

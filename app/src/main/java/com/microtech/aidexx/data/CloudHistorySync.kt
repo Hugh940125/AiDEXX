@@ -26,8 +26,8 @@ abstract class CloudHistorySync<T : EventEntity> {
     abstract val idx: Property<T>
     abstract val id: Property<T>
     abstract val url: String //api请求路径
-    abstract val recordUuid: Property<T>
-    abstract val authorizationId: Property<T>
+    abstract val frontRecordId: Property<T>
+    abstract val userId: Property<T>
     abstract val deleteStatus: Property<T>
     abstract val recordIndex: Property<T>
     abstract val recordId: Property<T>
@@ -111,7 +111,7 @@ abstract class CloudHistorySync<T : EventEntity> {
     suspend fun getNeedDeleteList(): MutableList<T>? {
         return ObjectBox.store.awaitCallInTx {
             val find = entityBox.query().equal(deleteStatus, 1).notNull(id).equal(
-                authorizationId,
+                userId,
                 UserInfoManager.instance().userId(),
                 QueryBuilder.StringOrder.CASE_INSENSITIVE
             ).build().find()
@@ -123,14 +123,14 @@ abstract class CloudHistorySync<T : EventEntity> {
         val userId = UserInfoManager.instance().userId()
         val mutableList = ObjectBox.store.awaitCallInTx {
             entityBox.query().isNull(recordId).equal(
-                authorizationId, userId
+                this.userId, userId
             ).order(idx).build().find()
         }
         mutableList?.let {
             if (mutableList.size > 0) {
                 val indexList = ObjectBox.store.awaitCallInTx {
                     entityBox.query().notNull(recordIndex).equal(
-                        authorizationId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
+                        this.userId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
                     ).build().property(recordIndex).findLongs()
                 }
                 val recordIndex =
@@ -160,8 +160,8 @@ abstract class CloudHistorySync<T : EventEntity> {
         } else {
             val temp = mutableListOf<T>()
             for (res in responseList) {
-                val existRecord = entityBox.query().equal(recordUuid, uuidValue(res) ?: "")
-                    .equal(authorizationId, authorId ?: userId).build().find()
+                val existRecord = entityBox.query().equal(frontRecordId, uuidValue(res) ?: "")
+                    .equal(this.userId, authorId ?: userId).build().find()
                 if (existRecord.isEmpty()) {
                     res.authorizationId = authorId ?: userId
                     temp.add(res)

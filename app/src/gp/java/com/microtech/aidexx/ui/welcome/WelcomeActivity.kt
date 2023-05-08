@@ -45,6 +45,11 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.viewAgreeProtocal.removeClick()
+    }
+
     private fun greenLight() {
         if (UserInfoManager.instance().isLogin()) {
             ActivityUtil.toActivity(this, MainActivity::class.java)

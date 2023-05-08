@@ -43,4 +43,7 @@ class UserAgreeView : RelativeLayout {
 
     var onClick: ((type: Int) -> Unit)? = null
 
+    fun removeClick() {
+        onClick = null
+    }
 }

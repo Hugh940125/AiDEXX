@@ -1,16 +1,24 @@
 package com.microtech.aidexx.ble.device
 
+import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.ble.device.entity.CloudDeviceInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.ble.device.model.TransmitterModel
+import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.ApiService
+import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity_
-import com.microtech.aidexx.utils.EncryptUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TransmitterManager private constructor() {
     private var default: DeviceModel? = null
@@ -25,9 +33,58 @@ class TransmitterManager private constructor() {
             }
             query.orderDesc(TransmitterEntity_.idx).build().findFirst()
         }
-        transmitterEntity?.let {
+        if (transmitterEntity != null) {
             when (transmitterEntity.deviceType) {
                 2 -> set(TransmitterModel.instance(transmitterEntity))
+            }
+        } else {
+            getCloudDevice { response ->
+                val data = response.data
+                data?.let {
+                    it.deviceInfo?.let { deviceIfo ->
+                        val newEntity = TransmitterEntity()
+                        newEntity.id = deviceIfo.deviceId
+                        newEntity.sensorId = deviceIfo.sensorId
+                        newEntity.sensorIndex = deviceIfo.sensorIndex
+                        newEntity.sensorStartTime = deviceIfo.sensorStartUp
+                        newEntity.deviceModel = deviceIfo.deviceModel
+                        newEntity.deviceSn = deviceIfo.deviceSn
+                        newEntity.deviceMac = deviceIfo.deviceMac
+                        newEntity.deviceKey = deviceIfo.deviceKey
+                        newEntity.et = deviceIfo.et
+                        newEntity.deviceName = "AiDEX X-${newEntity.deviceSn}"
+                        ObjectBox.runAsync({
+                            transmitterBox!!.put(newEntity)
+                        },{
+                            when (newEntity.deviceType) {
+                                2 -> set(TransmitterModel.instance(newEntity))
+                            }
+                        })
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getCloudDevice(
+        success: ((info: BaseResponse<CloudDeviceInfo>) -> Unit)? = null,
+    ) {
+        AidexxApp.mainScope.launch {
+            withContext(Dispatchers.IO) {
+                when (val apiResult = ApiService.instance.getDevice()) {
+                    is ApiResult.Success -> {
+                        apiResult.result.let { result ->
+                            withContext(Dispatchers.Main) {
+                                success?.invoke(result)
+                            }
+                        }
+                    }
+                    is ApiResult.Failure -> {
+                        withContext(Dispatchers.Main) {
+                            LogUtil.eAiDEX("get device fail ----> ${apiResult.msg}")
+                        }
+                    }
+                }
             }
         }
     }

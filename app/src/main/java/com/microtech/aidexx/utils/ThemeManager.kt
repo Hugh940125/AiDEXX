@@ -11,9 +11,7 @@ object ThemeManager {
         LIGHT(0, R.style.AppThemeLight),
         DARK(1, R.style.AppThemeDark) }
 
-    var theme: Theme = themeByIndex(
-        MmkvManager.getTheme()
-    )
+    var theme: Theme = themeByIndex(MmkvManager.getTheme())
         set(theme) {
             field = theme
             MmkvManager.saveTheme(theme.index)

@@ -10,6 +10,7 @@ import android.view.View
 import com.microtech.aidexx.IntentKey
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.web.WebActivity
+import java.lang.ref.WeakReference
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -46,6 +47,7 @@ object StringUtils {
         type: Int,
         bundle: SpannableStringBuilder
     ): SpannableStringBuilder {
+        val contextRef = WeakReference(context).get()
         if (type == LOGIN) {
             bundle.append(context.getString(R.string.txt_protocal_1))
         } else if (type == WELCOME) {
@@ -67,16 +69,16 @@ object StringUtils {
         sp2.setSpan(
             object : ClickableSpan() {
                 override fun onClick(view: View) {
-                    val intent = Intent(context, WebActivity::class.java)
+                    val intent = Intent(contextRef, WebActivity::class.java)
                     intent.putExtra(
                         IntentKey.WEB_TITLE,
-                        context.getString(R.string.User_Agreement)
+                        contextRef?.getString(R.string.User_Agreement)
                     )
                     intent.putExtra(
                         IntentKey.WEB_URL,
-                        context.getString(R.string.Terms_of_Service_url)
+                        contextRef?.getString(R.string.Terms_of_Service_url)
                     )
-                    context.startActivity(intent)
+                    contextRef?.startActivity(intent)
                 }
 
                 override fun updateDrawState(ds: TextPaint) {

@@ -173,6 +173,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         }
         transmitterHandler.removeMessages(DISMISS_LOADING)
         subscription?.cancel()
+        AidexBleAdapter.getInstance().removeDiscoverCallback()
     }
 
     override fun getViewBinding(): ActivityTransmitterBinding {

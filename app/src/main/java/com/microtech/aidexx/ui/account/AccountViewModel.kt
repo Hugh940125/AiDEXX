@@ -15,7 +15,6 @@ import com.microtech.aidexx.common.net.repository.AccountRepository
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
@@ -99,7 +98,7 @@ class AccountViewModel : BaseViewModel() {
          // 登录成功去拉用户详细信息
         return when (val userInfoApiResult = AccountRepository.getUserInfo()) {
             is ApiResult.Success -> {
-                if(userInfoApiResult.result.data?.userId.isNullOrEmpty()) {
+                if (userInfoApiResult.result.data?.userId.isNullOrEmpty()) {
                     LogUtil.xLogE("拉用户信息接口返回的userid为空", TAG)
                     ""
                 } else {
@@ -174,29 +173,6 @@ class AccountViewModel : BaseViewModel() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 when (val apiResult = ApiService.instance.getUserPreference()) {
-                    is ApiResult.Success -> {
-                        apiResult.result.let { result ->
-                            withContext(Dispatchers.Main) {
-                                success?.invoke(result)
-                            }
-                        }
-                    }
-                    is ApiResult.Failure -> {
-                        withContext(Dispatchers.Main) {
-                            failure?.invoke()
-                        }
-                    }
-                }
-            }
-        }
-    }
-    fun getDevice(
-        success: ((info: BaseResponse<TransmitterEntity>) -> Unit)? = null,
-        failure: (() -> Unit)? = null
-    ) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                when (val apiResult = ApiService.instance.getDevice()) {
                     is ApiResult.Success -> {
                         apiResult.result.let { result ->
                             withContext(Dispatchers.Main) {

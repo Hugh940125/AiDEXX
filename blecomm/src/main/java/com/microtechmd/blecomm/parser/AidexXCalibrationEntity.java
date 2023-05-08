@@ -7,9 +7,9 @@ public class AidexXCalibrationEntity {
     public float cf;
     public float offset;
     public float referenceGlucose;
-    public boolean isValid;
+    public int isValid;
 
-    public AidexXCalibrationEntity(int index, int timeOffset, int cf, int offset, float referenceGlucose, boolean isValid) {
+    public AidexXCalibrationEntity(int index, int timeOffset, int cf, int offset, float referenceGlucose, int isValid) {
         this.index = index;
         this.timeOffset = timeOffset;
         this.referenceGlucose = referenceGlucose;

@@ -3,6 +3,7 @@ package com.microtech.aidexx.ui.main.home
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -19,7 +20,7 @@ private const val RESET_HOME_STATE: Int = 110
 class HomeStateManager private constructor() {
     private var timer: Timer? = null
     private var timeLeft: Int? = null
-    val handler: Handler
+    private val handler: Handler
     private var currentState = glucosePanel
 
     init {
@@ -46,7 +47,9 @@ class HomeStateManager private constructor() {
 
     fun setState(tag: String) {
         if (tag != glucosePanel) {
-            countDownToReset()
+            if (tag != needPair){
+                countDownToReset()
+            }
             EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
         }
         if (tag == warmingUp) {

@@ -4,13 +4,14 @@ package com.microtech.aidexx.common.net
 import com.google.gson.*
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
+import com.microtech.aidexx.ble.device.entity.CloudDeviceInfo
+import com.microtech.aidexx.ble.device.entity.DeviceRegisterInfo
 import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
-import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -54,12 +55,12 @@ const val CGM_URL = "$middleUrl/cgmRecord"
 const val getCgmRecordsByPageInfo =  "$CGM_URL/getCgmRecordsByPageInfo"
 //endregion
 
-
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
-const val API_DEVICE_UNREGISTER = "$middleUrl/cgm-device/unregister" //注销设备
-const val DEVICE = "$middleUrl/cgn-device" //获取设备
+const val API_DEVICE_UNREGISTER = "$middleUrl/cgmDevice/deviceUnRegister" //注销设备
+const val DEVICE = "$middleUrl/cgmDevice/getUserDeviceInfo" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
-const val UPLOAD_CGM_RECORD = "$middleUrl/cgm-record" //上传CGM
+const val UPLOAD_CGM_RECORD = "$middleUrl/cgmRecord/saveCgmRecord" //上传CGM
+const val UPDATE_CGM_RECORD = "$middleUrl/cgmRecord/updateCgmRecord" //更新CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
 const val CGM_LIST_RECENT = "$middleUrl/cgm-record/list-recent"
 const val vcsMiddleUrl = "backend/vcs"
@@ -128,22 +129,22 @@ interface ApiService {
     suspend fun getRemoteHistory(@Body json: String): Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
 
     @POST(UPLOAD_CGM_RECORD)
-    suspend fun postHistory(@Body json: String): Call<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+    suspend fun postHistory(@Body json: String): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
 
-    @PUT(UPLOAD_CGM_RECORD)
-    suspend fun putHistory(@Body json: String): Call<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+    @POST(UPDATE_CGM_RECORD)
+    suspend fun updateHistory(@Body json: String): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
 
     @GET(USER_PREFERENCE)
     suspend fun getUserPreference(): ApiResult<BaseResponse<MutableList<UserPreferenceEntity>>>
 
     @GET(DEVICE)
-    suspend fun getDevice(): ApiResult<BaseResponse<TransmitterEntity>>
+    suspend fun getDevice(): ApiResult<BaseResponse<CloudDeviceInfo>>
 
     @POST(API_DEVICE_REGISTER)
-    suspend fun deviceRegister(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<TransmitterEntity>>
+    suspend fun deviceRegister(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<DeviceRegisterInfo>>
 
     @POST(API_DEVICE_UNREGISTER)
-    suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<TransmitterEntity>
+    suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<BaseResponse<Nothing>>
 
     @Streaming
     @GET

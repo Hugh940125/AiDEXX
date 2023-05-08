@@ -8,7 +8,7 @@
     tools:context=".ui.pair.TransOperationActivity">
 
     <com.microtech.aidexx.widget.ActionBarWidget
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:id="@+id/actionbar_trans_operation"
         app:leftIcon="@drawable/ic_back"
         app:layout_constraintTop_toTopOf="parent"

@@ -21,15 +21,11 @@ object CalibrateManager {
             calibrateEntity.deviceId = history.deviceId ?: ""
             calibrateEntity.calTime = history.deviceTime
             calibrateEntity.sensorIndex = history.sensorIndex
-            calibrateEntity.referenceGlucose = history.eventData ?: 0f
+            calibrateEntity.referenceGlucose = history.glucose ?: 0f
             mutableListOf.add(calibrateEntity)
         }
-
         val calList = CalibrateDao.queryByUid(uid) ?: mutableListOf()
-
-        LogUtils.eAiDex("-----2|||$mutableListOf")
         mutableListOf.addAll(calList)
-        LogUtils.eAiDex("-----|||$mutableListOf")
         return mutableListOf
     }
 

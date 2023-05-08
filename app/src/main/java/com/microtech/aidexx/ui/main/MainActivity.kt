@@ -15,11 +15,13 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
-import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.compliance.EnquireManager
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
+import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
@@ -35,7 +37,7 @@ private const val REQUEST_BLUETOOTH_PERMISSION = 2001
 private const val REQUEST_ENABLE_LOCATION_SERVICE = 2002
 private const val REQUEST_IGNORE_BATTERY_OPTIMIZATIONS = 2003
 
-class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
+class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
 
@@ -100,10 +102,10 @@ class MainActivity : BaseActivity<BaseViewModel, ActivityMainBinding>() {
         initSDKs()
         fitOrientation()
         initView()
-        loadDbData()
+        loadData()
     }
 
-    private fun loadDbData() {
+    private fun loadData() {
         lifecycleScope.launch {
             AlertUtil.loadSettingsFromDb()
         }

@@ -484,9 +484,9 @@ class ChartViewModel: ViewModel() {
         loop@ for (history in cgmHistories) {
             when (history.eventType) {
                 History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
-                    if (history.eventData == null || history.eventWarning == -1) continue@loop
+                    if (history.glucose == null || history.eventWarning == -1) continue@loop
                     val dateTime = ChartUtil.dateToX(history.deviceTime)
-                    val entry = Entry(dateTime, history.eventData!!.toFloat().toGlucoseValue())
+                    val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
                     if (entry.y < 2f.toGlucoseValue()) {
                         entry.y = 2f.toGlucoseValue()
                     }// 小于2的数值 都当2处理
@@ -519,7 +519,7 @@ class ChartViewModel: ViewModel() {
         (History.HISTORY_GLUCOSE == cgm.eventType
                 || History.HISTORY_GLUCOSE_RECOMMEND_CAL == cgm.eventType
                 || History.HISTORY_CALIBRATION == cgm.eventType )
-                && (cgm.eventData != null && cgm.eventWarning != -1)
+                && (cgm.glucose != null && cgm.eventWarning != -1)
 
     /**
      * 新增指血数据
@@ -557,9 +557,9 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
-        if (history.eventData != null) {
+        if (history.glucose != null) {
             val dateTime = ChartUtil.dateToX(history.deviceTime)
-            val bg = BloodGlucoseEntity(history.deviceTime, history.eventData!!.toFloat())
+            val bg = BloodGlucoseEntity(history.deviceTime, history.glucose!!.toFloat())
             bg.calibration = true
             val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
             entry.data = bg

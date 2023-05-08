@@ -73,7 +73,7 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getRa
     AidexXHistoriesParser rawHistoryParser((const char *) data, length);
     jclass history_Class = env->FindClass(
             "com/microtechmd/blecomm/parser/AidexXRawHistoryEntity");
-    jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IFFFZ)V");
+    jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IFFFI)V");
     jobject listObj = newList(env);
     while (rawHistoryParser.hasNext()) {
         const AidexXRawHistoryEntity *history = rawHistoryParser.getRawHistory();
@@ -96,7 +96,7 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
     AidexXCalibrationsParser calibrationsParser((const char *) data, length);
     jclass history_Class = env->FindClass(
             "com/microtechmd/blecomm/parser/AidexXCalibrationEntity");
-    jmethodID caliConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIIFZ)V");
+    jmethodID caliConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIIFI)V");
 
     jobject listObj = newList(env);
     while (calibrationsParser.hasNext()) {
