@@ -198,7 +198,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 binding.tvPlsSelectTrans.visibility = View.GONE
                 binding.layoutMyTrans.root.visibility = View.VISIBLE
                 binding.layoutMyTrans.tvSn.text = transmitter!!.deviceName
-//                binding.layoutMyTrans.buttonDelete.setOnClickListener(this@TransmitterActivity)
                 binding.layoutMyTrans.tvTransPairState.visibility = View.VISIBLE
                 if (transmitter!!.accessId == null) {
                     binding.layoutMyTrans.tvTransPairState.text = "未配对"

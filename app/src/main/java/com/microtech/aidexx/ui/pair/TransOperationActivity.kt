@@ -3,10 +3,12 @@ package com.microtech.aidexx.ui.pair
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.lifecycleScope
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.ActivityTransOperationBinding
+import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtechmd.blecomm.controller.BleControllerInfo
@@ -33,8 +35,16 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
                 EventBusKey.EVENT_UNPAIR_RESULT
             ),
             this
-        ) {
-            finish()
+        ) { key, data ->
+            if (data) {
+                finish()
+            }else{
+                if (key == EventBusKey.EVENT_PAIR_RESULT){
+                    ToastUtil.showShort(getString(R.string.pair_fail))
+                }else{
+                    ToastUtil.showShort(getString(R.string.unpair_fail))
+                }
+            }
         }
     }
 
@@ -54,11 +64,11 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
             }
         }
         binding.tvUnpair.setOnClickListener {
-            PairUtil.startUnpair(this@TransOperationActivity,false)
+            PairUtil.startUnpair(this@TransOperationActivity, false)
         }
         binding.tvForceDelete.setOnClickListener {
             lifecycleScope.launch {
-                PairUtil.startUnpair(this@TransOperationActivity,true)
+                PairUtil.startUnpair(this@TransOperationActivity, true)
                 TransmitterManager.instance().getDefault()?.deletePair()
             }
         }

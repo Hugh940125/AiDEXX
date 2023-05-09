@@ -42,13 +42,13 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
     lateinit var mainScope: CoroutineScope
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(AidexxApp.themeId)
+        super.onCreate(savedInstanceState)
+        setTheme(ThemeManager.theme.id)
         binding = getViewBinding()
         initWindow()
         mainScope = MainScope()
         initViewModel()
         observe()
-        super.onCreate(savedInstanceState)
     }
 
     private fun initWindow() {

@@ -43,6 +43,10 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     val eventWarning: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.eventWarning
 
     override suspend fun postLocalData(json: String): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+        return null
+    }
+
+    suspend fun postBriefData(json: String): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
         return when (val postHistory = ApiService.instance.postHistory(json)) {
             is ApiResult.Success -> {
                 postHistory.result
@@ -82,14 +86,12 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 val json = GsonBuilder().createWithDateFormat().toJson(needUploadBriefData)
                 LogUtil.eAiDEX("Upload brief History: size:${list.size} - $json")
                 withContext(Dispatchers.IO) {
-                    val briefResponse = postLocalData(json)
+                    val briefResponse = postBriefData(json)
                     briefResponse?.let { response ->
                         if (response.code == RESULT_OK) {
                             response.data?.let {
                                 replaceEventData(list, it.records, 1)
                             }
-                        } else {
-                            downloadData()
                         }
                     }
                 }
