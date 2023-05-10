@@ -138,7 +138,9 @@ class MainService : Service(), LifecycleOwner {
             override fun run() {
                 count++
                 if (count % 3 == 0) {
-                    CloudHistorySync.downloadAllData()
+                    serviceMainScope.launch {
+                        CloudHistorySync.downloadAllData()
+                    }
                     val model = TransmitterManager.instance().getDefault()
                     if (model != null) {
                         if (model.isGettingTransmitterData) {

@@ -1,11 +1,9 @@
 package com.microtech.aidexx.data
 
-import com.google.gson.GsonBuilder
-import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.UPLOAD_CGM_RECORD
+import com.microtech.aidexx.common.net.UPLOAD_CGM_BRIEF
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
@@ -16,13 +14,10 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
-import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
-import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -68,13 +63,47 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
         when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
             userId = authorizationId,
-            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getShareDataMinIdKey(authorizationId)))) {
+            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getShareDataMinIdKey(authorizationId))
+        )) {
 
             is ApiResult.Success -> apiResult.result.data
 
             is ApiResult.Failure -> null
 
         }
+
+    suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
+        val userId = UserInfoManager.instance().userId()
+        val query = entityBox.query()
+        when (type) {
+            TYPE_BRIEF -> query //post请求
+                .equal(briefUploadState, 1)
+                .equal(
+                    this.userId,
+                    userId,
+                )
+
+            TYPE_RAW -> query //put请求
+                .equal(briefUploadState, 2)
+                .equal(this.userId, userId)
+                .equal(rawUploadState, 1)
+                .or().equal(calUploadState, 1)
+        }
+        return ObjectBox.store.awaitCallInTx {
+            query.order(idx).build().find(0, HISTORY_ONCE_UPLOAD_NUMBER)
+        }
+    }
+
+    suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+        return when (val updateHistory = ApiService.instance.updateHistory(map)) {
+            is ApiResult.Success -> {
+                updateHistory.result
+            }
+            is ApiResult.Failure -> {
+                null
+            }
+        }
+    }
 
     override suspend fun upload() {
         //简要数据
@@ -111,7 +140,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    override suspend fun replaceEventData(
+    suspend fun replaceEventData(
         origin: MutableList<RealCgmHistoryEntity>,
         responseList: MutableList<RealCgmHistoryEntity>,
         step: Int,
@@ -138,40 +167,8 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 if (old.calUploadState == 1) {
                     old.calUploadState = 2
                 }
-        }
+            }
             entityBox.put(origin)
-    }
-
-    private suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
-        return when (val updateHistory = ApiService.instance.updateHistory(map)) {
-            is ApiResult.Success -> {
-                updateHistory.result
-            }
-            is ApiResult.Failure -> {
-                null
-            }
-        }
-    }
-
-    private suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
-        val userId = UserInfoManager.instance().userId()
-        val query = entityBox.query()
-        when (type) {
-            TYPE_BRIEF -> query //post请求
-                .equal(briefUploadState, 1)
-                .equal(
-                    this.userId,
-                    userId,
-                )
-
-            TYPE_RAW -> query //put请求
-                .equal(briefUploadState, 2)
-                .equal(this.userId, userId)
-                .equal(rawUploadState, 1)
-                .or().equal(calUploadState, 1)
-        }
-        return ObjectBox.store.awaitCallInTx {
-            query.order(idx).build().find(0, HISTORY_ONCE_UPLOAD_NUMBER)
         }
     }
 
@@ -217,6 +214,17 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
+    private suspend fun getRecentCgmHistories(
+        authorId: String?,
+        maxIndex: Long
+    ): BaseResponse<BasePageList<RealCgmHistoryEntity>>? {
+        if (authorId == null) {
+            return ApiService.instance.getRecentHistories("recordIndex=$maxIndex").execute().body()
+        }
+        return ApiService.instance.getRecentHistories("authorizationId=$authorId&recordIndex=$maxIndex")
+            .execute().body()
+    }
+
     private suspend fun getMaxRecordIndex(authorId: String? = null): Long {
         val userId = UserInfoManager.instance().userId()
         val index: Long
@@ -243,16 +251,5 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             index = if (maxMine == Long.MIN_VALUE || maxMine == null) 1 else maxMine
         }
         return index
-    }
-
-    private suspend fun getRecentCgmHistories(
-        authorId: String?,
-        maxIndex: Long
-    ): BaseResponse<BasePageList<RealCgmHistoryEntity>>? {
-        if (authorId == null) {
-            return ApiService.instance.getRecentHistories("recordIndex=$maxIndex").execute().body()
-        }
-        return ApiService.instance.getRecentHistories("authorizationId=$authorId&recordIndex=$maxIndex")
-            .execute().body()
     }
 }
