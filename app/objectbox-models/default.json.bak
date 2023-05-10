@@ -755,7 +755,7 @@
     },
     {
       "id": "9:6955981282264354374",
-      "lastPropertyId": "30:7543481057342176009",
+      "lastPropertyId": "53:4873525614755009509",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -831,26 +831,6 @@
           "type": 5
         },
         {
-          "id": "12:6687734252134382391",
-          "name": "eventData",
-          "type": 7
-        },
-        {
-          "id": "13:5710018295921860888",
-          "name": "eventDataOrgin",
-          "type": 7
-        },
-        {
-          "id": "14:6867936337685010392",
-          "name": "calFactor",
-          "type": 7
-        },
-        {
-          "id": "15:9135944151116913761",
-          "name": "calOffset",
-          "type": 7
-        },
-        {
           "id": "16:6990252245800798445",
           "name": "eventWarning",
           "indexId": "38:4047602765688963800",
@@ -880,13 +860,6 @@
           "id": "20:7725547743545253800",
           "name": "recordId",
           "type": 9
-        },
-        {
-          "id": "21:993311852472542785",
-          "name": "recordUuid",
-          "indexId": "41:1515040275222400985",
-          "type": 9,
-          "flags": 34848
         },
         {
           "id": "22:6209985473686600277",
@@ -932,6 +905,127 @@
           "id": "30:7543481057342176009",
           "name": "rawData9",
           "type": 7
+        },
+        {
+          "id": "31:5135774528996504320",
+          "name": "briefUploadState",
+          "type": 5
+        },
+        {
+          "id": "32:102354736518702492",
+          "name": "rawUploadState",
+          "type": 5
+        },
+        {
+          "id": "33:4551675312218641894",
+          "name": "calUploadState",
+          "type": 5
+        },
+        {
+          "id": "34:4106617080673901320",
+          "name": "cgmRecordId",
+          "type": 9
+        },
+        {
+          "id": "35:7488722830016828193",
+          "name": "sensorId",
+          "indexId": "44:6391135220010871424",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "36:8514371663983977519",
+          "name": "userId",
+          "indexId": "45:2629388468798142103",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "37:7743469718869398395",
+          "name": "glucose",
+          "type": 7
+        },
+        {
+          "id": "38:6464170252182061589",
+          "name": "eventDataOrigin",
+          "type": 7
+        },
+        {
+          "id": "39:7732273213671394024",
+          "name": "cf",
+          "type": 7
+        },
+        {
+          "id": "40:1998679364200178089",
+          "name": "offset",
+          "type": 7
+        },
+        {
+          "id": "41:3288809675283845984",
+          "name": "calibrationIsValid",
+          "type": 5
+        },
+        {
+          "id": "42:631379425040741314",
+          "name": "index",
+          "type": 5
+        },
+        {
+          "id": "43:8626826701645562714",
+          "name": "rawIsValid",
+          "type": 5
+        },
+        {
+          "id": "44:7080631948793159991",
+          "name": "glucoseIsValid",
+          "type": 5
+        },
+        {
+          "id": "45:483720106302668585",
+          "name": "quality",
+          "type": 5
+        },
+        {
+          "id": "46:2385528268008404317",
+          "name": "status",
+          "type": 5
+        },
+        {
+          "id": "47:4111669534620607741",
+          "name": "autoIncrementColumn",
+          "type": 5
+        },
+        {
+          "id": "48:3795497524421362043",
+          "name": "timeOffset",
+          "type": 5
+        },
+        {
+          "id": "49:4280497551037871355",
+          "name": "rawOne",
+          "type": 7
+        },
+        {
+          "id": "50:4493072479496680912",
+          "name": "rawTwo",
+          "type": 7
+        },
+        {
+          "id": "51:2923262149076850265",
+          "name": "rawVc",
+          "type": 7
+        },
+        {
+          "id": "52:5341065768784591938",
+          "name": "referenceGlucose",
+          "type": 7
+        },
+        {
+          "id": "53:4873525614755009509",
+          "name": "frontRecordId",
+          "indexId": "46:7142839169229159170",
+          "type": 9,
+          "flags": 34848
         }
       ],
       "relations": []
@@ -1110,14 +1204,22 @@
     }
   ],
   "lastEntityId": "11:8618911364161193472",
-  "lastIndexId": "43:5533306731406138264",
+  "lastIndexId": "46:7142839169229159170",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
-  "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredIndexUids": [
+    1515040275222400985
+  ],
+  "retiredPropertyUids": [
+    6687734252134382391,
+    5710018295921860888,
+    6867936337685010392,
+    9135944151116913761,
+    993311852472542785
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

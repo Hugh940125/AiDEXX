@@ -10,14 +10,16 @@ import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
-import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -25,7 +27,7 @@ private const val TYPE_BRIEF = 0
 private const val TYPE_RAW = 1
 private const val HISTORY_ONCE_UPLOAD_NUMBER = 150L
 
-class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
+object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override val idx: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.idx
     override val id: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.id
     override val url: String = UPLOAD_CGM_RECORD
@@ -53,26 +55,16 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    override suspend fun getRemoteData(authorizationId: String?): BaseResponse<BasePageList<RealCgmHistoryEntity>>? {
-        val userId = UserInfoManager.instance().userId()
-        val indexList = ObjectBox.store.awaitCallInTx {
-            entityBox
-                .query()
-                .notNull(recordIndex)
-                .equal(
-                    this.userId,
-                    authorizationId ?: userId,
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .build().property(recordIndex).findLongs()
+    override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
+        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
+            userId = authorizationId,
+            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getShareDataMinIdKey(authorizationId)))) {
+
+            is ApiResult.Success -> apiResult.result.data
+
+            is ApiResult.Failure -> null
+
         }
-        val index = if (indexList == null || indexList.isEmpty()) 0
-        else indexList.max()
-        val map = if (authorizationId != null)
-            "{'greaterThan':{'recordIndex':${index}},'pageSize' : 500,'authorizationId' : ${authorizationId}}"
-        else "{'greaterThan':{'recordIndex':${index}},'pageSize' : 500}"
-        return ApiService.instance.getRemoteHistory(map).execute().body()
-    }
 
     override suspend fun upload() {
         //简要数据
@@ -89,7 +81,7 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                                 replaceEventData(list, it.records, 1)
                             }
                         } else {
-                            downloadData()
+//                            startDownloadData()
                         }
                     }
                 }
@@ -110,7 +102,7 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                                 replaceEventData(needUploadRawData, it.records, 2)
                             }
                         } else {
-                            downloadData()
+//                            startDownloadData()
                         }
                     }
                 }
@@ -120,10 +112,21 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
 
     override suspend fun replaceEventData(
         origin: MutableList<RealCgmHistoryEntity>,
-        responseList: MutableList<RealCgmHistoryEntity>,
+        responseList: List<RealCgmHistoryEntity>,
         step: Int,
         authorId: String?,
     ) {
+        if (step == 3) { //下载
+            if (responseList.isNotEmpty()) {
+                CgmCalibBgRepository.insert(responseList)
+                MmkvManager.setEventDataMinId(
+                    getShareDataMinIdKey(authorId!!),
+                    responseList.last().autoIncrementColumn
+                )
+            }
+            return
+        }
+
         val userId =
             if (authorId.isNullOrBlank()) UserInfoManager.instance().userId() else authorId
         if (origin.isNotEmpty()) {
@@ -137,10 +140,6 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                     2 -> {//更新
                         old.rawUploadState = 2
                         old.calUploadState = 2
-                    }
-                    3 -> {//下载
-                        old.dataStatus =
-                            if (responseList[index].rawData1 == null && responseList[index].rawData2 == null) 0 else 2
                     }
                 }
                 if (old.id == null && responseList[index].id != null) {

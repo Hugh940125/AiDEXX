@@ -137,7 +137,9 @@ class MainService : Service(), LifecycleOwner {
             override fun run() {
                 count++
                 if (count % 3 == 0) {
-                    CloudHistorySync
+                    serviceMainScope.launch {
+                        CloudHistorySync.downloadAllData()
+                    }
                 }
                 if (count % 4 == 0) {
 

@@ -12,16 +12,23 @@ import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jeremyliao.liveeventbus.LiveEventBus
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudHistorySync
+import com.microtech.aidexx.data.DataSyncController
 import com.microtech.aidexx.databinding.LayoutFollowListDialogBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.utils.DensityUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.Dialogs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class FollowSwitchDialog : Dialog {
@@ -82,18 +89,33 @@ class FollowSwitchDialog : Dialog {
             val followListAdapter = FollowListAdapter(vb.root.context)
             followListAdapter.onSelectChange = { _: Int, shareUserEntity: ShareUserEntity ->
 
-                if (UserInfoManager.shareUserInfo?.id != shareUserEntity.id) {
+                if (shareUserEntity.id != null && UserInfoManager.shareUserInfo?.id != shareUserEntity.id) {
 //                todo 待实现    TrendBgSelector.instance().getHomeBg(null)
                     UserInfoManager.shareUserInfo = shareUserEntity
-                    Dialogs.showWait("假装正在-${vb.root.context.getString(R.string.loading)}")
+                    Dialogs.showWait(vb.root.context.getString(R.string.loading))
 
-                    // 下载该用户的数据
-                    CloudHistorySync.downloadAllData(UserInfoManager.shareUserInfo?.id) {
-                        Dialogs.dismissWait()
-                        //通知其他页面刷新
-                        LiveEventBus
-                            .get(EventBusKey.EVENT_SWITCH_USER, ShareUserEntity::class.java)
-                            .post(shareUserEntity) //通知刷新历史页面
+                    // 该用户的数据下载成功后再执行切换
+                    AidexxApp.instance.ioScope.launch {
+                        val syncStatus = CloudHistorySync.downloadAllData(UserInfoManager.shareUserInfo?.id)
+                        withContext(Dispatchers.Main) {
+
+                            when(syncStatus) {
+                                is DataSyncController.SyncStatus.Success -> {
+
+                                    //通知其他页面刷新
+                                    LiveEventBus
+                                        .get(EventBusKey.EVENT_SWITCH_USER, ShareUserEntity::class.java)
+                                        .post(shareUserEntity)
+                                    //通知刷新历史页面
+                                }
+                                is DataSyncController.SyncStatus.Failure -> {
+                                    // 数据下载失败
+                                    LogUtil.xLogE("")
+                                }
+                                else ->{}
+                            }
+                            Dialogs.dismissWait()
+                        }
                     }
 
                     mFollowListDialog?.dismiss()

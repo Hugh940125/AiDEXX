@@ -149,7 +149,7 @@ internal fun Number.dp2px() =
 /**
  * 全局协程作用域用于取代GlobalScope
  */
-val Application.scope: CoroutineScope
+val Application.ioScope: CoroutineScope
     get() {
         return CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }

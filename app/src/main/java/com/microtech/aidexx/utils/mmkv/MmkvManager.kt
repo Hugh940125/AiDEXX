@@ -2,6 +2,7 @@ package com.microtech.aidexx.utils.mmkv
 
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Date
 
@@ -40,6 +41,14 @@ object MmkvManager {
     private const val GivenName = "GivenName"
     private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "already_show_dialog_guide"
 
+    fun setEventDataMinId(key: String, autoIncrementColumn: Long) {
+        MmkvUtil.encodeLong(key, autoIncrementColumn)
+        LogUtil.d("$key=$autoIncrementColumn", "MmkvManager")
+    }
+    fun getEventDataMinId(key: String): Long? {
+        val ret = MmkvUtil.decodeLong(key, 0)
+        return if (ret == 0L) null else ret
+    }
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
     fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)
 
