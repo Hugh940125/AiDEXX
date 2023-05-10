@@ -10,9 +10,13 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.ConflictStrategy
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import io.objectbox.annotation.Unique
+import java.util.Date
 
 @Entity
 class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
@@ -64,7 +68,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var glucoseIsValid: Int = 0
     var quality: Int = 0
     var status: Int = 0
-    var autoIncrementColumn: Int = 0
+    var autoIncrementColumn: Long = 0
     var timeOffset: Int = 0
     var rawOne: Float? = null
     var rawTwo: Float? = null

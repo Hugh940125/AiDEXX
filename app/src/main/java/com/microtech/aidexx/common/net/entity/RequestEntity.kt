@@ -60,6 +60,8 @@ data class ReqGetCgmByPage(
     val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
     val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
     val userId: String = UserInfoManager.instance().userId(),//	是 String (String)
-    val autoIncrementColumn: Int?,//	否 0 自增列(Long).序号
+    val startAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号
+    val endAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号  结束点。闭区间
+    val orderStrategy: String? //	否 ASC 枚举值.排序规则 默认DESC
 ): ReqEntity()
 //endregion

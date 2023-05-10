@@ -128,7 +128,7 @@ class ChartViewModel: ViewModel() {
                             LogUtil.d("===CHART=== 当前数据最小日期$curPageMinDate")
                             var maxTime = curPageMinDate // ob between是前闭后闭
                             //获取当前最小日期前的最近一条数据时间 因为可能有断层 导致图表无法滚动
-                            val latestOne = CgmCalibBgRepository.queryCgmLatestOne(
+                            val latestOne = CgmCalibBgRepository.queryNextByTargetDate(
                                 UserInfoManager.getCurShowUserId(),
                                 maxTime
                             )
@@ -194,7 +194,7 @@ class ChartViewModel: ViewModel() {
         if (!::combinedData.isInitialized) {
             combinedData = CombinedData()
         }
-        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(
+        val latestOne = CgmCalibBgRepository.queryNextByTargetDate(
             UserInfoManager.getCurShowUserId(),
             Date()
         ) //"f03550ef07a7b2164f06deaef597ce37"

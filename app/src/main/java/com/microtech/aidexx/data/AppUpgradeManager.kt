@@ -9,10 +9,10 @@ import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getStartOfTheDay
-import com.microtech.aidexx.common.net.repository.ApiRepository
+import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
-import com.microtech.aidexx.common.scope
+import com.microtech.aidexx.common.net.repository.ApiRepository
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.StringUtils
@@ -55,7 +55,7 @@ object AppUpgradeManager {
 
     init {
         // 长生命周期下载
-        AidexxApp.instance.scope.launch {
+        AidexxApp.instance.ioScope.launch {
             mUpgradeState.collect {
                 it?.let {
                     appUpgradeScope.launch(syncExceptionHandler) {
@@ -131,7 +131,7 @@ object AppUpgradeManager {
      */
     private fun stopUpgrade(isFromException: Boolean = false){
         if(isFromException){
-            AidexxApp.instance.scope.launch { mUpgradeProgress.emit(DOWNLOAD_STATUS_ERROR to "") }
+            AidexxApp.instance.ioScope.launch { mUpgradeProgress.emit(DOWNLOAD_STATUS_ERROR to "") }
         }
         mUpgradeState.value = null
         LogUtil.xLogI("结束升级 curState=${mUpgradeState.value}", TAG)

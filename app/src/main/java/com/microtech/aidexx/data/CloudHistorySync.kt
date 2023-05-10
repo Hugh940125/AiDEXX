@@ -7,11 +7,15 @@ import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
+import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.scope
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.utils.LogUtil
+import com.microtechmd.blecomm.constant.History
 import io.objectbox.Box
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
@@ -21,8 +25,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.reflect.ParameterizedType
+import java.util.Date
+import java.util.concurrent.CountDownLatch
 
-abstract class CloudHistorySync<T : EventEntity> {
+abstract class CloudHistorySync<T : EventEntity>: DataSyncController() {
     abstract val idx: Property<T>
     abstract val id: Property<T>
     abstract val url: String //api请求路径
@@ -42,7 +48,7 @@ abstract class CloudHistorySync<T : EventEntity> {
         return null
     }
 
-    abstract suspend fun getRemoteData(authorizationId: String? = null): BaseResponse<BasePageList<T>>?
+    abstract suspend fun getRemoteData(authorizationId: String): List<T>?
 
     open suspend fun upload() {
         val needUploadData = getNeedUploadData()
@@ -56,7 +62,7 @@ abstract class CloudHistorySync<T : EventEntity> {
                             replaceEventData(needUploadData, it.records)
                         }
                     } else {
-                        downloadData()
+//                        downloadData()
                     }
                 }
             }
@@ -90,22 +96,31 @@ abstract class CloudHistorySync<T : EventEntity> {
             }
         }
     }
-
-    suspend fun downloadData(authorizationId: String? = null) {
-        val result = getRemoteData(authorizationId)
-        result?.let { result ->
-            if (result.code == RESULT_OK) {
-                result.data?.let {
-                    replaceEventData(
-                        responseList = it.records, authorId = authorizationId
-                    ) //下载的数据
-                    val page = it.pageInfo
-                    if (page.currentPage * page.pageSize < page.totalCount) {
-                        downloadData(authorizationId)
-                    }
-                }
+var pi = 0
+    override suspend fun downloadData(userId: String): Boolean {
+        val result = getRemoteData(userId)
+        return result?.let {
+            if (it.isNotEmpty()) {
+                replaceEventData( responseList = it, cgmStatus = 3, authorId = userId )
             }
-        }
+            if (it.size >= PAGE_SIZE) {
+                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+                // todo 是否需要加个间隔 不然可能会很快
+                downloadData(userId)
+            } else true
+
+//            val ti = testData(userId, pi) as List<T>
+//            pi++
+//
+//            if (ti.isNotEmpty()) {
+//                replaceEventData( responseList = ti, cgmStatus = 3, authorId = userId )
+//            }
+//            if (pi <= 3000) {
+//                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+//                downloadData(userId)
+//            } else true
+
+        } ?: false
     }
 
     suspend fun getNeedDeleteList(): MutableList<T>? {
@@ -143,10 +158,10 @@ abstract class CloudHistorySync<T : EventEntity> {
         return mutableListOf()
     }
 
-
     open suspend fun replaceEventData(
         origin: MutableList<T> = mutableListOf(),
-        responseList: MutableList<T>,
+        responseList: List<T>,
+        cgmStatus: Int = 0,
         authorId: String? = null,
     ) {
         val userId = UserInfoManager.instance().userId()
@@ -176,16 +191,83 @@ abstract class CloudHistorySync<T : EventEntity> {
         }
     }
 
+    override fun getShareDataMinIdKey(userId: String) = "$userId-${clazz.simpleName}-MIN-ID"
     companion object {
-        fun downloadAllData(userId: String?, callback: ()->Unit){
-            AidexxApp.instance.scope.launch {
-                delay(3000)
-                // todo
-                callback.invoke()
+        suspend fun downloadAllData(userId: String? = null): SyncStatus{
+
+            var isSuccess = true
+            var taskLatch : CountDownLatch? = null
+
+            fun updateRet(status: SyncStatus?) {
+                isSuccess = when (status) {
+                    is SyncStatus.Failure -> {
+                        taskLatch?.countDown()
+                        false
+                    }
+                    is SyncStatus.Success -> {
+                        taskLatch?.countDown()
+                        isSuccess
+                    }
+                    else -> isSuccess
+                }
             }
 
+            val tasks = listOf {
+                CloudCgmHistorySync.startDownload(userId = userId) {
+                    updateRet(it)
+                }
+            }
+
+            taskLatch = CountDownLatch(tasks.size)
+
+            tasks.forEach {
+                if (!it.invoke()) {
+                    taskLatch.countDown()
+                }
+            }
+
+            withContext(Dispatchers.IO) {
+                taskLatch.await() // todo 考虑加个超时
+            }
+
+            return if (isSuccess) SyncStatus.Success else SyncStatus.Failure()
         }
     }
 
+    private fun testData(userId: String, pageIndex: Int): List<RealCgmHistoryEntity> {
+        val c = 1000
+        val cur = Date().time / 1000
+
+        LogUtil.d("开始生成插入 ${Date().time}")
+        val data = (0 until c).flatMap { t ->
+            listOf(RealCgmHistoryEntity().also {
+                it.deviceTime = Date((cur - (t * 60) - (pageIndex * 1000 * 60)) * 1000)
+                it.glucose = (t % 40).toFloat()
+                it.eventType = History.HISTORY_GLUCOSE
+                it.createTime = it.deviceTime
+                it.authorizationId = userId
+                it.userId = userId
+                it.dataStatus = 2
+                it.recordIndex = (t + pageIndex * 1000).toLong()
+                it.autoIncrementColumn = it.recordIndex!!
+                it.type = 1
+                it.deviceId = "deviceIddeviceId"
+                it.deviceSn = "deviceSndeviceSndeviceSn"
+                it.rawData1 = 0.1f
+                it.rawData2 = 0.1f
+                it.rawData3 = 0.1f
+                it.rawData4 = 0.1f
+                it.rawData5 = 0.1f
+                it.rawData6 = 0.1f
+                it.rawData7 = 0.1f
+                it.rawData8 = 0.1f
+                it.rawData9 = 0.1f
+                it.sensorIndex = 1
+                it.eventIndex = t
+                it.id = it.recordId
+            })
+        }
+        return data
+    }
 
 }

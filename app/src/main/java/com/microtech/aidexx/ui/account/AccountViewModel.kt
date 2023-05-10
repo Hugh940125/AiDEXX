@@ -111,21 +111,19 @@ class AccountViewModel : BaseViewModel() {
     }
 
     private suspend fun downloadData(userId: String): Boolean =
-        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(userId = userId)) {
+        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(userId = userId, pageSize = 5000)) {
             is ApiResult.Success -> {
 
-//                val data = apiResult.result.data
-                val data = testData(userId)
+                val data = apiResult.result.data
+//                val data = testData(userId)
 
                 if (data.isNullOrEmpty()) {
                     LogUtil.d("登录后 该账号没有数据", TAG)
                     true
                 } else {
-
                     LogUtil.d("开始插入 ${Date().time}", TAG)
                     var isSuccess = true
-                    // todo 分块大小需进一步确定 others有影响
-                    data.chunked(1000).forEach { d ->
+                    data.chunked(5000).forEach { d ->
                         isSuccess = CgmCalibBgRepository.insert(d)?.let {
                             LogUtil.d("开始插入 ${Date().time}", TAG)
                             isSuccess
@@ -133,6 +131,9 @@ class AccountViewModel : BaseViewModel() {
                             LogUtil.d("开始插入 ${Date().time}", TAG)
                             LogUtil.d("登录后 数据保存失败", TAG)
                             false
+                        }
+                        if (!isSuccess) {
+                            return@forEach
                         }
                     }
 

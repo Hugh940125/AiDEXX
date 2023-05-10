@@ -1,18 +1,25 @@
 package com.microtech.aidexx.data
 
+import com.google.gson.GsonBuilder
+import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.UPLOAD_CGM_BRIEF
+import com.microtech.aidexx.common.net.UPLOAD_CGM_RECORD
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
@@ -58,27 +65,16 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    override suspend fun getRemoteData(authorizationId: String?): BaseResponse<BasePageList<RealCgmHistoryEntity>>? {
-        val userId = UserInfoManager.instance().userId()
-        val indexList = ObjectBox.store.awaitCallInTx {
-            entityBox
-                .query()
-                .notNull(recordIndex)
-                .equal(
-                    this.userId,
-                    authorizationId ?: userId,
-                    QueryBuilder.StringOrder.CASE_INSENSITIVE
-                )
-                .build().property(recordIndex).findLongs()
+    override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
+        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
+            userId = authorizationId,
+            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getShareDataMinIdKey(authorizationId)))) {
+
+            is ApiResult.Success -> apiResult.result.data
+
+            is ApiResult.Failure -> null
+
         }
-        val index = if (indexList == null || indexList.isEmpty()) 0
-        else indexList.max()
-        val map = if (authorizationId != null)
-            "{'greaterThan':{'recordIndex':${index}},'pageSize' : 500,'authorizationId' : ${authorizationId}}"
-        else "{'greaterThan':{'recordIndex':${index}},'pageSize' : 500}"
-        //return ApiService.instance.getRemoteHistory(map).execute().body()
-        return null
-    }
 
     override suspend fun upload() {
         //简要数据
@@ -118,8 +114,19 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override suspend fun replaceEventData(
         origin: MutableList<RealCgmHistoryEntity>,
         responseList: MutableList<RealCgmHistoryEntity>,
+        step: Int,
         authorId: String?,
     ) {
+        if (step == 3) { //下载
+            if (responseList.isNotEmpty()) {
+                CgmCalibBgRepository.insert(responseList)
+                MmkvManager.setEventDataMinId(
+                    getShareDataMinIdKey(authorId!!),
+                    responseList.last().autoIncrementColumn
+                )
+            }
+            return
+        }
         if (origin.isNotEmpty()) {
             for (old in origin) {
                 if (old.rawUploadState == 1) {
@@ -131,9 +138,8 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 if (old.calUploadState == 1) {
                     old.calUploadState = 2
                 }
-            }
-            entityBox.put(origin)
         }
+            entityBox.put(origin)
     }
 
     private suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {

@@ -40,7 +40,7 @@ object CgmHistoryDao {
                 .build().find()
         }
 
-    suspend fun queryLatest(authorId: String, targetDate: Date): RealCgmHistoryEntity? =
+    suspend fun queryNextByTargetDate(authorId: String, targetDate: Date): RealCgmHistoryEntity? =
         awaitCallInTx {
             box.query()
                 .equal( RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
