@@ -108,6 +108,15 @@ class UserInfoManager {
         entity.emailAddress = content.email
         entity.avatar = content.avatar
 
+        this@UserInfoManager.userEntity?.let {
+            it.id = entity.id
+            it.phoneNumber = entity.phoneNumber
+            it.emailAddress = entity.emailAddress
+            it.avatar = entity.emailAddress
+        } ?:let {
+            this@UserInfoManager.userEntity = entity
+        }
+
         AccountDbRepository.saveUser(entity)?.let {
             updateUserId(content.userId)
             setPhone(content.phone ?: "")

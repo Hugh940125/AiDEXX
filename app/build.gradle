@@ -75,7 +75,7 @@ android {
         }
 
 
-        cnmg {
+        mgmo {
             dimension "GLUCOSE_UNIT"
         }
         mg {
@@ -97,10 +97,10 @@ android {
 
         if (area == "cn") {
             //只保留cn aidex mg版本
-            setIgnore(brand != "aidex" || unit != "cnmg")
+            setIgnore(brand != "aidex" || unit != "mgmo")
         } else {
             // gp 没有cnmg版本
-            if (unit == "cnmg") {
+            if (unit == "mgmo") {
                 setIgnore(true)
             }
             if (brand == "medmmoltrust") {
@@ -170,6 +170,7 @@ dependencies {
 
     implementation 'com.github.bumptech.glide:glide:4.13.2'
     implementation 'com.flyco.roundview:FlycoRoundView_Lib:1.1.4@aar'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.0"
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
 }
 

@@ -3,6 +3,8 @@ package com.microtech.aidexx.utils
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.db.entity.AlertSettingsEntity
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import kotlinx.coroutines.launch
 
 object ThresholdManager {
@@ -25,11 +27,18 @@ object ThresholdManager {
     init {
         AidexxApp.mainScope.launch {
             alertSetting = AlertUtil.getAlertSettings()
+            if (alertSetting.hyperThreshold != DEFAULT_HYPER || alertSetting.hypoThreshold != DEFAULT_HYPO) {
+                EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
+            }
         }
     }
 
-    var hyper: Float = 0f
+    var hyper: Float = DEFAULT_HYPER
         set(value) {
+            if (value == field) {
+                return
+            }
+            alertSetting.hyperThreshold = value
             AlertUtil.setHyperThreshold(value)
         }
         get() {
@@ -39,8 +48,12 @@ object ThresholdManager {
             return field
         }
 
-    var hypo: Float = 0f
+    var hypo: Float = DEFAULT_HYPO
         set(value) {
+            if (value == field) {
+                return
+            }
+            alertSetting.hypoThreshold = value
             AlertUtil.setHypoThreshold(value)
         }
         get() {

@@ -7,10 +7,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.utils.LocalManageUtil
-import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
@@ -23,7 +22,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 /**
  *@date 2023/2/22
@@ -102,13 +104,6 @@ fun Float.toGlucoseString2(): String {
         this >= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) ThresholdManager.GLUCOSE_UP_LIMIT
         else ThresholdManager.GLUCOSE_UP_LIMIT * 18 -> "HI"
         else -> UnitManager.formatterUnitByIndex().format(this)
-    }
-}
-
-fun Float.toGlucoseValue(): Float {
-    return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this * 18f
     }
 }
 

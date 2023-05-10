@@ -4,10 +4,10 @@ import android.content.Context
 import android.view.LayoutInflater
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.ThresholdManager
-import com.microtech.aidexx.utils.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.fromGlucoseValue
 import com.microtech.aidexx.widget.ruler.RulerWidget
 
-class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onValue: ((value: String) -> Unit)) :
+class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onValue: ((value: Float) -> Unit)) :
     BaseBottomPopupView(context) {
 
     init {
@@ -21,9 +21,7 @@ class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onV
         val btOk = findViewById<RulerWidget>(R.id.bt_ok)
         btOk?.setOnClickListener {
             val currentValue = rulerWidget.getCurrentValue()
-            if (type == RulerWidget.RulerType.HYPO) ThresholdManager.hypo = currentValue
-            else ThresholdManager.hyper = currentValue
-            onValue.invoke(currentValue.toGlucoseStringWithUnit())
+            onValue.invoke(currentValue.fromGlucoseValue())
             dismiss()
         }
         val btCancel = findViewById<RulerWidget>(R.id.bt_cancel)

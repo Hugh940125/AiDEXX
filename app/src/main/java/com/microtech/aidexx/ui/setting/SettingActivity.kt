@@ -14,6 +14,8 @@ import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
 import com.microtech.aidexx.ui.setting.share.ShareFollowActivity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 
 class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
@@ -62,6 +64,7 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 Dialogs.Picker(this@SettingActivity).singlePick(units, UnitManager.glucoseUnit.index) {
                     settingUnit.setValue(units[it])
                     UnitManager.glucoseUnit = UnitManager.getUnitByIndex(it)
+                    EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
                 }
             }
             val themes = listOf(getString(R.string.theme_light), getString(R.string.theme_dark))

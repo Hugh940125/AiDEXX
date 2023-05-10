@@ -1,7 +1,5 @@
 package com.microtech.aidexx.common.net.entity
 
-import android.icu.util.VersionInfo
-
 const val RESULT_OK = 200
 
 data class BaseResponse<T>(

@@ -5,10 +5,10 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import com.microtech.aidexx.R
-import com.microtech.aidexx.common.toGlucoseValue
 import com.microtech.aidexx.databinding.WidgetRulerBinding
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.toGlucoseValue
 
 class RulerWidget : LinearLayout {
 

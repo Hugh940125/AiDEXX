@@ -108,6 +108,13 @@ class TimeTabLayout : LinearLayoutCompat, View.OnClickListener {
         onTabChange?.invoke(currentSelect)
     }
 
+    fun changeWithoutTabChangeListener(pos: Int) {
+        lastSelect = currentSelect
+        select(pos)
+        currentSelect = pos
+        unselect(lastSelect)
+    }
+
     fun select(pos: Int) {
         if (pos == currentSelect) {
             return

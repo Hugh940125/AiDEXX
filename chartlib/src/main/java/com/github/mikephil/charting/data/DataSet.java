@@ -232,7 +232,7 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
     }
 
     @Override
-    public void addEntryOrdered(T e) {
+    public synchronized void addEntryOrdered(T e) {
 
         if (e == null)
             return;

@@ -36,6 +36,7 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
@@ -45,14 +46,12 @@ import com.microtech.aidexx.widget.chart.dataset.CalDataSet
 import com.microtech.aidexx.widget.chart.dataset.CurrentGlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.IconDataSet
-import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -69,7 +68,7 @@ class ChartViewModel: ViewModel() {
     /**
      * 图表数据总集
      */
-    private val combinedData = CombinedData()
+    private lateinit var combinedData: CombinedData
 
     private val currentSet = CurrentGlucoseDataSet()
     private val glucoseSets: MutableList<LineDataSet> = CopyOnWriteArrayList()
@@ -79,6 +78,9 @@ class ChartViewModel: ViewModel() {
 
     private var timeMin: Float? = null
     private var timeMax: Float? = null
+
+    @Volatile
+    private var isDataInit = false
 
     class ChartChangedInfo(
         var timeMin: Float?,
@@ -91,6 +93,7 @@ class ChartViewModel: ViewModel() {
 
     /** 启动加载下一页任务 */
     val startLoadNextPage = MutableStateFlow(false)
+    val startApplyNextPageData = MutableStateFlow(false)
 
     /**
      * 数据图表数据发生变化通知外面刷新
@@ -115,39 +118,86 @@ class ChartViewModel: ViewModel() {
 
     init {
         viewModelScope.launch {
-            startLoadNextPage.collect {
-                if (it) {
-                    LogUtil.d("===CHART===开始加载下一页")
-                    var needNotify = true
-                    withContext(Dispatchers.IO) {
-                        var maxTime = Date(curPageMinDate.time - 1000) // ob between是前闭后闭
-                        val curMinTime = getCurPageStartDate(curPageMinDate.time)
-                        LogUtil.d("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
+            launch {
+                startLoadNextPage.collect {
+                    if (it) {
+                        LogUtil.d("===CHART===开始加载下一页")
+                        var needNotify: Boolean
+                        withContext(Dispatchers.IO) {
 
-                        needNotify = loadNextPageData(curMinTime, maxTime)
+                            LogUtil.d("===CHART=== 当前数据最小日期$curPageMinDate")
+                            var maxTime = curPageMinDate // ob between是前闭后闭
+                            //获取当前最小日期前的最近一条数据时间 因为可能有断层 导致图表无法滚动
+                            val latestOne = CgmCalibBgRepository.queryCgmLatestOne(
+                                UserInfoManager.getCurShowUserId(),
+                                maxTime
+                            )
+                            maxTime = latestOne?.let { rche ->
+                                rche.deviceTime
+                            } ?: maxTime
 
-                        LogUtil.d("===CHART=== 加载之后 timeMin=$timeMin start=${curMinTime} end=${maxTime}")
-                    }
-                    // 如果这个期间没发生用户切换就外部
-                    if (needNotify) {
-                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                            val curMinTime = getCurPageStartDate(curPageMinDate.time)
+                            LogUtil.d("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
+
+                            needNotify = loadNextPageData(curMinTime, maxTime, false)
+
+                            LogUtil.d("===CHART=== 加载之后 timeMin=$timeMin start=${curMinTime} end=${maxTime}")
+                        }
+                        // 如果这个期间没发生用户切换就外部
+                        if (needNotify) {
+//                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                        } else {
+                            LogUtil.e("===CHART=== 分页查询结束 发现换人了 终止通知")
+                        }
                         //重置标记
                         val ret = startLoadNextPage.compareAndSet(true, update = false)
                         LogUtil.d("===CHART=== 通知及标记重置了 ret=$ret")
-                    } else {
-                        LogUtil.e("===CHART=== 分页查询结束 发现换人了 终止通知")
                     }
                 }
             }
+
+            launch {
+                startApplyNextPageData.collect {
+                    if (it) {
+                        var needNotify = false
+                        if (nextPageCgmData.isNotEmpty()) {
+                            LogUtil.d("===CHART=== 下一页数据 size=${nextPageCgmData.size}")
+                            withContext(Dispatchers.IO) {
+                                updateGlucoseSets(nextPageCgmData)
+                                nextPageCgmData.clear()
+                                needNotify = true
+                            }
+                        }
+                        if (needNotify) {
+                            LogUtil.d("===CHART=== 下一页数据已添加到图表待刷新")
+                            mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                        }
+                        //重置标记
+                        val ret = startApplyNextPageData.compareAndSet(true, update = false)
+                        LogUtil.d("===CHART=== 应用分页数据标记重置 ret=$ret")
+                    }
+                }
+            }
+
         }
     }
 
     /**
      * 首次 加载第一页数据
      */
-    fun initData() = flow {
+    fun initData(needReloadData: Boolean = false) = flow {
 
-        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(UserInfoManager.getCurShowUserId()) //"f03550ef07a7b2164f06deaef597ce37"
+        if (::combinedData.isInitialized && !needReloadData) {
+            emit(combinedData)
+            return@flow
+        }
+        if (!::combinedData.isInitialized) {
+            combinedData = CombinedData()
+        }
+        val latestOne = CgmCalibBgRepository.queryCgmLatestOne(
+            UserInfoManager.getCurShowUserId(),
+            Date()
+        ) //"f03550ef07a7b2164f06deaef597ce37"
         val cgmMaxDate = latestOne?.let {
             it.deviceTime
         } ?: Date()
@@ -176,7 +226,13 @@ class ChartViewModel: ViewModel() {
         scatterDataSets.add(bgSet)
         scatterDataSets.add(eventSet)
 
-        combinedData.setData(LineData(lineDataSets))
+        combinedData.setData(LineData(lineDataSets).also {
+            // 不需要渲染数值及icon 提升性能
+            it.dataSets.forEach { ld ->
+                ld.setDrawIcons(false)
+                ld.setDrawValues(false)
+            }
+        })
         combinedData.setData(ScatterData(scatterDataSets))
 
         if (timeMax == null) {
@@ -188,6 +244,7 @@ class ChartViewModel: ViewModel() {
         }
 
         emit(combinedData)
+        isDataInit = true
 
     }.flowOn(Dispatchers.IO)
 
@@ -200,19 +257,22 @@ class ChartViewModel: ViewModel() {
      *      --通知外部刷页面
      */
     fun reload() {
+        if (!isDataInit) return
         reset()
         viewModelScope.launch {
-            initData().collect()
+            initData(true).collect {
+                mDataChangedFlow.emit(ChartChangedInfo(timeMin, true))
+            }
         }
     }
 
     /** 是否需要加载下一页 */
     fun needLoadNextPage(isLtr: Boolean, visibleLeftX: Float, xAxisMin: Float): Boolean {
 
-        if (isLtr) return false
-
-        if(loadedMinDate >= xAxisMin) {
-            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
+        if (isLtr || !isDataInit) return false
+//        LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发 loadedmin=$loadedMinDate xAxisMin=$xAxisMin vf=$visibleLeftX" )
+        if(loadedMinDate == xAxisMin) {
+//            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
             return false
         }
 
@@ -268,11 +328,12 @@ class ChartViewModel: ViewModel() {
         }
     }
 
+    private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
      */
-    private suspend fun loadNextPageData(startDate: Date, endDate: Date): Boolean =
+    private suspend fun loadNextPageData(startDate: Date, endDate: Date, needApply: Boolean = true): Boolean =
         withContext(Dispatchers.IO) {
             timeMin = ChartUtil.dateToX(startDate)
             var isSuccess = true
@@ -282,7 +343,16 @@ class ChartViewModel: ViewModel() {
                     if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
                         isSuccess = false
                     } else {
-                        updateGlucoseSets(d)
+                        if (needApply) {
+                            updateGlucoseSets(d)
+                        } else {
+                            LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
+                            if (d.size > 2) {
+                                LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
+                            }
+
+                            nextPageCgmData.addAll(d)
+                        }
                     }
                 }
             }
@@ -369,12 +439,12 @@ class ChartViewModel: ViewModel() {
         return ChartUtil.secondToX(Date().time / 1000) + xMargin()
     }
 
-    var upperLimit = 12f.toGlucoseValue()
+    var upperLimit = ThresholdManager.DEFAULT_HYPER.toGlucoseValue()
         get() {
             return ThresholdManager.hyper.toGlucoseValue()
         }
         private set
-    var lowerLimit = 4f.toGlucoseValue()
+    var lowerLimit = ThresholdManager.DEFAULT_HYPO.toGlucoseValue()
         get() {
             return ThresholdManager.hypo.toGlucoseValue()
         }

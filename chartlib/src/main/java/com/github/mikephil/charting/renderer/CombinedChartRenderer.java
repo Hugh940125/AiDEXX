@@ -100,6 +100,13 @@ public class CombinedChartRenderer extends DataRenderer {
         List<Float> attachPositions = null;
         for (DataRenderer renderer : mRenderers) {
             if (renderer instanceof LineChartRenderer) {
+
+                CombinedChart chart = (CombinedChart)mChart.get();
+                if (chart == null)
+                    return;
+                if (!chart.needDrawLineDataSetValuesAndIcons)
+                    continue;
+
                 renderer.drawValues(c);
                 attachPositions = ((LineChartRenderer)renderer).getPositions();
             } else if (renderer instanceof ScatterChartRenderer) {

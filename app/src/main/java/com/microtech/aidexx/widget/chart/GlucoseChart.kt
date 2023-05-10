@@ -22,13 +22,13 @@ import com.microtech.aidexx.common.dateAndTimeHour
 import com.microtech.aidexx.common.toGlucoseString2
 import com.microtech.aidexx.db.entity.EventEntity
 import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.math.roundToInt
+import java.util.Date
 
 /**
  * Home页中的图表
@@ -129,12 +129,14 @@ class GlucoseChart : MyChart {
         initBackground()
         initChartAxisX()
         initChartAxisY()
+
+        needDrawLineDataSetValuesAndIcons = false
+
         minOffset = 0f
         extraTopOffset = 10f
         extraBottomOffset = 21f
         extraLeftOffset = 10f
         extraRightOffset = 10f
-        mMaxVisibleCount = 2000
 
         description.isEnabled = false
         description.textColor = textColor!!
@@ -268,6 +270,13 @@ class GlucoseChart : MyChart {
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
 
+        // 如果初始化比较慢 新来的数据优先调到这里
+        if (data == null) {
+            return
+        }
+        LogUtil.d("===CHART===  highestVisibleX=${highestVisibleX} max=${xAxis.axisMaximum} min=${xAxis.axisMinimum}")
+        updateYaxisMaxMin()
+        updateGlucoseStartEndValue()
         data.notifyDataChanged()
         notifyDataSetChanged()
 
@@ -285,18 +294,27 @@ class GlucoseChart : MyChart {
     }
 
     private fun isAtLatestPosition(highestVisibleX: Float): Boolean {
-        val cur = (highestVisibleX * 1000).roundToInt().toFloat() / 1000
-        val max = (xChartMax * 1000).roundToInt().toFloat() / 1000
-        return cur >= max
+        return highestVisibleX >= xChartMax
     }
 
     private fun refresh() {
         touchable = false
+
+        val curMin = xAxis.axisMinimum
+        val curRange = visibleXRange
+        val targetX = highestVisibleX - curRange
+
         xAxis.axisMaximum = extraParams?.xMax() ?: 0f
         xAxis.axisMinimum = extraParams?.xMin() ?: 0f
         visibleXRange = extraParams?.xRange() ?: 0f
 //        visibleXRange = extraParams?.xRange() ?: 0f // should zoom twice
-        autoScaleY()
+
+        LogUtil.d("===CHART=== tar=$targetX hi=$highestVisibleX  cr=$curRange rang=$visibleXRange max=${xAxis.axisMaximum} curmin=$curMin min=${xAxis.axisMinimum}")
+
+        // 保持当前位置
+        moveViewToX(targetX)
+        delayAutoScaleY(100)
+
     }
 
     private fun refreshAndMove() {
@@ -317,8 +335,31 @@ class GlucoseChart : MyChart {
         setDrawGridBackground(true)
         val color = ThemeManager.getTypeValue(context, R.attr.bgHomeGlucose)
         setGridBackgroundColor(color)
+        updateGlucoseStartEndValue()
+    }
+
+    /**
+     * 更新血糖阈值区间
+     */
+    private fun updateGlucoseStartEndValue(){
         gridBackgroundStart = extraParams?.lowerLimit() ?: 0f
         gridBackgroundEnd = extraParams?.upperLimit() ?: 0f
+    }
+
+    /**
+     * 更新y轴最大最小值
+     */
+    private fun updateYaxisMaxMin() {
+        when (UnitManager.glucoseUnit) {
+            UnitManager.GlucoseUnit.MMOL_PER_L -> {
+                axisRight.axisMinimum = 0f
+                axisRight.axisMaximum = 30f
+            }
+            UnitManager.GlucoseUnit.MG_PER_DL -> {
+                axisRight.axisMinimum = 0f
+                axisRight.axisMaximum = 600f
+            }
+        }
     }
 
     private fun initChartAxisX() {
@@ -375,16 +416,8 @@ class GlucoseChart : MyChart {
         val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
         yAxis.gridColor = color
         yAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART)
-        when (UnitManager.glucoseUnit) {
-            UnitManager.GlucoseUnit.MMOL_PER_L -> {
-                yAxis.axisMinimum = 0f
-                yAxis.axisMaximum = 30f
-            }
-            UnitManager.GlucoseUnit.MG_PER_DL -> {
-                yAxis.axisMinimum = 0f
-                yAxis.axisMaximum = 600f
-            }
-        }
+
+        updateYaxisMaxMin()
 
         yAxis.setLabelCount(6, true)
 //        yAxis.granularity = 5f

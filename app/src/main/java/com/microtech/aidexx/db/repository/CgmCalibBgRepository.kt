@@ -3,6 +3,7 @@ package com.microtech.aidexx.db.repository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.dao.BloodGlucoseDao
 import com.microtech.aidexx.db.dao.CgmHistoryDao
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import java.util.Date
 
 object CgmCalibBgRepository {
@@ -18,8 +19,9 @@ object CgmCalibBgRepository {
     ) = CgmHistoryDao.query(startDate,endDate,uid)
 
     suspend fun queryCgmLatestOne(
-        uid: String = UserInfoManager.instance().userId()
-    ) = CgmHistoryDao.queryLatest(uid)
+        uid: String = UserInfoManager.instance().userId(),
+        targetDate: Date
+    ) = CgmHistoryDao.queryLatest(uid, targetDate)
 
     suspend fun queryBgByPage(
         startDate: Date,
@@ -27,5 +29,7 @@ object CgmCalibBgRepository {
         uid: String = UserInfoManager.instance().userId()
     ) = BloodGlucoseDao.query(startDate, endDate, uid)
 
+    suspend fun insert(list: List<RealCgmHistoryEntity>) =
+        CgmHistoryDao.insert(list)
 
 }

@@ -31,10 +31,8 @@ const val middleUrl = "/backend/aidex-v2"
 
 // region 账号
 const val USER_URL = "$middleUrl/user"
-const val sendRegisterPhoneVerificationCode =
-    "$USER_URL/sendRegisterPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
-const val sendLoginPhoneVerificationCode =
-    "$USER_URL/sendLoginPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
+const val sendRegisterPhoneVerificationCode = "$USER_URL/sendRegisterPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
+const val sendLoginPhoneVerificationCode = "$USER_URL/sendLoginPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
 const val loginOrRegisterByVerificationCodeWithPhone = "$USER_URL/loginOrRegisterByVerificationCodeWithPhone"
 const val loginByPassword = "$USER_URL/loginByPassword"
 const val getUserInfo = "$USER_URL/getUserInfo"
@@ -42,7 +40,6 @@ const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordP
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
 const val getFollowers = "http://192.168.222.26:5555/backend/aidex/follows"
-
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
 const val registerByVerificationCodeWithEmail = "$USER_URL/registerByVerificationCodeWithEmail"
@@ -50,7 +47,12 @@ const val sendUpdatePasswordEmailVerificationCode = "$USER_URL/sendUpdatePasswor
 // endregion
 
 //region 版本升级
-const val getAppVersionList = "$middleUrl/appVersionControl/v2/getAppVersionList" //APP版本升级检查
+const val getAppVersionList = "$middleUrl/appVersionControl/v2/passCheckToken/getAppVersionList" //APP版本升级检查
+//endregion
+
+//region 数据事件相关
+const val CGM_URL = "$middleUrl/cgmRecord"
+const val getCgmRecordsByPageInfo =  "$CGM_URL/getCgmRecordsByPageInfo"
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -95,10 +97,8 @@ interface ApiService {
     //gp-start
     @GET(sendRegisterEmailVerificationCode)
     suspend fun sendRegisterEmailVerificationCode(@Query("email") email: String): ApiResult<BaseResponse<String>>
-
     @POST(registerByVerificationCodeWithEmail)
     suspend fun registerByVerificationCodeWithEmail(@Body body: ReqEmailRegister): ApiResult<BaseResponse<ResLogin>>
-
     @GET(sendUpdatePasswordEmailVerificationCode)
     suspend fun sendUpdatePasswordEmailVerificationCode(@Query("email") email: String): ApiResult<BaseResponse<String>>
     //gp-end
@@ -115,6 +115,11 @@ interface ApiService {
     ): ApiResult<BaseResponse<UpgradeInfo>>
     //endregion
 
+    //region 数据事件相关
+    @GET(getCgmRecordsByPageInfo)
+    suspend fun getCgmRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
+
+    //endregion
 
     @GET("$CGM_LIST_RECENT?{params}")
     suspend fun getRecentHistories(@Path("params") params: String)

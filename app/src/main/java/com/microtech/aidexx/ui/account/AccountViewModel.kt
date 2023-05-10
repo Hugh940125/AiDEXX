@@ -4,7 +4,6 @@ import android.os.CountDownTimer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.ble.device.entity.CloudDeviceInfo
 import com.microtech.aidexx.common.LOGIN_TYPE_EMAIL_VER_CODE
 import com.microtech.aidexx.common.LOGIN_TYPE_PWD
 import com.microtech.aidexx.common.LOGIN_TYPE_VER_CODE
@@ -13,18 +12,22 @@ import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.AccountRepository
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.repository.AccountDbRepository
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Date
 
 /**
  *@date 2023/2/20
@@ -63,7 +66,7 @@ class AccountViewModel : BaseViewModel() {
             is ApiResult.Success -> {
                 apiResult.result.data?.token?.let {
                     MmkvManager.saveToken(it)
-                } ?: let {
+                } ?:let {
                     emit(-1 to "token为空 登录失败")
                     return@flow
                 }
@@ -71,7 +74,7 @@ class AccountViewModel : BaseViewModel() {
                 val userId = getUserInfo()
                 if (userId.isNotEmpty()) {
                     emit(1 to "开始下载数据")
-                    if (downloadData()) {
+                    if (downloadData(userId)) {
                         emit(2 to "登录成功")
                     } else {
                         // 清除token 用户信息
@@ -92,7 +95,7 @@ class AccountViewModel : BaseViewModel() {
 
 
     private suspend fun getUserInfo(): String {
-        // 登录成功去拉用户详细信息
+         // 登录成功去拉用户详细信息
         return when (val userInfoApiResult = AccountRepository.getUserInfo()) {
             is ApiResult.Success -> {
                 if (userInfoApiResult.result.data?.userId.isNullOrEmpty()) {
@@ -107,10 +110,40 @@ class AccountViewModel : BaseViewModel() {
         }
     }
 
-    private suspend fun downloadData(): Boolean {
-        delay(4000)
-        return true
-    }
+    private suspend fun downloadData(userId: String): Boolean =
+        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(userId = userId)) {
+            is ApiResult.Success -> {
+
+//                val data = apiResult.result.data
+                val data = testData(userId)
+
+                if (data.isNullOrEmpty()) {
+                    LogUtil.d("登录后 该账号没有数据", TAG)
+                    true
+                } else {
+
+                    LogUtil.d("开始插入 ${Date().time}", TAG)
+                    var isSuccess = true
+                    // todo 分块大小需进一步确定 others有影响
+                    data.chunked(1000).forEach { d ->
+                        isSuccess = CgmCalibBgRepository.insert(d)?.let {
+                            LogUtil.d("开始插入 ${Date().time}", TAG)
+                            isSuccess
+                        } ?:let {
+                            LogUtil.d("开始插入 ${Date().time}", TAG)
+                            LogUtil.d("登录后 数据保存失败", TAG)
+                            false
+                        }
+                    }
+
+                    isSuccess
+                }
+            }
+            is ApiResult.Failure -> {
+                LogUtil.d("登录后 数据下载失败 ${apiResult.code}-${apiResult.msg}", TAG)
+                false
+            }
+        }
 
     suspend fun sendRegisterPhoneVerificationCode(phone: String): Boolean =
         when (AccountRepository.sendRegisterPhoneVerificationCode(phone)) {
@@ -175,6 +208,40 @@ class AccountViewModel : BaseViewModel() {
     override fun onCleared() {
         super.onCleared()
         countDownTimer.cancel()
+    }
+
+    private fun testData(userId: String): List<RealCgmHistoryEntity> {
+        val c = 15 * 15 * 24 * 60 // 两周21600
+        val cur = Date().time / 1000
+
+        LogUtil.d("开始生成插入 ${Date().time}", TAG)
+        val data = (0 until c).flatMap { t ->
+            listOf(RealCgmHistoryEntity().also {
+                it.deviceTime = Date((cur - (t * 60)) * 1000)
+                it.glucose = (t % 40).toFloat()
+                it.eventType = History.HISTORY_GLUCOSE
+                it.createTime = it.deviceTime
+                it.authorizationId = userId
+                it.dataStatus = 2
+                it.recordIndex = t.toLong()
+                it.type = 1
+                it.deviceId = "deviceIddeviceId"
+                it.deviceSn = "deviceSndeviceSndeviceSn"
+                it.rawData1 = 0.1f
+                it.rawData2 = 0.1f
+                it.rawData3 = 0.1f
+                it.rawData4 = 0.1f
+                it.rawData5 = 0.1f
+                it.rawData6 = 0.1f
+                it.rawData7 = 0.1f
+                it.rawData8 = 0.1f
+                it.rawData9 = 0.1f
+                it.sensorIndex = 1
+                it.eventIndex = t
+                it.id = it.recordId
+            })
+        }
+        return data
     }
 
     companion object {

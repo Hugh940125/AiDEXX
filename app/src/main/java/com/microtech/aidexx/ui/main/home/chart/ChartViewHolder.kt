@@ -32,9 +32,7 @@ class ChartViewHolder(
     private val chartViewModel: ChartViewModel by fragment.viewModels(ownerProducer = { fragment.requireActivity() })
 
     init {
-
         vb.run {
-
             touchView.setOnTouchListener { _, event ->
                 touchView.performClick()
                 if (MyAnimatedZoomJob.animators > 0) true
@@ -82,13 +80,13 @@ class ChartViewHolder(
                 ) {
                     if (chartViewModel.needLoadNextPage(isLtr, visibleLeftX, xAxisMin)) {
                         val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                        LogUtils.debug(TAG,"===CHART===onXAxisVisibleAreaChanged do=$ret")
+                        LogUtils.debug(TAG,"===CHART=== startLoadNextPage: $ret")
                     }
                 }
 
                 override fun onToEndLeft() {
-                    val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                    LogUtils.debug(TAG,"===CHART===onToEndLeft do=$ret")
+                    val ret = chartViewModel.startApplyNextPageData.compareAndSet(expect = false, true)
+                    LogUtils.debug(TAG,"===CHART===onToEndLeft start applyData: $ret")
                 }
 
                 override fun onToEndRight() {
@@ -100,8 +98,17 @@ class ChartViewHolder(
                 launch {
                     chartViewModel.granularityFlow.collectLatest {
                         it?.let {
+                            // 重建后恢复之前的选中tab
+                            homeTimeTab.changeWithoutTabChangeListener(when(it){
+                                MyChart.G_HALF_DAY -> 1
+                                MyChart.G_ONE_DAY -> 2
+                                else -> 0
+                            })
                             chart.updateGranularity(it)
-                            chart.notifyChanged()
+                            // 重建了后 viewModel中granular不为null
+                            if (chart.data != null) {
+                                chart.notifyChanged()
+                            }
                         }
                     }
                 }
@@ -133,9 +140,14 @@ class ChartViewHolder(
                 chartViewModel.onBgDataChanged(it)
             }
         }
-
         /** 切换用户 */
         EventBusManager.onReceive<ShareUserEntity>(EventBusKey.EVENT_SWITCH_USER, fragment) {
+            chartViewModel.reload()
+        }
+
+        /** 高低血糖阈值改变 */
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_HYP_CHANGE, fragment) {
+            // todo 待优化把所有数据重新按照高低血糖阈值计算一遍
             chartViewModel.reload()
         }
 
