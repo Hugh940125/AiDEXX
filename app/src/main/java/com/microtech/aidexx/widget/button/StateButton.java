@@ -70,17 +70,6 @@ public class StateButton extends androidx.appcompat.widget.AppCompatTextView {
         setup(attrs);
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        mTextColorStateList = null;
-        mNormalBackground = null;
-        mPressedBackground = null;
-        mUnableBackground = null;
-        mStateBackground = null;
-        states = null;
-    }
-
     private void setup(AttributeSet attrs) {
 
         states = new int[4][];

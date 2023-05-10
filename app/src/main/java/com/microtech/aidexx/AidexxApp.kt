@@ -27,31 +27,12 @@ class AidexxApp : Application() {
     private var activityAliveCount: AtomicInteger = AtomicInteger(0)
 
     companion object {
-        var themeId: Int = 0
         var isPairing: Boolean = false
         lateinit var instance: AidexxApp
         lateinit var mainScope: CoroutineScope
     }
 
     override fun onCreate() {
-//        StrictMode.setThreadPolicy(
-//            StrictMode.ThreadPolicy.Builder()
-//                .detectCustomSlowCalls()
-//                .detectDiskReads()
-//                .detectDiskWrites()
-//                .detectNetwork() // or .detectAll() for all detectable problems
-//                .penaltyLog()
-//                .penaltyDialog()//监测到上述状况时弹出对话框
-//                .build()
-//        )
-//        StrictMode.setVmPolicy(
-//            StrictMode.VmPolicy.Builder()
-//                .detectLeakedSqlLiteObjects()
-//                .detectLeakedClosableObjects()
-//                .penaltyLog()
-//                .penaltyDeath()
-//                .build()
-//        )
         super.onCreate()
         instance = this
         mainScope = MainScope()
@@ -74,7 +55,6 @@ class AidexxApp : Application() {
         runBlocking(Dispatchers.IO) {
             initXlog()
             MMKV.initialize(this@AidexxApp)
-            themeId = ThemeManager.theme.id
             ObjectBox.init(this@AidexxApp)
             if (ProcessUtil.isMainProcess(this@AidexxApp)) {
                 if (BuildConfig.DEBUG) {

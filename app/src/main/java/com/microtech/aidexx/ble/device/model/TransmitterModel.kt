@@ -80,11 +80,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 it.id = entity.accessId
                 it.key = entity.encryptionKey
                 it.setMessageCallback { operation, success, data ->
+                    var resCode = 1
                     var result = data
                     if (operation !in 1..3) {
-                        result = ByteUtils.subByte(data, 1, data.size - 1);
+                        result = ByteUtils.subByte(data, 1, data.size - 1)
+                        resCode = data[0].toInt()
                     }
-                    val bleMessage = BleMessage(operation, success, result)
+                    val bleMessage = BleMessage(operation, success, result, resCode)
                     MessageDistributor.instance().send(bleMessage)
                 }
             }
@@ -221,11 +223,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     ) {
         entity.encryptionKey = controller?.key
         entity.deviceMac = controller?.mac
-        entity.accessId = controller?.id
-        entity.deviceModel = model
-        entity.version = version
-        entity.deviceName = controller?.name
-        entity.accessId = controller?.id
         val map = hashMapOf<String, Any?>()
         map["deviceModel"] = model
         map["sensorId"] = entity.sensorId
@@ -242,6 +239,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         when (apiResult) {
             is ApiResult.Success -> {
                 apiResult.result.run {
+                    entity.accessId = controller?.id
+                    entity.deviceModel = model
+                    entity.version = version
+                    entity.deviceName = controller?.name
+                    entity.accessId = controller?.id
                     this.data?.let {
                         val record = it.record
                         if (record != null) {

@@ -31,16 +31,12 @@ import com.microtech.aidexx.databinding.FragmentBgBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.ui.main.bg.history.BloodGlucoseHistoryActivity
-import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.utils.fromGlucoseValue
-import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.time.TimePicker
 import com.microtechmd.blecomm.constant.AidexXOperation
@@ -49,8 +45,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.util.Date
-import java.util.Locale
+import java.util.*
 import kotlin.math.roundToInt
 
 private const val ANTI_FAST_RESUME = 1
@@ -86,10 +81,12 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 }
                 AidexXOperation.SET_CALIBRATION -> {
                     if (message.isSuccess) {
-                        Dialogs.showSuccess(getString(R.string.calibration_success))
-                        binding.etGlucoseValue.setText("")
-                    } else {
-                        Dialogs.showSuccess(getString(R.string.calibration_fail))
+                        if (message.resCode == 1) {
+                            Dialogs.showSuccess(getString(R.string.calibration_success))
+                            binding.etGlucoseValue.setText("")
+                        } else {
+                            Dialogs.showSuccess(getString(R.string.calibration_fail))
+                        }
                     }
                     MessageDistributor.instance().removeObserver(this)
                 }
@@ -343,8 +340,10 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                                 timeSlot = null
                                 updateLastRecord()
 
-                                EventBusManager.send(EventBusKey.EVENT_BG_DATA_CHANGED,
-                                    BgDataChangedInfo(DataChangedType.ADD, listOf(bgEntity)))
+                                EventBusManager.send(
+                                    EventBusKey.EVENT_BG_DATA_CHANGED,
+                                    BgDataChangedInfo(DataChangedType.ADD, listOf(bgEntity))
+                                )
 
                             }
                             .setOnDismissListener { updateLastRecord() }

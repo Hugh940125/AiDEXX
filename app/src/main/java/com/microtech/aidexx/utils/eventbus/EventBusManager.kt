@@ -20,11 +20,11 @@ object EventBusManager {
     fun <T : Any?> onReceive(
         vararg keys: String,
         owner: LifecycleOwner,
-        callback: ((it: T) -> Unit)
+        callback: ((key: String, data: T) -> Unit)
     ) {
         for (key in keys) {
             LiveEventBus.get<T>(key).observe(owner) {
-                callback.invoke(it)
+                callback.invoke(key, it)
             }
         }
     }

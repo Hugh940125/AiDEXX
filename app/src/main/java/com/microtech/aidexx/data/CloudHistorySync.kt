@@ -130,7 +130,7 @@ var pi = 0
         }
     }
 
-    suspend fun getNeedUploadData(): MutableList<T> {
+    private suspend fun getNeedUploadData(): MutableList<T> {
         val userId = UserInfoManager.instance().userId()
         val mutableList = ObjectBox.store.awaitCallInTx {
             entityBox.query().isNull(recordId).equal(

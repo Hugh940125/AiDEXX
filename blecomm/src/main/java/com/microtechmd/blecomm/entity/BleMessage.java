@@ -3,6 +3,7 @@ package com.microtechmd.blecomm.entity;
 import java.io.Serializable;
 
 public class BleMessage implements Serializable {
+    private int resCode;
     private int operation;
     private boolean success;
     private byte[] data;
@@ -19,6 +20,21 @@ public class BleMessage implements Serializable {
         this.operation = op;
         this.success = success;
         this.data = data;
+    }
+
+    public BleMessage(int op, boolean success, byte[] data, int resCode) {
+        this.operation = op;
+        this.success = success;
+        this.data = data;
+        this.resCode = resCode;
+    }
+
+    public int getResCode() {
+        return resCode;
+    }
+
+    public void setResCode(int resCode) {
+        this.resCode = resCode;
     }
 
     public int getOperation() {
