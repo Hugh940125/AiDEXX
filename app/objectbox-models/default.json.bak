@@ -755,7 +755,7 @@
     },
     {
       "id": "9:1281865382070029411",
-      "lastPropertyId": "50:1546768995711315395",
+      "lastPropertyId": "53:1611503594555602992",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -914,12 +914,16 @@
         {
           "id": "32:319124425573520711",
           "name": "sensorId",
-          "type": 9
+          "indexId": "45:620130620315634431",
+          "type": 9,
+          "flags": 2048
         },
         {
           "id": "33:3157319850465245279",
           "name": "userId",
-          "type": 9
+          "indexId": "46:2325138591350480946",
+          "type": 9,
+          "flags": 2048
         },
         {
           "id": "34:7076026704345347581",
@@ -1007,6 +1011,21 @@
           "indexId": "44:867163585421651598",
           "type": 9,
           "flags": 34848
+        },
+        {
+          "id": "51:5051581535612258853",
+          "name": "briefUploadState",
+          "type": 5
+        },
+        {
+          "id": "52:5554561454357975629",
+          "name": "rawUploadState",
+          "type": 5
+        },
+        {
+          "id": "53:1611503594555602992",
+          "name": "calUploadState",
+          "type": 5
         }
       ],
       "relations": []
@@ -1185,7 +1204,7 @@
     }
   ],
   "lastEntityId": "11:7133388229107183159",
-  "lastIndexId": "44:867163585421651598",
+  "lastIndexId": "46:2325138591350480946",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

@@ -629,5 +629,6 @@
     <string name="title_share_file">分享文件</string>
     <string name="pair_fail">配对失败</string>
     <string name="unpair_fail">解配失败</string>
+    <string name="pairing">正在配对</string>
     <!-- 关注分享 -->
 </resources>

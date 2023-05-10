@@ -632,6 +632,7 @@ com.microtech.aidexx:string/other_input_tip = 0x7f110224
 com.microtech.aidexx:string/other_trans = 0x7f110225
 com.microtech.aidexx:string/overflow_max_value = 0x7f110226
 com.microtech.aidexx:string/pair_fail = 0x7f11034a
+com.microtech.aidexx:string/pairing = 0x7f11034c
 com.microtech.aidexx:string/password = 0x7f110227
 com.microtech.aidexx:string/password_enter = 0x7f110228
 com.microtech.aidexx:string/password_error = 0x7f110229

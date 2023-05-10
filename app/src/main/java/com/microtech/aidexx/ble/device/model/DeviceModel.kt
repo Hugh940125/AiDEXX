@@ -34,6 +34,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
     var latestHistory: AidexXHistoryEntity? = null
+    var isGettingTransmitterData = false
     var alert: ((time: String, type: Int) -> Unit)? = null
     var onCalibrationPermitChange: ((allow: Boolean) -> Unit)? = null
     var minutesAgo: Int? = null

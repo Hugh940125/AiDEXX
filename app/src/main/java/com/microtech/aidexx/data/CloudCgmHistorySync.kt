@@ -1,11 +1,9 @@
 package com.microtech.aidexx.data
 
-import com.google.gson.GsonBuilder
-import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.UPLOAD_CGM_RECORD
+import com.microtech.aidexx.common.net.UPLOAD_CGM_BRIEF
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
@@ -23,12 +21,13 @@ import kotlinx.coroutines.withContext
 
 private const val TYPE_BRIEF = 0
 private const val TYPE_RAW = 1
+private const val TYPE_CAL = 2
 private const val HISTORY_ONCE_UPLOAD_NUMBER = 150L
 
-class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
+object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override val idx: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.idx
     override val id: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.id
-    override val url: String = UPLOAD_CGM_RECORD
+    override val url: String = UPLOAD_CGM_BRIEF
     override val frontRecordId: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.frontRecordId
     override val userId: Property<RealCgmHistoryEntity> =
         RealCgmHistoryEntity_.userId
@@ -36,6 +35,8 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         RealCgmHistoryEntity_.briefUploadState
     private val rawUploadState: Property<RealCgmHistoryEntity> =
         RealCgmHistoryEntity_.rawUploadState
+    private val calUploadState: Property<RealCgmHistoryEntity> =
+        RealCgmHistoryEntity_.calUploadState
     override val deleteStatus: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.deleteStatus
     override val recordIndex: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.recordIndex
     override val recordId: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.recordId
@@ -46,8 +47,8 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         return null
     }
 
-    suspend fun postBriefData(json: String): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
-        return when (val postHistory = ApiService.instance.postHistory(json)) {
+    private suspend fun postBriefData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+        return when (val postHistory = ApiService.instance.postBriefHistory(map)) {
             is ApiResult.Success -> {
                 postHistory.result
             }
@@ -75,7 +76,8 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         val map = if (authorizationId != null)
             "{'greaterThan':{'recordIndex':${index}},'pageSize' : 500,'authorizationId' : ${authorizationId}}"
         else "{'greaterThan':{'recordIndex':${index}},'pageSize' : 500}"
-        return ApiService.instance.getRemoteHistory(map).execute().body()
+        //return ApiService.instance.getRemoteHistory(map).execute().body()
+        return null
     }
 
     override suspend fun upload() {
@@ -83,36 +85,29 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         val needUploadBriefData = getNeedUploadData(TYPE_BRIEF)
         needUploadBriefData?.let { list ->
             if (list.size > 0) {
-                val json = GsonBuilder().createWithDateFormat().toJson(needUploadBriefData)
-                LogUtil.eAiDEX("Upload brief History: size:${list.size} - $json")
+                LogUtil.eAiDEX("Upload brief History: size:${list.size}")
                 withContext(Dispatchers.IO) {
-                    val briefResponse = postBriefData(json)
+                    val briefResponse = postBriefData(hashMapOf("records" to list))
                     briefResponse?.let { response ->
                         if (response.code == RESULT_OK) {
                             response.data?.let {
-                                replaceEventData(list, it.records, 1)
+                                replaceEventData(list, it.records)
                             }
                         }
                     }
                 }
             }
         }
-
         //原始数据
         val needUploadRawData = getNeedUploadData(TYPE_RAW)
         needUploadRawData?.let {
             if (needUploadRawData.size > 0) {
-                val json = GsonBuilder().createWithDateFormat().toJson(needUploadRawData)
-                LogUtil.eAiDEX("Upload raw history: size:${needUploadRawData.size} - $json")
+                LogUtil.eAiDEX("Upload raw history: size:${it.size}")
                 withContext(Dispatchers.IO) {
-                    val rawResponse = uploadData(json)
+                    val rawResponse = updateHistory(hashMapOf("records" to it))
                     rawResponse?.let { response ->
-                        if (response.code == RESULT_OK) {
-                            response.data?.let {
-                                replaceEventData(needUploadRawData, it.records, 2)
-                            }
-                        } else {
-                            downloadData()
+                        response.data?.let { data ->
+                            replaceEventData(needUploadRawData, data.records)
                         }
                     }
                 }
@@ -123,42 +118,26 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override suspend fun replaceEventData(
         origin: MutableList<RealCgmHistoryEntity>,
         responseList: MutableList<RealCgmHistoryEntity>,
-        step: Int,
         authorId: String?,
     ) {
-        val userId =
-            if (authorId.isNullOrBlank()) UserInfoManager.instance().userId() else authorId
         if (origin.isNotEmpty()) {
-            for ((index, old) in origin.withIndex()) {
-                when (step) {
-                    1 -> { //上传
-                        old.briefUploadState = 2
-                        old.rawUploadState = 2
-                        old.calUploadState = 2
-                    }
-                    2 -> {//更新
-                        old.rawUploadState = 2
-                        old.calUploadState = 2
-                    }
-                    3 -> {//下载
-                        old.dataStatus =
-                            if (responseList[index].rawData1 == null && responseList[index].rawData2 == null) 0 else 2
-                    }
+            for (old in origin) {
+                if (old.rawUploadState == 1) {
+                    old.briefUploadState = 2
                 }
-                if (old.id == null && responseList[index].id != null) {
-                    old.id = responseList[index].id
+                if (old.rawUploadState == 1) {
+                    old.rawUploadState = 2
                 }
-                if (responseList[index].recordIndex != null) {
-                    old.recordIndex = responseList[index].recordIndex
+                if (old.calUploadState == 1) {
+                    old.calUploadState = 2
                 }
-                old.authorizationId = userId
             }
             entityBox.put(origin)
         }
     }
 
-    private suspend fun uploadData(json: String): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
-        return when (val updateHistory = ApiService.instance.updateHistory(json)) {
+    private suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+        return when (val updateHistory = ApiService.instance.updateHistory(map)) {
             is ApiResult.Success -> {
                 updateHistory.result
             }
@@ -168,12 +147,12 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    private suspend fun getNeedUploadData(status: Int = 0): MutableList<RealCgmHistoryEntity>? {
+    private suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
         val userId = UserInfoManager.instance().userId()
         val query = entityBox.query()
-        when (status) {
+        when (type) {
             TYPE_BRIEF -> query //post请求
-                .equal(briefUploadState, 0)
+                .equal(briefUploadState, 1)
                 .equal(
                     this.userId,
                     userId,
@@ -183,7 +162,7 @@ class CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 .equal(briefUploadState, 2)
                 .equal(this.userId, userId)
                 .equal(rawUploadState, 1)
-                .or().equal(rawUploadState, 1)
+                .or().equal(calUploadState, 1)
         }
         return ObjectBox.store.awaitCallInTx {
             query.order(idx).build().find(0, HISTORY_ONCE_UPLOAD_NUMBER)

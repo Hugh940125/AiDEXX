@@ -97,7 +97,7 @@ abstract class CloudHistorySync<T : EventEntity> {
             if (result.code == RESULT_OK) {
                 result.data?.let {
                     replaceEventData(
-                        responseList = it.records, cgmStatus = 3, authorId = authorizationId
+                        responseList = it.records, authorId = authorizationId
                     ) //下载的数据
                     val page = it.pageInfo
                     if (page.currentPage * page.pageSize < page.totalCount) {
@@ -147,7 +147,6 @@ abstract class CloudHistorySync<T : EventEntity> {
     open suspend fun replaceEventData(
         origin: MutableList<T> = mutableListOf(),
         responseList: MutableList<T>,
-        cgmStatus: Int = 0,
         authorId: String? = null,
     ) {
         val userId = UserInfoManager.instance().userId()

@@ -61,6 +61,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (!it.isFinishing) {
                     when (msg.what) {
                         DISMISS_LOADING -> {
+                            EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
                             Dialogs.dismissWait()
                         }
                     }
@@ -86,12 +87,13 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             EventBusKey.EVENT_PAIR_RESULT,
             this
         ) {
-            if (window.decorView.visibility == View.VISIBLE) {
-                if (it) {
+            transmitterHandler.removeMessages(DISMISS_LOADING)
+            if (it) {
+                if (window.decorView.visibility == View.VISIBLE) {
                     Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
-                } else {
-                    TransmitterManager.instance().removeDefault()
                 }
+            } else {
+                TransmitterManager.instance().removeDefault()
             }
         }
     }

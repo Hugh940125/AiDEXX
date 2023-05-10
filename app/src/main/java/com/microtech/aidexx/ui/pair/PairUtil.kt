@@ -11,6 +11,8 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
@@ -20,8 +22,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 object PairUtil {
+    enum class Operation { PAIR, UNPAIR }
 
-    private const val DISMISS_DIALOG = 1
+    private var operation: Operation? = null
+
+    private const
+    val DISMISS_DIALOG = 1
     private const val TIMEOUT_MILLIS = 60 * 1000L
 
     val handler = object : Handler(Looper.getMainLooper()) {
@@ -32,6 +38,15 @@ object PairUtil {
 
     private var isForceUnpair: Boolean = false
 
+    fun fail() {
+        when (operation) {
+            Operation.PAIR -> {
+                EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
+            }
+            else -> {}
+        }
+    }
+
     fun observeMessage(context: Context, scope: CoroutineScope) {
         MessageDistributor.instance().observerAndIntercept(object : MessageObserver {
             override fun onMessage(message: BleMessage) {
@@ -41,6 +56,7 @@ object PairUtil {
                     when (message.operation) {
                         AidexXOperation.DISCOVER -> {
                             if (!success) {
+                                fail()
                                 Dialogs.showError(context.getString(R.string.Search_Timeout))
                             }
                         }
@@ -49,18 +65,21 @@ object PairUtil {
                             if (success) {
                                 Dialogs.showWait(context.getString(R.string.Connecting))
                             } else {
+                                fail()
                                 Dialogs.showError(context.getString(R.string.Connecting_Failed))
                             }
                         }
                         CgmOperation.BOND -> {
                             LogUtil.eAiDEX("Pair ----> bond:$success")
                             if (!success) {
+                                fail()
                                 Dialogs.showError(context.getString(R.string.failure))
                             }
                         }
                         CgmOperation.PAIR -> {
                             LogUtil.eAiDEX("Pair ----> pair:$success")
                             if (!success) {
+                                fail()
                                 pairFailedTips(context)
                             }
                         }
@@ -109,7 +128,8 @@ object PairUtil {
     }
 
     fun startPair(context: Context, controllerInfo: BleControllerInfo) {
-        Dialogs.showWait(context.getString(R.string.Searching))
+        operation = Operation.PAIR
+        Dialogs.showWait(context.getString(R.string.pairing))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val buildModel =
             TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
@@ -118,6 +138,7 @@ object PairUtil {
     }
 
     fun startUnpair(context: Context, isForce: Boolean) {
+        operation = Operation.PAIR
         isForceUnpair = isForce
         Dialogs.showWait(context.getString(R.string.Connecting))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)

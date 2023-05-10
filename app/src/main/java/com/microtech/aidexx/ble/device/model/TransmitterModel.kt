@@ -234,6 +234,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         map["deviceKey"] = entity.encryptionKey
         map["registerTime"] = Date()
         map["et"] = entity.et
+        map["isForceReplace"] = true
         val apiResult = ApiService.instance.deviceRegister(map)
         Dialogs.dismissWait()
         when (apiResult) {
@@ -590,6 +591,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private fun continueCalFetch() {
         if (newestCalIndex > nextCalIndex) {
             getController().getRawHistories(nextFullEventIndex)
+            isGettingTransmitterData = true
         }
     }
 
@@ -638,6 +640,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 historyEntity.glucoseIsValid = history.isValid
                 val recordUuid = historyEntity.updateRecordUUID()
                 historyEntity.frontRecordId = recordUuid
+                historyEntity.briefUploadState = 1
                 val time = historyDate.dateHourMinute()
                 historyEntity.glucose = history.glucose.toFloat()
                 val deviceTimeMillis = historyEntity.deviceTime.time
@@ -740,17 +743,20 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 nextEventIndex = briefRangeStartIndex
             }
             getController().getHistories(nextEventIndex)
+            isGettingTransmitterData = true
         } else if (targetEventIndex >= nextFullEventIndex) {
             if (nextFullEventIndex < rawRangeStartIndex) {
                 nextFullEventIndex = rawRangeStartIndex
             }
             getController().getRawHistories(nextFullEventIndex)
+            isGettingTransmitterData = true
         }
     }
 
     private fun continueRawFetch() {
         if (targetEventIndex > nextFullEventIndex) {
             getController().getRawHistories(nextFullEventIndex)
+            isGettingTransmitterData = true
         }
     }
 

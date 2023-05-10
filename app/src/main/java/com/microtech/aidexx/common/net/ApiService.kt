@@ -31,8 +31,10 @@ const val middleUrl = "/backend/aidex-v2"
 
 // region 账号
 const val USER_URL = "$middleUrl/user"
-const val sendRegisterPhoneVerificationCode = "$USER_URL/sendRegisterPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
-const val sendLoginPhoneVerificationCode = "$USER_URL/sendLoginPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
+const val sendRegisterPhoneVerificationCode =
+    "$USER_URL/sendRegisterPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
+const val sendLoginPhoneVerificationCode =
+    "$USER_URL/sendLoginPhoneVerificationCode" // 也可以使用sendLoginPhoneVerificationCode
 const val loginOrRegisterByVerificationCodeWithPhone = "$USER_URL/loginOrRegisterByVerificationCodeWithPhone"
 const val loginByPassword = "$USER_URL/loginByPassword"
 const val getUserInfo = "$USER_URL/getUserInfo"
@@ -40,6 +42,7 @@ const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordP
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
 const val getFollowers = "http://192.168.222.26:5555/backend/aidex/follows"
+
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
 const val registerByVerificationCodeWithEmail = "$USER_URL/registerByVerificationCodeWithEmail"
@@ -52,14 +55,14 @@ const val getAppVersionList = "$middleUrl/appVersionControl/v2/passCheckToken/ge
 
 //region 数据事件相关
 const val CGM_URL = "$middleUrl/cgmRecord"
-const val getCgmRecordsByPageInfo =  "$CGM_URL/getCgmRecordsByPageInfo"
+const val getCgmRecordsByPageInfo = "$CGM_URL/getCgmRecordsByPageInfo"
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgmDevice/deviceUnRegister" //注销设备
 const val DEVICE = "$middleUrl/cgmDevice/getUserDeviceInfo" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
-const val UPLOAD_CGM_RECORD = "$middleUrl/cgmRecord/saveCgmRecord" //上传CGM
+const val UPLOAD_CGM_BRIEF = "$middleUrl/cgmRecord/saveCgmRecord" //上传CGM
 const val UPDATE_CGM_RECORD = "$middleUrl/cgmRecord/updateCgmRecord" //更新CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
 const val CGM_LIST_RECENT = "$middleUrl/cgm-record/list-recent"
@@ -97,8 +100,10 @@ interface ApiService {
     //gp-start
     @GET(sendRegisterEmailVerificationCode)
     suspend fun sendRegisterEmailVerificationCode(@Query("email") email: String): ApiResult<BaseResponse<String>>
+
     @POST(registerByVerificationCodeWithEmail)
     suspend fun registerByVerificationCodeWithEmail(@Body body: ReqEmailRegister): ApiResult<BaseResponse<ResLogin>>
+
     @GET(sendUpdatePasswordEmailVerificationCode)
     suspend fun sendUpdatePasswordEmailVerificationCode(@Query("email") email: String): ApiResult<BaseResponse<String>>
     //gp-end
@@ -125,14 +130,11 @@ interface ApiService {
     suspend fun getRecentHistories(@Path("params") params: String)
             : Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
 
-    @POST(DOWNLOAD_CGM_RECORD)
-    suspend fun getRemoteHistory(@Body json: String): Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
-
-    @POST(UPLOAD_CGM_RECORD)
-    suspend fun postHistory(@Body json: String): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+    @POST(UPLOAD_CGM_BRIEF)
+    suspend fun postBriefHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
 
     @POST(UPDATE_CGM_RECORD)
-    suspend fun updateHistory(@Body json: String): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+    suspend fun updateHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
 
     @GET(USER_PREFERENCE)
     suspend fun getUserPreference(): ApiResult<BaseResponse<MutableList<UserPreferenceEntity>>>
