@@ -13,9 +13,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
 
+private val dataSyncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
 abstract class DataSyncController<T> {
 
-    val tag = "DataSyncController"
+    companion object {
+        private const val TAG = "DataSyncController"
+        val scope = dataSyncScope
+        const val DATA_EMPTY_MIN_ID = 0L // MMKV
+    }
+
+
     val tClazz =
         (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
 
@@ -25,13 +33,12 @@ abstract class DataSyncController<T> {
         data class Failure(val msg: String? = null): SyncStatus()
     }
 
-    private val dataSyncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val dataSyncExceptionHandler = CoroutineExceptionHandler { context, throwable ->
-        LogUtil.xLogE( "$this 数据同步异常 \n ${throwable.stackTraceToString()}", tag)
+        LogUtil.xLogE( "$this 数据同步异常 \n ${throwable.stackTraceToString()}", TAG)
         stopDownloadData(true)
     }
     private val shareUserDataSyncExceptionHandler = CoroutineExceptionHandler { context, throwable ->
-        LogUtil.xLogE( "$this share数据同步异常 \n ${throwable.stackTraceToString()}", tag)
+        LogUtil.xLogE( "$this share数据同步异常 \n ${throwable.stackTraceToString()}", TAG)
         stopDownloadShareUserData(true)
     }
     /**
@@ -128,7 +135,7 @@ abstract class DataSyncController<T> {
             AidexxApp.instance.ioScope.launch { downloadStatusStateFlow.emit(SyncStatus.Failure()) }
         }
         downloadStateFlow.compareAndSet(expect = true, false)
-        LogUtil.xLogI("download data curState=${downloadStateFlow.value}", tag)
+        LogUtil.xLogI("download data curState=${downloadStateFlow.value}", TAG)
     }
 
     private fun stopDownloadShareUserData(isFromException: Boolean = false){
@@ -136,7 +143,7 @@ abstract class DataSyncController<T> {
             AidexxApp.instance.ioScope.launch { downloadShareDataStatusStateFlow.emit(SyncStatus.Failure()) }
         }
         downloadShareDataStateFlow.value = null
-        LogUtil.xLogI("download share user data curState=${downloadShareDataStateFlow.value}", tag)
+        LogUtil.xLogI("download share user data curState=${downloadShareDataStateFlow.value}", TAG)
     }
 
 

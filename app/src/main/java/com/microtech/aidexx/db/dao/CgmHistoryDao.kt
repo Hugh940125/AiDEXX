@@ -18,7 +18,7 @@ object CgmHistoryDao {
         awaitCallInTx {
             box.query()
                 .equal(RealCgmHistoryEntity_.eventType, History.HISTORY_CALIBRATION)
-                .equal(RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE)
+                .equal(RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE)
                 .build()
                 .find()
         }
@@ -35,7 +35,7 @@ object CgmHistoryDao {
                     startDate,
                     endDate
                 )
-                .equal( RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
+                .equal( RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE )
                 .equal(RealCgmHistoryEntity_.deleteStatus, 0)
                 .build().find()
         }
@@ -43,7 +43,7 @@ object CgmHistoryDao {
     suspend fun queryNextByTargetDate(authorId: String, targetDate: Date): RealCgmHistoryEntity? =
         awaitCallInTx {
             box.query()
-                .equal( RealCgmHistoryEntity_.authorizationId, authorId, StringOrder.CASE_SENSITIVE )
+                .equal( RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE )
                 .less(RealCgmHistoryEntity_.deviceTime, targetDate)
                 .orderDesc(RealCgmHistoryEntity_.deviceTime)
                 .build()

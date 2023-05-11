@@ -63,14 +63,10 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
         when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
             userId = authorizationId,
-            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getDataMinIdKey(authorizationId)),
-            orderStrategy = "ASC"
+            endAutoIncrementColumn = MmkvManager.getEventDataMinId(getDataMinIdKey(authorizationId))?.let { it - 1 },
         )) {
-
             is ApiResult.Success -> apiResult.result.data
-
             is ApiResult.Failure -> null
-
         }
 
     suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {

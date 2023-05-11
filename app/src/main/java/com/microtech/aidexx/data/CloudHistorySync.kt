@@ -7,6 +7,7 @@ import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
@@ -18,6 +19,8 @@ import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.util.Date
 import java.util.concurrent.CountDownLatch
@@ -184,6 +187,21 @@ var pi = 0
     }
 
     companion object {
+
+        suspend fun downloadRecentData(userId: String): Boolean = withContext(scope.coroutineContext) {
+            var isSuccess = true
+            val tasks = listOf(
+                async {
+                    if (!EventRepository.getRecentCgmData(userId)) {
+                        isSuccess = false
+                    }
+                },
+                //...
+            )
+            tasks.awaitAll()
+            isSuccess
+        }
+
         suspend fun downloadAllData(userId: String? = null, needWait: Boolean = false): SyncStatus{
 
             var isSuccess = true

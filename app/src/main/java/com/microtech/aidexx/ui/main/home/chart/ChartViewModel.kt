@@ -340,7 +340,7 @@ class ChartViewModel: ViewModel() {
 
             val cgmDataTask = async {
                 getCgmPageData(startDate, endDate)?.let { d ->
-                    if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                    if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                         isSuccess = false
                     } else {
                         if (needApply) {
@@ -350,7 +350,6 @@ class ChartViewModel: ViewModel() {
                             if (d.size > 2) {
                                 LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
                             }
-
                             nextPageCgmData.addAll(d)
                         }
                     }

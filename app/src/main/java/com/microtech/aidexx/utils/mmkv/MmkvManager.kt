@@ -46,8 +46,8 @@ object MmkvManager {
         LogUtil.d("$key=$autoIncrementColumn", "MmkvManager")
     }
     fun getEventDataMinId(key: String): Long? {
-        val ret = MmkvUtil.decodeLong(key, 0)
-        return if (ret == 0L) null else ret
+        val ret = MmkvUtil.decodeLong(key, -1)
+        return if (ret == -1L) null else ret
     }
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
     fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)

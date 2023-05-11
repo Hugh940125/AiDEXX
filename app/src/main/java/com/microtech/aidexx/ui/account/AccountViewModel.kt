@@ -12,11 +12,10 @@ import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.AccountRepository
-import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.data.CloudHistorySync
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.repository.AccountDbRepository
-import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.LogUtil
@@ -110,44 +109,7 @@ class AccountViewModel : BaseViewModel() {
         }
     }
 
-    private suspend fun downloadData(userId: String): Boolean =
-        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(userId = userId, pageSize = 5000, orderStrategy = "ASC")) {
-            is ApiResult.Success -> {
-
-                val data = apiResult.result.data
-//                val data = testData(userId)
-
-                if (data.isNullOrEmpty()) {
-                    LogUtil.d("登录后 该账号没有数据", TAG)
-                    MmkvManager.setEventDataMinId("$userId-RealCgmHistoryEntity-MIN-ID",1L)
-                    true
-                } else {
-                    LogUtil.d("开始插入 ${Date().time}", TAG)
-                    var isSuccess = true
-                    var minId = 0L
-                    data.chunked(5000).forEach { d ->
-                        isSuccess = CgmCalibBgRepository.insert(d)?.let {
-                            LogUtil.d("开始插入 ${Date().time}", TAG)
-                            minId = d.last().autoIncrementColumn
-                            MmkvManager.setEventDataMinId("$userId-RealCgmHistoryEntity-MIN-ID",minId)
-                            isSuccess
-                        } ?:let {
-                            LogUtil.d("开始插入 ${Date().time}", TAG)
-                            LogUtil.d("登录后 数据保存失败", TAG)
-                            false
-                        }
-                        if (!isSuccess) {
-                            return@forEach
-                        }
-                    }
-                    isSuccess
-                }
-            }
-            is ApiResult.Failure -> {
-                LogUtil.d("登录后 数据下载失败 ${apiResult.code}-${apiResult.msg}", TAG)
-                false
-            }
-        }
+    private suspend fun downloadData(userId: String): Boolean = CloudHistorySync.downloadRecentData(userId)
 
     suspend fun sendRegisterPhoneVerificationCode(phone: String): Boolean =
         when (AccountRepository.sendRegisterPhoneVerificationCode(phone)) {

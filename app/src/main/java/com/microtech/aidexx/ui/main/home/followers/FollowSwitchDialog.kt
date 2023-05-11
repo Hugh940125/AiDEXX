@@ -96,7 +96,7 @@ class FollowSwitchDialog : Dialog {
 
                     // 该用户的数据下载成功后再执行切换
                     AidexxApp.instance.ioScope.launch {
-                        val syncStatus = CloudHistorySync.downloadAllData(UserInfoManager.shareUserInfo?.id)
+                        val syncStatus = CloudHistorySync.downloadAllData(UserInfoManager.shareUserInfo?.id, true)
                         withContext(Dispatchers.Main) {
 
                             when(syncStatus) {
