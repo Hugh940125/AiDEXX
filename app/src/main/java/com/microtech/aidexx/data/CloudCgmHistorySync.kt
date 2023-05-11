@@ -140,13 +140,13 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    suspend fun replaceEventData(
+    override suspend fun replaceEventData(
         origin: MutableList<RealCgmHistoryEntity>,
-        responseList: MutableList<RealCgmHistoryEntity>,
-        step: Int,
+        responseList: List<RealCgmHistoryEntity>,
+        type: Int,
         authorId: String?,
     ) {
-        if (step == 3) { //下载
+        if (type == 3) { //下载
             if (responseList.isNotEmpty()) {
                 CgmCalibBgRepository.insert(responseList)
                 MmkvManager.setEventDataMinId(

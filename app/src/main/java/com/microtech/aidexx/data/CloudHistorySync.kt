@@ -96,7 +96,7 @@ var pi = 0
         val result = getRemoteData(userId)
         return result?.let {
             if (it.isNotEmpty()) {
-                replaceEventData( responseList = it, cgmStatus = 3, authorId = userId )
+                replaceEventData( responseList = it, type = 3, authorId = userId )
             }
             if (it.size >= PAGE_SIZE) {
                 LogUtil.d("===DATASYNC=== 开始下一页数据下载")
@@ -156,7 +156,7 @@ var pi = 0
     open suspend fun replaceEventData(
         origin: MutableList<T> = mutableListOf(),
         responseList: List<T>,
-        cgmStatus: Int = 0,
+        type: Int = 0,
         authorId: String? = null,
     ) {
         val userId = UserInfoManager.instance().userId()
