@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 private const val TYPE_BRIEF = 0
 private const val TYPE_RAW = 1
 private const val TYPE_CAL = 2
-private const val HISTORY_ONCE_UPLOAD_NUMBER = 150L
+private const val HISTORY_ONCE_UPLOAD_NUMBER = 500L
 
 object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override val idx: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.idx
@@ -49,7 +49,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         return null
     }
 
-    private suspend fun postBriefData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+    private suspend fun postBriefData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return when (val postHistory = ApiService.instance.postBriefHistory(map)) {
             is ApiResult.Success -> {
                 postHistory.result
@@ -95,7 +95,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+    suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return when (val updateHistory = ApiService.instance.updateHistory(map)) {
             is ApiResult.Success -> {
                 updateHistory.result
@@ -115,10 +115,8 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 withContext(Dispatchers.IO) {
                     val briefResponse = postBriefData(hashMapOf("records" to list))
                     briefResponse?.let { response ->
-                        if (response.code == RESULT_OK) {
-                            response.data?.let {
-                                replaceEventData(list, it.records)
-                            }
+                        response.data?.let {
+                            replaceEventData(list, it)
                         }
                     }
                 }
@@ -133,7 +131,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                     val rawResponse = updateHistory(hashMapOf("records" to it))
                     rawResponse?.let { response ->
                         response.data?.let { data ->
-                            replaceEventData(needUploadRawData, data.records)
+                            replaceEventData(needUploadRawData, data)
                         }
                     }
                 }
@@ -158,16 +156,17 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             return
         }
         if (origin.isNotEmpty()) {
-            for (old in origin) {
-                if (old.rawUploadState == 1) {
+            for ((index, old) in origin.withIndex()) {
+                if (old.autoIncrementColumn == 0L)
+                    old.autoIncrementColumn = responseList[index].autoIncrementColumn
+                if (old.cgmRecordId == null)
+                    old.cgmRecordId = responseList[index].cgmRecordId
+                if (old.rawUploadState == 1)
                     old.briefUploadState = 2
-                }
-                if (old.rawUploadState == 1) {
+                if (old.rawUploadState == 1)
                     old.rawUploadState = 2
-                }
-                if (old.calUploadState == 1) {
+                if (old.calUploadState == 1)
                     old.calUploadState = 2
-                }
             }
             entityBox.put(origin)
         }

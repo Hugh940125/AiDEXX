@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
+import java.util.*
 
 /**
  *@date 2023/2/20
@@ -119,13 +119,17 @@ class AccountViewModel : BaseViewModel() {
 
                 if (data.isNullOrEmpty()) {
                     LogUtil.d("登录后 该账号没有数据", TAG)
+                    MmkvManager.setEventDataMinId("$userId-RealCgmHistoryEntity-MIN-ID",1L)
                     true
                 } else {
                     LogUtil.d("开始插入 ${Date().time}", TAG)
                     var isSuccess = true
+                    var minId = 0L
                     data.chunked(5000).forEach { d ->
                         isSuccess = CgmCalibBgRepository.insert(d)?.let {
                             LogUtil.d("开始插入 ${Date().time}", TAG)
+                            minId = d.last().autoIncrementColumn
+                            MmkvManager.setEventDataMinId("$userId-RealCgmHistoryEntity-MIN-ID",minId)
                             isSuccess
                         } ?:let {
                             LogUtil.d("开始插入 ${Date().time}", TAG)
@@ -136,7 +140,6 @@ class AccountViewModel : BaseViewModel() {
                             return@forEach
                         }
                     }
-
                     isSuccess
                 }
             }

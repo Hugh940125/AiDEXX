@@ -33,6 +33,8 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
+import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -730,6 +732,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             nextEventIndex = entity.eventIndex + 1
             transmitterBox!!.put(entity)
 //                updateGlucoseTrend(tempBriefList.last().deviceTime)
+            EventBusManager.send(
+                EventBusKey.EVENT_CGM_DATA_CHANGED,
+                CgmDataChangedInfo(DataChangedType.ADD, tempBriefList)
+            )
             tempBriefList.clear()
             if (goon) continueBriefFetch()
         }, onError = {

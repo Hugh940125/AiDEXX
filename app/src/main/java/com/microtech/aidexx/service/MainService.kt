@@ -136,18 +136,18 @@ class MainService : Service(), LifecycleOwner {
         var count = 0
         mainServiceTask = object : TimerTask() {
             override fun run() {
+                val model = TransmitterManager.instance().getDefault()
+                if (model != null) {
+                    if (model.isGettingTransmitterData) {
+                        model.isGettingTransmitterData = false
+                        return
+                    }
+                }
                 count++
-                if (count % 3 == 0) {
-                    serviceMainScope.launch {
-                        CloudHistorySync.downloadAllData()
-                    }
-                    val model = TransmitterManager.instance().getDefault()
-                    if (model != null) {
-                        if (model.isGettingTransmitterData) {
-                            model.isGettingTransmitterData = false
-                            return
-                        }
-                    }
+                serviceMainScope.launch {
+                    CloudHistorySync.downloadAllData()
+                }
+                if (count % 2 == 0) {
                     serviceMainScope.launch {
                         CloudCgmHistorySync.upload()
                     }

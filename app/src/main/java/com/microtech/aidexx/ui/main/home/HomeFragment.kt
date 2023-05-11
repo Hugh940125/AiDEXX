@@ -179,24 +179,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         lifecycleScope.launch {
             binding.switchUserData.isVisible = homeViewModel.getFollowers()
         }
-
-
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO){
-
-                fixedRateTimer("", false, 0, 60 * 1000) {
-                    val a = RealCgmHistoryEntity()
-                    a.deviceTime = Date()
-                    a.glucose = (13 + ((a.deviceTime.time % 10) - 5)).toFloat()
-                    a.eventType = History.HISTORY_GLUCOSE
-
-                    EventBusManager.send(EventBusKey.EVENT_CGM_DATA_CHANGED, CgmDataChangedInfo(
-                        DataChangedType.ADD, listOf(a)))
-                }
-
-            }
-        }
-
     }
 
     private fun judgeState() {

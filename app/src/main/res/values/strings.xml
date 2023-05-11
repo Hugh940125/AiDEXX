@@ -630,5 +630,8 @@
     <string name="pair_fail">配对失败</string>
     <string name="unpair_fail">解配失败</string>
     <string name="pairing">正在配对</string>
+    <string name="time_divider">——</string>
+    <string name="cgm_cover_time">CGM覆盖时间</string>
+    <string name="monitor_times">监测次数</string>
     <!-- 关注分享 -->
 </resources>

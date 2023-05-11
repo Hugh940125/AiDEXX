@@ -50,11 +50,13 @@ class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSel
         bind.calendarView.setOnMonthChangeListener { year, month ->
             bind.tvMonth.text = buildText(year, month)
         }
+        var rangeIndex = 0
         bind.rgSwitch.setOnCheckedChangeListener { group, checkedId ->
             val today = Calendar.getInstance()
             today.time = dateToday
             when (group.checkedRadioButtonId) {
                 bind.btn7.id -> {
+                    rangeIndex = 1
                     val days = Calendar.getInstance()
                     days.time = last7days
                     bind.calendarView.setSelectStartCalendar(
@@ -67,6 +69,7 @@ class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSel
                     )
                 }
                 bind.btn14.id -> {
+                    rangeIndex = 2
                     val days = Calendar.getInstance()
                     days.time = last14days
                     bind.calendarView.setSelectStartCalendar(
@@ -79,6 +82,7 @@ class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSel
                     )
                 }
                 bind.btn30.id -> {
+                    rangeIndex = 3
                     val days = Calendar.getInstance()
                     days.time = last30days
                     bind.calendarView.setSelectStartCalendar(
@@ -94,23 +98,38 @@ class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSel
         }
         val btOk = findViewById<RulerWidget>(R.id.bt_ok)
         btOk?.setOnClickListener {
-            val calendars = bind.calendarView.selectedCalendar
-            if (calendars != null) {
-                val result = Calendar.getInstance()
-                result[Calendar.HOUR_OF_DAY] = 0
-                result[Calendar.MINUTE] = 0
-                result[Calendar.SECOND] = 0
-                result[Calendar.MILLISECOND] = 0
+            if (rangeIndex != 0) {
+                onRangeSelected.invoke(rangeIndex)
+                dismiss()
+                return@setOnClickListener
+            }
+            val calendars: List<com.haibin.calendarview.Calendar> =
+                bind.calendarView.selectCalendarRange
+            if (calendars.size > 1) {
+                val cal = Calendar.getInstance()
+                cal[Calendar.HOUR_OF_DAY] = 0
+                cal[Calendar.MINUTE] = 0
+                cal[Calendar.SECOND] = 0
+                cal[Calendar.MILLISECOND] = 0
 
-                result[Calendar.YEAR] = calendars.year
-                result[Calendar.MONTH] = calendars.month - 1
-                result[Calendar.DAY_OF_MONTH] = calendars.day
-                val start = Date()
-                start.time = result.timeInMillis
-//                onSelected(start)
+                cal[Calendar.YEAR] = calendars[0].year
+                cal[Calendar.MONTH] = calendars[0].month - 1
+                cal[Calendar.DAY_OF_MONTH] = calendars[0].day
+                val startDate = Date()
+                startDate.time = cal.timeInMillis
+
+                cal[Calendar.YEAR] = calendars[calendars.size - 1].year
+                cal[Calendar.MONTH] = calendars[calendars.size - 1].month - 1
+                cal[Calendar.DAY_OF_MONTH] = calendars[calendars.size - 1].day + 1
+                val endDate = Date()
+                endDate.time = cal.timeInMillis
+
+                onSelected(startDate, endDate)
                 dismiss()
             } else {
-                val text = "请选择日期"
+                val text =
+                    if (bind.calendarView.selectedCalendar == null)
+                        context.getString(R.string.start_date) else context.getString(R.string.end_date)
                 Toast.makeText(context, text, Toast.LENGTH_SHORT).apply { show() }
             }
         }

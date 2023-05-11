@@ -131,10 +131,10 @@ interface ApiService {
             : Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
 
     @POST(UPLOAD_CGM_BRIEF)
-    suspend fun postBriefHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+    suspend fun postBriefHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
 
     @POST(UPDATE_CGM_RECORD)
-    suspend fun updateHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<BaseList<RealCgmHistoryEntity>>>
+    suspend fun updateHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
 
     @GET(USER_PREFERENCE)
     suspend fun getUserPreference(): ApiResult<BaseResponse<MutableList<UserPreferenceEntity>>>
