@@ -11,10 +11,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.lang.reflect.ParameterizedType
 
-abstract class DataSyncController {
+abstract class DataSyncController<T> {
 
     val tag = "DataSyncController"
+    val tClazz =
+        (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
 
     sealed class SyncStatus {
         data class Loading(val progress: Int = 0): SyncStatus()
@@ -51,13 +54,7 @@ abstract class DataSyncController {
                 downloadStateFlow.collect {
                     if (it) {
                         dataSyncScope.launch(dataSyncExceptionHandler) {
-                            downloadStatusStateFlow.emit(SyncStatus.Loading())
-                            if (downloadData(UserInfoManager.instance().userId())) {
-                                downloadStatusStateFlow.emit(SyncStatus.Success)
-                            } else {
-                                downloadStatusStateFlow.emit(SyncStatus.Failure())
-                            }
-                            stopDownloadData()
+                            download(UserInfoManager.instance().userId(), downloadStatusStateFlow, ::stopDownloadData)
                         }
                     }
                 }
@@ -66,18 +63,29 @@ abstract class DataSyncController {
                 downloadShareDataStateFlow.collect {
                     it?.let { userId ->
                         dataSyncScope.launch(shareUserDataSyncExceptionHandler) {
-                            downloadShareDataStatusStateFlow.emit(SyncStatus.Loading())
-                            if (downloadData(userId)) {
-                                downloadShareDataStatusStateFlow.emit(SyncStatus.Success)
-                            } else {
-                                downloadShareDataStatusStateFlow.emit(SyncStatus.Failure())
-                            }
-                            stopDownloadShareUserData()
+                            download(userId, downloadShareDataStatusStateFlow, ::stopDownloadShareUserData)
                         }
                     }
                 }
             }
         }
+    }
+
+    private suspend fun download(userId: String, statusFlow: MutableStateFlow<SyncStatus?>, stopDownloadFun: (Boolean)->Unit) {
+
+        if (!UserInfoManager.instance().isLogin()) {
+            LogUtil.xLogE("未登录，$this 下载失败")
+            downloadStatusStateFlow.emit(SyncStatus.Failure())
+            return
+        }
+
+        statusFlow.emit(SyncStatus.Loading())
+        if (downloadData(userId)) {
+            statusFlow.emit(SyncStatus.Success)
+        } else {
+            statusFlow.emit(SyncStatus.Failure())
+        }
+        stopDownloadFun.invoke(false)
     }
 
     /**
@@ -132,7 +140,7 @@ abstract class DataSyncController {
     }
 
 
-    abstract fun getShareDataMinIdKey(userId: String): String
+    fun getDataMinIdKey(userId: String): String = "$userId-${tClazz.simpleName}-MIN-ID"
 
     protected abstract suspend fun downloadData(userId: String): Boolean
 

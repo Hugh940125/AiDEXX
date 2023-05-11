@@ -63,7 +63,8 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
         when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
             userId = authorizationId,
-            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getShareDataMinIdKey(authorizationId))
+            startAutoIncrementColumn = MmkvManager.getEventDataMinId(getDataMinIdKey(authorizationId)),
+            orderStrategy = "ASC"
         )) {
 
             is ApiResult.Success -> apiResult.result.data
@@ -150,7 +151,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             if (responseList.isNotEmpty()) {
                 CgmCalibBgRepository.insert(responseList)
                 MmkvManager.setEventDataMinId(
-                    getShareDataMinIdKey(authorId!!),
+                    getDataMinIdKey(authorId!!),
                     responseList.last().autoIncrementColumn
                 )
             }

@@ -111,7 +111,7 @@ class AccountViewModel : BaseViewModel() {
     }
 
     private suspend fun downloadData(userId: String): Boolean =
-        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(userId = userId, pageSize = 5000)) {
+        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(userId = userId, pageSize = 5000, orderStrategy = "ASC")) {
             is ApiResult.Success -> {
 
                 val data = apiResult.result.data

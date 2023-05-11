@@ -19,11 +19,10 @@ import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.lang.reflect.ParameterizedType
-import java.util.*
+import java.util.Date
 import java.util.concurrent.CountDownLatch
 
-abstract class CloudHistorySync<T : EventEntity>: DataSyncController() {
+abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
     abstract val idx: Property<T>
     abstract val id: Property<T>
     abstract val url: String //api请求路径
@@ -33,9 +32,7 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController() {
     abstract val recordIndex: Property<T>
     abstract val recordId: Property<T>
     abstract val uuidValue: (T) -> String?
-    private val clazz =
-        (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
-    val entityBox: Box<T> = ObjectBox.store.boxFor(clazz)
+    val entityBox: Box<T> = ObjectBox.store.boxFor(tClazz)
 
     abstract suspend fun postLocalData(json: String): BaseResponse<BaseList<T>>?
 
@@ -186,9 +183,8 @@ var pi = 0
         }
     }
 
-    override fun getShareDataMinIdKey(userId: String) = "$userId-${clazz.simpleName}-MIN-ID"
     companion object {
-        suspend fun downloadAllData(userId: String? = null): SyncStatus{
+        suspend fun downloadAllData(userId: String? = null, needWait: Boolean = false): SyncStatus{
 
             var isSuccess = true
             var taskLatch : CountDownLatch? = null
@@ -207,10 +203,10 @@ var pi = 0
                 }
             }
 
+            val callback: ((SyncStatus?)->Unit)? = if (needWait) { { updateRet(it) } } else null
+
             val tasks = listOf {
-                CloudCgmHistorySync.startDownload(userId = userId) {
-                    updateRet(it)
-                }
+                CloudCgmHistorySync.startDownload(userId = userId, cb = callback)
             }
 
             taskLatch = CountDownLatch(tasks.size)
@@ -222,7 +218,9 @@ var pi = 0
             }
 
             withContext(Dispatchers.IO) {
-                taskLatch.await() // todo 考虑加个超时
+                if (needWait) {
+                    taskLatch.await() // todo 考虑加个超时
+                }
             }
 
             return if (isSuccess) SyncStatus.Success else SyncStatus.Failure()
