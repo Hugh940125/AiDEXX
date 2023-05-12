@@ -152,7 +152,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                     old.autoIncrementColumn = responseList[index].autoIncrementColumn
                 if (old.cgmRecordId == null)
                     old.cgmRecordId = responseList[index].cgmRecordId
-                if (old.rawUploadState == 1)
+                if (old.briefUploadState == 1)
                     old.briefUploadState = 2
                 if (old.rawUploadState == 1)
                     old.rawUploadState = 2

@@ -177,23 +177,25 @@ class AccountViewModel : BaseViewModel() {
         countDownTimer.cancel()
     }
 
-    private fun testData(userId: String): List<RealCgmHistoryEntity> {
-        val c = 15 * 15 * 24 * 60 // 两周21600
+    private fun testData(userId: String, c: Int = 15 * 15 * 24 * 60 ): List<RealCgmHistoryEntity> {
         val cur = Date().time / 1000
 
         LogUtil.d("开始生成插入 ${Date().time}", TAG)
         val data = (0 until c).flatMap { t ->
             listOf(RealCgmHistoryEntity().also {
                 it.deviceTime = Date((cur - (t * 60)) * 1000)
-                it.glucose = (t % 40).toFloat()
+                it.glucoseIsValid = 1
+                it.status = History.STATUS_OK
+                it.calibrationIsValid = 0
+                it.glucose = ((t % 200) + 100).toFloat()
+
                 it.eventType = History.HISTORY_GLUCOSE
                 it.createTime = it.deviceTime
                 it.userId = userId
                 it.dataStatus = 2
-                it.recordIndex = t.toLong()
                 it.type = 1
-                it.deviceId = "deviceIddeviceId"
-                it.deviceSn = "deviceSndeviceSndeviceSn"
+                it.deviceId = "WT0226-ID"
+                it.deviceSn = "WT0226"
                 it.rawData1 = 0.1f
                 it.rawData2 = 0.1f
                 it.rawData3 = 0.1f
@@ -203,9 +205,14 @@ class AccountViewModel : BaseViewModel() {
                 it.rawData7 = 0.1f
                 it.rawData8 = 0.1f
                 it.rawData9 = 0.1f
-                it.sensorIndex = 1
+                it.sensorId = "WT0226-sen"
                 it.eventIndex = t
                 it.id = it.recordId
+                it.briefUploadState = 1
+                it.userId = userId
+                it.timeOffset = c - t
+                it.frontRecordId = it.updateRecordUUID()
+
             })
         }
         return data

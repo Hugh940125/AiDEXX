@@ -501,10 +501,9 @@ class ChartViewModel: ViewModel() {
             return
         }
 
-        loop@ for (history in cgmHistories) {
-            when (history.eventType) {
-                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL, 31 -> {
-                    if (history.glucose == null || history.eventWarning == -1) continue@loop
+        cgmHistories.forEach {history ->
+            if (history.isGlucoseIsValid()) {
+                if (history.glucose != null && history.eventWarning != -1) {
                     val dateTime = ChartUtil.dateToX(history.deviceTime)
                     val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
                     if (entry.y < 2f.toGlucoseValue()) {
@@ -515,13 +514,35 @@ class ChartViewModel: ViewModel() {
                     xMaxMin(dateTime)
                     calDateMaxMin(history.deviceTime)
                 }
-                History.HISTORY_CALIBRATION -> {
-                    if (!isGp) {
-                        updateCnCalibrationSet(history)
-                    }
+
+                if (history.isCalibrationIsValid()) {
+                    updateCnCalibrationSet(history)
                 }
+
             }
         }
+
+//        loop@ for (history in cgmHistories) {
+//            when (history.eventType) {
+//                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
+//                    if (history.glucose == null || history.eventWarning == -1) continue@loop
+//                    val dateTime = ChartUtil.dateToX(history.deviceTime)
+//                    val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
+//                    if (entry.y < 2f.toGlucoseValue()) {
+//                        entry.y = 2f.toGlucoseValue()
+//                    }// 小于2的数值 都当2处理
+//                    if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
+//                    glucoseSets.last().addEntryOrdered(entry)
+//                    xMaxMin(dateTime)
+//                    calDateMaxMin(history.deviceTime)
+//                }
+//                History.HISTORY_CALIBRATION -> {
+//                    if (!isGp) {
+//                        updateCnCalibrationSet(history)
+//                    }
+//                }
+//            }
+//        }
 
         LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
 
@@ -577,9 +598,9 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
-        if (history.glucose != null) {
+        history.getCalibrationValue()?.let {
             val dateTime = ChartUtil.dateToX(history.deviceTime)
-            val bg = BloodGlucoseEntity(history.deviceTime, history.glucose!!.toFloat())
+            val bg = BloodGlucoseEntity(history.deviceTime, it)
             bg.calibration = true
             val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
             entry.data = bg

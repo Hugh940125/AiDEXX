@@ -53,7 +53,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     @Index
     override var deleteStatus: Int = 0
-    var eventType: Int = History.HISTORY_INVALID
+    var eventType: Int? = null
     var glucose: Float? = null
     var eventDataOrigin: Float? = null
     var cf: Float = 1f //校准系数
@@ -254,6 +254,13 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     override fun toString(): String {
         return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, glucose=$glucose, deviceId=$deviceId, type=$type, authorizationId=${this.userId}, frontRecordId=${this.frontRecordId}, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
+    }
+
+    fun isGlucoseIsValid() = glucoseIsValid == 1 && status == History.STATUS_OK
+
+    fun isCalibrationIsValid() = calibrationIsValid == 1
+    fun getCalibrationValue(): Float? {
+        TODO("---计算校准值的算法----")
     }
 
 }

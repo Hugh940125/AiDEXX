@@ -12,8 +12,8 @@ object ThresholdManager {
     const val GLUCOSE_LOW_LIMIT = 2f
     const val GLUCOSE_UP_LIMIT = 25f
     const val URGENT_HYPO = 3f
-    const val DEFAULT_HYPO = 3.9f
-    const val DEFAULT_HYPER = 10f
+    const val DEFAULT_HYPO = 70.2f
+    const val DEFAULT_HYPER = 180f
 
     const val SUPER_FAST_DOWN = -0.17
     const val FAST_DOWN = -0.11
