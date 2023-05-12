@@ -3,27 +3,37 @@ package com.microtech.aidexx.db.entity
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.LanguageUnitManager
-import com.microtech.aidexx.utils.toGlucoseStringWithUnit
+import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
 import java.util.*
 
 
 @Entity
 class BloodGlucoseEntity : EventEntity {
-    override var authorizationId: String? = null
+    @Index(type = IndexType.HASH)
+    override var userId: String? = null
+
     @Id
     override var idx: Long? = null
     override var state: Int = 0
     override var recordIndex: Long? = null
     override var recordId: String? = null
     override var deleteStatus: Int = 0
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+    var bloodGlucoseId: String? = UUID.randomUUID().toString().replace("-", "")
     override var id: String? = null
     var testTime: Date = Date()
     var testTag: Int = 0
-    var bloodGlucose: Float = -1f
+    var bloodGlucose: Float = 0f
+        set(value) {
+            field = value
+            bloodGlucoseMg = bloodGlucose.toString()
+        }
+    var bloodGlucoseMg: String? = null
     override var createTime: Date = Date()
+
     @Transient
     var calibration: Boolean = false
 
@@ -37,6 +47,8 @@ class BloodGlucoseEntity : EventEntity {
             testTime = time
         }
     override var language: String = ""
+    override var uploadState: Int = 0
+
     constructor()
     constructor(testTime: Date, bloodGlucose: Float) {
         this.testTime = testTime
@@ -70,12 +82,15 @@ class BloodGlucoseEntity : EventEntity {
                 else -> null
             }
 
-    override fun getValueDescription(res: Resources): String =
-        bloodGlucose.toGlucoseStringWithUnit()
-
-    override fun toString(): String {
-        return "BloodGlucoseEntity(authorizationId=$authorizationId, idx=$idx, state=$state, recordIndex=$recordIndex, deleteStatus=$deleteStatus, recordUuid=$recordUuid, id=$id, testTime=$testTime, testTag=$testTag, bloodGlucose=$bloodGlucose, calibration=$calibration, time=$time)"
+    override fun getValueDescription(res: Resources): String {
+        val unit = UnitManager.glucoseUnit.text
+        return when (UnitManager.glucoseUnit) {
+            UnitManager.GlucoseUnit.MMOL_PER_L -> "${bloodGlucose / 18}$unit"
+            UnitManager.GlucoseUnit.MG_PER_DL -> "$bloodGlucose$unit"
+        }
     }
 
-
+    override fun toString(): String {
+        return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTime=$testTime, testTag=$testTag, bloodGlucose=$bloodGlucose, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
+    }
 }

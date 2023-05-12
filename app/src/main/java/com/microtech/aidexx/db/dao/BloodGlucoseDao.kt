@@ -15,7 +15,7 @@ object BloodGlucoseDao {
     suspend fun queryByUid(id: String): MutableList<BloodGlucoseEntity>? =
         awaitCallInTx {
             box.query()
-                .equal(BloodGlucoseEntity_.authorizationId, id, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                .equal(BloodGlucoseEntity_.userId, id, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 .build()
                 .find()
         }
@@ -33,7 +33,7 @@ object BloodGlucoseDao {
                     startDate,
                     endDate
                 )
-                .equal( BloodGlucoseEntity_.authorizationId, authorId, QueryBuilder.StringOrder.CASE_SENSITIVE )
+                .equal( BloodGlucoseEntity_.userId, authorId, QueryBuilder.StringOrder.CASE_SENSITIVE )
                 .equal(BloodGlucoseEntity_.deleteStatus, 0)
                 .build().find()
         }

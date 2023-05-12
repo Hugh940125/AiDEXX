@@ -44,7 +44,7 @@ class DietEntity : EventEntity {
     var momentType: Int = 0
 
     @Index(type = IndexType.HASH)
-    override var authorizationId: String? = null
+    override var userId: String? = null
 
     @Transient
     override var time: Date = mealTime
@@ -55,9 +55,8 @@ class DietEntity : EventEntity {
             field = time
             mealTime = time
         }
-
     override var language: String = ""
-
+    override var uploadState: Int = 0
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
@@ -109,7 +108,7 @@ class DietEntity : EventEntity {
     }
 
     override fun toString(): String {
-        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, recordUuid=$recordUuid, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$relList, authorizationId=$authorizationId, time=$time)"
+        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, recordUuid=$recordUuid, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$relList, authorizationId=$userId, time=$time)"
     }
 
 

@@ -188,7 +188,7 @@ class AccountViewModel : BaseViewModel() {
                 it.glucose = (t % 40).toFloat()
                 it.eventType = History.HISTORY_GLUCOSE
                 it.createTime = it.deviceTime
-                it.authorizationId = userId
+                it.userId = userId
                 it.dataStatus = 2
                 it.recordIndex = t.toLong()
                 it.type = 1

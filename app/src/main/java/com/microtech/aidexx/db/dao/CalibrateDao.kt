@@ -14,7 +14,7 @@ object CalibrateDao {
     suspend fun queryByUid(id: String): MutableList<CalibrateEntity>? =
         awaitCallInTx {
             box.query()
-                .equal(CalibrateEntity_.authorizationId, id, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                .equal(CalibrateEntity_.userId, id, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 .build()
                 .find()
         }

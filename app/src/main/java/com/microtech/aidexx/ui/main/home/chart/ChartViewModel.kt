@@ -4,11 +4,7 @@ import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.CombinedData
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.data.ScatterData
+import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
@@ -16,51 +12,28 @@ import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.db.entity.BloodGlucoseEntity
-import com.microtech.aidexx.db.entity.CalibrateEntity
-import com.microtech.aidexx.db.entity.DietEntity
-import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.db.entity.ExerciseEntity
-import com.microtech.aidexx.db.entity.InsulinEntity
-import com.microtech.aidexx.db.entity.MedicationEntity
-import com.microtech.aidexx.db.entity.OthersEntity
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.*
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
-import com.microtech.aidexx.utils.CalibrateManager
-import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.LogUtils
-import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.utils.ThresholdManager
-import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
-import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
-import com.microtech.aidexx.widget.chart.dataset.BgDataSet
-import com.microtech.aidexx.widget.chart.dataset.CalDataSet
-import com.microtech.aidexx.widget.chart.dataset.CurrentGlucoseDataSet
-import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
-import com.microtech.aidexx.widget.chart.dataset.IconDataSet
+import com.microtech.aidexx.widget.chart.dataset.*
 import com.microtechmd.blecomm.constant.History
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.Date
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 
-class ChartViewModel: ViewModel() {
+class ChartViewModel : ViewModel() {
 
     // 国际版代码先放这里 后面做打包渠道配置
     private val isGp = false
@@ -240,7 +213,8 @@ class ChartViewModel: ViewModel() {
         }
         if (timeMin == null) {
             timeMin = ChartUtil.dateToX(
-                Date(Date().time - getGranularity() * 6 * TimeUtils.oneHourSeconds * 1000))
+                Date(Date().time - getGranularity() * 6 * TimeUtils.oneHourSeconds * 1000)
+            )
         }
 
         emit(combinedData)
@@ -271,7 +245,7 @@ class ChartViewModel: ViewModel() {
 
         if (isLtr || !isDataInit) return false
 //        LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发 loadedmin=$loadedMinDate xAxisMin=$xAxisMin vf=$visibleLeftX" )
-        if(loadedMinDate == xAxisMin) {
+        if (loadedMinDate == xAxisMin) {
 //            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
             return false
         }
@@ -329,6 +303,7 @@ class ChartViewModel: ViewModel() {
     }
 
     private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
+
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
@@ -358,7 +333,7 @@ class ChartViewModel: ViewModel() {
 
             val bgDataTask = async {
                 CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
-                    if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                    if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                         isSuccess = false
                     } else {
                         addBgSet(d)
@@ -374,7 +349,7 @@ class ChartViewModel: ViewModel() {
     /**
      * 当前x轴显示的最小的日期 毫秒
      */
-    private fun curXMinTimeMillis() = ChartUtil.xToSecond(timeMin?:0f) * 1000
+    private fun curXMinTimeMillis() = ChartUtil.xToSecond(timeMin ?: 0f) * 1000
 
     private suspend fun getCgmPageData(startDate: Date, endDate: Date) =
         CgmCalibBgRepository.queryCgmByPage(
@@ -533,7 +508,7 @@ class ChartViewModel: ViewModel() {
     private fun checkCgmHistory(cgm: RealCgmHistoryEntity) =
         (History.HISTORY_GLUCOSE == cgm.eventType
                 || History.HISTORY_GLUCOSE_RECOMMEND_CAL == cgm.eventType
-                || History.HISTORY_CALIBRATION == cgm.eventType )
+                || History.HISTORY_CALIBRATION == cgm.eventType)
                 && (cgm.glucose != null && cgm.eventWarning != -1)
 
     /**
@@ -574,7 +549,7 @@ class ChartViewModel: ViewModel() {
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
         if (history.glucose != null) {
             val dateTime = ChartUtil.dateToX(history.deviceTime)
-            val bg = BloodGlucoseEntity(history.deviceTime, history.glucose!!.toFloat())
+            val bg = BloodGlucoseEntity(history.deviceTime, history.glucose ?: 0f)
             bg.calibration = true
             val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
             entry.data = bg

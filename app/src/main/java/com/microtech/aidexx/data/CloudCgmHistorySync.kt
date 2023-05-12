@@ -3,10 +3,8 @@ package com.microtech.aidexx.data
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.UPLOAD_CGM_BRIEF
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
@@ -28,7 +26,6 @@ private const val HISTORY_ONCE_UPLOAD_NUMBER = 500L
 object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override val idx: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.idx
     override val id: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.id
-    override val url: String = UPLOAD_CGM_BRIEF
     override val frontRecordId: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.frontRecordId
     override val userId: Property<RealCgmHistoryEntity> =
         RealCgmHistoryEntity_.userId
@@ -39,12 +36,11 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     private val calUploadState: Property<RealCgmHistoryEntity> =
         RealCgmHistoryEntity_.calUploadState
     override val deleteStatus: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.deleteStatus
-    override val recordIndex: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.recordIndex
-    override val recordId: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.recordId
-    override val uuidValue: (RealCgmHistoryEntity) -> String? = { it.frontRecordId }
+    override val uploadState: Property<RealCgmHistoryEntity>
+        get() = RealCgmHistoryEntity_.uploadState
     val eventWarning: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.eventWarning
 
-    override suspend fun postLocalData(json: String): BaseResponse<BaseList<RealCgmHistoryEntity>>? {
+    override suspend fun postLocalData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<Nothing>? {
         return null
     }
 

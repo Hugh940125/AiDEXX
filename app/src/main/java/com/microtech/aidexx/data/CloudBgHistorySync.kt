@@ -2,36 +2,40 @@ package com.microtech.aidexx.data
 
 import com.microtech.aidexx.common.formatWithZone
 import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity_
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 
 object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
     override val idx: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
+        get() = BloodGlucoseEntity_.idx
     override val id: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
-    override val url: String
-        get() = TODO("Not yet implemented")
+        get() = BloodGlucoseEntity_.id
     override val frontRecordId: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
+        get() = BloodGlucoseEntity_.bloodGlucoseId
     override val userId: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
+        get() = BloodGlucoseEntity_.userId
     override val deleteStatus: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
-    override val recordIndex: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
-    override val recordId: Property<BloodGlucoseEntity>
-        get() = TODO("Not yet implemented")
-    override val uuidValue: (BloodGlucoseEntity) -> String?
-        get() = TODO("Not yet implemented")
+        get() = BloodGlucoseEntity_.deleteStatus
+    override val uploadState: Property<BloodGlucoseEntity>
+        get() = BloodGlucoseEntity_.uploadState
 
-    override suspend fun postLocalData(json: String): BaseResponse<BaseList<BloodGlucoseEntity>>? {
-        TODO("Not yet implemented")
+
+    override suspend fun postLocalData(map: HashMap<String, MutableList<BloodGlucoseEntity>>): BaseResponse<Nothing>? {
+        return when (val postHistory = ApiService.instance.postBgHistory(map)) {
+            is ApiResult.Success -> {
+                postHistory.result
+            }
+            is ApiResult.Failure -> {
+                null
+            }
+        }
     }
 
     override suspend fun getRemoteData(userId: String): List<BloodGlucoseEntity>? =
@@ -49,6 +53,7 @@ object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
         type: Int,
         userId: String?
     ) {
+        super.replaceEventData(origin, responseList, type, userId)
         if (type == 3) { //下载
             if (responseList.isNotEmpty()) {
                 CgmCalibBgRepository.insertBg(responseList)

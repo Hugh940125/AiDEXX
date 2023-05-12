@@ -8,15 +8,22 @@ import java.text.DecimalFormat
 
 fun Float.toGlucoseValue(): Float {
     return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this * 18
+        UnitManager.GlucoseUnit.MMOL_PER_L -> this / 18
+        UnitManager.GlucoseUnit.MG_PER_DL -> this
+    }
+}
+
+fun Int.toGlucoseValue(): Float {
+    return when (UnitManager.glucoseUnit) {
+        UnitManager.GlucoseUnit.MMOL_PER_L -> this / 18f
+        UnitManager.GlucoseUnit.MG_PER_DL -> this.toFloat()
     }
 }
 
 fun Float.fromGlucoseValue(): Float {
     return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this / 18
+        UnitManager.GlucoseUnit.MMOL_PER_L -> this * 18
+        UnitManager.GlucoseUnit.MG_PER_DL -> this
     }
 }
 
@@ -27,25 +34,6 @@ fun Float.toCgatInt(): String {
 
 fun Float.toCgat(): String {
     return DecimalFormat("0.0").format(this.toGlucoseValue())
-}
-
-fun Double.toCgat(): String {
-    return DecimalFormat("0.0").format(this.toGlucoseValue())
-}
-
-fun Double.toGlucoseValue(): Double {
-
-    return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this * 18
-    }
-}
-
-fun Double.fromGlucoseValue(): Double {
-    return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this
-        UnitManager.GlucoseUnit.MG_PER_DL -> this / 18
-    }
 }
 
 fun Float.toGlucoseString(): String {
@@ -72,21 +60,8 @@ fun Float.toStringWithLoAndHi(): String {
     }
 }
 
-fun Double.toGlucoseString(context: Resources): String {
-    return when {
-        this.isNaN() -> "--"
-        this < ThresholdManager.GLUCOSE_LOW_LIMIT -> context.getString(R.string.Glucose_Low)
-        this > ThresholdManager.GLUCOSE_UP_LIMIT -> context.getString(R.string.Glucose_High)
-        else -> UnitManager.unitFormat().format(this.toGlucoseValue())
-    }
-}
-
 fun Float.toGlucoseStringWithUnit(): String {
     return this.toGlucoseString() + " " + UnitManager.glucoseUnit.text
-}
-
-fun Double.toGlucoseStringWithUnit(context: Resources): String {
-    return this.toGlucoseString(context) + " " + UnitManager.glucoseUnit.text
 }
 
 fun roundOffDecimal(number: Float): Float {

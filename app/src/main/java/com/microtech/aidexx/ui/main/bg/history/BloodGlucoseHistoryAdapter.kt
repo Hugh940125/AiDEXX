@@ -21,7 +21,7 @@ class BloodGlucoseHistoryAdapter :
             setText(R.id.tvGlucoseDescribe, tagText)
             setText(
                 R.id.tvGlucoseValue,
-                item.bloodGlucose.toGlucoseStringWithUnit()
+                item.getValueDescription(context.resources)
             )
             if (absoluteAdapterPosition == data.size - 1) {
                 setGone(R.id.viDivider, true)

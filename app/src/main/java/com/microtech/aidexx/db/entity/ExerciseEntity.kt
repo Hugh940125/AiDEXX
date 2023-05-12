@@ -6,7 +6,6 @@ import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.jvm.Transient
 
 
@@ -44,7 +43,7 @@ class ExerciseEntity : EventEntity {
     var relList: MutableList<ExerciseDetailEntity> = ArrayList()
 
     @Index(type = IndexType.HASH)
-    override var authorizationId: String? = null
+    override var userId: String? = null
 
     @Transient
     override var time: Date = startTime
@@ -57,6 +56,7 @@ class ExerciseEntity : EventEntity {
         }
 
     override var language: String = ""
+    override var uploadState: Int = 0
 
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()

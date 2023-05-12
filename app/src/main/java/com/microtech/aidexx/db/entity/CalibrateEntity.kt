@@ -14,13 +14,14 @@ class CalibrateEntity : EventEntity {
     @Id
     override var idx: Long? = null
     override var state: Int = 0
-    override var authorizationId: String? = null
+    override var userId: String? = null
     var calTime: Date = Date()
     override var createTime: Date = Date()
     override var recordId: String? = null
 
     @Transient
     override var language: String = ""
+    override var uploadState: Int = 0
 
     @Transient
     override var time: Date = calTime
@@ -54,6 +55,6 @@ class CalibrateEntity : EventEntity {
     }
 
     override fun toString(): String {
-        return "CalibrateEntity(idx=$idx, authorizationId=$authorizationId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$recordUuid, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$calFactor, calOffset=$calOffset)"
+        return "CalibrateEntity(idx=$idx, authorizationId=$userId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$recordUuid, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$calFactor, calOffset=$calOffset)"
     }
 }

@@ -69,6 +69,7 @@ const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CGM_BRIEF = "$middleUrl/cgmRecord/saveCgmRecord" //上传CGM
 const val UPDATE_CGM_RECORD = "$middleUrl/cgmRecord/updateCgmRecord" //更新CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
+const val UPLOAD_BG_HISTORY = "$middleUrl/bloodGlucoseRecord/saveOrUpdateFingerBloodGlucose" //下载CGM
 const val CGM_LIST_RECENT = "$middleUrl/cgm-record/list-recent"
 const val vcsMiddleUrl = "backend/vcs"
 const val LOG_UPLOAD = "$vcsMiddleUrl/log/uploadLog" //上传日志
@@ -127,6 +128,7 @@ interface ApiService {
     //region 数据事件相关
     @GET(getCgmRecordsByPageInfo)
     suspend fun getCgmRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
+
     @GET(getBloodGlucoseRecordsByPageInfo)
     suspend fun getBloodGlucoseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<BloodGlucoseEntity>>>
 
@@ -138,6 +140,9 @@ interface ApiService {
 
     @POST(UPLOAD_CGM_BRIEF)
     suspend fun postBriefHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
+
+    @POST(UPLOAD_BG_HISTORY)
+    suspend fun postBgHistory(@Body map: HashMap<String, MutableList<BloodGlucoseEntity>>): ApiResult<BaseResponse<Nothing>>
 
     @POST(UPDATE_CGM_RECORD)
     suspend fun updateHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>

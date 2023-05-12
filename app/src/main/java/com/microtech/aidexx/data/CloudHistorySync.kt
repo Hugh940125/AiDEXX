@@ -1,7 +1,6 @@
 package com.microtech.aidexx.data
 
 import com.google.gson.GsonBuilder
-import com.microtech.aidexx.common.createWithDateFormat
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
@@ -22,19 +21,16 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CountDownLatch
 
-abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
+abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
     abstract val idx: Property<T>
     abstract val id: Property<T>
-    abstract val url: String //api请求路径
     abstract val frontRecordId: Property<T>
     abstract val userId: Property<T>
     abstract val deleteStatus: Property<T>
-    abstract val recordIndex: Property<T>
-    abstract val recordId: Property<T>
-    abstract val uuidValue: (T) -> String?
+    abstract val uploadState: Property<T>
     val entityBox: Box<T> = ObjectBox.store.boxFor(tClazz)
 
-    abstract suspend fun postLocalData(json: String): BaseResponse<BaseList<T>>?
+    abstract suspend fun postLocalData(map: HashMap<String, MutableList<T>>): BaseResponse<Nothing>?
 
     open suspend fun syncDeleteData(json: String): BaseResponse<BaseList<T>>? {
         return null
@@ -44,17 +40,14 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
 
     open suspend fun upload() {
         val needUploadData = getNeedUploadData()
-        if (needUploadData.size > 0) {
-            val json = GsonBuilder().createWithDateFormat().toJson(needUploadData)
-            withContext(Dispatchers.IO) {
-                val result = postLocalData(json)
-                result?.let { response ->
-                    if (response.code == RESULT_OK) {
-                        response.data?.let {
-                            replaceEventData(needUploadData, it.records)
+        needUploadData?.let {
+            if (needUploadData.size > 0) {
+                withContext(Dispatchers.IO) {
+                    val result = postLocalData(hashMapOf("records" to needUploadData))
+                    result.let { response ->
+                        response?.data?.let {
+                            replaceEventData(needUploadData)
                         }
-                    } else {
-//                        downloadData()
                     }
                 }
             }
@@ -93,7 +86,7 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
         val result = getRemoteData(userId)
         return result?.let {
             if (it.isNotEmpty()) {
-                replaceEventData( responseList = it, type = 3, userId = userId )
+                replaceEventData(responseList = it, type = 3, userId = userId)
             }
             if (it.size >= PAGE_SIZE) {
                 LogUtil.d("===DATASYNC=== 开始下一页数据下载")
@@ -114,71 +107,35 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
         }
     }
 
-    private suspend fun getNeedUploadData(): MutableList<T> {
-        val userId = UserInfoManager.instance().userId()
+    private suspend fun getNeedUploadData(): MutableList<T>? {
+        val id = UserInfoManager.instance().userId()
         val mutableList = ObjectBox.store.awaitCallInTx {
-            entityBox.query().isNull(recordId).equal(
-                this.userId, userId
+            entityBox.query().equal(uploadState, 1).equal(
+                userId, id
             ).order(idx).build().find()
         }
-        mutableList?.let {
-            if (mutableList.size > 0) {
-                val indexList = ObjectBox.store.awaitCallInTx {
-                    entityBox.query().notNull(recordIndex).equal(
-                        this.userId, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    ).build().property(recordIndex).findLongs()
-                }
-                val recordIndex =
-                    if (indexList == null || indexList.isEmpty()) 0 else indexList.max()
-                val item = mutableList[0]
-                item.recordIndex = (recordIndex.plus(1))
-            }
-            return mutableList
-        }
-        return mutableListOf()
+        return mutableList
     }
 
     open suspend fun replaceEventData(
         origin: MutableList<T> = mutableListOf(),
-        responseList: List<T>,
+        responseList: List<T> = mutableListOf(),
         type: Int = 0,
         userId: String? = null,
     ) {
-
-        val userId = UserInfoManager.instance().userId()
-        if (origin.isNotEmpty()) {
-            for ((index, entity) in origin.withIndex()) {
-                entity.recordIndex = responseList[index].recordIndex
-                entity.id = responseList[index].id
-            }
-            entityBox.put(origin)
-        } else {
-            val temp = mutableListOf<T>()
-            for (res in responseList) {
-                val existRecord = entityBox.query().equal(frontRecordId, uuidValue(res) ?: "")
-                    .equal(this.userId, userId ?: userId).build().find()
-                if (existRecord.isEmpty()) {
-                    res.authorizationId = userId ?: userId
-                    temp.add(res)
-                } else {
-                    for (record in existRecord) {
-                        record.recordIndex = res.recordIndex
-                        record.id = res.id
-                        temp.add(record)
-                    }
-                }
-            }
-            entityBox.put(temp)
+        for (entity in origin) {
+            entity.uploadState = 2
         }
+        entityBox.put(origin)
     }
 
     companion object {
-
         suspend fun downloadRecentData(userId: String): Boolean = withContext(scope.coroutineContext) {
             var isSuccess = true
             fun updateStatus(ret: Boolean) {
                 if (!ret) isSuccess = false
             }
+
             val tasks = listOf(
                 async { updateStatus(EventRepository.getRecentCgmData(userId)) },
                 async { updateStatus(EventRepository.getRecentBgData(userId)) }
@@ -188,10 +145,10 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
             isSuccess
         }
 
-        suspend fun downloadAllData(userId: String? = null, needWait: Boolean = false): SyncStatus{
+        suspend fun downloadAllData(userId: String? = null, needWait: Boolean = false): SyncStatus {
 
             var isSuccess = true
-            var taskLatch : CountDownLatch? = null
+            var taskLatch: CountDownLatch? = null
 
             fun updateRet(status: SyncStatus?) {
                 isSuccess = when (status) {
@@ -207,10 +164,12 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
                 }
             }
 
-            val callback: ((SyncStatus?)->Unit)? = if (needWait) { { updateRet(it) } } else null
+            val callback: ((SyncStatus?) -> Unit)? = if (needWait) {
+                { updateRet(it) }
+            } else null
 
-            val tasks = listOf (
-                { CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
+            val tasks = listOf(
+                //{ CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
                 { CloudBgHistorySync.startDownload(userId = userId, cb = callback) },
                 //...
             )
@@ -230,6 +189,18 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
             return if (isSuccess) {
                 if (needWait) SyncStatus.Success else SyncStatus.Loading()
             } else SyncStatus.Failure()
+        }
+
+
+        suspend fun uploadAllData() {
+            withContext(scope.coroutineContext) {
+                val tasks = listOf(
+                    async { CloudCgmHistorySync.upload() },
+                    async { CloudBgHistorySync.upload() }
+                    //...
+                )
+                tasks.awaitAll()
+            }
         }
     }
 }

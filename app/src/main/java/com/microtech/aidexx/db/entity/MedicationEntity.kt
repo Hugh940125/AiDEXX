@@ -35,7 +35,7 @@ class MedicationEntity :
     @Index(type = IndexType.HASH)
     var medicineName: String? = null
 
-//    @Uid(499736593101406176L)
+    //    @Uid(499736593101406176L)
     var medicineDosage: Float? = null
     var isPreset: Boolean = false
 
@@ -45,7 +45,7 @@ class MedicationEntity :
     var momentType: Int = 0
 
     @Index(type = IndexType.HASH)
-    override var authorizationId: String? = null
+    override var userId: String? = null
 
     override var recordId: String? = null
 
@@ -59,10 +59,13 @@ class MedicationEntity :
             takenTime = time
         }
     override var language: String = ""
+    override var uploadState: Int = 0
+
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
-    constructor(medicineName: String? = null, medicineDosage: Float? = null): this() {
+
+    constructor(medicineName: String? = null, medicineDosage: Float? = null) : this() {
         this.medicineName = medicineName
         this.medicineDosage = medicineDosage
     }

@@ -85,7 +85,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                             Dialogs.showSuccess(getString(R.string.calibration_success))
                             binding.etGlucoseValue.setText("")
                         } else {
-                            Dialogs.showSuccess(getString(R.string.calibration_fail))
+                            Dialogs.showError(getString(R.string.calibration_fail))
                         }
                     }
                     MessageDistributor.instance().removeObserver(this)
@@ -244,7 +244,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                     }
                     tvGlucoseDescribe.text = tagText
                     tvGlucoseRecordValue.text =
-                        lastGlucoseRecord.bloodGlucose.toGlucoseStringWithUnit()
+                        lastGlucoseRecord.getValueDescription(resources)
                     glucoseHistoryDivider.visibility = View.GONE
                 }
                 binding.tvNoneRecord.visibility = View.GONE
@@ -327,7 +327,8 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 timeSlot?.let {
                     bgEntity.testTag = it
                 }
-                bgEntity.authorizationId = UserInfoManager.instance().userId()
+                bgEntity.uploadState = 1
+                bgEntity.userId = UserInfoManager.instance().userId()
                 ObjectBox.runAsync({
                     ObjectBox.bgHistoryBox!!.put(bgEntity)
                 }, {

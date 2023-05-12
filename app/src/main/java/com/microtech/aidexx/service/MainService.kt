@@ -149,7 +149,7 @@ class MainService : Service(), LifecycleOwner {
                 }
                 if (count % 2 == 0) {
                     serviceMainScope.launch {
-                        CloudCgmHistorySync.upload()
+                        CloudHistorySync.uploadAllData()
                     }
                 }
                 if (count % 4 == 0) {

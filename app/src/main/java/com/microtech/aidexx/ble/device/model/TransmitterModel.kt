@@ -772,7 +772,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ).equal(
             RealCgmHistoryEntity_.deviceId, deviceId
         ).equal(
-            RealCgmHistoryEntity_.authorizationId, userId
+            RealCgmHistoryEntity_.userId, userId
         )
         when (type) {
             History.HISTORY_LOCAL_HYPER -> build.equal(

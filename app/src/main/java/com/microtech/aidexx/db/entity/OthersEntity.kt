@@ -41,9 +41,11 @@ class OthersEntity : EventEntity, EventActions {
         }
 
     @Index(type = IndexType.HASH)
-    override var authorizationId: String? = null
+    override var userId: String? = null
 
     override var language: String = ""
+    override var uploadState: Int = 0
+
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
@@ -74,7 +76,7 @@ class OthersEntity : EventEntity, EventActions {
 
     override fun toString(): String {
         return "OthersEntity[idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, " +
-                "deleteStatus=$deleteStatus, recordUuid=$recordUuid, startTime=$createTime, content=$content, authorizationId=$authorizationId]"
+                "deleteStatus=$deleteStatus, recordUuid=$recordUuid, startTime=$createTime, content=$content, authorizationId=$userId]"
     }
 
 }

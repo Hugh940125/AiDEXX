@@ -10,13 +10,9 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.ConflictStrategy
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
-import io.objectbox.annotation.IndexType
-import io.objectbox.annotation.Unique
-import java.util.Date
+import io.objectbox.annotation.*
+import java.util.*
+import kotlin.jvm.Transient
 
 @Entity
 class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
@@ -38,7 +34,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var sensorId: String? = null
 
     @Index(type = IndexType.HASH)
-    var userId: String? = null
+    override var userId: String? = null
 
     @Index
     var deviceTime = Date()
@@ -90,11 +86,8 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     @Transient
     override var language: String = ""
-
-    @Index(type = IndexType.HASH)
-    override var authorizationId: String? = null
+    override var uploadState: Int = 0
     override var recordId: String? = null
-
     @Index(type = IndexType.HASH)
     @Unique(onConflict = ConflictStrategy.REPLACE)
     var frontRecordId: String? = null
@@ -260,7 +253,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     }
 
     override fun toString(): String {
-        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, glucose=$glucose, deviceId=$deviceId, type=$type, authorizationId=$authorizationId, frontRecordId=${this.frontRecordId}, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
+        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, glucose=$glucose, deviceId=$deviceId, type=$type, authorizationId=${this.userId}, frontRecordId=${this.frontRecordId}, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
     }
 
 }

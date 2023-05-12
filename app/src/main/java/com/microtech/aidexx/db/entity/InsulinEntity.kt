@@ -6,7 +6,6 @@ import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.*
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.jvm.Transient
 
 
@@ -36,7 +35,7 @@ class InsulinEntity : EventEntity {
     var isPreset: Boolean = false
 
     @Index(type = IndexType.HASH)
-    override var authorizationId: String? = null
+    override var userId: String? = null
 
     @Convert(converter = InsulinDetailEntity::class, dbType = String::class)
     var relList: MutableList<InsulinDetailEntity> = ArrayList()
@@ -55,10 +54,13 @@ class InsulinEntity : EventEntity {
     override var recordId: String? = null
 
     override var language: String = ""
+    override var uploadState: Int = 0
+
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
-    constructor(insulinName: String? = null, insulinDosage: Float? = null): this() {
+
+    constructor(insulinName: String? = null, insulinDosage: Float? = null) : this() {
         this.insulinName = insulinName
         this.insulinDosage = insulinDosage
     }
@@ -94,7 +96,7 @@ class InsulinEntity : EventEntity {
     }
 
     override fun toString(): String {
-        return "InsulinEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, injectionTime=$injectionTime, insulinName=$insulinName, recordUuid=$recordUuid, insulinDosage=$insulinDosage, isPreset=$isPreset, authorizationId=$authorizationId, relList=${
+        return "InsulinEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, injectionTime=$injectionTime, insulinName=$insulinName, recordUuid=$recordUuid, insulinDosage=$insulinDosage, isPreset=$isPreset, authorizationId=$userId, relList=${
             relList.joinToString(
                 ","
             )
