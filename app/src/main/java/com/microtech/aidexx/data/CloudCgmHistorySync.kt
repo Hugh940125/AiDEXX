@@ -55,10 +55,10 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
+    override suspend fun getRemoteData(userId: String): List<RealCgmHistoryEntity>? =
         when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
-            userId = authorizationId,
-            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(authorizationId))?.let { it - 1 },
+            userId = userId,
+            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it - 1 },
         )) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null

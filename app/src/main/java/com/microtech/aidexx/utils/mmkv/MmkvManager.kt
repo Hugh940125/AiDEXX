@@ -50,9 +50,9 @@ object MmkvManager {
         LogUtil.d("$key=$autoIncrementColumn", "MmkvManager")
     }
     inline fun <reified R> getEventDataMinId(key: String): R? {
-        val ret = when (R::class.objectInstance) {
-            is Long -> MmkvUtil.decodeLong(key, -1)
-            is String -> MmkvUtil.decodeString(key, "")
+        val ret = when (R::class.java.simpleName) {
+            "Long" -> MmkvUtil.decodeLong(key, -1)
+            "String" -> MmkvUtil.decodeString(key, "")
             else -> null
         } as R?
         return if (ret == -1L) null else ret

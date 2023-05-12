@@ -4,36 +4,59 @@ import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.data.CombinedData
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
-import com.microtech.aidexx.R
-import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.db.entity.*
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.DietEntity
+import com.microtech.aidexx.db.entity.EventEntity
+import com.microtech.aidexx.db.entity.ExerciseEntity
+import com.microtech.aidexx.db.entity.InsulinEntity
+import com.microtech.aidexx.db.entity.MedicationEntity
+import com.microtech.aidexx.db.entity.OthersEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.CalibrateManager
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
-import com.microtech.aidexx.widget.chart.dataset.*
+import com.microtech.aidexx.widget.chart.dataset.BgDataSet
+import com.microtech.aidexx.widget.chart.dataset.CalDataSet
+import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
+import com.microtech.aidexx.widget.chart.dataset.IconDataSet
 import com.microtechmd.blecomm.constant.History
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import java.util.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Date
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 
-class ChartViewModel : ViewModel() {
+class ChartViewModel: ViewModel() {
 
     // 国际版代码先放这里 后面做打包渠道配置
     private val isGp = false
@@ -43,7 +66,6 @@ class ChartViewModel : ViewModel() {
      */
     private lateinit var combinedData: CombinedData
 
-    private val currentSet = CurrentGlucoseDataSet()
     private val glucoseSets: MutableList<LineDataSet> = CopyOnWriteArrayList()
     private val calSet = CalDataSet()
     private val bgSet = BgDataSet()
@@ -133,14 +155,28 @@ class ChartViewModel : ViewModel() {
                 startApplyNextPageData.collect {
                     if (it) {
                         var needNotify = false
-                        if (nextPageCgmData.isNotEmpty()) {
-                            LogUtil.d("===CHART=== 下一页数据 size=${nextPageCgmData.size}")
-                            withContext(Dispatchers.IO) {
-                                updateGlucoseSets(nextPageCgmData)
-                                nextPageCgmData.clear()
-                                needNotify = true
-                            }
+
+                        withContext(Dispatchers.IO) {
+                            val mergeDataTasks = listOf(
+                                async {
+                                    if (nextPageCgmData.isNotEmpty()) {
+                                        LogUtil.d("===CHART=== 下一页数据 ${Thread.currentThread()} size=${nextPageCgmData.size}")
+                                        updateGlucoseSets(nextPageCgmData)
+                                        nextPageCgmData.clear()
+                                        needNotify = true
+                                    }
+                                },
+                                async {
+                                    if (nextPageBgData.isNotEmpty()) {
+                                        addBgSet(nextPageBgData)
+                                        nextPageBgData.clear()
+                                        needNotify = true
+                                    }
+                                }
+                            )
+                            mergeDataTasks.awaitAll()
                         }
+
                         if (needNotify) {
                             LogUtil.d("===CHART=== 下一页数据已添加到图表待刷新")
                             mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
@@ -187,13 +223,6 @@ class ChartViewModel : ViewModel() {
         LogUtils.data("Glucose Set Size ${glucoseSets.size}")
         lineDataSets.addAll(glucoseSets)
 
-        if (UserInfoManager.shareUserInfo == null) {
-            val currentGlucose = getCurrentGlucose()
-            currentGlucose.circleHoleColor =
-                ThemeManager.getTypeValue(getContext(), R.attr.containerBackground)
-            lineDataSets.add(currentGlucose)
-        }
-
         val scatterDataSets: ArrayList<IScatterDataSet> = ArrayList()
         scatterDataSets.add(calSet)
         scatterDataSets.add(bgSet)
@@ -213,8 +242,7 @@ class ChartViewModel : ViewModel() {
         }
         if (timeMin == null) {
             timeMin = ChartUtil.dateToX(
-                Date(Date().time - getGranularity() * 6 * TimeUtils.oneHourSeconds * 1000)
-            )
+                Date(Date().time - getGranularity() * 6 * TimeUtils.oneHourSeconds * 1000))
         }
 
         emit(combinedData)
@@ -245,7 +273,7 @@ class ChartViewModel : ViewModel() {
 
         if (isLtr || !isDataInit) return false
 //        LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发 loadedmin=$loadedMinDate xAxisMin=$xAxisMin vf=$visibleLeftX" )
-        if (loadedMinDate == xAxisMin) {
+        if(loadedMinDate == xAxisMin) {
 //            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
             return false
         }
@@ -303,7 +331,7 @@ class ChartViewModel : ViewModel() {
     }
 
     private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
-
+    private val nextPageBgData = mutableListOf<BloodGlucoseEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
@@ -313,35 +341,44 @@ class ChartViewModel : ViewModel() {
             timeMin = ChartUtil.dateToX(startDate)
             var isSuccess = true
 
-            val cgmDataTask = async {
-                getCgmPageData(startDate, endDate)?.let { d ->
-                    if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
-                        isSuccess = false
-                    } else {
-                        if (needApply) {
-                            updateGlucoseSets(d)
-                        } else {
-                            LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
-                            if (d.size > 2) {
-                                LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
+            withContext(Dispatchers.IO) {
+
+                val loadTasks = listOf(
+                    async {
+                        getCgmPageData(startDate, endDate)?.let { d ->
+                            if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
+                                isSuccess = false
+                            } else {
+                                if (needApply) {
+                                    updateGlucoseSets(d)
+                                } else {
+                                    LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
+                                    if (d.size > 2) {
+                                        LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
+                                    }
+                                    nextPageCgmData.addAll(d)
+                                }
                             }
-                            nextPageCgmData.addAll(d)
                         }
-                    }
-                }
+                    },
+                    async {
+                        CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
+                            if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                                isSuccess = false
+                            } else {
+                                if (needApply) {
+                                    addBgSet(d)
+                                } else {
+                                    nextPageBgData.addAll(d)
+                                }
+                            }
+                        }
+                    },
+                    //分页加载其他事件相关数据...
+                )
+                loadTasks.awaitAll()
             }
 
-            val bgDataTask = async {
-                CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
-                    if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
-                        isSuccess = false
-                    } else {
-                        addBgSet(d)
-                    }
-                }
-            }
-            // todo 分页加载其他事件相关数据
-            awaitAll(cgmDataTask, bgDataTask)
             isSuccess
         }
 
@@ -349,13 +386,12 @@ class ChartViewModel : ViewModel() {
     /**
      * 当前x轴显示的最小的日期 毫秒
      */
-    private fun curXMinTimeMillis() = ChartUtil.xToSecond(timeMin ?: 0f) * 1000
+    private fun curXMinTimeMillis() = ChartUtil.xToSecond(timeMin?:0f) * 1000
 
     private suspend fun getCgmPageData(startDate: Date, endDate: Date) =
         CgmCalibBgRepository.queryCgmByPage(
             startDate,
             endDate,
-//            "f03550ef07a7b2164f06deaef597ce37"
             UserInfoManager.getCurShowUserId()
         )
 
@@ -438,11 +474,6 @@ class ChartViewModel : ViewModel() {
         timeMax = null
     }
 
-    // todo 解配成功后调用
-    fun clearCurrentGlucose() {
-        currentSet.clear()
-    }
-
     /**
      * 切换用户重置数据
      */
@@ -450,7 +481,6 @@ class ChartViewModel : ViewModel() {
         //重置数据
         clearEventSets()
         clearGlucoseSets()
-        clearCurrentGlucose()
         combinedData.lineData.clearValues()
         combinedData.scatterData.clearValues()
         combinedData.clearValues()
@@ -473,7 +503,7 @@ class ChartViewModel : ViewModel() {
 
         loop@ for (history in cgmHistories) {
             when (history.eventType) {
-                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
+                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL, 31 -> {
                     if (history.glucose == null || history.eventWarning == -1) continue@loop
                     val dateTime = ChartUtil.dateToX(history.deviceTime)
                     val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
@@ -508,7 +538,7 @@ class ChartViewModel : ViewModel() {
     private fun checkCgmHistory(cgm: RealCgmHistoryEntity) =
         (History.HISTORY_GLUCOSE == cgm.eventType
                 || History.HISTORY_GLUCOSE_RECOMMEND_CAL == cgm.eventType
-                || History.HISTORY_CALIBRATION == cgm.eventType)
+                || History.HISTORY_CALIBRATION == cgm.eventType )
                 && (cgm.glucose != null && cgm.eventWarning != -1)
 
     /**
@@ -549,7 +579,7 @@ class ChartViewModel : ViewModel() {
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
         if (history.glucose != null) {
             val dateTime = ChartUtil.dateToX(history.deviceTime)
-            val bg = BloodGlucoseEntity(history.deviceTime, history.glucose ?: 0f)
+            val bg = BloodGlucoseEntity(history.deviceTime, history.glucose!!.toFloat())
             bg.calibration = true
             val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
             entry.data = bg
@@ -607,31 +637,6 @@ class ChartViewModel : ViewModel() {
                 else -> null
             }
             eventSet.addEntryOrdered(entry)
-        }
-    }
-
-    private fun getCurrentGlucose(): LineDataSet {
-        currentSet.setCircleColorRanges(
-            listOf(
-                upperLimit,
-                lowerLimit - 0.1f.toGlucoseValue(),
-                0f
-            )
-        )
-        return currentSet
-    }
-
-    // 设置当前血糖值后调用
-    fun setCurrentGlucose(time: Date?, glucose: Float?) {
-        if (time != null && glucose != null && UserInfoManager.shareUserInfo == null) {
-            currentSet.clear()
-            currentSet.addEntry(
-                Entry(
-                    ChartUtil.dateToX(time),
-                    if (glucose > 2f) glucose.toGlucoseValue() else 2f.toGlucoseValue()
-                    // 小于2的数值 都当2处理
-                )
-            )
         }
     }
 
