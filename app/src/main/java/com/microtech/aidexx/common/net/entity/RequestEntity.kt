@@ -1,6 +1,5 @@
 package com.microtech.aidexx.common.net.entity
 
-import com.microtech.aidexx.common.user.UserInfoManager
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
@@ -60,9 +59,16 @@ data class ReqEmailRegister(
 data class ReqGetCgmByPage(
     val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
     val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
-    val userId: String = UserInfoManager.instance().userId(),//	是 String (String)
+    val userId: String?,//	是 String (String)
     val startAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号
     val endAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号  结束点。闭区间
     val orderStrategy: String? //	否 ASC 枚举值.排序规则 默认DESC
+): ReqEntity()
+
+data class ReqGetBgByPage(
+    val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
+    val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
+    val date: String?,//	筛选时间。目前只支持时间，取最后一条数据的createTime
+    val userId: String?,//	是 String (String)
 ): ReqEntity()
 //endregion

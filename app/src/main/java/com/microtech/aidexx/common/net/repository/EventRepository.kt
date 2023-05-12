@@ -4,6 +4,7 @@ import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
+import com.microtech.aidexx.common.net.entity.ReqGetBgByPage
 import com.microtech.aidexx.common.net.entity.ReqGetCgmByPage
 import com.microtech.aidexx.common.net.entity.toQueryMap
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -49,18 +50,18 @@ object EventRepository {
 
     suspend fun getRecentCgmData(userId: String, count: Int = CGM_RECENT_COUNT) = withContext(dispatcher) {
         (0 until count).chunked(PAGE_SIZE).all { list ->
-            val curMinId = MmkvManager.getEventDataMinId(CloudCgmHistorySync.getDataMinIdKey(userId))?.let { it - 1 }
+            val curMinId = MmkvManager.getEventDataMinId<Long>(CloudCgmHistorySync.getDataSyncFlagKey(userId))?.let { it - 1 }
 
             when (val apiResult = getCgmRecordsByPageInfo(userId = userId, pageSize = list.size, endAutoIncrementColumn = curMinId)) {
                 is ApiResult.Success -> {
                     apiResult.result.data?.ifEmpty { null }?.let {
-                        CgmCalibBgRepository.insert(it)
+                        CgmCalibBgRepository.insertCgm(it)
                         MmkvManager.setEventDataMinId(
-                            CloudCgmHistorySync.getDataMinIdKey(userId), it.last().autoIncrementColumn)
+                            CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
                     } ?:let {
                         if (list[0] == 0) {
                             MmkvManager.setEventDataMinId(
-                                CloudCgmHistorySync.getDataMinIdKey(userId), DATA_EMPTY_MIN_ID)
+                                CloudCgmHistorySync.getDataSyncFlagKey(userId), DATA_EMPTY_MIN_ID)
                         }
                         return@all true
                     }
@@ -71,6 +72,27 @@ object EventRepository {
                 }
             }
         }
+    }
+
+
+    /**
+     *date: yyyy-MM-dd HH:mm:ssZ 格式
+     */
+    suspend fun getBgRecordsByPageInfo(
+        pageNum: Int = 1,
+        pageSize: Int = PAGE_SIZE,
+        userId: String = UserInfoManager.instance().userId(),
+        date: String?
+    ) = withContext(dispatcher) {
+
+        val req = ReqGetBgByPage(
+            pageNum,
+            pageSize,
+            date,
+            userId
+        )
+
+        ApiService.instance.getBloodGlucoseRecordsByPageInfo(req.toQueryMap())
     }
 
 

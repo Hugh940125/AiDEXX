@@ -89,6 +89,9 @@ fun Date.getStartOfTheDay(): Date {
     return calendar.time
 }
 
+fun Date.formatWithZone(): String =
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(this)
+
 fun <T> QueryBuilder<T>.equal(property: Property<T>, value: String): QueryBuilder<T> {
     return equal(property, value, QueryBuilder.StringOrder.CASE_SENSITIVE)
 }

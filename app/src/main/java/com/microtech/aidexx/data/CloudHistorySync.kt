@@ -91,34 +91,22 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
             }
         }
     }
-var pi = 0
+
     override suspend fun downloadData(userId: String): Boolean {
         val result = getRemoteData(userId)
         return result?.let {
             if (it.isNotEmpty()) {
-                replaceEventData( responseList = it, type = 3, authorId = userId )
+                replaceEventData( responseList = it, type = 3, userId = userId )
             }
             if (it.size >= PAGE_SIZE) {
                 LogUtil.d("===DATASYNC=== 开始下一页数据下载")
                 // todo 是否需要加个间隔 不然可能会很快
                 downloadData(userId)
             } else true
-
-//            val ti = testData(userId, pi) as List<T>
-//            pi++
-//
-//            if (ti.isNotEmpty()) {
-//                replaceEventData( responseList = ti, cgmStatus = 3, authorId = userId )
-//            }
-//            if (pi <= 3000) {
-//                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
-//                downloadData(userId)
-//            } else true
-
         } ?: false
     }
 
-    suspend fun getNeedDeleteList(): MutableList<T>? {
+    private suspend fun getNeedDeleteList(): MutableList<T>? {
         return ObjectBox.store.awaitCallInTx {
             val find = entityBox.query().equal(deleteStatus, 1).notNull(id).equal(
                 userId,
@@ -157,8 +145,9 @@ var pi = 0
         origin: MutableList<T> = mutableListOf(),
         responseList: List<T>,
         type: Int = 0,
-        authorId: String? = null,
+        userId: String? = null,
     ) {
+
         val userId = UserInfoManager.instance().userId()
         if (origin.isNotEmpty()) {
             for ((index, entity) in origin.withIndex()) {
@@ -170,9 +159,9 @@ var pi = 0
             val temp = mutableListOf<T>()
             for (res in responseList) {
                 val existRecord = entityBox.query().equal(frontRecordId, uuidValue(res) ?: "")
-                    .equal(this.userId, authorId ?: userId).build().find()
+                    .equal(this.userId, userId ?: userId).build().find()
                 if (existRecord.isEmpty()) {
-                    res.authorizationId = authorId ?: userId
+                    res.authorizationId = userId ?: userId
                     temp.add(res)
                 } else {
                     for (record in existRecord) {

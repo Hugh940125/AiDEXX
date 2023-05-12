@@ -5,7 +5,6 @@ import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.UPLOAD_CGM_BRIEF
 import com.microtech.aidexx.common.net.entity.BaseList
-import com.microtech.aidexx.common.net.entity.BasePageList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.net.repository.EventRepository
@@ -63,13 +62,13 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
         when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
             userId = authorizationId,
-            endAutoIncrementColumn = MmkvManager.getEventDataMinId(getDataMinIdKey(authorizationId))?.let { it - 1 },
+            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(authorizationId))?.let { it - 1 },
         )) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null
         }
 
-    suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
+    private suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
         val userId = UserInfoManager.instance().userId()
         val query = entityBox.query()
         when (type) {
@@ -91,7 +90,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
+    private suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return when (val updateHistory = ApiService.instance.updateHistory(map)) {
             is ApiResult.Success -> {
                 updateHistory.result
@@ -143,9 +142,9 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     ) {
         if (type == 3) { //下载
             if (responseList.isNotEmpty()) {
-                CgmCalibBgRepository.insert(responseList)
+                CgmCalibBgRepository.insertCgm(responseList)
                 MmkvManager.setEventDataMinId(
-                    getDataMinIdKey(authorId!!),
+                    getDataSyncFlagKey(authorId!!),
                     responseList.last().autoIncrementColumn
                 )
             }
@@ -166,86 +165,5 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             }
             entityBox.put(origin)
         }
-    }
-
-    suspend fun downloadRecentCgmData(authorId: String? = null) {
-        withContext(Dispatchers.IO) {
-            val userid = authorId ?: UserInfoManager.instance().userId()
-            //本地最大recordIndex
-            val maxRecordIndex = getMaxRecordIndex(authorId)
-            val result = getRecentCgmHistories(authorId, maxRecordIndex)
-            if (result?.code == RESULT_OK) {
-                //服务器最小的recordIndex
-                val content = result.data
-                content?.let {
-                    val records = content.records
-                    val minRecordIndex = if (records.isEmpty()) 1 else records[0].recordIndex ?: 1
-                    if (maxRecordIndex < minRecordIndex) {
-                        val min = maxRecordIndex + 1
-                        val max = minRecordIndex - 1
-                        if (min == max) {
-                            val emptyHistory = RealCgmHistoryEntity()
-                            emptyHistory.recordIndex = min
-                            emptyHistory.type = 1
-                            emptyHistory.authorizationId = userid
-                            entityBox.put(emptyHistory) //设置空的占位历史记录
-                        } else {
-                            val historyList = mutableListOf<RealCgmHistoryEntity>()
-                            for (index in min..max) {
-                                val emptyHistory = RealCgmHistoryEntity()
-                                emptyHistory.type = 1
-                                emptyHistory.authorizationId = userid
-                                emptyHistory.recordIndex = index
-                                historyList.add(emptyHistory)
-                            }
-                            entityBox.put(historyList)
-                        }
-                    }
-                    for (item in records) {
-                        item.authorizationId = userid
-                    }
-                    entityBox.put(records)
-                }
-            }
-        }
-    }
-
-    private suspend fun getRecentCgmHistories(
-        authorId: String?,
-        maxIndex: Long
-    ): BaseResponse<BasePageList<RealCgmHistoryEntity>>? {
-        if (authorId == null) {
-            return ApiService.instance.getRecentHistories("recordIndex=$maxIndex").execute().body()
-        }
-        return ApiService.instance.getRecentHistories("authorizationId=$authorId&recordIndex=$maxIndex")
-            .execute().body()
-    }
-
-    private suspend fun getMaxRecordIndex(authorId: String? = null): Long {
-        val userId = UserInfoManager.instance().userId()
-        val index: Long
-        if (authorId != null) {
-            val maxShare = ObjectBox.awaitCallInTx {
-                entityBox
-                    .query()
-                    .equal(this.userId, authorId)
-                    .notNull(recordIndex)
-                    .build()
-                    .property(recordIndex)
-                    .max()
-            }
-            index = if (maxShare == Long.MIN_VALUE || maxShare == null) 1 else maxShare
-        } else {
-            val maxMine = ObjectBox.awaitCallInTx {
-                entityBox.query()
-                    .notNull(recordIndex)
-                    .equal(this.userId, userId)
-                    .build()
-                    .property(recordIndex)
-                    .max()
-            }
-            index = if (maxMine == Long.MIN_VALUE || maxMine == null) 1 else maxMine
-        }
-        return index
     }
 }

@@ -1,5 +1,6 @@
 package com.microtech.aidexx.utils.mmkv
 
+import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.LogUtil
@@ -41,14 +42,22 @@ object MmkvManager {
     private const val GivenName = "GivenName"
     private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "already_show_dialog_guide"
 
-    fun setEventDataMinId(key: String, autoIncrementColumn: Long) {
-        MmkvUtil.encodeLong(key, autoIncrementColumn)
+    inline fun <reified T> setEventDataMinId(key: String, autoIncrementColumn: T) {
+        when (autoIncrementColumn) {
+            is Long -> MmkvUtil.encodeLong(key, autoIncrementColumn)
+            is String -> MmkvUtil.encodeString(key, autoIncrementColumn)
+        }
         LogUtil.d("$key=$autoIncrementColumn", "MmkvManager")
     }
-    fun getEventDataMinId(key: String): Long? {
-        val ret = MmkvUtil.decodeLong(key, -1)
+    inline fun <reified R> getEventDataMinId(key: String): R? {
+        val ret = when (R::class.objectInstance) {
+            is Long -> MmkvUtil.decodeLong(key, -1)
+            is String -> MmkvUtil.decodeString(key, "")
+            else -> null
+        } as R?
         return if (ret == -1L) null else ret
     }
+
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
     fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)
 

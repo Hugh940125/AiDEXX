@@ -10,6 +10,7 @@ import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.*
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
@@ -56,6 +57,9 @@ const val getAppVersionList = "$middleUrl/appVersionControl/v2/passCheckToken/ge
 //region 数据事件相关
 const val CGM_URL = "$middleUrl/cgmRecord"
 const val getCgmRecordsByPageInfo = "$CGM_URL/getCgmRecordsByPageInfo"
+
+const val BG_URL = "$middleUrl/bloodGlucoseRecord"
+const val getBloodGlucoseRecordsByPageInfo = "$CGM_URL/getBloodGlucoseRecordsByPageInfo"
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -123,6 +127,8 @@ interface ApiService {
     //region 数据事件相关
     @GET(getCgmRecordsByPageInfo)
     suspend fun getCgmRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
+    @GET(getBloodGlucoseRecordsByPageInfo)
+    suspend fun getBloodGlucoseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<BloodGlucoseEntity>>>
 
     //endregion
 

@@ -147,7 +147,7 @@ abstract class DataSyncController<T> {
     }
 
 
-    fun getDataMinIdKey(userId: String): String = "$userId-${tClazz.simpleName}-MIN-ID"
+    fun getDataSyncFlagKey(userId: String): String = "$userId-${tClazz.simpleName}-DATA-SYNC-FLAG"
 
     protected abstract suspend fun downloadData(userId: String): Boolean
 

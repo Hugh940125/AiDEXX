@@ -37,4 +37,9 @@ object BloodGlucoseDao {
                 .equal(BloodGlucoseEntity_.deleteStatus, 0)
                 .build().find()
         }
+
+    suspend fun insert(list: List<BloodGlucoseEntity>) =
+        awaitCallInTx {
+            box.put(list)
+        }
 }
