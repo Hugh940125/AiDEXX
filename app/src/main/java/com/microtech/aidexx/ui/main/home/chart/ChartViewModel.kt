@@ -13,8 +13,6 @@ import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
-import com.microtech.aidexx.R
-import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
@@ -29,7 +27,6 @@ import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.CalibrateManager
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
-import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
@@ -43,7 +40,6 @@ import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
 import com.microtech.aidexx.widget.chart.dataset.BgDataSet
 import com.microtech.aidexx.widget.chart.dataset.CalDataSet
-import com.microtech.aidexx.widget.chart.dataset.CurrentGlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.IconDataSet
 import com.microtechmd.blecomm.constant.History
@@ -70,7 +66,6 @@ class ChartViewModel: ViewModel() {
      */
     private lateinit var combinedData: CombinedData
 
-    private val currentSet = CurrentGlucoseDataSet()
     private val glucoseSets: MutableList<LineDataSet> = CopyOnWriteArrayList()
     private val calSet = CalDataSet()
     private val bgSet = BgDataSet()
@@ -227,13 +222,6 @@ class ChartViewModel: ViewModel() {
         val glucoseSets: List<LineDataSet> = getGlucoseSets()
         LogUtils.data("Glucose Set Size ${glucoseSets.size}")
         lineDataSets.addAll(glucoseSets)
-
-        if (UserInfoManager.shareUserInfo == null) {
-            val currentGlucose = getCurrentGlucose()
-            currentGlucose.circleHoleColor =
-                ThemeManager.getTypeValue(getContext(), R.attr.containerBackground)
-            lineDataSets.add(currentGlucose)
-        }
 
         val scatterDataSets: ArrayList<IScatterDataSet> = ArrayList()
         scatterDataSets.add(calSet)
@@ -486,11 +474,6 @@ class ChartViewModel: ViewModel() {
         timeMax = null
     }
 
-    // todo 解配成功后调用
-    fun clearCurrentGlucose() {
-        currentSet.clear()
-    }
-
     /**
      * 切换用户重置数据
      */
@@ -498,7 +481,6 @@ class ChartViewModel: ViewModel() {
         //重置数据
         clearEventSets()
         clearGlucoseSets()
-        clearCurrentGlucose()
         combinedData.lineData.clearValues()
         combinedData.scatterData.clearValues()
         combinedData.clearValues()
@@ -655,31 +637,6 @@ class ChartViewModel: ViewModel() {
                 else -> null
             }
             eventSet.addEntryOrdered(entry)
-        }
-    }
-
-    private fun getCurrentGlucose(): LineDataSet {
-        currentSet.setCircleColorRanges(
-            listOf(
-                upperLimit,
-                lowerLimit - 0.1f.toGlucoseValue(),
-                0f
-            )
-        )
-        return currentSet
-    }
-
-    // 设置当前血糖值后调用
-    fun setCurrentGlucose(time: Date?, glucose: Float?) {
-        if (time != null && glucose != null && UserInfoManager.shareUserInfo == null) {
-            currentSet.clear()
-            currentSet.addEntry(
-                Entry(
-                    ChartUtil.dateToX(time),
-                    if (glucose > 2f) glucose.toGlucoseValue() else 2f.toGlucoseValue()
-                    // 小于2的数值 都当2处理
-                )
-            )
         }
     }
 

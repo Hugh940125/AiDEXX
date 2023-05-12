@@ -26,7 +26,7 @@ import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.entity.BleMessage
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.schedule
 
 private const val REFRESH_PANEL = 2006
@@ -110,8 +110,6 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                     deviceModel.glucose?.toGlucoseStringWithLowAndHigh(resources)
                 binding.tvUnit.text = UnitManager.glucoseUnit.text
             }
-            //设置当前血糖值
-            chartViewModel.setCurrentGlucose(deviceModel.lastHistoryTime, deviceModel.glucose)
 
             binding.bgPanel.rotation = when (deviceModel.glucoseTrend) {
                 DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.FAST_UP -> 180f
