@@ -5,6 +5,7 @@ import kotlin.reflect.full.memberProperties
 
 const val PAGE_SIZE = 1000
 const val CGM_RECENT_COUNT = 5000
+const val BG_RECENT_COUNT = 5000
 
 /**
  * data class转retrofit QueryMap

@@ -20,7 +20,7 @@ abstract class DataSyncController<T> {
     companion object {
         private const val TAG = "DataSyncController"
         val scope = dataSyncScope
-        const val DATA_EMPTY_MIN_ID = 0L // MMKV
+        const val DATA_EMPTY_MIN_ID = 0L
     }
 
 

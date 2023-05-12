@@ -11,9 +11,7 @@ import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.utils.LogUtil
-import com.microtechmd.blecomm.constant.History
 import io.objectbox.Box
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
@@ -22,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import java.util.Date
 import java.util.concurrent.CountDownLatch
 
 abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
@@ -179,12 +176,12 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
 
         suspend fun downloadRecentData(userId: String): Boolean = withContext(scope.coroutineContext) {
             var isSuccess = true
+            fun updateStatus(ret: Boolean) {
+                if (!ret) isSuccess = false
+            }
             val tasks = listOf(
-                async {
-                    if (!EventRepository.getRecentCgmData(userId)) {
-                        isSuccess = false
-                    }
-                },
+                async { updateStatus(EventRepository.getRecentCgmData(userId)) },
+                async { updateStatus(EventRepository.getRecentBgData(userId)) }
                 //...
             )
             tasks.awaitAll()
@@ -212,62 +209,27 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
 
             val callback: ((SyncStatus?)->Unit)? = if (needWait) { { updateRet(it) } } else null
 
-            val tasks = listOf {
-                CloudCgmHistorySync.startDownload(userId = userId, cb = callback)
-            }
-
-            taskLatch = CountDownLatch(tasks.size)
-
-            tasks.forEach {
-                if (!it.invoke()) {
-                    taskLatch.countDown()
-                }
-            }
+            val tasks = listOf (
+                { CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudBgHistorySync.startDownload(userId = userId, cb = callback) },
+                //...
+            )
 
             withContext(Dispatchers.IO) {
-                if (needWait) {
-                    taskLatch.await() // todo 考虑加个超时
+                taskLatch = if (needWait) {
+                    CountDownLatch(tasks.size)
+                } else null
+                tasks.forEach {
+                    if (!it.invoke()) {
+                        taskLatch?.countDown()
+                    }
                 }
+                taskLatch?.await() // todo 考虑加个超时
             }
 
-            return if (isSuccess) SyncStatus.Success else SyncStatus.Failure()
+            return if (isSuccess) {
+                if (needWait) SyncStatus.Success else SyncStatus.Loading()
+            } else SyncStatus.Failure()
         }
     }
-
-    private fun testData(userId: String, pageIndex: Int): List<RealCgmHistoryEntity> {
-        val c = 1000
-        val cur = Date().time / 1000
-
-        LogUtil.d("开始生成插入 ${Date().time}")
-        val data = (0 until c).flatMap { t ->
-            listOf(RealCgmHistoryEntity().also {
-                it.deviceTime = Date((cur - (t * 60) - (pageIndex * 1000 * 60)) * 1000)
-                it.glucose = (t % 40).toFloat()
-                it.eventType = History.HISTORY_GLUCOSE
-                it.createTime = it.deviceTime
-                it.authorizationId = userId
-                it.userId = userId
-                it.dataStatus = 2
-                it.recordIndex = (t + pageIndex * 1000).toLong()
-                it.autoIncrementColumn = it.recordIndex!!
-                it.type = 1
-                it.deviceId = "deviceIddeviceId"
-                it.deviceSn = "deviceSndeviceSndeviceSn"
-                it.rawData1 = 0.1f
-                it.rawData2 = 0.1f
-                it.rawData3 = 0.1f
-                it.rawData4 = 0.1f
-                it.rawData5 = 0.1f
-                it.rawData6 = 0.1f
-                it.rawData7 = 0.1f
-                it.rawData8 = 0.1f
-                it.rawData9 = 0.1f
-                it.sensorIndex = 1
-                it.eventIndex = t
-                it.id = it.recordId
-            })
-        }
-        return data
-    }
-
 }

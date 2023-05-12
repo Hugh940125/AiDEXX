@@ -59,7 +59,7 @@ const val CGM_URL = "$middleUrl/cgmRecord"
 const val getCgmRecordsByPageInfo = "$CGM_URL/getCgmRecordsByPageInfo"
 
 const val BG_URL = "$middleUrl/bloodGlucoseRecord"
-const val getBloodGlucoseRecordsByPageInfo = "$CGM_URL/getBloodGlucoseRecordsByPageInfo"
+const val getBloodGlucoseRecordsByPageInfo = "$BG_URL/getBloodGlucoseRecordsByPageInfo"
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备

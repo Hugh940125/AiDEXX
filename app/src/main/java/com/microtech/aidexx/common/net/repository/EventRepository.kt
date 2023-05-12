@@ -1,24 +1,29 @@
 package com.microtech.aidexx.common.net.repository
 
+import com.microtech.aidexx.common.formatWithZone
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
+import com.microtech.aidexx.common.net.entity.BG_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.ReqGetBgByPage
 import com.microtech.aidexx.common.net.entity.ReqGetCgmByPage
 import com.microtech.aidexx.common.net.entity.toQueryMap
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.data.CloudBgHistorySync
 import com.microtech.aidexx.data.CloudCgmHistorySync
 import com.microtech.aidexx.data.DataSyncController.Companion.DATA_EMPTY_MIN_ID
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Date
 
 object EventRepository {
 
     private val dispatcher = Dispatchers.IO
 
+    //region CGM
     /**
      *   @param pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
      *   @param pageSize: Int = [PAGE_SIZE],//	是 100 分页参数 条数(Integer)
@@ -54,16 +59,22 @@ object EventRepository {
 
             when (val apiResult = getCgmRecordsByPageInfo(userId = userId, pageSize = list.size, endAutoIncrementColumn = curMinId)) {
                 is ApiResult.Success -> {
-                    apiResult.result.data?.ifEmpty { null }?.let {
-                        CgmCalibBgRepository.insertCgm(it)
-                        MmkvManager.setEventDataMinId(
-                            CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
-                    } ?:let {
-                        if (list[0] == 0) {
+                    apiResult.result.data?.let {
+                        if (it.isEmpty()) {
+                            if (list[0] == 0) {
+                                MmkvManager.setEventDataMinId(
+                                    CloudCgmHistorySync.getDataSyncFlagKey(userId), DATA_EMPTY_MIN_ID)
+                            }
+                            return@withContext true
+                        } else {
+                            CgmCalibBgRepository.insertCgm(it)
                             MmkvManager.setEventDataMinId(
-                                CloudCgmHistorySync.getDataSyncFlagKey(userId), DATA_EMPTY_MIN_ID)
+                                CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
                         }
-                        return@all true
+                    } ?:let {
+                        // 和服务端确认 成功不会给null 空的只会是空集合
+                        // 如果是null 就是不确定是否有数据 不记录最小id 让下载任务去下载
+                        return@withContext true
                     }
                     true
                 }
@@ -74,7 +85,9 @@ object EventRepository {
         }
     }
 
+    //endregion
 
+    //region BG
     /**
      *date: yyyy-MM-dd HH:mm:ssZ 格式
      */
@@ -94,6 +107,40 @@ object EventRepository {
 
         ApiService.instance.getBloodGlucoseRecordsByPageInfo(req.toQueryMap())
     }
+
+    suspend fun getRecentBgData(userId: String, count: Int = BG_RECENT_COUNT) = withContext(dispatcher) {
+        (0 until count).chunked(PAGE_SIZE).all { list ->
+            val curMinId = MmkvManager.getEventDataMinId<String>(CloudBgHistorySync.getDataSyncFlagKey(userId))
+
+            when (val apiResult = getBgRecordsByPageInfo(userId = userId, pageSize = list.size, date = curMinId)) {
+                is ApiResult.Success -> {
+                    apiResult.result.data?.let {
+                        if (it.isEmpty()) {
+                            if (list[0] == 0) {
+                                MmkvManager.setEventDataMinId(
+                                    CloudBgHistorySync.getDataSyncFlagKey(userId), Date().formatWithZone())
+                            }
+                            return@withContext true
+                        } else {
+                            CgmCalibBgRepository.insertBg(it)
+                            MmkvManager.setEventDataMinId(
+                                CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().createTime.formatWithZone())
+                        }
+                    } ?:let {
+                        // 和服务端确认 成功不会给null 空的只会是空集合
+                        // 如果是null 就是不确定是否有数据 不记录最小id 让下载任务去下载
+                        return@withContext true
+                    }
+                    true
+                }
+                is ApiResult.Failure -> {
+                    return@all false
+                }
+            }
+        }
+    }
+
+    //endregion
 
 
 }

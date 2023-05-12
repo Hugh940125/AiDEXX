@@ -67,7 +67,7 @@ class UserInfoManager {
         return MmkvManager.isLogin()
     }
 
-    private fun updateLoginFlag(isLogin: Boolean) {
+    fun updateLoginFlag(isLogin: Boolean) {
         MmkvManager.setLogin(isLogin)
     }
 
@@ -120,7 +120,6 @@ class UserInfoManager {
         AccountDbRepository.saveUser(entity)?.let {
             updateUserId(content.userId)
             setPhone(content.phone ?: "")
-            updateLoginFlag(true)
             it
         } ?: -1
     }

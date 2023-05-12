@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.Date
 
 /**
  *@date 2023/2/20
@@ -74,6 +74,7 @@ class AccountViewModel : BaseViewModel() {
                 if (userId.isNotEmpty()) {
                     emit(1 to "开始下载数据")
                     if (downloadData(userId)) {
+                        UserInfoManager.instance().updateLoginFlag(true)
                         emit(2 to "登录成功")
                     } else {
                         // 清除token 用户信息
