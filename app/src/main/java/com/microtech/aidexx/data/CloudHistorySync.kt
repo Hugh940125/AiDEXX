@@ -40,7 +40,7 @@ abstract class CloudHistorySync<T : EventEntity>: DataSyncController<T>() {
         return null
     }
 
-    abstract suspend fun getRemoteData(authorizationId: String): List<T>?
+    abstract suspend fun getRemoteData(userId: String): List<T>?
 
     open suspend fun upload() {
         val needUploadData = getNeedUploadData()

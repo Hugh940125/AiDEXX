@@ -160,14 +160,28 @@ class ChartViewModel: ViewModel() {
                 startApplyNextPageData.collect {
                     if (it) {
                         var needNotify = false
-                        if (nextPageCgmData.isNotEmpty()) {
-                            LogUtil.d("===CHART=== 下一页数据 size=${nextPageCgmData.size}")
-                            withContext(Dispatchers.IO) {
-                                updateGlucoseSets(nextPageCgmData)
-                                nextPageCgmData.clear()
-                                needNotify = true
-                            }
+
+                        withContext(Dispatchers.IO) {
+                            val mergeDataTasks = listOf(
+                                async {
+                                    if (nextPageCgmData.isNotEmpty()) {
+                                        LogUtil.d("===CHART=== 下一页数据 ${Thread.currentThread()} size=${nextPageCgmData.size}")
+                                        updateGlucoseSets(nextPageCgmData)
+                                        nextPageCgmData.clear()
+                                        needNotify = true
+                                    }
+                                },
+                                async {
+                                    if (nextPageBgData.isNotEmpty()) {
+                                        addBgSet(nextPageBgData)
+                                        nextPageBgData.clear()
+                                        needNotify = true
+                                    }
+                                }
+                            )
+                            mergeDataTasks.awaitAll()
                         }
+
                         if (needNotify) {
                             LogUtil.d("===CHART=== 下一页数据已添加到图表待刷新")
                             mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
@@ -329,6 +343,7 @@ class ChartViewModel: ViewModel() {
     }
 
     private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
+    private val nextPageBgData = mutableListOf<BloodGlucoseEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
@@ -338,35 +353,44 @@ class ChartViewModel: ViewModel() {
             timeMin = ChartUtil.dateToX(startDate)
             var isSuccess = true
 
-            val cgmDataTask = async {
-                getCgmPageData(startDate, endDate)?.let { d ->
-                    if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
-                        isSuccess = false
-                    } else {
-                        if (needApply) {
-                            updateGlucoseSets(d)
-                        } else {
-                            LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
-                            if (d.size > 2) {
-                                LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
+            withContext(Dispatchers.IO) {
+
+                val loadTasks = listOf(
+                    async {
+                        getCgmPageData(startDate, endDate)?.let { d ->
+                            if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
+                                isSuccess = false
+                            } else {
+                                if (needApply) {
+                                    updateGlucoseSets(d)
+                                } else {
+                                    LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
+                                    if (d.size > 2) {
+                                        LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
+                                    }
+                                    nextPageCgmData.addAll(d)
+                                }
                             }
-                            nextPageCgmData.addAll(d)
                         }
-                    }
-                }
+                    },
+                    async {
+                        CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
+                            if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                                isSuccess = false
+                            } else {
+                                if (needApply) {
+                                    addBgSet(d)
+                                } else {
+                                    nextPageBgData.addAll(d)
+                                }
+                            }
+                        }
+                    },
+                    //分页加载其他事件相关数据...
+                )
+                loadTasks.awaitAll()
             }
 
-            val bgDataTask = async {
-                CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
-                    if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
-                        isSuccess = false
-                    } else {
-                        addBgSet(d)
-                    }
-                }
-            }
-            // todo 分页加载其他事件相关数据
-            awaitAll(cgmDataTask, bgDataTask)
             isSuccess
         }
 
@@ -380,7 +404,6 @@ class ChartViewModel: ViewModel() {
         CgmCalibBgRepository.queryCgmByPage(
             startDate,
             endDate,
-//            "f03550ef07a7b2164f06deaef597ce37"
             UserInfoManager.getCurShowUserId()
         )
 
@@ -498,7 +521,7 @@ class ChartViewModel: ViewModel() {
 
         loop@ for (history in cgmHistories) {
             when (history.eventType) {
-                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
+                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL, 31 -> {
                     if (history.glucose == null || history.eventWarning == -1) continue@loop
                     val dateTime = ChartUtil.dateToX(history.deviceTime)
                     val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())

@@ -6,7 +6,6 @@ import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.UPLOAD_CGM_BRIEF
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
@@ -59,10 +58,10 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    override suspend fun getRemoteData(authorizationId: String): List<RealCgmHistoryEntity>? =
+    override suspend fun getRemoteData(userId: String): List<RealCgmHistoryEntity>? =
         when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
-            userId = authorizationId,
-            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(authorizationId))?.let { it - 1 },
+            userId = userId,
+            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it - 1 },
         )) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null
