@@ -242,7 +242,8 @@
             app:layout_constraintBottom_toBottomOf="@id/home_logo"
             app:layout_constraintEnd_toStartOf="@id/user_center"
             app:layout_constraintTop_toTopOf="@id/home_logo"
-            tools:ignore="HardcodedText" />
+            tools:ignore="HardcodedText"
+            android:visibility="invisible"/>
 
         <ImageView
             android:id="@+id/switch_user_data"

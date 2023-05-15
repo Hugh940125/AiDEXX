@@ -598,17 +598,15 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
-        history.getCalibrationValue()?.let {
-            val dateTime = ChartUtil.dateToX(history.deviceTime)
-            val bg = BloodGlucoseEntity(history.deviceTime, it)
-            bg.calibration = true
-            val entry = Entry(dateTime, bg.bloodGlucoseMg.toGlucoseValue())
-            entry.data = bg
-            entry.icon = CalDataSet.icon
-            calSet.addEntryOrdered(entry)
-            xMaxMin(dateTime)
-            calDateMaxMin(history.deviceTime)
-        }
+        val dateTime = ChartUtil.dateToX(history.deviceTime)
+        val bg = BloodGlucoseEntity(history.deviceTime, history.referenceGlucose)
+        bg.calibration = true
+        val entry = Entry(dateTime, bg.bloodGlucoseMg.toGlucoseValue())
+        entry.data = bg
+        entry.icon = CalDataSet.icon
+        calSet.addEntryOrdered(entry)
+        xMaxMin(dateTime)
+        calDateMaxMin(history.deviceTime)
     }
 
     // 国际版用

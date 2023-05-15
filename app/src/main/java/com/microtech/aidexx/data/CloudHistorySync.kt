@@ -167,7 +167,7 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
             } else null
 
             val tasks = listOf(
-                //{ CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
                 { CloudBgHistorySync.startDownload(userId = userId, cb = callback) },
                 //...
             )

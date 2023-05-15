@@ -10,9 +10,13 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.ConflictStrategy
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import io.objectbox.annotation.Unique
+import java.util.Date
 
 @Entity
 class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
@@ -72,7 +76,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     @Index
     var eventWarning: Int = 0  //0默认 1高血糖 2低血糖
-    var referenceGlucose: Float = 0f
+    var referenceGlucose: Float = 0f // 校准值
 
     @Index(type = IndexType.HASH)
     var deviceId: String? = null
@@ -259,8 +263,5 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     fun isGlucoseIsValid() = glucoseIsValid == 1 && status == History.STATUS_OK
 
     fun isCalibrationIsValid() = calibrationIsValid == 1
-    fun getCalibrationValue(): Float? {
-        TODO("---计算校准值的算法----")
-    }
 
 }
