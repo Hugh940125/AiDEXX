@@ -8,14 +8,14 @@ plugins {
 }
 
 android {
-    signingConfigs {
-        debug {
-            storeFile file('D:\\Projects\\android-aidex\\app\\aidex.jks')
-            storePassword 'weitai2020'
-            keyAlias 'weitai'
-            keyPassword 'weitai2020'
-        }
-    }
+//    signingConfigs {
+//        debug {
+//            storeFile file('D:\\Projects\\android-aidex\\app\\aidex.jks')
+//            storePassword 'weitai2020'
+//            keyAlias 'weitai'
+//            keyPassword 'weitai2020'
+//        }
+//    }
     compileSdk 33
 
     defaultConfig {

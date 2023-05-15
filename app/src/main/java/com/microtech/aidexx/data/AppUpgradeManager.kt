@@ -76,6 +76,8 @@ object AppUpgradeManager {
                                 }
                                 is ApiRepository.NetResult.Success -> {
                                     mUpgradeProgress.emit(DOWNLOAD_STATUS_DONE to ret.result)
+                                    delay(500)
+                                    mUpgradeProgress.emit(null)
                                     stopUpgrade()
                                     installApk(ret.result)
                                 }

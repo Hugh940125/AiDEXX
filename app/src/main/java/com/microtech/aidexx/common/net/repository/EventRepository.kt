@@ -1,6 +1,5 @@
 package com.microtech.aidexx.common.net.repository
 
-import com.microtech.aidexx.common.formatWithZone
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BG_RECENT_COUNT
@@ -17,7 +16,6 @@ import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.Date
 
 object EventRepository {
 
@@ -110,7 +108,7 @@ object EventRepository {
 
     suspend fun getRecentBgData(userId: String, count: Int = BG_RECENT_COUNT) = withContext(dispatcher) {
         (0 until count).chunked(PAGE_SIZE).all { list ->
-            val curMinId = MmkvManager.getEventDataMinId<Long>(CloudBgHistorySync.getDataSyncFlagKey(userId))?.let { it + 1 }
+            val curMinId = MmkvManager.getEventDataMinId<Long>(CloudBgHistorySync.getDataSyncFlagKey(userId))?.let { it - 1 }
 
             when (val apiResult = getBgRecordsByPageInfo(userId = userId, pageSize = list.size, downAutoIncrementColumn = curMinId)) {
                 is ApiResult.Success -> {
@@ -118,13 +116,13 @@ object EventRepository {
                         if (it.isEmpty()) {
                             if (list[0] == 0) {
                                 MmkvManager.setEventDataMinId(
-                                    CloudBgHistorySync.getDataSyncFlagKey(userId), Date().formatWithZone())
+                                    CloudBgHistorySync.getDataSyncFlagKey(userId), DATA_EMPTY_MIN_ID)
                             }
                             return@withContext true
                         } else {
                             CgmCalibBgRepository.insertBg(it)
                             MmkvManager.setEventDataMinId(
-                                CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
+                                CloudBgHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
                         }
                     } ?:let {
                         // 和服务端确认 成功不会给null 空的只会是空集合

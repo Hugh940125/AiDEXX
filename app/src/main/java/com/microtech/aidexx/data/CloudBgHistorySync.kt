@@ -39,7 +39,7 @@ object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
     override suspend fun getRemoteData(userId: String): List<BloodGlucoseEntity>? =
         when (val apiResult = EventRepository.getBgRecordsByPageInfo(
             userId = userId,
-            downAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it + 1 },
+            downAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it - 1 },
         )) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null
