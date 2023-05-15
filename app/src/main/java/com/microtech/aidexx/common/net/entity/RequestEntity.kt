@@ -69,7 +69,7 @@ data class ReqGetCgmByPage(
 data class ReqGetBgByPage(
     val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
     val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
-    val date: String?,//	筛选时间。目前只支持时间，取最后一条数据的createTime
+    val downAutoIncrementColumn: Long?,//
     val userId: String?,//	是 String (String)
 ): ReqEntity()
 //endregion

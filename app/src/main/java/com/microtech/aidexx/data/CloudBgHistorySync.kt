@@ -1,6 +1,5 @@
 package com.microtech.aidexx.data
 
-import com.microtech.aidexx.common.formatWithZone
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
@@ -40,7 +39,7 @@ object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
     override suspend fun getRemoteData(userId: String): List<BloodGlucoseEntity>? =
         when (val apiResult = EventRepository.getBgRecordsByPageInfo(
             userId = userId,
-            date = MmkvManager.getEventDataMinId<String>(getDataSyncFlagKey(userId)),
+            downAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it + 1 },
         )) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null
@@ -57,7 +56,7 @@ object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
                 CgmCalibBgRepository.insertBg(responseList)
                 MmkvManager.setEventDataMinId(
                     getDataSyncFlagKey(userId!!),
-                    responseList.last().createTime.formatWithZone()
+                    responseList.last().autoIncrementColumn
                 )
             }
             return

@@ -8,7 +8,8 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 
 @Entity
@@ -28,6 +29,9 @@ class BloodGlucoseEntity : EventEntity {
     var testTag: Int = 0
     var bloodGlucoseMg: Float = 0f
     override var createTime: Date = Date()
+
+    @Index
+    var autoIncrementColumn: Long? = null
 
     @Transient
     var calibration: Boolean = false

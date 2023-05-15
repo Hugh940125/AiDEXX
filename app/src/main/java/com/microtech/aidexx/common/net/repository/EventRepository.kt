@@ -95,13 +95,13 @@ object EventRepository {
         pageNum: Int = 1,
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
-        date: String?
+        downAutoIncrementColumn: Long?
     ) = withContext(dispatcher) {
 
         val req = ReqGetBgByPage(
             pageNum,
             pageSize,
-            date,
+            downAutoIncrementColumn,
             userId
         )
 
@@ -110,9 +110,9 @@ object EventRepository {
 
     suspend fun getRecentBgData(userId: String, count: Int = BG_RECENT_COUNT) = withContext(dispatcher) {
         (0 until count).chunked(PAGE_SIZE).all { list ->
-            val curMinId = MmkvManager.getEventDataMinId<String>(CloudBgHistorySync.getDataSyncFlagKey(userId))
+            val curMinId = MmkvManager.getEventDataMinId<Long>(CloudBgHistorySync.getDataSyncFlagKey(userId))?.let { it + 1 }
 
-            when (val apiResult = getBgRecordsByPageInfo(userId = userId, pageSize = list.size, date = curMinId)) {
+            when (val apiResult = getBgRecordsByPageInfo(userId = userId, pageSize = list.size, downAutoIncrementColumn = curMinId)) {
                 is ApiResult.Success -> {
                     apiResult.result.data?.let {
                         if (it.isEmpty()) {
@@ -124,7 +124,7 @@ object EventRepository {
                         } else {
                             CgmCalibBgRepository.insertBg(it)
                             MmkvManager.setEventDataMinId(
-                                CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().createTime.formatWithZone())
+                                CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
                         }
                     } ?:let {
                         // 和服务端确认 成功不会给null 空的只会是空集合
