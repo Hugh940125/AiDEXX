@@ -575,18 +575,18 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun getGlucoseValue(bg: BloodGlucoseEntity): Float {
-        if (bg.bloodGlucoseMg < 2) {
-            return 2f.toGlucoseValue()
+        if (bg.bloodGlucoseMg < 2 * 18) {
+            return (2f * 18).toGlucoseValue()
         }
         if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
-            if (bg.bloodGlucoseMg > 30) {
-                return 30f.toGlucoseValue()
+            if (bg.bloodGlucoseMg > 30 * 18) {
+                return (30f * 18).toGlucoseValue()
             } else {
                 bg.bloodGlucoseMg.toGlucoseValue()
             }
         } else {
             return if (bg.bloodGlucoseMg >= 600) {
-                33.3f.toGlucoseValue()
+                600f.toGlucoseValue()
             } else {
                 bg.bloodGlucoseMg.toGlucoseValue()
             }
