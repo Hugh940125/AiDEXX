@@ -202,7 +202,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override fun isDataValid(): Boolean {
-        return (lastHistoryTime != null && glucose != null && minutesAgo != null && minutesAgo in 0..15 && !isMalfunction && isHistoryValid)
+        //&& minutesAgo != null && minutesAgo in 0..15
+        return (lastHistoryTime != null && glucose != null && !isMalfunction && isHistoryValid)
     }
 
     fun isDeviceFault(): Boolean {
