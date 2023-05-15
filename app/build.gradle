@@ -8,6 +8,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('D:\\Projects\\android-aidex\\app\\aidex.jks')
+            storePassword 'weitai2020'
+            keyAlias 'weitai'
+            keyPassword 'weitai2020'
+        }
+    }
     compileSdk 33
 
     defaultConfig {
@@ -27,7 +35,13 @@ android {
 
     buildTypes {
         release {
+            debuggable false
             minifyEnabled false
+            buildConfigField("Boolean", "isPre", "false")
+            buildConfigField("Boolean", "enableEncrypt", "false")
+            buildConfigField("String", "baseUrl", "\"https://china.pancares.com\"")
+            buildConfigField("String", "updateUrl", "\"https://china.pancares.com/\"")
+            buildConfigField("String", "logUploadUrl", "\"https://china.pancares.com/\"")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 

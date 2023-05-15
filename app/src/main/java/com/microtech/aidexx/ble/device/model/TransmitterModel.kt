@@ -201,8 +201,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({ transmitterBox?.put(entity) })
     }
 
-    override fun isDataValid(): Boolean {//&& minutesAgo != null && minutesAgo in 0..15
-        return (lastHistoryTime != null && glucose != null && !isMalfunction && isHistoryValid)
+    override fun isDataValid(): Boolean {
+        return (lastHistoryTime != null && glucose != null && minutesAgo != null && minutesAgo in 0..15 && !isMalfunction && isHistoryValid)
     }
 
     fun isDeviceFault(): Boolean {
@@ -441,7 +441,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             return
         }
-        val numGetHistory = 40
+        val numGetHistory = 30
         if (targetEventIndex >= nextFullEventIndex + numGetHistory
             || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
         ) {
