@@ -3,7 +3,6 @@ package com.microtech.aidexx.data
 import com.microtech.aidexx.common.formatWithZone
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
@@ -53,7 +52,6 @@ object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
         type: Int,
         userId: String?
     ) {
-        super.replaceEventData(origin, responseList, type, userId)
         if (type == 3) { //下载
             if (responseList.isNotEmpty()) {
                 CgmCalibBgRepository.insertBg(responseList)
@@ -64,6 +62,7 @@ object CloudBgHistorySync: CloudHistorySync<BloodGlucoseEntity>() {
             }
             return
         }
+        super.replaceEventData(origin, responseList, type, userId)
     }
 
 }

@@ -363,7 +363,7 @@ class ChartViewModel: ViewModel() {
                     },
                     async {
                         CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
-                            if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                            if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
                                 if (needApply) {
@@ -598,17 +598,15 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
-        history.getCalibrationValue()?.let {
-            val dateTime = ChartUtil.dateToX(history.deviceTime)
-            val bg = BloodGlucoseEntity(history.deviceTime, it)
-            bg.calibration = true
-            val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
-            entry.data = bg
-            entry.icon = CalDataSet.icon
-            calSet.addEntryOrdered(entry)
-            xMaxMin(dateTime)
-            calDateMaxMin(history.deviceTime)
-        }
+        val dateTime = ChartUtil.dateToX(history.deviceTime)
+        val bg = BloodGlucoseEntity(history.deviceTime, history.referenceGlucose)
+        bg.calibration = true
+        val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
+        entry.data = bg
+        entry.icon = CalDataSet.icon
+        calSet.addEntryOrdered(entry)
+        xMaxMin(dateTime)
+        calDateMaxMin(history.deviceTime)
     }
 
     // 国际版用
