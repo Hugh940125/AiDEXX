@@ -55,7 +55,7 @@ class TransmitterManager private constructor() {
                         newEntity.deviceName = "AiDEX X-${newEntity.deviceSn}"
                         ObjectBox.runAsync({
                             transmitterBox!!.put(newEntity)
-                        },{
+                        }, {
                             when (newEntity.deviceType) {
                                 2 -> set(TransmitterModel.instance(newEntity))
                             }
@@ -114,8 +114,10 @@ class TransmitterManager private constructor() {
     }
 
     fun removeDefault() {
-        default = null
-        notifyTransmitterChange(null)
+        if (default?.isPaired() == false) {
+            default = null
+            notifyTransmitterChange(null)
+        }
     }
 
     fun set(model: DeviceModel) {

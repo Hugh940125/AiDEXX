@@ -353,6 +353,7 @@ class MainService : Service(), LifecycleOwner {
         timeChangeReceiver?.let {
             unregisterReceiver(timeChangeReceiver)
         }
+        unregisterReceiver(receiver)
     }
 
     override val lifecycle: Lifecycle

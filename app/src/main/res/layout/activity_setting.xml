@@ -66,7 +66,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="胖乎乎的小娘们"
+                    android:text="微泰动态测试"
                     android:textColor="?settingItemTitleTextColor"
                     android:textSize="20sp"
                     android:textStyle="bold" />

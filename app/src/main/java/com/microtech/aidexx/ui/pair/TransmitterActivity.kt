@@ -61,7 +61,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (!it.isFinishing) {
                     when (msg.what) {
                         DISMISS_LOADING -> {
-                            EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
                             Dialogs.dismissWait()
                         }
                     }

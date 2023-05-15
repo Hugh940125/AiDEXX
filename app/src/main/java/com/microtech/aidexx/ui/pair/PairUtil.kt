@@ -28,7 +28,7 @@ object PairUtil {
 
     private const
     val DISMISS_DIALOG = 1
-    private const val TIMEOUT_MILLIS = 60 * 1000L
+    private const val TIMEOUT_MILLIS = 30 * 1000L
 
     val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
@@ -39,6 +39,7 @@ object PairUtil {
     private var isForceUnpair: Boolean = false
 
     fun fail() {
+        handler.removeMessages(DISMISS_DIALOG)
         when (operation) {
             Operation.PAIR -> {
                 EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
@@ -138,12 +139,14 @@ object PairUtil {
     }
 
     fun startUnpair(context: Context, isForce: Boolean) {
-        operation = Operation.PAIR
+        operation = Operation.UNPAIR
         isForceUnpair = isForce
-        Dialogs.showWait(context.getString(R.string.Connecting))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val model = TransmitterManager.instance().getDefault()
-        model?.getController()?.clearPair()
+        model?.let {
+            Dialogs.showWait(context.getString(R.string.Connecting))
+            it.getController().clearPair()
+        }
     }
 
     private fun pairFailedTips(context: Context) {
