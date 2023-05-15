@@ -187,7 +187,7 @@ interface ApiService {
 
             baseResponse.run {
                 if (code != RESULT_OK) {
-                    if (code == 800) {
+                    if (code in 800..807) {
                         Throttle.instance().emit(5000, code) {
                             EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                         }

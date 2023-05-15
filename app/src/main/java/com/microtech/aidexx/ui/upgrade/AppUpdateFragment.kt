@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
@@ -44,9 +45,10 @@ class AppUpdateFragment(private val updateInfo: UpgradeInfo): DialogFragment() {
                         DOWNLOAD_STATUS_DONE -> {
                             //do something
                             if (!updateInfo.appUpdateInfo!!.isForce) {
-                                dismissAllowingStateLoss()
+                                dismiss()
                             } else {
                                 binding.run {
+                                    slContent.isVisible = true
                                     llDownload.visibility = View.VISIBLE
                                     txtUpdateProgress.visibility = View.GONE
                                 }
@@ -55,6 +57,7 @@ class AppUpdateFragment(private val updateInfo: UpgradeInfo): DialogFragment() {
                         DOWNLOAD_STATUS_ERROR -> {
                             ToastUtil.showLong("升级失败,请重试")
                             binding.run {
+                                slContent.isVisible = true
                                 llDownload.visibility = View.VISIBLE
                                 txtUpdateProgress.visibility = View.GONE
                                 txtUpdateProgress.text = getString(R.string.download_update, "0%")
@@ -62,6 +65,7 @@ class AppUpdateFragment(private val updateInfo: UpgradeInfo): DialogFragment() {
                         }
                         else -> {
                             binding.run {
+                                slContent.isVisible = false
                                 llDownload.visibility = View.GONE
                                 txtUpdateProgress.visibility = View.VISIBLE
                                 txtUpdateProgress.text = getString(R.string.download_update, "${ret.first}%")
