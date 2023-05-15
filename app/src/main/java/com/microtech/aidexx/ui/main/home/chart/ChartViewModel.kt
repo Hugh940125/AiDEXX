@@ -42,7 +42,6 @@ import com.microtech.aidexx.widget.chart.dataset.BgDataSet
 import com.microtech.aidexx.widget.chart.dataset.CalDataSet
 import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.IconDataSet
-import com.microtechmd.blecomm.constant.History
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -557,9 +556,7 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun checkCgmHistory(cgm: RealCgmHistoryEntity) =
-        (History.HISTORY_GLUCOSE == cgm.eventType
-                || History.HISTORY_GLUCOSE_RECOMMEND_CAL == cgm.eventType
-                || History.HISTORY_CALIBRATION == cgm.eventType )
+        (cgm.isCalibrationIsValid() || cgm.isGlucoseIsValid())
                 && (cgm.glucose != null && cgm.eventWarning != -1)
 
     /**
