@@ -10,6 +10,7 @@ import com.microtech.aidexx.common.net.convert.GsonConverterFactory
 import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.*
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
@@ -188,6 +189,9 @@ interface ApiService {
             baseResponse.run {
                 if (code != RESULT_OK) {
                     if (code in 800..807) {
+
+                        UserInfoManager.instance().onTokenExpired()
+
                         Throttle.instance().emit(5000, code) {
                             EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                         }

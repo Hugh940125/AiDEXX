@@ -2,6 +2,7 @@ package com.microtech.aidexx.common.user
 
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.net.entity.ResUserInfo
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.ShareUserEntity
@@ -96,6 +97,13 @@ class UserInfoManager {
             ObjectBox.userBox!!.query().equal(UserEntity_.id, userId).orderDesc(UserEntity_.idx)
                 .build().findFirst()
         } ?: UserEntity()
+    }
+
+    fun onTokenExpired() {
+        AidexxApp.instance.ioScope.launch {
+            updateLoginFlag(false)
+            MmkvManager.saveToken("")
+        }
     }
 
     suspend fun onUserLogin(content: ResUserInfo): Long = withContext(Dispatchers.IO) {

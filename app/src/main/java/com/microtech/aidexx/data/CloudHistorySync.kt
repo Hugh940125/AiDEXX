@@ -81,17 +81,20 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
     }
 
     override suspend fun downloadData(userId: String): Boolean {
-        val result = getRemoteData(userId)
-        return result?.let {
-            if (it.isNotEmpty()) {
-                replaceEventData(responseList = it, type = 3, userId = userId)
-            }
-            if (it.size >= PAGE_SIZE) {
-                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
-                // todo 是否需要加个间隔 不然可能会很快
-                downloadData(userId)
-            } else true
-        } ?: false
+        if (canSync()) {
+            val result = getRemoteData(userId)
+            return result?.let {
+                if (it.isNotEmpty()) {
+                    replaceEventData(responseList = it, type = 3, userId = userId)
+                }
+                if (it.size >= PAGE_SIZE) {
+                    LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+                    // todo 是否需要加个间隔 不然可能会很快
+                    downloadData(userId)
+                } else true
+            } ?: false
+        }
+        return false
     }
 
     private suspend fun getNeedDeleteList(): MutableList<T>? {

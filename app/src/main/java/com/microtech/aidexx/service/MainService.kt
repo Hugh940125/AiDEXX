@@ -20,7 +20,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
-import com.microtech.aidexx.data.CloudCgmHistorySync
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudHistorySync
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.ContextUtil
@@ -136,6 +136,9 @@ class MainService : Service(), LifecycleOwner {
         var count = 0
         mainServiceTask = object : TimerTask() {
             override fun run() {
+                if (!UserInfoManager.instance().isLogin()) {
+                    return
+                }
                 val model = TransmitterManager.instance().getDefault()
                 if (model != null) {
                     if (model.isGettingTransmitterData) {

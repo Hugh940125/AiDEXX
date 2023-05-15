@@ -61,7 +61,9 @@ abstract class DataSyncController<T> {
                 downloadStateFlow.collect {
                     if (it) {
                         dataSyncScope.launch(dataSyncExceptionHandler) {
-                            download(UserInfoManager.instance().userId(), downloadStatusStateFlow, ::stopDownloadData)
+                            if (canSync()) {
+                                download(UserInfoManager.instance().userId(), downloadStatusStateFlow, ::stopDownloadData)
+                            }
                         }
                     }
                 }
@@ -70,7 +72,9 @@ abstract class DataSyncController<T> {
                 downloadShareDataStateFlow.collect {
                     it?.let { userId ->
                         dataSyncScope.launch(shareUserDataSyncExceptionHandler) {
-                            download(userId, downloadShareDataStatusStateFlow, ::stopDownloadShareUserData)
+                            if (canSync()) {
+                                download(userId, downloadShareDataStatusStateFlow, ::stopDownloadShareUserData)
+                            }
                         }
                     }
                 }
@@ -146,6 +150,7 @@ abstract class DataSyncController<T> {
         LogUtil.xLogI("download share user data curState=${downloadShareDataStateFlow.value}", TAG)
     }
 
+    fun canSync(): Boolean = UserInfoManager.instance().isLogin()
 
     fun getDataSyncFlagKey(userId: String): String = "$userId-${tClazz.simpleName}-DATA-SYNC-FLAG"
 
