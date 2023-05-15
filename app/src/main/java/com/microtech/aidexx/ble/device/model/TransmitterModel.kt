@@ -400,10 +400,14 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
                 val temp = adHistories[0].glucose
                 glucose = if (isMalfunction || isSensorExpired || temp < 0) null
-                else roundOffDecimal(temp / 18f)
+                else temp.toFloat()
             }
             latestHistory = adHistories[0]
-            EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, true)
+            latestHistory?.let {
+                if (it.timeOffset > 60){
+                    EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, true)
+                }
+            }
         } else {
             return
         }
@@ -657,62 +661,62 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         if (isMalfunction || history.timeOffset < 60) {
                             historyEntity.eventWarning = -1
                         } else {
-                            if (historyEntity.isHighOrLow()) {
-                                when {
-                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
-                                        if (alertSetting?.isHyperEnable == true) {
-                                            if (lastHyperAlertTime == null) {
-                                                lastHyperAlertTime = getLastAlertTime(
-                                                    deviceId, userId, typeHyperAlert
-                                                )
-                                            }
-                                            if (lastHyperAlertTime == null
-                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
-                                            ) {
-                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
-                                                alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
-                                                )
-                                                lastHyperAlertTime = deviceTimeMillis
-                                            }
-                                        }
-                                    }
-                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPO -> {
-                                        if (alertSetting?.isHypoEnable == true) {
-                                            if (lastHypoAlertTime == null) {
-                                                lastHypoAlertTime = getLastAlertTime(
-                                                    deviceId, userId, typeHypoAlert
-                                                )
-                                            }
-                                            if (lastHypoAlertTime == null
-                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
-                                            ) {
-                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
-                                                alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
-                                                )
-                                                lastHypoAlertTime = deviceTimeMillis
-                                            }
-                                        }
-                                    }
-                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_URGENT_HYPO -> {
-                                        if (alertSetting?.isUrgentLowEnable == true) {
-                                            if (lastUrgentAlertTime == null) {
-                                                lastUrgentAlertTime =
-                                                    getLastAlertTime(deviceId, userId, typeUrgentAlert)
-                                            }
-                                            if (lastUrgentAlertTime == null || TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange
-                                            ) {
-                                                historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
-                                                alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
-                                                )
-                                                lastUrgentAlertTime = deviceTimeMillis
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+//                            if (historyEntity.isHighOrLow()) {
+//                                when {
+//                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
+//                                        if (alertSetting?.isHyperEnable == true) {
+//                                            if (lastHyperAlertTime == null) {
+//                                                lastHyperAlertTime = getLastAlertTime(
+//                                                    deviceId, userId, typeHyperAlert
+//                                                )
+//                                            }
+//                                            if (lastHyperAlertTime == null
+//                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
+//                                            ) {
+//                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
+//                                                alert?.invoke(
+//                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
+//                                                )
+//                                                lastHyperAlertTime = deviceTimeMillis
+//                                            }
+//                                        }
+//                                    }
+//                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPO -> {
+//                                        if (alertSetting?.isHypoEnable == true) {
+//                                            if (lastHypoAlertTime == null) {
+//                                                lastHypoAlertTime = getLastAlertTime(
+//                                                    deviceId, userId, typeHypoAlert
+//                                                )
+//                                            }
+//                                            if (lastHypoAlertTime == null
+//                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
+//                                            ) {
+//                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
+//                                                alert?.invoke(
+//                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
+//                                                )
+//                                                lastHypoAlertTime = deviceTimeMillis
+//                                            }
+//                                        }
+//                                    }
+//                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_URGENT_HYPO -> {
+//                                        if (alertSetting?.isUrgentLowEnable == true) {
+//                                            if (lastUrgentAlertTime == null) {
+//                                                lastUrgentAlertTime =
+//                                                    getLastAlertTime(deviceId, userId, typeUrgentAlert)
+//                                            }
+//                                            if (lastUrgentAlertTime == null || TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange
+//                                            ) {
+//                                                historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
+//                                                alert?.invoke(
+//                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
+//                                                )
+//                                                lastUrgentAlertTime = deviceTimeMillis
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
                         }
                     }
                     History.HISTORY_SENSOR_ERROR -> {

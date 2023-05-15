@@ -21,11 +21,7 @@ import com.microtech.aidexx.common.convertPointer
 import com.microtech.aidexx.common.dateAndTimeHour
 import com.microtech.aidexx.common.toGlucoseString2
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.utils.LanguageUnitManager
-import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.*
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -172,7 +168,7 @@ class GlucoseChart : MyChart {
                 }
                 if (e.data == null) {
                     extraParams?.outerDescriptionY?.text = buildString {
-                        append(h.y.toGlucoseString2().convertPointer())
+                        append(h.y)
                     }
                     extraParams?.outerDescriptionUnit?.text = UnitManager.glucoseUnit.text
                     isValueNull = false

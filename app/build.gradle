@@ -35,7 +35,7 @@ android {
 
     buildTypes {
         release {
-            debuggable false
+            debuggable true
             minifyEnabled false
             buildConfigField("Boolean", "isPre", "false")
             buildConfigField("Boolean", "enableEncrypt", "false")

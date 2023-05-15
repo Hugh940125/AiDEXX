@@ -61,9 +61,9 @@ abstract class DataSyncController<T> {
                 downloadStateFlow.collect {
                     if (it) {
                         dataSyncScope.launch(dataSyncExceptionHandler) {
-                            if (canSync()) {
-                                download(UserInfoManager.instance().userId(), downloadStatusStateFlow, ::stopDownloadData)
-                            }
+
+                            download(UserInfoManager.instance().userId(), downloadStatusStateFlow, ::stopDownloadData)
+
                         }
                     }
                 }
@@ -72,9 +72,7 @@ abstract class DataSyncController<T> {
                 downloadShareDataStateFlow.collect {
                     it?.let { userId ->
                         dataSyncScope.launch(shareUserDataSyncExceptionHandler) {
-                            if (canSync()) {
-                                download(userId, downloadShareDataStatusStateFlow, ::stopDownloadShareUserData)
-                            }
+                            download(userId, downloadShareDataStatusStateFlow, ::stopDownloadShareUserData)
                         }
                     }
                 }

@@ -1,23 +1,22 @@
 package com.microtech.aidexx.ui.main
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
 import android.provider.Settings
+import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
-import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
-import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.compliance.EnquireManager
-import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
@@ -78,12 +77,23 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     activity,
                                     content = activity.getString(R.string.content_ignore_battery),
                                     confirm = {
-                                        activity.ignoreBatteryOptimization()
+                                        ignoreBatteryOptimization(activity)
                                     })
                             }
                         }
                     }
                 }
+            }
+        }
+
+        @SuppressLint("BatteryLife")
+        fun ignoreBatteryOptimization(activity: Activity) {
+            try {
+                val intent = Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:" + activity.packageName)
+                activity.startActivity(intent)
+            } catch (e: Exception) {
+                LogUtil.eAiDEX("Set ignore battery optimizations failed:${e.printStackTrace()}")
             }
         }
     }
@@ -151,7 +161,10 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
             return@checkPermissions
         }
         mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-        mHandler.sendEmptyMessageDelayed(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, (if (BuildConfig.DEBUG) 150L else 15L) * 1000)
+        mHandler.sendEmptyMessageDelayed(
+            REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            15L * 1000
+        )
     }
 
     private fun initView() {
@@ -242,16 +255,5 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     override fun onBackPressed() {
         ActivityUtil.toSystemHome(this)
-    }
-
-    @SuppressLint("BatteryLife")
-    fun ignoreBatteryOptimization() {
-        try {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-            intent.data = Uri.parse("package:" + this.packageName)
-            startActivity(intent)
-        } catch (e: Exception) {
-            LogUtil.eAiDEX("Set ignore battery optimizations failed:${e.printStackTrace()}")
-        }
     }
 }

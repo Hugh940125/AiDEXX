@@ -47,10 +47,10 @@ object UnitManager {
     }
 
     fun unitFormat(): DecimalFormat {
-        return when (UnitManager.glucoseUnit.index) {
+        return when (glucoseUnit.index) {
             1 -> DecimalFormat("0.0")
             2 -> DecimalFormat("0")
-            else -> DecimalFormat("0")
+            else -> DecimalFormat("0.0")
         }
     }
 }

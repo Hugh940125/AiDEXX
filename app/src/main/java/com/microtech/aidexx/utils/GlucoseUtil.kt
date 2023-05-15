@@ -8,7 +8,7 @@ import java.text.DecimalFormat
 
 fun Float.toGlucoseValue(): Float {
     return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this / 18
+        UnitManager.GlucoseUnit.MMOL_PER_L -> roundOffDecimal(this / 18f)
         UnitManager.GlucoseUnit.MG_PER_DL -> this
     }
 }
@@ -42,8 +42,12 @@ fun Float.toGlucoseString(): String {
 
 fun Float.toGlucoseStringWithLowAndHigh(context: Resources): String {
     return when {
-        this < ThresholdManager.GLUCOSE_LOW_LIMIT -> context.getString(R.string.Glucose_Low)
-        this > ThresholdManager.GLUCOSE_UP_LIMIT -> context.getString(R.string.Glucose_High)
+        this < ThresholdManager.GLUCOSE_LOW_LIMIT * 18 -> context.getString(
+            R.string.Glucose_Low
+        )
+        this > ThresholdManager.GLUCOSE_UP_LIMIT * 18 -> context.getString(
+            R.string.Glucose_High
+        )
         else -> UnitManager.unitFormat().format(this.toGlucoseValue())
     }
 }

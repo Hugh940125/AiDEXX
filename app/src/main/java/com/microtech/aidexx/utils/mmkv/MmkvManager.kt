@@ -124,7 +124,7 @@ object MmkvManager {
 
     fun saveTheme(index: Int) = MmkvUtil.encodeInt(THEME, index)
 
-    fun getGlucoseUnit() = MmkvUtil.decodeInt(GLUCOSE_UNIT, 1)
+    fun getGlucoseUnit() = MmkvUtil.decodeInt(GLUCOSE_UNIT, 0)
 
     fun saveGlucoseUnit(index: Int) = MmkvUtil.encodeInt(GLUCOSE_UNIT, index)
     fun saveCustomerServiceIconLeft(left: Int) =
