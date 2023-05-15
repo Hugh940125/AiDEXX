@@ -44,7 +44,11 @@ import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
-import com.microtechmd.blecomm.parser.*
+import com.microtechmd.blecomm.parser.AidexXCalibrationEntity
+import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
+import com.microtechmd.blecomm.parser.AidexXHistoryEntity
+import com.microtechmd.blecomm.parser.AidexXParser
+import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
 import io.objectbox.kotlin.equal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -52,7 +56,7 @@ import kotlinx.coroutines.withContext
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Date
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
@@ -734,7 +738,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 //                updateGlucoseTrend(tempBriefList.last().deviceTime)
             EventBusManager.send(
                 EventBusKey.EVENT_CGM_DATA_CHANGED,
-                CgmDataChangedInfo(DataChangedType.ADD, tempBriefList)
+                CgmDataChangedInfo(DataChangedType.ADD, mutableListOf<RealCgmHistoryEntity>().also {
+                    it.addAll(tempBriefList)
+                })
             )
             tempBriefList.clear()
             if (goon) continueBriefFetch()
