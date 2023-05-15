@@ -26,12 +26,7 @@ class BloodGlucoseEntity : EventEntity {
     override var id: String? = null
     var testTime: Date = Date()
     var testTag: Int = 0
-    var bloodGlucose: Float = 0f
-        set(value) {
-            field = value
-            bloodGlucoseMg = bloodGlucose.toString()
-        }
-    var bloodGlucoseMg: String? = null
+    var bloodGlucoseMg: Float = 0f
     override var createTime: Date = Date()
 
     @Transient
@@ -52,7 +47,7 @@ class BloodGlucoseEntity : EventEntity {
     constructor()
     constructor(testTime: Date, bloodGlucose: Float) {
         this.testTime = testTime
-        this.bloodGlucose = bloodGlucose
+        this.bloodGlucoseMg = bloodGlucose
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
 
@@ -85,12 +80,12 @@ class BloodGlucoseEntity : EventEntity {
     override fun getValueDescription(res: Resources): String {
         val unit = UnitManager.glucoseUnit.text
         return when (UnitManager.glucoseUnit) {
-            UnitManager.GlucoseUnit.MMOL_PER_L -> "${bloodGlucose / 18}$unit"
-            UnitManager.GlucoseUnit.MG_PER_DL -> "$bloodGlucose$unit"
+            UnitManager.GlucoseUnit.MMOL_PER_L -> "${bloodGlucoseMg / 18}$unit"
+            UnitManager.GlucoseUnit.MG_PER_DL -> "$bloodGlucoseMg$unit"
         }
     }
 
     override fun toString(): String {
-        return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTime=$testTime, testTag=$testTag, bloodGlucose=$bloodGlucose, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
+        return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTime=$testTime, testTag=$testTag, bloodGlucoseMg=$bloodGlucoseMg, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
     }
 }

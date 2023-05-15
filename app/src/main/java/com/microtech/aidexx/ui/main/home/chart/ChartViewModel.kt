@@ -363,7 +363,7 @@ class ChartViewModel: ViewModel() {
                     },
                     async {
                         CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
-                            if (d.size > 0 && d[0].authorizationId != UserInfoManager.getCurShowUserId()) {
+                            if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
                                 if (needApply) {
@@ -578,23 +578,23 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun getGlucoseValue(bg: BloodGlucoseEntity): Float {
-        if (bg.bloodGlucose < 2) {
+        if (bg.bloodGlucoseMg < 2) {
             return 2f.toGlucoseValue()
         }
         if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
-            if (bg.bloodGlucose > 30) {
+            if (bg.bloodGlucoseMg > 30) {
                 return 30f.toGlucoseValue()
             } else {
-                bg.bloodGlucose.toGlucoseValue()
+                bg.bloodGlucoseMg.toGlucoseValue()
             }
         } else {
-            return if (bg.bloodGlucose >= 600) {
+            return if (bg.bloodGlucoseMg >= 600) {
                 33.3f.toGlucoseValue()
             } else {
-                bg.bloodGlucose.toGlucoseValue()
+                bg.bloodGlucoseMg.toGlucoseValue()
             }
         }
-        return bg.bloodGlucose.toGlucoseValue()
+        return bg.bloodGlucoseMg.toGlucoseValue()
     }
 
     private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
@@ -602,7 +602,7 @@ class ChartViewModel: ViewModel() {
             val dateTime = ChartUtil.dateToX(history.deviceTime)
             val bg = BloodGlucoseEntity(history.deviceTime, it)
             bg.calibration = true
-            val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
+            val entry = Entry(dateTime, bg.bloodGlucoseMg.toGlucoseValue())
             entry.data = bg
             entry.icon = CalDataSet.icon
             calSet.addEntryOrdered(entry)
@@ -614,9 +614,9 @@ class ChartViewModel: ViewModel() {
     // 国际版用
     private fun updateGpCalibrationSet(history: CalibrateEntity) {
         val dateTime = ChartUtil.dateToX(history.calTime)
-        val bg = BloodGlucoseEntity(history.calTime, history.referenceGlucose!!.toFloat())
+        val bg = BloodGlucoseEntity(history.calTime, history.referenceGlucose)
         bg.calibration = true
-        val entry = Entry(dateTime, bg.bloodGlucose.toGlucoseValue())
+        val entry = Entry(dateTime, bg.bloodGlucoseMg.toGlucoseValue())
         entry.data = bg
         entry.icon = CalDataSet.icon
         calSet.addEntryOrdered(entry)

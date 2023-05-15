@@ -45,9 +45,7 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
                 withContext(Dispatchers.IO) {
                     val result = postLocalData(hashMapOf("records" to needUploadData))
                     result.let { response ->
-                        response?.data?.let {
-                            replaceEventData(needUploadData)
-                        }
+                        replaceEventData(needUploadData)
                     }
                 }
             }
