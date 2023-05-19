@@ -82,8 +82,7 @@ abstract class DataSyncController<T> {
 
     private suspend fun download(userId: String, statusFlow: MutableStateFlow<SyncStatus?>, stopDownloadFun: (Boolean)->Unit) {
 
-        if (!UserInfoManager.instance().isLogin()) {
-            LogUtil.xLogE("未登录，$this 下载失败")
+        if (!canSync()) {
             downloadStatusStateFlow.emit(SyncStatus.Failure())
             return
         }
@@ -148,7 +147,13 @@ abstract class DataSyncController<T> {
         LogUtil.xLogI("download share user data curState=${downloadShareDataStateFlow.value}", TAG)
     }
 
-    fun canSync(): Boolean = UserInfoManager.instance().isLogin()
+    fun canSync(): Boolean {
+        val ret = UserInfoManager.instance().isLogin()
+        if (!ret) {
+            LogUtil.xLogE("未登录，$this 停止下载")
+        }
+        return ret
+    }
 
     fun getDataSyncFlagKey(userId: String): String = "$userId-${tClazz.simpleName}-DATA-SYNC-FLAG"
 

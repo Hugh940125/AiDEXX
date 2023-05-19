@@ -122,7 +122,7 @@ interface ApiService {
     @GET(getAppVersionList)
     suspend fun checkAppUpdate(
         @Query("appId") appId: String,
-        @Query("project") project: String = "aidex",
+        @Query("project") project: String = "aidex-x",
         @Query("os") os: String = "android",
         @Query("appVersion") appVersion: String = BuildConfig.VERSION_NAME,
         @Query("resourceVersion") resourceVersion: String = "",

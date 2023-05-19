@@ -66,6 +66,7 @@ class ChartViewHolder(
                 override fun xMax(): Float = chartViewModel.xMax()
                 override fun xMin(): Float = chartViewModel.xMin()
                 override fun xRange(): Float = chartViewModel.xRange()
+                override fun xMargin(): Float = chartViewModel.xMargin()
                 override fun lowerLimit(): Float = chartViewModel.lowerLimit
                 override fun upperLimit(): Float = chartViewModel.upperLimit
             }

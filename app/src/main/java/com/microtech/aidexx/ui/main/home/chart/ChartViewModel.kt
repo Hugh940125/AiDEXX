@@ -434,7 +434,7 @@ class ChartViewModel: ViewModel() {
         return getGranularity() * CHART_LABEL_COUNT.toFloat()
     }
 
-    private fun xMargin(): Float {
+    fun xMargin(): Float {
         return getGranularity() / 2f
     }
 
