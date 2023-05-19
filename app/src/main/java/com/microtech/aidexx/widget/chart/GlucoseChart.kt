@@ -3,6 +3,9 @@ package com.microtech.aidexx.widget.chart
 import android.content.Context
 import android.graphics.Color
 import android.graphics.DashPathEffect
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageView
@@ -17,11 +20,14 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.microtech.aidexx.R
-import com.microtech.aidexx.common.convertPointer
 import com.microtech.aidexx.common.dateAndTimeHour
-import com.microtech.aidexx.common.toGlucoseString2
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.ThemeManager
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
+import java.lang.ref.WeakReference
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -30,10 +36,6 @@ import java.util.Date
  * Home页中的图表
  */
 class GlucoseChart : MyChart {
-
-    companion object {
-        const val CHART_LABEL_COUNT: Int = 6
-    }
 
     interface ExtraParams {
 
@@ -93,6 +95,10 @@ class GlucoseChart : MyChart {
          * 当前可视区域区间
          */
         fun xRange(): Float
+        /**
+         * 当前最右侧留多大空间/时间
+         */
+        fun xMargin(): Float
 
         /**
          * 当前y轴最低限制
@@ -118,6 +124,16 @@ class GlucoseChart : MyChart {
         attrs,
         defStyle
     )
+
+    class THandler(val chart: GlucoseChart): Handler(Looper.getMainLooper()) {
+        private val mChart: WeakReference<GlucoseChart> = WeakReference(chart)
+        override fun handleMessage(msg: Message) {
+            if (MSG_TIME_TO_REFRESH_CHART == msg.what) {
+                mChart.get()?.notifyChanged(false)
+            }
+        }
+    }
+    private val timerHandler by lazy { THandler(this) }
 
     init {
 //        isLogEnabled = BuildConfig.DEBUG
@@ -266,6 +282,7 @@ class GlucoseChart : MyChart {
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
 
+        resetTimerToRefreshChart()
         // 如果初始化比较慢 新来的数据优先调到这里
         if (data == null) {
             return
@@ -290,7 +307,10 @@ class GlucoseChart : MyChart {
     }
 
     private fun isAtLatestPosition(highestVisibleX: Float): Boolean {
-        return highestVisibleX >= xChartMax
+        val maxTime = ChartUtil.xToSecond(xChartMax - (extraParams?.xMargin()?:0f))
+        val highestVisibleTime = ChartUtil.xToSecond(highestVisibleX)
+        LogUtil.d("===CHART=== diff: m=$maxTime - h=$highestVisibleTime = ${maxTime - highestVisibleTime} ")
+        return maxTime  - highestVisibleTime < 60
     }
 
     private fun refresh() {
@@ -460,4 +480,19 @@ class GlucoseChart : MyChart {
             String(newUriValue)
         }
     }
+
+    private fun resetTimerToRefreshChart() {
+        timerHandler.removeMessages(MSG_TIME_TO_REFRESH_CHART)
+        timerHandler.sendMessageDelayed(
+            Message.obtain(timerHandler, MSG_TIME_TO_REFRESH_CHART),
+            INTERVAL_REFRESH_WHEN_NO_EVENT
+        )
+    }
+    companion object {
+        private val TAG = GlucoseChart::class.java.simpleName
+        const val CHART_LABEL_COUNT: Int = 6
+        private const val MSG_TIME_TO_REFRESH_CHART: Int = 0x01
+        private const val INTERVAL_REFRESH_WHEN_NO_EVENT: Long = 5 * 60 * 1000
+    }
+
 }

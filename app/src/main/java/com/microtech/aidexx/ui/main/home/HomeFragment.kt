@@ -19,7 +19,6 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.main.home.chart.ChartViewHolder
@@ -31,16 +30,10 @@ import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtechmd.blecomm.constant.History
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.*
-import kotlin.concurrent.fixedRateTimer
 
 /**
  *@date 2023/2/15
