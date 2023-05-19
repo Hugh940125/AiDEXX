@@ -1,9 +1,10 @@
 package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
+import com.microtech.aidexx.utils.EncryptUtils
+import io.objectbox.annotation.*
 import java.util.*
+import kotlin.jvm.Transient
 
 /**
  * 校准记录
@@ -37,15 +38,32 @@ class CalibrateEntity : EventEntity {
     var eventIndex = 0
     override var recordIndex: Long? = 0L
     override var deleteStatus: Int = 0
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+
+    @Unique(onConflict = ConflictStrategy.REPLACE)
+    var calibrationId: String? = null
     var sensorIndex: Int = 0
 
+    @Index(type = IndexType.HASH)
+    var sensorId: String? = null
     var referenceGlucose: Float = 0f
     var indexBeforeCal: Int = 0
     var indexAfterCal: Int = 0
-    var calFactor: Float = 1f //校准系数
-    var calOffset: Float = 0f //校准偏移量
-    var isValid = false
+    var cf: Float = 1f //校准系数
+    var offset: Float = 0f //校准偏移量
+    var isValid = 0
+    var index = 0
+    var autoIncrementColumn = 0
+
+    @Index
+    var timeOffset = 0
+
+    fun updateCalibrationId(): String {
+        val uuidStr = StringBuffer()
+        uuidStr.append(sensorId)
+            .append(index)
+        return EncryptUtils.md5(uuidStr.toString())
+    }
+
     override fun getEventDescription(res: Resources): String {
         return ""
     }
@@ -55,6 +73,6 @@ class CalibrateEntity : EventEntity {
     }
 
     override fun toString(): String {
-        return "CalibrateEntity(idx=$idx, authorizationId=$userId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$recordUuid, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$calFactor, calOffset=$calOffset)"
+        return "CalibrateEntity(idx=$idx, authorizationId=$userId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$calibrationId, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$cf, calOffset=$offset)"
     }
 }

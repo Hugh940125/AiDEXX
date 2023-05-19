@@ -63,8 +63,7 @@ class RulerWidget : LinearLayout {
 
 
     fun setType(type: RulerType, default: Float) {
-
-        this.type = type;
+        this.type = type
         if (type == RulerType.NORMAL) {
             viewBinding.tvNumber.text = null
             viewBinding.tvUnit.text = null
@@ -98,12 +97,12 @@ class RulerWidget : LinearLayout {
                 setCurrentValue(result, type)
             }
             RulerType.HYPO -> {
-                val result = fitRange(default, 3.0F, 5.0F)
+                val result = fitRange(default, 3.0f * 18f, 5.0f * 18f)
                 viewBinding.rvNumber.setIndicatorColorChange(booleanArrayOf(true, false, true))
                 viewBinding.rvNumber.setStickyIndex(1)
                 viewBinding.rvNumber.setValue(
-                    3.0f.toGlucoseValue(),
-                    5.0f.toGlucoseValue(),
+                    (3.0f * 18f).toGlucoseValue(),
+                    (5.0f * 18f).toGlucoseValue(),
                     result,
                     unit,
                     10
@@ -111,12 +110,12 @@ class RulerWidget : LinearLayout {
                 setCurrentValue(result, type)
             }
             RulerType.HYPER -> {
-                val result = fitRange(default, 7.0F, 25.0F)
+                val result = fitRange(default, 7.0f * 18f, 25.0f * 18f)
                 viewBinding.rvNumber.setIndicatorColorChange(booleanArrayOf(true, false, true))
                 viewBinding.rvNumber.setStickyIndex(2)
                 viewBinding.rvNumber.setValue(
-                    7f.toGlucoseValue(),
-                    25f.toGlucoseValue(),
+                    (7.0f * 18f).toGlucoseValue(),
+                    (25.0f * 18f).toGlucoseValue(),
                     result,
                     unit,
                     10

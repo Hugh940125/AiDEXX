@@ -4,9 +4,7 @@ import com.microtech.aidexx.common.millisToIntSeconds
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Unique
+import io.objectbox.annotation.*
 import java.util.*
 
 
@@ -30,8 +28,11 @@ class TransmitterEntity {
     var sensorStartTime: Date? = null //开始时间
         set(value) {
             field = value
-            val startTime = startTimeToIndex().toString()
-            sensorId = EncryptUtils.md5(startTime + UserInfoManager.instance().userId() + startTime)
+            if (value != null) {
+                val index = startTimeToIndex()
+                sensorIndex = index
+                sensorId = EncryptUtils.md5(UserInfoManager.instance().userId() + deviceSn + index + sensorIndex)
+            }
         }
     var needReplace = false
     var deviceModel: Int = 0
@@ -50,6 +51,8 @@ class TransmitterEntity {
     var et: Int = 0
     var deviceName: String? = null
     var deviceType: Int = TYPE_X
+
+    @Index(type = IndexType.HASH)
     var sensorId: String? = null
 
     constructor()

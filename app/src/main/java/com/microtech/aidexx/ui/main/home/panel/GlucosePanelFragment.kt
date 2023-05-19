@@ -32,7 +32,6 @@ import kotlin.concurrent.schedule
 private const val REFRESH_PANEL = 2006
 
 class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBinding>() {
-    private val chartViewModel: ChartViewModel by viewModels(ownerProducer = { requireActivity() })
     private var timer: Timer? = null
     private val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {

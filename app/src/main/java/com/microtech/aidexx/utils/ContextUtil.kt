@@ -5,13 +5,13 @@ import android.content.res.Resources
 
 class ContextUtil {
     companion object {
-        private var res: Resources? = null
+        private lateinit var res: Resources
 
         fun init(context: Context) {
             res = context.resources
         }
 
-        fun getResources(): Resources? {
+        fun getResources(): Resources {
             return res
         }
     }

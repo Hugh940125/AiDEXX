@@ -18,7 +18,7 @@ data class RecordInfo(val timeOffset: Int = 0)
 
 data class RawRecordInfo(val timeOffset: Int = 0)
 
-data class CalibrationRecord(val timeOffset: Int = 0)
+data class CalibrationRecord(val index: Int = 0)
 
 data class CloudDeviceInfo(
     val deviceInfo: DeviceInfo?,

@@ -22,10 +22,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 
 /**
  *@date 2023/2/22
@@ -90,7 +87,10 @@ fun Date.getStartOfTheDay(): Date {
 }
 
 fun Date.formatWithZone(): String =
-    SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ").format(this)
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.ENGLISH).format(this)
+
+fun Date.formatWithoutZone(): String =
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(this)
 
 fun <T> QueryBuilder<T>.equal(property: Property<T>, value: String): QueryBuilder<T> {
     return equal(property, value, QueryBuilder.StringOrder.CASE_SENSITIVE)
@@ -102,10 +102,8 @@ fun GsonBuilder.createWithDateFormat(): Gson {
 
 fun Float.toGlucoseString2(): String {
     return when {
-        this <= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) ThresholdManager.GLUCOSE_LOW_LIMIT
-        else ThresholdManager.GLUCOSE_LOW_LIMIT * 18 -> "LO"
-        this >= if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) ThresholdManager.GLUCOSE_UP_LIMIT
-        else ThresholdManager.GLUCOSE_UP_LIMIT * 18 -> "HI"
+        this <= ThresholdManager.GLUCOSE_LOW_LIMIT -> "LO"
+        this >= ThresholdManager.GLUCOSE_UP_LIMIT -> "HI"
         else -> UnitManager.formatterUnitByIndex().format(this)
     }
 }
@@ -123,11 +121,11 @@ fun String.convertAllPointer(): String {
 }
 
 fun String.isNumber(): Boolean = try {
-        this.toLong()
-        true
-    } catch (e: NumberFormatException) {
-        false
-    }
+    this.toLong()
+    true
+} catch (e: NumberFormatException) {
+    false
+}
 
 fun String.toast() = ToastUtil.showLong(this)
 fun String.toastShort() = ToastUtil.showShort(this)

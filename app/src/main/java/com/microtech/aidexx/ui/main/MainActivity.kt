@@ -2,12 +2,12 @@ package com.microtech.aidexx.ui.main
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
 import android.net.Uri
 import android.os.*
-import android.provider.Settings
 import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import android.view.View
 import android.view.WindowInsets
@@ -89,8 +89,18 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         @SuppressLint("BatteryLife")
         fun ignoreBatteryOptimization(activity: Activity) {
             try {
-                val intent = Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = Uri.parse("package:" + activity.packageName)
+                val intent: Intent
+                if (ActivityUtil.isHarmonyOS()) {
+                    intent = Intent(Intent.ACTION_MAIN)
+                    intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                    intent.component = ComponentName(
+                        "com.android.settings",
+                        "com.android.settings.Settings\$HighPowerApplicationsActivity"
+                    )
+                } else {
+                    intent = Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    intent.data = Uri.parse("package:" + activity.packageName)
+                }
                 activity.startActivity(intent)
             } catch (e: Exception) {
                 LogUtil.eAiDEX("Set ignore battery optimizations failed:${e.printStackTrace()}")
@@ -140,19 +150,19 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
                 mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
-                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
+                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 1 * 1000)
                 return@checkPermissions
             }
         } else {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
                 mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
-                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 2 * 1000)
+                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 1 * 1000)
                 return@checkPermissions
             }
         }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             mHandler.removeMessages(REQUEST_ENABLE_LOCATION_SERVICE)
-            mHandler.sendEmptyMessageDelayed(REQUEST_ENABLE_LOCATION_SERVICE, 2 * 1000)
+            mHandler.sendEmptyMessageDelayed(REQUEST_ENABLE_LOCATION_SERVICE, 1 * 1000)
             return
         }
         PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {

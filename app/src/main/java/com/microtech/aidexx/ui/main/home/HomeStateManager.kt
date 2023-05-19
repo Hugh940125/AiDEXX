@@ -3,10 +3,8 @@ package com.microtech.aidexx.ui.main.home
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import java.util.*
 
 /**
@@ -26,14 +24,21 @@ class HomeStateManager private constructor() {
     init {
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
-                setState(glucosePanel)
+                when (msg.what) {
+                    RESET_HOME_STATE -> resetState(glucosePanel, true)
+                }
             }
         }
     }
 
+    fun resetState(tag: String, reset: Boolean) {
+        currentState = tag
+        onHomeStateChange?.invoke(tag, reset)
+    }
+
     companion object {
         var onWarmingUpTimeLeftListener: ((timeLeft: Int?) -> Unit)? = null
-        var onHomeStateChange: ((tag: String) -> Unit)? = null
+        var onHomeStateChange: ((tag: String, rest: Boolean) -> Unit)? = null
         private var homeStateManager: HomeStateManager? = null
 
         @Synchronized
@@ -47,7 +52,7 @@ class HomeStateManager private constructor() {
 
     fun setState(tag: String) {
         if (tag != glucosePanel) {
-            if (tag != needPair){
+            if (tag != needPair) {
                 countDownToReset()
             }
             EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
@@ -56,7 +61,7 @@ class HomeStateManager private constructor() {
             timeLeft = null
         }
         currentState = tag
-        onHomeStateChange?.invoke(tag)
+        onHomeStateChange?.invoke(tag, false)
     }
 
     fun setWarmingUpTimeLeft(time: Int) {

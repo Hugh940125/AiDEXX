@@ -9,8 +9,22 @@ import android.os.Parcelable
 import android.os.Process
 import android.text.TextUtils
 import java.io.Serializable
+import java.lang.reflect.Method
 
 object ActivityUtil {
+
+    private const val HARMONY_OS = "harmony"
+
+    fun isHarmonyOS(): Boolean {
+        try {
+            val clz = Class.forName("com.huawei.system.BuildEx")
+            val method: Method = clz.getMethod("getOsBrand")
+            return HARMONY_OS == method.invoke(clz)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return false
+    }
 
     fun isServiceRunning(context: Context?, serviceClass: Class<*>): Boolean {
         if (context == null) {

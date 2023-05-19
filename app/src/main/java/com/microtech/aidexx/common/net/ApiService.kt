@@ -12,6 +12,7 @@ import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
@@ -19,6 +20,7 @@ import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
@@ -67,6 +69,7 @@ const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注�
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgmDevice/deviceUnRegister" //注销设备
 const val DEVICE = "$middleUrl/cgmDevice/getUserDeviceInfo" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
+const val UPLOAD_CAL_HISTORY = "$middleUrl/cgmCalibration/saveCalibration" //上传日志
 const val UPLOAD_CGM_BRIEF = "$middleUrl/cgmRecord/saveCgmRecord" //上传CGM
 const val UPDATE_CGM_RECORD = "$middleUrl/cgmRecord/updateCgmRecord" //更新CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
@@ -140,10 +143,13 @@ interface ApiService {
             : Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
 
     @POST(UPLOAD_CGM_BRIEF)
-    suspend fun postBriefHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
+    suspend fun postBriefHistory(@Body body: RequestBody): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
+
+    @POST(UPLOAD_CAL_HISTORY)
+    suspend fun postCalHistory(@Body map: HashMap<String, MutableList<CalibrateEntity>>): ApiResult<BaseResponse<List<CalibrateEntity>>>
 
     @POST(UPLOAD_BG_HISTORY)
-    suspend fun postBgHistory(@Body map: HashMap<String, MutableList<BloodGlucoseEntity>>): ApiResult<BaseResponse<Nothing>>
+    suspend fun postBgHistory(@Body map: HashMap<String, MutableList<BloodGlucoseEntity>>): ApiResult<BaseResponse<List<BloodGlucoseEntity>>>
 
     @POST(UPDATE_CGM_RECORD)
     suspend fun updateHistory(@Body map: HashMap<String, MutableList<RealCgmHistoryEntity>>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>

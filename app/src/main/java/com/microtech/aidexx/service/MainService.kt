@@ -152,13 +152,15 @@ class MainService : Service(), LifecycleOwner {
                 }
                 if (count % 2 == 0) {
                     serviceMainScope.launch {
-                        CloudHistorySync.uploadAllData()
+                        CloudHistorySync.uploadHistoryData()
                     }
                 }
-                if (count % 4 == 0) {
-
-                }
                 if (count == 9) {
+                    if (model?.entity?.sensorStartTime != null && model.entity.id == null) {
+                        AidexxApp.mainScope.launch {
+                            model.uploadPairInfo()
+                        }
+                    }
                     count = 0
                 }
             }
@@ -246,8 +248,9 @@ class MainService : Service(), LifecycleOwner {
             )
             if (model.isDataValid() && normal) {
                 remoteViews.setGlucose(
-                    if (model.minutesAgo == 0) "" else "${model.minutesAgo.toString()}${
-                        ContextUtil.getResources()?.getString(R.string.min_ago)
+                    if (model.minutesAgo == 0) ContextUtil.getResources()
+                        .getString(R.string.now) else "${model.minutesAgo.toString()}${
+                        ContextUtil.getResources().getString(R.string.min_ago)
                     }", model.glucose
                 )
             } else {

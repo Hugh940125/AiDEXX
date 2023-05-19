@@ -569,17 +569,13 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             }
         }
 
+        @Deprecated("Deprecated in Java")
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt?,
             characteristic: BluetoothGattCharacteristic?
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
             eAiDEX("onCharacteristicChanged --> " + binaryToHexString(characteristic?.value))
-//            if (mBluetoothGatt == null) {
-//                eAiDEX("onCharacteristicChanged --> Gatt is null")
-//                workHandler?.sendEmptyMessage(BLE_IDLE_DISCONNECT)
-//                return
-//            }
             val message = Message.obtain()
             message.what = RECEIVER_DATA
             message.obj = characteristic?.value

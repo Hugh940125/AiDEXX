@@ -28,7 +28,7 @@ object PairUtil {
 
     private const
     val DISMISS_DIALOG = 1
-    private const val TIMEOUT_MILLIS = 30 * 1000L
+    private const val TIMEOUT_MILLIS = 40 * 1000L
 
     val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
@@ -108,11 +108,9 @@ object PairUtil {
                         }
                         AidexXOperation.GET_START_TIME -> {
                             val data = message.data
-                            val sensorStartTime = ByteUtils.toDate(data)
-                            LogUtil.eAiDEX("Pair ----> Start time :" + sensorStartTime.date2ymdhm())
-                            default.entity.sensorStartTime = sensorStartTime
+                            val startTimePair = ByteUtils.checkToDate(data)
                             scope.launch {
-                                default.savePair()
+                                default.savePair(sensorStartTime = startTimePair)
                             }
                         }
                         AidexXOperation.GET_DEVICE_INFO -> {}
@@ -144,7 +142,9 @@ object PairUtil {
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val model = TransmitterManager.instance().getDefault()
         model?.let {
-            Dialogs.showWait(context.getString(R.string.Connecting))
+            if (!isForce) {
+                Dialogs.showWait(context.getString(R.string.Connecting))
+            }
             it.getController().clearPair()
         }
     }

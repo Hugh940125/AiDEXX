@@ -19,6 +19,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.ble.device.model.X_NAME
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TYPE_G7
@@ -103,7 +104,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 PairUtil.observeMessage(this, lifecycleScope)
                 needSetMessageCallback = false
             }
-            if (it.name.contains("AiDEX X")) {
+            if (it.name.contains(X_NAME)) {
                 val address = it.address
                 if ((transmitter == null || address != transmitter?.deviceMac)
                     && !transmitterList.contains(it)

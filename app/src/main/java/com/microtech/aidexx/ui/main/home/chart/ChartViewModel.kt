@@ -513,11 +513,9 @@ class ChartViewModel: ViewModel() {
                     xMaxMin(dateTime)
                     calDateMaxMin(history.deviceTime)
                 }
-
-                if (history.isCalibrationIsValid()) {
-                    updateCnCalibrationSet(history)
-                }
-
+            }
+            if (history.isCalibrationIsValid()) {
+                updateCnCalibrationSet(history)
             }
         }
 

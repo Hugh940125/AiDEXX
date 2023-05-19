@@ -4,6 +4,7 @@ import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.ble.device.entity.CloudDeviceInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.ble.device.model.TransmitterModel
+import com.microtech.aidexx.ble.device.model.X_NAME
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
@@ -12,6 +13,8 @@ import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity_
+import com.microtech.aidexx.ui.main.home.HomeStateManager
+import com.microtech.aidexx.ui.main.home.needPair
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import io.objectbox.kotlin.awaitCallInTx
@@ -52,7 +55,7 @@ class TransmitterManager private constructor() {
                         newEntity.deviceMac = deviceIfo.deviceMac
                         newEntity.deviceKey = deviceIfo.deviceKey
                         newEntity.et = deviceIfo.et
-                        newEntity.deviceName = "AiDEX X-${newEntity.deviceSn}"
+                        newEntity.deviceName = "$X_NAME-${newEntity.deviceSn}"
                         ObjectBox.runAsync({
                             transmitterBox!!.put(newEntity)
                         }, {
@@ -63,6 +66,7 @@ class TransmitterManager private constructor() {
                     }
                 }
             }
+            HomeStateManager.instance().setState(needPair)
         }
     }
 

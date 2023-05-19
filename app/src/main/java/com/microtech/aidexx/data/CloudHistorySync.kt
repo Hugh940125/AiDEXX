@@ -30,7 +30,7 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
     abstract val uploadState: Property<T>
     val entityBox: Box<T> = ObjectBox.store.boxFor(tClazz)
 
-    abstract suspend fun postLocalData(map: HashMap<String, MutableList<T>>): BaseResponse<Nothing>?
+    abstract suspend fun postLocalData(map: HashMap<String, MutableList<T>>): BaseResponse<List<T>>?
 
     open suspend fun syncDeleteData(json: String): BaseResponse<BaseList<T>>? {
         return null
@@ -44,8 +44,8 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
             if (needUploadData.size > 0) {
                 withContext(Dispatchers.IO) {
                     val result = postLocalData(hashMapOf("records" to needUploadData))
-                    result.let { response ->
-                        replaceEventData(needUploadData)
+                    result?.let {
+                        replaceEventData(needUploadData, it.data)
                     }
                 }
             }
@@ -120,7 +120,7 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
 
     open suspend fun replaceEventData(
         origin: MutableList<T> = mutableListOf(),
-        responseList: List<T> = mutableListOf(),
+        responseList: List<T>? = mutableListOf(),
         type: Int = 0,
         userId: String? = null,
     ) {
@@ -193,7 +193,7 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
         }
 
 
-        suspend fun uploadAllData() {
+        suspend fun uploadHistoryData() {
             withContext(scope.coroutineContext) {
                 val tasks = listOf(
                     async { CloudCgmHistorySync.upload() },

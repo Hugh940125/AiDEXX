@@ -1,9 +1,11 @@
 package com.microtech.aidexx.data
 
+import com.google.gson.ExclusionStrategy
+import com.google.gson.FieldAttributes
+import com.google.gson.GsonBuilder
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -17,10 +19,12 @@ import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 private const val TYPE_BRIEF = 0
 private const val TYPE_RAW = 1
-private const val TYPE_CAL = 2
 private const val HISTORY_ONCE_UPLOAD_NUMBER = 500L
 
 object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
@@ -33,19 +37,17 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         RealCgmHistoryEntity_.briefUploadState
     private val rawUploadState: Property<RealCgmHistoryEntity> =
         RealCgmHistoryEntity_.rawUploadState
-    private val calUploadState: Property<RealCgmHistoryEntity> =
-        RealCgmHistoryEntity_.calUploadState
     override val deleteStatus: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.deleteStatus
     override val uploadState: Property<RealCgmHistoryEntity>
         get() = RealCgmHistoryEntity_.uploadState
     val eventWarning: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.eventWarning
 
-    override suspend fun postLocalData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<Nothing>? {
+    override suspend fun postLocalData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return null
     }
 
-    private suspend fun postBriefData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
-        return when (val postHistory = ApiService.instance.postBriefHistory(map)) {
+    private suspend fun postBriefData(body: RequestBody): BaseResponse<List<RealCgmHistoryEntity>>? {
+        return when (val postHistory = ApiService.instance.postBriefHistory(body)) {
             is ApiResult.Success -> {
                 postHistory.result
             }
@@ -68,18 +70,17 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         val userId = UserInfoManager.instance().userId()
         val query = entityBox.query()
         when (type) {
-            TYPE_BRIEF -> query //post请求
+            TYPE_BRIEF -> query
                 .equal(briefUploadState, 1)
                 .equal(
                     this.userId,
                     userId,
                 )
 
-            TYPE_RAW -> query //put请求
+            TYPE_RAW -> query
                 .equal(briefUploadState, 2)
                 .equal(this.userId, userId)
                 .equal(rawUploadState, 1)
-                .or().equal(calUploadState, 1)
         }
         return ObjectBox.store.awaitCallInTx {
             query.order(idx).build().find(0, HISTORY_ONCE_UPLOAD_NUMBER)
@@ -98,13 +99,32 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     }
 
     override suspend fun upload() {
-        //简要数据
         val needUploadBriefData = getNeedUploadData(TYPE_BRIEF)
+        val gsonBuilder = GsonBuilder().addSerializationExclusionStrategy(object : ExclusionStrategy {
+            override fun shouldSkipField(field: FieldAttributes?): Boolean {
+                if ("rawOne" == field?.name) return true
+                if ("rawTwo" == field?.name) return true
+                if ("rawVc" == field?.name) return true
+                if ("rawIsValid" == field?.name) return true
+                if ("calibrationIsValid" == field?.name) return true
+                if ("cf" == field?.name) return true
+                if ("index" == field?.name) return true
+                if ("offset" == field?.name) return true
+                return false
+            }
+
+            override fun shouldSkipClass(clazz: Class<*>?): Boolean {
+                return false
+            }
+        }).create()
         needUploadBriefData?.let { list ->
             if (list.size > 0) {
+                val records = hashMapOf("records" to list)
+                val toJson = gsonBuilder.toJson(records)
+                val toRequestBody = toJson.toRequestBody("application/json".toMediaType())
                 LogUtil.eAiDEX("Upload brief History: size:${list.size}")
                 withContext(Dispatchers.IO) {
-                    val briefResponse = postBriefData(hashMapOf("records" to list))
+                    val briefResponse = postBriefData(toRequestBody)
                     briefResponse?.let { response ->
                         response.data?.let {
                             replaceEventData(list, it)
@@ -113,7 +133,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 }
             }
         }
-        //原始数据
         val needUploadRawData = getNeedUploadData(TYPE_RAW)
         needUploadRawData?.let {
             if (needUploadRawData.size > 0) {
@@ -132,34 +151,34 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
 
     override suspend fun replaceEventData(
         origin: MutableList<RealCgmHistoryEntity>,
-        responseList: List<RealCgmHistoryEntity>,
+        responseList: List<RealCgmHistoryEntity>?,
         type: Int,
-        authorId: String?,
+        userId: String?,
     ) {
-        if (type == 3) { //下载
-            if (responseList.isNotEmpty()) {
-                CgmCalibBgRepository.insertCgm(responseList)
-                MmkvManager.setEventDataMinId(
-                    getDataSyncFlagKey(authorId!!),
-                    responseList.last().autoIncrementColumn
-                )
+        responseList?.let {
+            if (type == 3) { //下载
+                if (responseList.isNotEmpty()) {
+                    CgmCalibBgRepository.insertCgm(responseList)
+                    MmkvManager.setEventDataMinId(
+                        getDataSyncFlagKey(userId!!),
+                        responseList.last().autoIncrementColumn
+                    )
+                }
+                return
             }
-            return
-        }
-        if (origin.isNotEmpty()) {
-            for ((index, old) in origin.withIndex()) {
-                if (old.autoIncrementColumn == 0L)
-                    old.autoIncrementColumn = responseList[index].autoIncrementColumn
-                if (old.cgmRecordId == null)
-                    old.cgmRecordId = responseList[index].cgmRecordId
-                if (old.briefUploadState == 1)
-                    old.briefUploadState = 2
-                if (old.rawUploadState == 1)
-                    old.rawUploadState = 2
-                if (old.calUploadState == 1)
-                    old.calUploadState = 2
+            if (origin.isNotEmpty()) {
+                for ((index, old) in origin.withIndex()) {
+                    if (old.autoIncrementColumn == 0L)
+                        old.autoIncrementColumn = responseList[index].autoIncrementColumn
+                    if (old.cgmRecordId == null)
+                        old.cgmRecordId = responseList[index].cgmRecordId
+                    if (old.briefUploadState == 1)
+                        old.briefUploadState = 2
+                    if (old.rawUploadState == 1)
+                        old.rawUploadState = 2
+                }
+                entityBox.put(origin)
             }
-            entityBox.put(origin)
         }
     }
 }

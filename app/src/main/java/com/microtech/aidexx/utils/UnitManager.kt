@@ -32,8 +32,8 @@ object UnitManager {
 
     fun formatterUnitByIndex(): DecimalFormat {
         return when (glucoseUnit.index) {
-            1 -> DecimalFormat("0.0")
-            2 -> DecimalFormat("0")
+            0 -> DecimalFormat("0.0")
+            1 -> DecimalFormat("0")
             else -> DecimalFormat("0")
         }
     }

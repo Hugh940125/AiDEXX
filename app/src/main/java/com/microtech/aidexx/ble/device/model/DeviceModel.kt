@@ -7,7 +7,6 @@ import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerProxy
-import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
 import java.util.*
 
@@ -16,6 +15,9 @@ import java.util.*
  *@author Hugh
  *@desc
  */
+
+const val X_NAME = "AiDEX X"
+
 abstract class DeviceModel(val entity: TransmitterEntity) {
 
     var faultType = 0 // 1.异常状态，可恢复 2.需要更换
@@ -30,7 +32,6 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var controller: BleController? = null
     var isHistoryValid: Boolean = false
     var isMalfunction: Boolean = false
-    var sensorStartTime: Date? = null
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
     var latestHistory: AidexXHistoryEntity? = null
@@ -79,16 +80,14 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract fun isAllowCalibration(): Boolean
 
-    abstract suspend fun savePair(
+    abstract suspend fun uploadPairInfo()
+    abstract fun savePair(
         model: Int = 0,
         version: String? = null,
+        sensorStartTime: Date? = null
     )
 
     abstract suspend fun deletePair()
-
-    fun disconnect() {
-        controller?.disconnect()
-    }
 
     fun updateStartTime(sensorStartTime: Date?, callback: ((Boolean) -> Unit)? = null) {
         ObjectBox.runAsync({

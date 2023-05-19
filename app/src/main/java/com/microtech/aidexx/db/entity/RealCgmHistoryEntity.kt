@@ -3,20 +3,16 @@ package com.microtech.aidexx.db.entity
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.ConflictStrategy
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.annotation.Index
-import io.objectbox.annotation.IndexType
-import io.objectbox.annotation.Unique
-import java.util.Date
+import io.objectbox.annotation.*
+import java.util.*
+import kotlin.jvm.Transient
 
 @Entity
 class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
@@ -24,7 +20,6 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     override var idx: Long? = null
     var briefUploadState = 0 //0原始转态 1更新待上传 2已上传
     var rawUploadState = 0
-    var calUploadState = 0
 
     @Index
     override var state: Int = 0
@@ -40,8 +35,20 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index(type = IndexType.HASH)
     override var userId: String? = null
 
+    var appTime: String? = null
+
+    var appTimeZone: String? = null
+
+    var dstOffset: Int? = null
+
     @Index
     var deviceTime = Date()
+        set(value) {
+            field = value
+            appTime = value.formatWithoutZone()
+            appTimeZone = TimeZone.getDefault().id
+            dstOffset = TimeZone.getDefault().dstSavings
+        }
 
     @Index
     var eventIndex: Int = 0
@@ -60,16 +67,16 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     var eventType: Int? = null
     var glucose: Float? = null
     var eventDataOrigin: Float? = null
-    var cf: Float = 1f //校准系数
-    var offset: Float = 0f //校准偏移量
-    var calibrationIsValid: Int = 0
-    var index: Int = 0
     var rawIsValid: Int = 0
     var glucoseIsValid: Int = 0
     var quality: Int = 0
     var status: Int = 0
     var autoIncrementColumn: Long = 0
     var timeOffset: Int = 0
+        set(value) {
+            field = value
+            eventIndex = timeOffset
+        }
     var rawOne: Float? = null
     var rawTwo: Float? = null
     var rawVc: Float? = null
@@ -92,19 +99,14 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     override var language: String = ""
     override var uploadState: Int = 0
     override var recordId: String? = null
+
     @Index(type = IndexType.HASH)
     @Unique(onConflict = ConflictStrategy.REPLACE)
     var frontRecordId: String? = null
     fun updateRecordUUID(): String {
-        val userID = UserInfoManager.instance().userId();
-        val deviceId = TransmitterManager.instance().getDefault()?.deviceId()
         val uuidStr = StringBuffer()
-        uuidStr.append(userID)
-            .append(deviceId)
-            .append(deviceTime.time / 1000)
-            .append(sensorIndex)
-            .append(eventIndex)
-            .append(eventType)
+        uuidStr.append(sensorId)
+            .append(timeOffset)
         return EncryptUtils.md5(uuidStr.toString())
     }
 
@@ -234,11 +236,11 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
 
     fun getHighOrLowGlucoseType(): Int {
-        if (glucose!! > ThresholdManager.hyper * 18) {
+        if (glucose!! > ThresholdManager.hyper) {
             return 2
-        } else if (glucose!! < ThresholdManager.hypo * 18 && glucose!! >= ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.hypo && glucose!! >= ThresholdManager.URGENT_HYPO) {
             return 1
-        } else if (glucose!! < ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.URGENT_HYPO) {
             return 3
         }
         return 0
@@ -247,21 +249,17 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
 
     fun updateEventWarning() {
         eventWarning = History.HISTORY_LOCAL_NORMAL
-        if (glucose!! > ThresholdManager.hyper * 18) {
+        if (glucose!! >= ThresholdManager.hyper) {
             eventWarning = History.HISTORY_LOCAL_HYPER
-        } else if (glucose!! < ThresholdManager.hypo * 18 && glucose!! >= ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.hypo && glucose!! >= ThresholdManager.URGENT_HYPO) {
             eventWarning = History.HISTORY_LOCAL_HYPO
-        } else if (glucose!! < ThresholdManager.URGENT_HYPO * 18) {
+        } else if (glucose!! < ThresholdManager.URGENT_HYPO) {
             eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
         }
     }
 
-    override fun toString(): String {
-        return "CgmHistoryEntity(eventWarning=$eventWarning, idx=$idx, state=$state, id=$id, deviceSn=$deviceSn, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, glucose=$glucose, deviceId=$deviceId, type=$type, authorizationId=${this.userId}, frontRecordId=${this.frontRecordId}, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
-    }
-
     fun isGlucoseIsValid() = glucoseIsValid == 1 && status == History.STATUS_OK
-
-    fun isCalibrationIsValid() = calibrationIsValid == 1
-
+    override fun toString(): String {
+        return "RealCgmHistoryEntity(idx=$idx, briefUploadState=$briefUploadState, rawUploadState=$rawUploadState, state=$state, id=$id, deviceSn=$deviceSn, cgmRecordId=$cgmRecordId, sensorId=$sensorId, userId=$userId, appTime=$appTime, appTimeZone=$appTimeZone, dstOffset=$dstOffset, deviceTime=$deviceTime, eventIndex=$eventIndex, sensorIndex=$sensorIndex, dataStatus=$dataStatus, recordIndex=$recordIndex, deleteStatus=$deleteStatus, eventType=$eventType, glucose=$glucose, eventDataOrigin=$eventDataOrigin, rawIsValid=$rawIsValid, glucoseIsValid=$glucoseIsValid, quality=$quality, status=$status, autoIncrementColumn=$autoIncrementColumn, timeOffset=$timeOffset, rawOne=$rawOne, rawTwo=$rawTwo, rawVc=$rawVc, eventWarning=$eventWarning, referenceGlucose=$referenceGlucose, deviceId=$deviceId, type=$type, createTime=$createTime, updateTime=$updateTime, language='$language', uploadState=$uploadState, recordId=$recordId, frontRecordId=$frontRecordId, rawData1=$rawData1, rawData2=$rawData2, rawData3=$rawData3, rawData4=$rawData4, rawData5=$rawData5, rawData6=$rawData6, rawData7=$rawData7, rawData8=$rawData8, rawData9=$rawData9)"
+    }
 }

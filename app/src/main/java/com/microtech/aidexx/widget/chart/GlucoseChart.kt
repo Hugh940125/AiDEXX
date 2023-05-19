@@ -219,7 +219,7 @@ class GlucoseChart : MyChart {
                         } + data.getEventDescription(
                             resources
                         ) + buildString {
-                            append("")
+                            append(" ")
                         } + data.getValueDescription(
                             resources
                         )
