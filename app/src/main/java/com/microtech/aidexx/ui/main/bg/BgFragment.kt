@@ -237,7 +237,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 binding.tvMoreHistory.visibility = View.VISIBLE
                 binding.llBgRecode.apply {
                     llContainer.visibility = View.VISIBLE
-                    tvGlucoseTime.text = lastGlucoseRecord.testTime.date2ymdhm()
+                    tvGlucoseTime.text = lastGlucoseRecord.appTime
                     var tagText = lastGlucoseRecord.getTagText(requireContext().resources)
                     if (tagText.isNullOrEmpty()) {
                         tagText = "— —"

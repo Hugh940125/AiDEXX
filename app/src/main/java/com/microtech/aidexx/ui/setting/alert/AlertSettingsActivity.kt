@@ -170,7 +170,7 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
                 if (!isChecked) {
                     Dialogs.showWhether(this@AlertSettingsActivity, content = getString(
                         R.string.content_close_urgent,
-                        if (UnitManager.glucoseUnit.index == 1) "3.0mmol/L" else "54mg/dL"
+                        if (UnitManager.glucoseUnit.index == 0) "3.0mmol/L" else "54mg/dL"
                     ), confirm = {
                         AlertUtil.setUrgentEnable(false)
                     }, cancel = {

@@ -8,7 +8,7 @@ interface EventEntity {
     var state: Int
     var id: String?
     var userId: String?
-    var time: Date
+    var time: Date?
     var recordIndex: Long?
     var createTime: Date
     var recordId: String?
