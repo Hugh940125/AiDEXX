@@ -139,7 +139,8 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
 
             val tasks = listOf(
                 async { updateStatus(EventRepository.getRecentCgmData(userId)) },
-                async { updateStatus(EventRepository.getRecentBgData(userId)) }
+                async { updateStatus(EventRepository.getRecentBgData(userId)) },
+                async { updateStatus(EventRepository.getRecentCalData(userId)) }
                 //...
             )
             tasks.awaitAll()
@@ -172,6 +173,7 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
             val tasks = listOf(
                 { CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
                 { CloudBgHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudCalHistorySync.startDownload(userId = userId, cb = callback) },
                 //...
             )
 

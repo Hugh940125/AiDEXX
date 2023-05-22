@@ -187,7 +187,7 @@
     },
     {
       "id": "3:3935464691192281220",
-      "lastPropertyId": "27:6783204365051668306",
+      "lastPropertyId": "32:5141536478271644702",
       "name": "CalibrateEntity",
       "properties": [
         {
@@ -311,6 +311,31 @@
           "indexId": "58:7564228627611390971",
           "type": 5,
           "flags": 8
+        },
+        {
+          "id": "28:5143879068194770694",
+          "name": "autoIncrementColumn",
+          "type": 5
+        },
+        {
+          "id": "29:3542958750742038442",
+          "name": "timestamp",
+          "type": 6
+        },
+        {
+          "id": "30:6162618427988063463",
+          "name": "appTime",
+          "type": 9
+        },
+        {
+          "id": "31:5775313631615037224",
+          "name": "appTimeZone",
+          "type": 9
+        },
+        {
+          "id": "32:5141536478271644702",
+          "name": "dstOffset",
+          "type": 5
         }
       ],
       "relations": []
@@ -820,7 +845,7 @@
     },
     {
       "id": "9:1281865382070029411",
-      "lastPropertyId": "58:2419817678544761057",
+      "lastPropertyId": "59:4901062422866883723",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -1079,6 +1104,11 @@
           "id": "58:2419817678544761057",
           "name": "dstOffset",
           "type": 5
+        },
+        {
+          "id": "59:4901062422866883723",
+          "name": "timestamp",
+          "type": 6
         }
       ],
       "relations": []

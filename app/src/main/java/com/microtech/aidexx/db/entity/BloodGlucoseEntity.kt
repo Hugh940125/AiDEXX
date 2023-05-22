@@ -13,7 +13,7 @@ import java.util.UUID
 
 
 @Entity
-class BloodGlucoseEntity : EventEntity {
+class BloodGlucoseEntity : EventEntity, EventTimeInfo {
     @Index(type = IndexType.HASH)
     override var userId: String? = null
 

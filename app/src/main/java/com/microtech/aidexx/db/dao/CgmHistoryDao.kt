@@ -35,18 +35,15 @@ object CgmHistoryDao {
             box.query()
                 .equal(RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE)
                 .between(
-                    RealCgmHistoryEntity_.deviceTime,
-                    startDate,
-                    endDate
+                    RealCgmHistoryEntity_.timestamp,
+                    startDate.time,
+                    endDate.time
                 )
                 .equal(RealCgmHistoryEntity_.deleteStatus, 0)
 
                 .equal(RealCgmHistoryEntity_.glucoseIsValid, 1)
                 .and()
                 .equal(RealCgmHistoryEntity_.status, 0)
-
-                .or()
-                .equal(RealCgmHistoryEntity_.calibrationIsValid, 1)
 
                 .build().find()
         }
@@ -59,16 +56,13 @@ object CgmHistoryDao {
             box.query()
                 .equal( RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE )
                 .equal(RealCgmHistoryEntity_.deleteStatus, 0)
-                .less(RealCgmHistoryEntity_.deviceTime, targetDate)
+                .less(RealCgmHistoryEntity_.timestamp, targetDate.time)
 
                 .equal(RealCgmHistoryEntity_.glucoseIsValid, 1)
                 .and()
                 .equal(RealCgmHistoryEntity_.status, 0)
 
-                .or()
-                .equal(RealCgmHistoryEntity_.calibrationIsValid, 1)
-
-                .orderDesc(RealCgmHistoryEntity_.deviceTime)
+                .orderDesc(RealCgmHistoryEntity_.timestamp)
                 .build()
                 .findFirst()
         }

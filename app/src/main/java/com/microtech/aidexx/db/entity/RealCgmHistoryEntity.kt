@@ -10,12 +10,17 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.ConflictStrategy
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import io.objectbox.annotation.Unique
+import java.util.Date
+import java.util.TimeZone
 
 @Entity
-class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
+class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity, EventTimeInfo() {
     @Id(assignable = true)
     override var idx: Long? = null
     var briefUploadState = 0 //0原始转态 1更新待上传 2已上传
@@ -35,19 +40,13 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity {
     @Index(type = IndexType.HASH)
     override var userId: String? = null
 
-    var appTime: String? = null
-
-    var appTimeZone: String? = null
-
-    var dstOffset: Int? = null
-
     @Index
     var deviceTime = Date()
         set(value) {
             field = value
-            appTime = value.formatWithoutZone()
-            appTimeZone = TimeZone.getDefault().id
-            dstOffset = TimeZone.getDefault().dstSavings
+            appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
+            appTimeZone = TimeZone.getDefault().id //
+            dstOffset = TimeZone.getDefault().dstSavings //
         }
 
     @Index

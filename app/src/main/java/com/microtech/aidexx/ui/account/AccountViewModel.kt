@@ -186,7 +186,7 @@ class AccountViewModel : BaseViewModel() {
                 it.deviceTime = Date((cur - (t * 60)) * 1000)
                 it.glucoseIsValid = 1
                 it.status = History.STATUS_OK
-                it.calibrationIsValid = 0
+//                it.calibrationIsValid = 0
                 it.glucose = ((t % 200) + 100).toFloat()
 
                 it.eventType = History.HISTORY_GLUCOSE

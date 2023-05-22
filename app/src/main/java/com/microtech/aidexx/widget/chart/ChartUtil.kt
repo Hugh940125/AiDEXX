@@ -1,7 +1,7 @@
 package com.microtech.aidexx.widget.chart
 
 import com.microtech.aidexx.utils.TimeUtils
-import java.util.*
+import java.util.Date
 import kotlin.math.roundToLong
 
 object ChartUtil {
@@ -13,6 +13,10 @@ object ChartUtil {
 
     fun secondToX(second: Long): Float {
         return (second - timeZero).toFloat() / TimeUtils.oneHourSeconds
+    }
+
+    fun millSecondToX(second: Long): Float {
+        return ((second / 1000) - timeZero).toFloat() / TimeUtils.oneHourSeconds
     }
 
     fun xToSecond(x: Float): Long {

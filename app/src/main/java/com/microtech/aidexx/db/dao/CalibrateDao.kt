@@ -6,6 +6,7 @@ import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity_
 import io.objectbox.kotlin.boxFor
 import io.objectbox.query.QueryBuilder
+import java.util.Date
 
 object CalibrateDao {
 
@@ -17,6 +18,29 @@ object CalibrateDao {
                 .equal(CalibrateEntity_.userId, id, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 .build()
                 .find()
+        }
+
+    suspend fun query(
+        startDate: Date,
+        endDate: Date,
+        authorId: String
+    ): MutableList<CalibrateEntity>? =
+        awaitCallInTx {
+            box.query()
+                .between(
+                    CalibrateEntity_.calTime,
+                    startDate,
+                    endDate
+                )
+                .equal( CalibrateEntity_.userId, authorId, QueryBuilder.StringOrder.CASE_SENSITIVE )
+                .equal(CalibrateEntity_.deleteStatus, 0)
+                .equal(CalibrateEntity_.isValid, 1)
+                .build().find()
+        }
+
+    suspend fun insert(list: List<CalibrateEntity>) =
+        awaitCallInTx {
+            box.put(list)
         }
 
 }
