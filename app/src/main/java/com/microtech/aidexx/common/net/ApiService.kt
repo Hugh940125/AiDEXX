@@ -63,6 +63,10 @@ const val getCgmRecordsByPageInfo = "$CGM_URL/getCgmRecordsByPageInfo"
 
 const val BG_URL = "$middleUrl/bloodGlucoseRecord"
 const val getBloodGlucoseRecordsByPageInfo = "$BG_URL/getBloodGlucoseRecordsByPageInfo"
+
+const val CAL_URL = "$middleUrl/cgmCalibration"
+const val getCalibrationList = "$CAL_URL/getCalibrationList"
+
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -135,6 +139,9 @@ interface ApiService {
 
     @GET(getBloodGlucoseRecordsByPageInfo)
     suspend fun getBloodGlucoseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<BloodGlucoseEntity>>>
+
+    @GET(getCalibrationList)
+    suspend fun getCalibrationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<CalibrateEntity>>>
 
     //endregion
 

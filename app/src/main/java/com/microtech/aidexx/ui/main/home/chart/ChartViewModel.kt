@@ -160,15 +160,22 @@ class ChartViewModel: ViewModel() {
                                 async {
                                     if (nextPageCgmData.isNotEmpty()) {
                                         LogUtil.d("===CHART=== 下一页数据 ${Thread.currentThread()} size=${nextPageCgmData.size}")
-                                        updateGlucoseSets(nextPageCgmData)
+                                        addCgmData(nextPageCgmData)
                                         nextPageCgmData.clear()
                                         needNotify = true
                                     }
                                 },
                                 async {
                                     if (nextPageBgData.isNotEmpty()) {
-                                        addBgSet(nextPageBgData)
+                                        addBgData(nextPageBgData)
                                         nextPageBgData.clear()
+                                        needNotify = true
+                                    }
+                                },
+                                async {
+                                    if (nextPageCalData.isNotEmpty()) {
+                                        addCalData(nextPageCalData)
+                                        nextPageCalData.clear()
                                         needNotify = true
                                     }
                                 }
@@ -300,7 +307,7 @@ class ChartViewModel: ViewModel() {
                                 && it.deviceTime.time > curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
-                        updateGlucoseSets(rets)
+                        addCgmData(rets)
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -320,7 +327,7 @@ class ChartViewModel: ViewModel() {
                         it.testTime.time >= curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
-                        addBgSet(rets)
+                        addBgData(rets)
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -329,8 +336,43 @@ class ChartViewModel: ViewModel() {
         }
     }
 
+
+    // region x轴 y轴 参数相关
+    fun xRange(): Float {
+        return getGranularity() * CHART_LABEL_COUNT.toFloat()
+    }
+
+    fun xMargin(): Float {
+        return getGranularity() / 2f
+    }
+
+    fun xMin(): Float {
+        val default = xMax() - xRange()
+        return if (timeMin == null || timeMin!! > default) default
+        else timeMin!!
+    }
+
+    fun xMax(): Float {
+        return ChartUtil.secondToX(Date().time / 1000) + xMargin()
+    }
+
+    var upperLimit = ThresholdManager.DEFAULT_HYPER.toGlucoseValue()
+        get() {
+            return ThresholdManager.hyper.toGlucoseValue()
+        }
+        private set
+    var lowerLimit = ThresholdManager.DEFAULT_HYPO.toGlucoseValue()
+        get() {
+            return ThresholdManager.hypo.toGlucoseValue()
+        }
+        private set
+
+    //endregion
+
+
     private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
     private val nextPageBgData = mutableListOf<BloodGlucoseEntity>()
+    private val nextPageCalData = mutableListOf<CalibrateEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
@@ -349,7 +391,7 @@ class ChartViewModel: ViewModel() {
                                 isSuccess = false
                             } else {
                                 if (needApply) {
-                                    updateGlucoseSets(d)
+                                    addCgmData(d)
                                 } else {
                                     LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
                                     if (d.size > 2) {
@@ -366,9 +408,22 @@ class ChartViewModel: ViewModel() {
                                 isSuccess = false
                             } else {
                                 if (needApply) {
-                                    addBgSet(d)
+                                    addBgData(d)
                                 } else {
                                     nextPageBgData.addAll(d)
+                                }
+                            }
+                        }
+                    },
+                    async {
+                        CgmCalibBgRepository.queryCalByPage(startDate, endDate)?.let { d ->
+                            if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
+                                isSuccess = false
+                            } else {
+                                if (needApply) {
+                                    addCalData(d)
+                                } else {
+                                    nextPageCalData.addAll(d)
                                 }
                             }
                         }
@@ -430,35 +485,6 @@ class ChartViewModel: ViewModel() {
         return listOf(l1, l2)
     }
 
-    fun xRange(): Float {
-        return getGranularity() * CHART_LABEL_COUNT.toFloat()
-    }
-
-    fun xMargin(): Float {
-        return getGranularity() / 2f
-    }
-
-    fun xMin(): Float {
-        val default = xMax() - xRange()
-        return if (timeMin == null || timeMin!! > default) default
-        else timeMin!!
-    }
-
-    fun xMax(): Float {
-        return ChartUtil.secondToX(Date().time / 1000) + xMargin()
-    }
-
-    var upperLimit = ThresholdManager.DEFAULT_HYPER.toGlucoseValue()
-        get() {
-            return ThresholdManager.hyper.toGlucoseValue()
-        }
-        private set
-    var lowerLimit = ThresholdManager.DEFAULT_HYPO.toGlucoseValue()
-        get() {
-            return ThresholdManager.hypo.toGlucoseValue()
-        }
-        private set
-
     //todo 用户退出时调用
     fun clearEventSets() {
         bgSet.clear()
@@ -491,10 +517,12 @@ class ChartViewModel: ViewModel() {
 
     }
 
+    //region cgm
+
     /**
      * 新增更新血糖数据
      */
-    private suspend fun updateGlucoseSets(cgmHistories: List<RealCgmHistoryEntity>) {
+    private suspend fun addCgmData(cgmHistories: List<RealCgmHistoryEntity>) {
         if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
         if (cgmHistories.isEmpty()) {
             return
@@ -503,6 +531,23 @@ class ChartViewModel: ViewModel() {
         cgmHistories.forEach {history ->
             if (history.isGlucoseIsValid()) {
                 if (history.glucose != null && history.eventWarning != -1) {
+                    val xValue = ChartUtil.millSecondToX(history.timestamp)
+                    val entry = Entry(xValue, history.glucose!!.toFloat().toGlucoseValue())
+                    if (entry.y < 2f.toGlucoseValue()) {
+                        entry.y = 2f.toGlucoseValue()
+                    }// 小于2的数值 都当2处理
+                    if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
+                    glucoseSets.last().addEntryOrdered(entry)
+                    xMaxMin(xValue)
+                    calDateMaxMin(Date(history.timestamp))
+                }
+            }
+        }
+
+        /*loop@ for (history in cgmHistories) {
+            when (history.eventType) {
+                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
+                    if (history.glucose == null || history.eventWarning == -1) continue@loop
                     val dateTime = ChartUtil.dateToX(history.deviceTime)
                     val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
                     if (entry.y < 2f.toGlucoseValue()) {
@@ -513,33 +558,13 @@ class ChartViewModel: ViewModel() {
                     xMaxMin(dateTime)
                     calDateMaxMin(history.deviceTime)
                 }
+                History.HISTORY_CALIBRATION -> {
+                    if (!isGp) {
+                        updateCnCalibrationSet(history)
+                    }
+                }
             }
-            if (history.isCalibrationIsValid()) {
-                updateCnCalibrationSet(history)
-            }
-        }
-
-//        loop@ for (history in cgmHistories) {
-//            when (history.eventType) {
-//                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
-//                    if (history.glucose == null || history.eventWarning == -1) continue@loop
-//                    val dateTime = ChartUtil.dateToX(history.deviceTime)
-//                    val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
-//                    if (entry.y < 2f.toGlucoseValue()) {
-//                        entry.y = 2f.toGlucoseValue()
-//                    }// 小于2的数值 都当2处理
-//                    if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
-//                    glucoseSets.last().addEntryOrdered(entry)
-//                    xMaxMin(dateTime)
-//                    calDateMaxMin(history.deviceTime)
-//                }
-//                History.HISTORY_CALIBRATION -> {
-//                    if (!isGp) {
-//                        updateCnCalibrationSet(history)
-//                    }
-//                }
-//            }
-//        }
+        }*/
 
         LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
 
@@ -554,20 +579,23 @@ class ChartViewModel: ViewModel() {
     }
 
     private fun checkCgmHistory(cgm: RealCgmHistoryEntity) =
-        (cgm.isCalibrationIsValid() || cgm.isGlucoseIsValid())
+        cgm.isGlucoseIsValid()
                 && (cgm.glucose != null && cgm.eventWarning != -1)
 
+    //endregion
+
+    //region 指血
     /**
      * 新增指血数据
      */
-    private fun addBgSet(bgs: List<BloodGlucoseEntity>) {
+    private fun addBgData(bgs: List<BloodGlucoseEntity>) {
         for (bg in bgs) {
-            val dateTime = ChartUtil.dateToX(bg.testTime)
-            val entry = Entry(dateTime, getGlucoseValue(bg))
+            val xValue = ChartUtil.millSecondToX(bg.timestamp)
+            val entry = Entry(xValue, getGlucoseValue(bg))
             entry.data = bg
             entry.icon = BgDataSet.icon
             bgSet.addEntryOrdered(entry)
-            xMaxMin(dateTime)
+            xMaxMin(xValue)
             calDateMaxMin(bg.testTime)
         }
     }
@@ -592,16 +620,23 @@ class ChartViewModel: ViewModel() {
         return bg.bloodGlucoseMg.toGlucoseValue()
     }
 
-    private fun updateCnCalibrationSet(history: RealCgmHistoryEntity) {
-        val dateTime = ChartUtil.dateToX(history.deviceTime)
-        val bg = BloodGlucoseEntity(history.deviceTime, history.referenceGlucose)
-        bg.calibration = true
-        val entry = Entry(dateTime, bg.bloodGlucoseMg.toGlucoseValue())
-        entry.data = bg
-        entry.icon = CalDataSet.icon
-        calSet.addEntryOrdered(entry)
-        xMaxMin(dateTime)
-        calDateMaxMin(history.deviceTime)
+
+    //endregion
+
+    //region 校准
+    private fun addCalData(calEntityList: List<CalibrateEntity>) {
+
+        calEntityList.forEach { calEntity ->
+            val xValue = ChartUtil.millSecondToX(calEntity.timestamp)
+            val bg = BloodGlucoseEntity(calEntity.calTime, calEntity.referenceGlucose)
+            bg.calibration = true
+            val entry = Entry(xValue, bg.bloodGlucoseMg.toGlucoseValue())
+            entry.data = bg
+            entry.icon = CalDataSet.icon
+            calSet.addEntryOrdered(entry)
+            xMaxMin(xValue)
+            calDateMaxMin(Date(calEntity.timestamp))
+        }
     }
 
     // 国际版用
@@ -618,6 +653,7 @@ class ChartViewModel: ViewModel() {
 //        calDateMaxMin(history.calTime)
     }
 
+    // endregion
 
     fun <T : EventEntity> initIconSet(es: List<T>) {
         LogUtils.error("initIconSet")

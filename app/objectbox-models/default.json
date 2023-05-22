@@ -99,7 +99,7 @@
     },
     {
       "id": "2:2659511795003322512",
-      "lastPropertyId": "19:7769021705376890940",
+      "lastPropertyId": "23:579426193175041894",
       "name": "BloodGlucoseEntity",
       "properties": [
         {
@@ -181,13 +181,33 @@
           "indexId": "54:2222283051497754930",
           "type": 6,
           "flags": 8
+        },
+        {
+          "id": "20:4849691174432895349",
+          "name": "timestamp",
+          "type": 6
+        },
+        {
+          "id": "21:2450385978921859339",
+          "name": "appTime",
+          "type": 9
+        },
+        {
+          "id": "22:9113565389350266489",
+          "name": "appTimeZone",
+          "type": 9
+        },
+        {
+          "id": "23:579426193175041894",
+          "name": "dstOffset",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "3:3935464691192281220",
-      "lastPropertyId": "28:5143879068194770694",
+      "lastPropertyId": "32:5141536478271644702",
       "name": "CalibrateEntity",
       "properties": [
         {
@@ -315,6 +335,26 @@
         {
           "id": "28:5143879068194770694",
           "name": "autoIncrementColumn",
+          "type": 5
+        },
+        {
+          "id": "29:3542958750742038442",
+          "name": "timestamp",
+          "type": 6
+        },
+        {
+          "id": "30:6162618427988063463",
+          "name": "appTime",
+          "type": 9
+        },
+        {
+          "id": "31:5775313631615037224",
+          "name": "appTimeZone",
+          "type": 9
+        },
+        {
+          "id": "32:5141536478271644702",
+          "name": "dstOffset",
           "type": 5
         }
       ],
@@ -825,7 +865,7 @@
     },
     {
       "id": "9:1281865382070029411",
-      "lastPropertyId": "58:2419817678544761057",
+      "lastPropertyId": "59:4901062422866883723",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -1084,6 +1124,11 @@
           "id": "58:2419817678544761057",
           "name": "dstOffset",
           "type": 5
+        },
+        {
+          "id": "59:4901062422866883723",
+          "name": "timestamp",
+          "type": 6
         }
       ],
       "relations": []

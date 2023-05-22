@@ -3,13 +3,15 @@ package com.microtech.aidexx.common.net.repository
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BG_RECENT_COUNT
+import com.microtech.aidexx.common.net.entity.CAL_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
-import com.microtech.aidexx.common.net.entity.ReqGetBgByPage
 import com.microtech.aidexx.common.net.entity.ReqGetCgmByPage
+import com.microtech.aidexx.common.net.entity.ReqGetEventByPage
 import com.microtech.aidexx.common.net.entity.toQueryMap
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudBgHistorySync
+import com.microtech.aidexx.data.CloudCalHistorySync
 import com.microtech.aidexx.data.CloudCgmHistorySync
 import com.microtech.aidexx.data.DataSyncController.Companion.DATA_EMPTY_MIN_ID
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
@@ -96,7 +98,7 @@ object EventRepository {
         downAutoIncrementColumn: Long?
     ) = withContext(dispatcher) {
 
-        val req = ReqGetBgByPage(
+        val req = ReqGetEventByPage(
             pageNum,
             pageSize,
             downAutoIncrementColumn,
@@ -123,6 +125,59 @@ object EventRepository {
                             CgmCalibBgRepository.insertBg(it)
                             MmkvManager.setEventDataMinId(
                                 CloudBgHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
+                        }
+                    } ?:let {
+                        // 和服务端确认 成功不会给null 空的只会是空集合
+                        // 如果是null 就是不确定是否有数据 不记录最小id 让下载任务去下载
+                        return@withContext true
+                    }
+                    true
+                }
+                is ApiResult.Failure -> {
+                    return@all false
+                }
+            }
+        }
+    }
+
+    //endregion
+
+    //region CAL
+
+    suspend fun getCalRecordsByPageInfo(
+        pageNum: Int = 1,
+        pageSize: Int = PAGE_SIZE,
+        userId: String = UserInfoManager.instance().userId(),
+        downAutoIncrementColumn: Long?
+    ) = withContext(dispatcher) {
+
+        val req = ReqGetEventByPage(
+            pageNum,
+            pageSize,
+            downAutoIncrementColumn,
+            userId
+        )
+
+        ApiService.instance.getCalibrationList(req.toQueryMap())
+    }
+
+    suspend fun getRecentCalData(userId: String, count: Int = CAL_RECENT_COUNT) = withContext(dispatcher) {
+        (0 until count).chunked(PAGE_SIZE).all { list ->
+            val curMinId = MmkvManager.getEventDataMinId<Long>(CloudCalHistorySync.getDataSyncFlagKey(userId))?.let { it - 1 }
+
+            when (val apiResult = getCalRecordsByPageInfo(userId = userId, pageSize = list.size, downAutoIncrementColumn = curMinId)) {
+                is ApiResult.Success -> {
+                    apiResult.result.data?.let {
+                        if (it.isEmpty()) {
+                            if (list[0] == 0) {
+                                MmkvManager.setEventDataMinId(
+                                    CloudCalHistorySync.getDataSyncFlagKey(userId), DATA_EMPTY_MIN_ID)
+                            }
+                            return@withContext true
+                        } else {
+                            CgmCalibBgRepository.insertCal(it)
+                            MmkvManager.setEventDataMinId(
+                                CloudCalHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
                         }
                     } ?:let {
                         // 和服务端确认 成功不会给null 空的只会是空集合

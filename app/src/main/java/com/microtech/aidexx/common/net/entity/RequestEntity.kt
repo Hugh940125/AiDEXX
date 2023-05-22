@@ -6,6 +6,7 @@ import kotlin.reflect.full.memberProperties
 const val PAGE_SIZE = 1000
 const val CGM_RECENT_COUNT = 5000
 const val BG_RECENT_COUNT = 5000
+const val CAL_RECENT_COUNT = 5000
 
 /**
  * data class转retrofit QueryMap
@@ -66,7 +67,7 @@ data class ReqGetCgmByPage(
     val orderStrategy: String? //	否 ASC 枚举值.排序规则 默认DESC
 ): ReqEntity()
 
-data class ReqGetBgByPage(
+data class ReqGetEventByPage(
     val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
     val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
     val downAutoIncrementColumn: Long?,//

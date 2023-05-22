@@ -22,7 +22,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 /**
  *@date 2023/2/22
@@ -85,6 +88,9 @@ fun Date.getStartOfTheDay(): Date {
     calendar.set(Calendar.MILLISECOND, 0)
     return calendar.time
 }
+
+fun String.toDateWithZone(): Date? =
+    SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.ENGLISH).parse(this)
 
 fun Date.formatWithZone(): String =
     SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.ENGLISH).format(this)
