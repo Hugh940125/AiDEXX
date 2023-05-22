@@ -6,7 +6,6 @@ import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.RESULT_OK
-import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.EventEntity
@@ -199,7 +198,8 @@ abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
             withContext(scope.coroutineContext) {
                 val tasks = listOf(
                     async { CloudCgmHistorySync.upload() },
-                    async { CloudBgHistorySync.upload() }
+                    async { CloudBgHistorySync.upload() },
+                    async { CloudCalHistorySync.upload() }
                     //...
                 )
                 tasks.awaitAll()

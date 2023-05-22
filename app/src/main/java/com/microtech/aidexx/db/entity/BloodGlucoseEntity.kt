@@ -24,9 +24,6 @@ class BloodGlucoseEntity : BaseEventEntity {
     var calibration: Boolean = false
 
     constructor()
-    constructor(date: Date, bloodGlucose: Float) {
-        this.appTime = date.formatWithoutZone()
-        this.timestamp = date.time
     constructor(testTime: Date, bloodGlucose: Float) {
         setTimeInfo(testTime)
         this.bloodGlucoseMg = bloodGlucose

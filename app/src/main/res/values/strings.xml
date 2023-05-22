@@ -633,5 +633,6 @@
     <string name="time_divider">——</string>
     <string name="cgm_cover_time">CGM覆盖时间</string>
     <string name="monitor_times">监测次数</string>
+    <string name="unpairing">正在解配</string>
     <!-- 关注分享 -->
 </resources>

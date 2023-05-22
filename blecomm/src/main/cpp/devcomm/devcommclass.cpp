@@ -100,7 +100,7 @@
 #endif
 
 DevComm2::DevComm2()  {
-    sendTimeout = 200;
+    sendTimeout = 400;
     retryCount = 3;
     retryTimer = new CTimer();
     encryptor = new AesEncryptor(AesEncryptor::CFB, AesEncryptor::AES128);

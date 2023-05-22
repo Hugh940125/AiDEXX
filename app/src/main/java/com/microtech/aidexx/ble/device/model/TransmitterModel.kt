@@ -321,6 +321,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (entity.id != null) {
             when (val apiResult = ApiService.instance.deviceUnregister(hashMapOf("deviceId" to entity.id!!))) {
                 is ApiResult.Success -> {
+                    Dialogs.dismissWait()
                     apiResult.result.run {
                         clearPairInfo()
                     }

@@ -137,16 +137,12 @@ object PairUtil {
     }
 
     fun startUnpair(context: Context, isForce: Boolean) {
+        handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
+        Dialogs.showWait(context.getString(R.string.unpairing))
         operation = Operation.UNPAIR
         isForceUnpair = isForce
-        handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val model = TransmitterManager.instance().getDefault()
-        model?.let {
-            if (!isForce) {
-                Dialogs.showWait(context.getString(R.string.Connecting))
-            }
-            it.getController().clearPair()
-        }
+        model?.getController()?.clearPair()
     }
 
     private fun pairFailedTips(context: Context) {

@@ -828,6 +828,7 @@ com.microtech.aidexx:string/unit_mg = 0x7f1102e3
 com.microtech.aidexx:string/unit_min = 0x7f1102e4
 com.microtech.aidexx:string/unit_u = 0x7f1102e5
 com.microtech.aidexx:string/unpair_fail = 0x7f11034b
+com.microtech.aidexx:string/unpairing = 0x7f110350
 com.microtech.aidexx:string/update_complete = 0x7f1102e6
 com.microtech.aidexx:string/update_reboot = 0x7f1102e7
 com.microtech.aidexx:string/update_time = 0x7f1102e8

@@ -43,6 +43,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         get() = RealCgmHistoryEntity_.uploadState
     val eventWarning: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.eventWarning
     private var gsonBuilder: Gson? = null
+    private val tempList = mutableListOf<RealCgmHistoryEntity>()
 
     override suspend fun postLocalData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return null
@@ -110,26 +111,26 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 val records = hashMapOf("records" to list)
                 val toJson = gsonBuilder!!.toJson(records)
                 val toRequestBody = toJson.toRequestBody("application/json".toMediaType())
-                LogUtil.eAiDEX("Upload brief History: size:${list.size}")
+                LogUtil.eAiDEX("Upload brief History: timeOffset: ${list[0].timeOffset} - ${list[list.size - 1].timeOffset}")
                 withContext(Dispatchers.IO) {
                     val briefResponse = postBriefData(toRequestBody)
                     briefResponse?.let { response ->
                         response.data?.let {
-                            replaceEventData(list, it)
+                            replaceEventData(list, it, 1)
                         }
                     }
                 }
             }
         }
         val needUploadRawData = getNeedUploadData(TYPE_RAW)
-        needUploadRawData?.let {
-            if (needUploadRawData.size > 0) {
-                LogUtil.eAiDEX("Upload raw history: size:${it.size}")
+        needUploadRawData?.let { list ->
+            if (list.size > 0) {
+                LogUtil.eAiDEX("Upload raw history: timeOffset: ${list[0].timeOffset} - ${list[list.size - 1].timeOffset}")
                 withContext(Dispatchers.IO) {
-                    val rawResponse = updateHistory(hashMapOf("records" to it))
+                    val rawResponse = updateHistory(hashMapOf("records" to list))
                     rawResponse?.let { response ->
                         response.data?.let { data ->
-                            replaceEventData(needUploadRawData, data)
+                            replaceEventData(list, data, 2)
                         }
                     }
                 }
@@ -174,18 +175,34 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 }
                 return
             }
-            if (origin.isNotEmpty()) {
-                for ((index, old) in origin.withIndex()) {
-                    if (old.autoIncrementColumn == 0L)
-                        old.autoIncrementColumn = responseList[index].autoIncrementColumn
-                    if (old.cgmRecordId == null)
-                        old.cgmRecordId = responseList[index].cgmRecordId
-                    if (old.briefUploadState == 1)
-                        old.briefUploadState = 2
-                    if (old.rawUploadState == 1)
-                        old.rawUploadState = 2
+            if (responseList.isNotEmpty()) {
+                when (type) {
+                    1 -> {
+                        tempList.clear()
+                        for (entity in responseList) {
+                            entity.frontRecordId?.let { frontRecordId ->
+                                val oldEntity = ObjectBox.cgmHistoryBox!!.query()
+                                    .equal(RealCgmHistoryEntity_.frontRecordId, frontRecordId)
+                                    .order(RealCgmHistoryEntity_.idx).build().findFirst()
+                                oldEntity?.let { old ->
+                                    old.briefUploadState = 2
+                                    if (old.autoIncrementColumn == 0L)
+                                        old.autoIncrementColumn = entity.autoIncrementColumn
+                                    if (old.cgmRecordId == null)
+                                        old.cgmRecordId = entity.cgmRecordId
+                                    tempList.add(oldEntity)
+                                }
+                            }
+                        }
+                        entityBox.put(tempList)
+                    }
+                    2 -> {
+                        for (entity in origin) {
+                            entity.rawUploadState = 2
+                        }
+                        entityBox.put(origin)
+                    }
                 }
-                entityBox.put(origin)
             }
         }
     }
