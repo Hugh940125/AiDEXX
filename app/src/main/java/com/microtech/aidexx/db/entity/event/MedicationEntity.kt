@@ -35,16 +35,6 @@ class MedicationEntity : BaseEventEntity {
     var relList: MutableList<MedicationDetail> = ArrayList()
     var momentType: Int = 0
 
-    @Transient
-    override var time: Date = takenTime
-        get() {
-            return takenTime
-        }
-        set(time) {
-            field = time
-            takenTime = time
-        }
-
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }

@@ -33,16 +33,6 @@ class ExerciseEntity : BaseEventEntity {
     @Convert(converter = ExerciseDetail::class, dbType = String::class)
     var relList: MutableList<ExerciseDetail> = ArrayList()
 
-    @Transient
-    override var time: Date = startTime
-        get() {
-            return startTime
-        }
-        set(time) {
-            field = time
-            startTime = time
-        }
-
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }

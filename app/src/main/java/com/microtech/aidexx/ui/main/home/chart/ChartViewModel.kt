@@ -14,9 +14,9 @@ import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
-import com.microtech.aidexx.db.entity.EventEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.ExerciseEntity
@@ -655,11 +655,11 @@ class ChartViewModel: ViewModel() {
 
     // endregion
 
-    fun <T : EventEntity> initIconSet(es: List<T>) {
+    fun <T : BaseEventEntity> initIconSet(es: List<T>) {
         LogUtils.error("initIconSet")
         eventSet.clear()
         for (e in es) {
-            val entry = Entry(ChartUtil.secondToX(e.time.time / 1000), 5f.toGlucoseValue())
+            val entry = Entry(ChartUtil.millSecondToX(e.timestamp), 5f.toGlucoseValue())
             entry.data = e
             entry.icon = when (e.javaClass) {
                 InsulinEntity::class.java -> IconDataSet.insulinIcon
@@ -674,9 +674,9 @@ class ChartViewModel: ViewModel() {
         LogUtil.d("eventSet :" + eventSet.entries?.size)
     }
 
-    fun <T : EventEntity> updateIconSet(es: List<T>) {
+    fun <T : BaseEventEntity> updateIconSet(es: List<T>) {
         for (e in es) {
-            val entry = Entry(ChartUtil.secondToX(e.time.time / 1000), 5f.toGlucoseValue())
+            val entry = Entry(ChartUtil.millSecondToX(e.timestamp), 5f.toGlucoseValue())
             entry.data = e
             entry.icon = when (e.javaClass) {
                 InsulinEntity::class.java -> IconDataSet.insulinIcon

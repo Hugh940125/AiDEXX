@@ -20,15 +20,6 @@ class CalibrateEntity : BaseEventEntity() {
     @Transient
     override var language: String = ""
 
-    @Transient
-    override var time: Date = calTime
-        get() {
-            return calTime
-        }
-        set(time) {
-            field = time
-            calTime = time
-        }
     var deviceId: String = ""
     var eventIndex = 0
 

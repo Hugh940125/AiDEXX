@@ -8,7 +8,7 @@ import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
-import com.microtech.aidexx.db.entity.EventEntity
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.Box
 import io.objectbox.Property
@@ -20,7 +20,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CountDownLatch
 
-abstract class CloudHistorySync<T : EventEntity> : DataSyncController<T>() {
+abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     abstract val idx: Property<T>
     abstract val id: Property<T>
     abstract val frontRecordId: Property<T>

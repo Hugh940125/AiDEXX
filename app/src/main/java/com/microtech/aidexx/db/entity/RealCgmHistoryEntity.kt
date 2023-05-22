@@ -138,17 +138,6 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
 
     }
 
-
-    @Transient
-    override var time: Date = deviceTime
-        get() {
-            return deviceTime
-        }
-        set(time) {
-            field = time
-            deviceTime = time
-        }
-
     override fun getEventDescription(res: Resources): String {
         return when (eventWarning) {
             History.HISTORY_LOCAL_HYPER -> res.getString(R.string.high_gluecose_alert)

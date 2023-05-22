@@ -20,8 +20,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.microtech.aidexx.R
-import com.microtech.aidexx.common.dateAndTimeHour
-import com.microtech.aidexx.db.entity.EventEntity
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
@@ -221,7 +220,7 @@ class GlucoseChart : MyChart {
                     extraParams?.goToHistory?.visibility = View.GONE
                 }
                 for ((index, e) in list.withIndex()) {
-                    val data = e.data as EventEntity
+                    val data = e.data as BaseEventEntity
                     if (index > 4) {
                         text += buildString {
                             append("\n ...")
@@ -230,7 +229,7 @@ class GlucoseChart : MyChart {
                     } else {
                         var itemStr = buildString {
                             if (text.isNotEmpty()) append("\n")
-                        } + data.time.dateAndTimeHour() + buildString {
+                        } + data.getDisplayTime() + buildString {
                             append(" ")
                         } + data.getEventDescription(
                             resources

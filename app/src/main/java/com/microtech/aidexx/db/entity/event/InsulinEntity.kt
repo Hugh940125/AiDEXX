@@ -31,16 +31,6 @@ class InsulinEntity : BaseEventEntity {
     var relList: MutableList<InsulinDetail> = ArrayList()
     var momentType: Int = 0
 
-    @Transient
-    override var time: Date = injectionTime
-        get() {
-            return injectionTime
-        }
-        set(time) {
-            field = time
-            injectionTime = time
-        }
-
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
@@ -85,7 +75,7 @@ class InsulinEntity : BaseEventEntity {
             relList.joinToString(
                 ","
             )
-        }, time=$time)"
+        }, timestamp=$timestamp)"
     }
 
     private fun getTypeText(): String {

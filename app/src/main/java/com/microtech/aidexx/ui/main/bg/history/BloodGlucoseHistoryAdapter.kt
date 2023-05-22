@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.main.bg.history
 
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.DATE_FORMAT_YMDHM
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
@@ -11,7 +12,7 @@ class BloodGlucoseHistoryAdapter :
 
     override fun convert(holder: BaseViewHolder, item: BloodGlucoseEntity) {
         holder.apply {
-            setText(R.id.tvGlucoseTime, item.appTime)
+            setText(R.id.tvGlucoseTime, item.getDisplayTime(DATE_FORMAT_YMDHM))
             var tagText = item.getTagText(context.resources)
             if (tagText.isNullOrEmpty()) {
                 tagText = "— —"
