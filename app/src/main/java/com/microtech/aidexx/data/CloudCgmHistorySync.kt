@@ -2,6 +2,7 @@ package com.microtech.aidexx.data
 
 import com.google.gson.ExclusionStrategy
 import com.google.gson.FieldAttributes
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
@@ -41,6 +42,7 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     override val uploadState: Property<RealCgmHistoryEntity>
         get() = RealCgmHistoryEntity_.uploadState
     val eventWarning: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.eventWarning
+    private var gsonBuilder: Gson? = null
 
     override suspend fun postLocalData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return null
@@ -99,28 +101,14 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     }
 
     override suspend fun upload() {
+        if (gsonBuilder == null) {
+            initGsonBuilder()
+        }
         val needUploadBriefData = getNeedUploadData(TYPE_BRIEF)
-        val gsonBuilder = GsonBuilder().addSerializationExclusionStrategy(object : ExclusionStrategy {
-            override fun shouldSkipField(field: FieldAttributes?): Boolean {
-                if ("rawOne" == field?.name) return true
-                if ("rawTwo" == field?.name) return true
-                if ("rawVc" == field?.name) return true
-                if ("rawIsValid" == field?.name) return true
-                if ("calibrationIsValid" == field?.name) return true
-                if ("cf" == field?.name) return true
-                if ("index" == field?.name) return true
-                if ("offset" == field?.name) return true
-                return false
-            }
-
-            override fun shouldSkipClass(clazz: Class<*>?): Boolean {
-                return false
-            }
-        }).create()
         needUploadBriefData?.let { list ->
             if (list.size > 0) {
                 val records = hashMapOf("records" to list)
-                val toJson = gsonBuilder.toJson(records)
+                val toJson = gsonBuilder!!.toJson(records)
                 val toRequestBody = toJson.toRequestBody("application/json".toMediaType())
                 LogUtil.eAiDEX("Upload brief History: size:${list.size}")
                 withContext(Dispatchers.IO) {
@@ -147,6 +135,26 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 }
             }
         }
+    }
+
+    private fun initGsonBuilder() {
+        gsonBuilder = GsonBuilder().addSerializationExclusionStrategy(object : ExclusionStrategy {
+            override fun shouldSkipField(field: FieldAttributes?): Boolean {
+                if ("rawOne" == field?.name) return true
+                if ("rawTwo" == field?.name) return true
+                if ("rawVc" == field?.name) return true
+                if ("rawIsValid" == field?.name) return true
+                if ("calibrationIsValid" == field?.name) return true
+                if ("cf" == field?.name) return true
+                if ("index" == field?.name) return true
+                if ("offset" == field?.name) return true
+                return false
+            }
+
+            override fun shouldSkipClass(clazz: Class<*>?): Boolean {
+                return false
+            }
+        }).create()
     }
 
     override suspend fun replaceEventData(

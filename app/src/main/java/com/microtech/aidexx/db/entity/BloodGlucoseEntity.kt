@@ -16,7 +16,7 @@ import java.util.*
 class BloodGlucoseEntity : EventEntity, EventTimeInfo {
     @Index(type = IndexType.HASH)
     override var userId: String? = null
-    override var time: Date? = null
+    override lateinit var time: Date
     @Id
     override var idx: Long? = null
     override var state: Int = 0
@@ -25,15 +25,6 @@ class BloodGlucoseEntity : EventEntity, EventTimeInfo {
     override var deleteStatus: Int = 0
     var bloodGlucoseId: String? = UUID.randomUUID().toString().replace("-", "")
     override var id: String? = null
-    var appTime: String? = null
-        set(value) {
-            field = value
-            appTimeZone = TimeZone.getDefault().id
-            dstOffset = TimeZone.getDefault().dstSavings
-        }
-    var timeStamp: Long? = null
-    var appTimeZone: String? = null
-    var dstOffset: Int? = null
     var testTag: Int = 0
     var bloodGlucoseMg: Float = 0f
     override var createTime: Date = Date()
@@ -50,7 +41,7 @@ class BloodGlucoseEntity : EventEntity, EventTimeInfo {
     constructor()
     constructor(date: Date, bloodGlucose: Float) {
         this.appTime = date.formatWithoutZone()
-        this.timeStamp = date.time
+        this.timestamp = date.time
         this.bloodGlucoseMg = bloodGlucose
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }

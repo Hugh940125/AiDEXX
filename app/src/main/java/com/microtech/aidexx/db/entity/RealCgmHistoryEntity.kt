@@ -169,7 +169,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity, EventTimeInfo() {
             History.HISTORY_LOCAL_HYPO -> res.getString(R.string.low_gluecose_alert)
             History.HISTORY_BLOOD_GLUCOSE -> res.getString(R.string.title_bg)
             History.HISTORY_LOCAL_URGENT_HYPO -> res.getString(R.string.Urgent_Low_Alarm)
-            0, null -> when (eventType) {
+            0 -> when (eventType) {
                 History.HISTORY_HYPER -> res.getString(R.string.high_gluecose_alert)
                 History.HISTORY_HYPO -> res.getString(
                     R.string.low_gluecose_alert

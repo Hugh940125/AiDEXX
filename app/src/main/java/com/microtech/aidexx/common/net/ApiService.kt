@@ -209,7 +209,7 @@ interface ApiService {
                             EventBusManager.send(EventBusKey.TOKEN_EXPIRED, true)
                         }
                     }
-                    ret = BizException(code, message = msg?.ifBlank { null } ?: "$code")
+                    ret = BizException(code, message = msg.ifBlank { null } ?: "$code")
                 }
             }
             return ret
@@ -224,7 +224,7 @@ interface ApiService {
                 .readTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .sslSocketFactory(sslParams!!.sSLSocketFactory, sslParams.trustManager) //添加信任证书
-                .hostnameVerifier(HostnameVerifier { hostname: String?, session: SSLSession? -> true }) //忽略host验证
+                .hostnameVerifier { _: String?, _: SSLSession? -> true } //忽略host验证
                 //            .followRedirects(false)  //禁制OkHttp的重定向操作，我们自己处理重定向
                 //            .addInterceptor(new RedirectInterceptor())
                 .addInterceptor(HeaderInterceptor())

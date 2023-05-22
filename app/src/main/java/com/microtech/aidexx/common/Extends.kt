@@ -22,10 +22,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 
 /**
  *@date 2023/2/22
@@ -120,12 +117,6 @@ fun String.convertPointer(): String {
     return replaceFirst(",", POINTER).replaceFirst(".", POINTER)
 }
 
-fun String.convertAllPointer(): String {
-    val POINTER =
-        DecimalFormatSymbols.getInstance(LocalManageUtil.getSetLanguageLocale(AidexxApp.instance)).decimalSeparator.toString()
-    return replace(",", POINTER).replace(".", POINTER)
-}
-
 fun String.isNumber(): Boolean = try {
     this.toLong()
     true
@@ -137,11 +128,11 @@ fun String.toast() = ToastUtil.showLong(this)
 fun String.toastShort() = ToastUtil.showShort(this)
 fun Number.stripTrailingZeros(scale: Int? = null): String {
     return (if (scale != null) {
-        BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros()
+        BigDecimal(this.toString()).setScale(scale, RoundingMode.HALF_DOWN).stripTrailingZeros()
             .toPlainString()
     } else {
         BigDecimal(this.toString()).stripTrailingZeros().toPlainString()
-    }).convertAllPointer()
+    })
 }
 
 
