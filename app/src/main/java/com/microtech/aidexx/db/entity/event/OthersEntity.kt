@@ -6,7 +6,6 @@ import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
-import java.util.Date
 import java.util.UUID
 
 
@@ -29,16 +28,6 @@ class OthersEntity : BaseEventEntity, EventActions {
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
-
-    @Transient
-    override var time: Date = createTime
-        get() {
-            return createTime
-        }
-        set(time) {
-            field = time
-            createTime = time
-        }
 
     override fun getEventDescription(res: Resources): String {
         return ""

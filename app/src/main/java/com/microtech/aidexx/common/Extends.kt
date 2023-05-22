@@ -35,6 +35,10 @@ import java.util.UUID
 
 const val baseUuid = "00000000-0000-1000-8000-00805F9B34FB"
 
+const val DATE_FORMAT_YMDHMS = "yyyy-MM-dd HH:mm:ss"
+const val DATE_FORMAT_YMDHM = "yyyy/MM/dd HH:mm"
+const val DATE_FORMAT_HM = "HH:mm"
+
 fun Int.toUuid(): UUID {
     var hexString = Integer.toHexString(this).uppercase()
     if (hexString.length < 4) {
@@ -73,10 +77,10 @@ fun Long.millisToIntSeconds(): Int =
 fun Long.millisToHours(): Int =
     BigDecimal(this).divide(BigDecimal(60 * 60 * 1000), RoundingMode.HALF_UP).toInt()
 
-fun Date.date2ymdhm(pattern: String = "yyyy/MM/dd HH:mm"): String? =
+fun Date.date2ymdhm(pattern: String = DATE_FORMAT_YMDHM): String? =
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)
 
-fun Date.dateAndTimeHour(pattern: String = "HH:mm"): String? =
+fun Date.dateAndTimeHour(pattern: String = DATE_FORMAT_HM): String? =
     SimpleDateFormat(pattern, Locale.ENGLISH).format(this)
 
 fun Date.getStartOfTheDay(): Date {
@@ -89,14 +93,11 @@ fun Date.getStartOfTheDay(): Date {
     return calendar.time
 }
 
-fun String.toDateWithZone(): Date? =
-    SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.ENGLISH).parse(this)
-
 fun Date.formatWithZone(): String =
     SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.ENGLISH).format(this)
 
 fun Date.formatWithoutZone(): String =
-    SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(this)
+    SimpleDateFormat(DATE_FORMAT_YMDHMS, Locale.ENGLISH).format(this)
 
 fun <T> QueryBuilder<T>.equal(property: Property<T>, value: String): QueryBuilder<T> {
     return equal(property, value, QueryBuilder.StringOrder.CASE_SENSITIVE)

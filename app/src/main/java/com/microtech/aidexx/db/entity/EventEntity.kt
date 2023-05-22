@@ -1,14 +1,13 @@
 package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
-import java.util.*
+import java.util.Date
 
 interface EventEntity {
     var idx: Long?
     var state: Int
     var id: String?
     var userId: String?
-    var time: Date?
     var recordIndex: Long?
     var createTime: Date
     var recordId: String?

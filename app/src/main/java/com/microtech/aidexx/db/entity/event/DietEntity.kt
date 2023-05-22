@@ -33,16 +33,6 @@ class DietEntity : BaseEventEntity {
     var relList: MutableList<DietDetail> = ArrayList()
     var momentType: Int = 0
 
-    @Transient
-    override var time: Date = mealTime
-        get() {
-            return mealTime
-        }
-        set(time) {
-            field = time
-            mealTime = time
-        }
-
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
@@ -94,7 +84,7 @@ class DietEntity : BaseEventEntity {
     }
 
     override fun toString(): String {
-        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, recordUuid=$recordUuid, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$relList, authorizationId=$userId, time=$time)"
+        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, recordUuid=$recordUuid, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$relList, authorizationId=$userId, timestamp=$timestamp)"
     }
 
 

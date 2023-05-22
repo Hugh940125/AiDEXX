@@ -7,7 +7,11 @@ import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
-import com.microtech.aidexx.common.*
+import com.microtech.aidexx.common.date2ymdhm
+import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.millisToHours
+import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -15,7 +19,11 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.*
+import com.microtech.aidexx.db.entity.AlertSettingsEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
@@ -39,7 +47,11 @@ import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
-import com.microtechmd.blecomm.parser.*
+import com.microtechmd.blecomm.parser.AidexXCalibrationEntity
+import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
+import com.microtechmd.blecomm.parser.AidexXHistoryEntity
+import com.microtechmd.blecomm.parser.AidexXParser
+import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
 import io.objectbox.kotlin.equal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,7 +59,7 @@ import kotlinx.coroutines.withContext
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Date
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
@@ -638,7 +650,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
                 historyEntity.timeOffset = history.timeOffset
                 val historyDate = getHistoryDate(history.timeOffset)
-                historyEntity.time = historyDate
                 historyEntity.deviceTime = historyDate
                 historyEntity.sensorId = entity.sensorId
                 historyEntity.sensorIndex = entity.startTimeToIndex()

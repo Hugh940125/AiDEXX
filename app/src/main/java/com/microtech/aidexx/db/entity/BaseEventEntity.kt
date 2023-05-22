@@ -1,6 +1,7 @@
 package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
+import com.microtech.aidexx.common.DATE_FORMAT_YMDHMS
 import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.annotation.BaseEntity
@@ -9,31 +10,31 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 import java.util.TimeZone
 
 @BaseEntity
-abstract class BaseEventEntity: EventEntity {
+abstract class BaseEventEntity {
 
     @Id(assignable = true)
-    override var idx: Long? = null
+    open var idx: Long? = null
 
     @Index
-    override var state: Int = 0
+    open var state: Int = 0
 
-    override var id: String? = null
+    open var id: String? = null
 
     @Index(type = IndexType.HASH)
-    override var userId: String? = null
+    open var userId: String? = null
 
-    override var time: Date = Date()
     @Index
-    override var recordIndex: Long? = null
-    override var createTime: Date = Date()
-    override var recordId: String? = null
+    open var recordIndex: Long? = null
+    open var createTime: Date = Date()
+    open var recordId: String? = null
     @Index
-    override var deleteStatus: Int = 0  //删除状态 1、待删除：本地删除未同步 2、已删除 本地删除且已同步
-    override var language: String = "" // 保存事件时的语言状态
-    override var uploadState:Int = 0  //1 待上传 2 已上传
+    open var deleteStatus: Int = 0  //删除状态 1、待删除：本地删除未同步 2、已删除 本地删除且已同步
+    open var language: String = "" // 保存事件时的语言状态
+    open var uploadState:Int = 0  //1 待上传 2 已上传
 
 
     var timestamp: Long = 0L
@@ -56,6 +57,23 @@ abstract class BaseEventEntity: EventEntity {
             calTimestamp()
         }
 
+    fun getDisplayTime(formatStr: String = "HH:mm", useDeviceTimeZone: Boolean = true): String {
+        val sdf = SimpleDateFormat(formatStr, Locale.ENGLISH)
+
+        sdf.timeZone =
+            if (useDeviceTimeZone) TimeZone.getDefault()
+            else TimeZone.getTimeZone(appTimeZone)
+
+        var str = ""
+        try {
+            str = sdf.format(timestamp)
+        } catch(e: Exception) {
+            LogUtil.e("getDisplayTime error $timestamp f=$formatStr useDeviceTimeZone=$useDeviceTimeZone")
+        }
+
+        return str
+    }
+
     protected fun setTimeInfo(date: Date) {
         appTime = date.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
         appTimeZone = TimeZone.getDefault().id //
@@ -64,21 +82,21 @@ abstract class BaseEventEntity: EventEntity {
 
     private fun calTimestamp() {
         if (canCalTimestamp()) {
-            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            val sdf = SimpleDateFormat(DATE_FORMAT_YMDHMS, Locale.ENGLISH)
             sdf.timeZone = TimeZone.getTimeZone(appTimeZone)
             timestamp = sdf.parse(appTime)?.let {
-                it.time / 1000
+                it.time
             } ?:let {
                 LogUtil.d("calTimestamp error=> $appTime $appTimeZone $dstOffset")
-                System.currentTimeMillis() / 1000
+                System.currentTimeMillis()
             }
         }
     }
 
     private fun canCalTimestamp() = appTime != null && appTimeZone != null && dstOffset != null
 
-    abstract override fun getEventDescription(res: Resources): String
-    abstract override fun getValueDescription(res: Resources): String
+    abstract fun getEventDescription(res: Resources): String
+    abstract fun getValueDescription(res: Resources): String
 
 
 }
