@@ -1,30 +1,23 @@
-package com.microtech.aidexx.db.entity
+package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.common.getMutableListType
+import com.microtech.aidexx.common.stripTrailingZeros
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.LanguageUnitManager
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import java.lang.reflect.Type
+import java.util.Date
+import java.util.UUID
 
 
 @Entity
-class InsulinEntity : EventEntity {
-    override var createTime: Date = Date()
-
-    @Id
-    override var idx: Long? = null
-
-    @Index
-    override var state: Int = 0
-    override var id: String? = null
-
-    @Index
-    override var recordIndex: Long? = null
-
-    @Index
-    override var deleteStatus: Int = 0
+class InsulinEntity : BaseEventEntity {
 
     var injectionTime: Date = Date()
     var insulinName: String? = null
@@ -34,11 +27,8 @@ class InsulinEntity : EventEntity {
     var insulinDosage: Float? = null
     var isPreset: Boolean = false
 
-    @Index(type = IndexType.HASH)
-    override var userId: String? = null
-
-    @Convert(converter = InsulinDetailEntity::class, dbType = String::class)
-    var relList: MutableList<InsulinDetailEntity> = ArrayList()
+    @Convert(converter = InsulinDetail::class, dbType = String::class)
+    var relList: MutableList<InsulinDetail> = ArrayList()
     var momentType: Int = 0
 
     @Transient
@@ -50,11 +40,6 @@ class InsulinEntity : EventEntity {
             field = time
             injectionTime = time
         }
-
-    override var recordId: String? = null
-
-    override var language: String = ""
-    override var uploadState: Int = 0
 
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
@@ -112,6 +97,42 @@ class InsulinEntity : EventEntity {
             5 -> return getContext().getString(R.string.makeup)
             else -> ""
         }
+    }
+}
+
+data class InsulinDetail(
+
+    var presetUuid: String? = null,
+
+    var relUuid: String? = null,
+
+    var categoryName: String = "",
+    var tradeName: String = "",
+    var comment: String = "",
+    var manufacturer: String = "",
+    var quantity: Double = 0.0,
+    var unit: Int = 0,
+    var delete_flag: Int = 0,
+
+    var createTime: Date = Date(),
+    @Transient
+    var updateTime: Date = Date()
+) : BaseEventDetail() {
+
+    override fun getCurrClassMutableListType(): Type = getMutableListType<InsulinDetail>()
+
+    override fun getEventDesc(splitter: String?): String {
+        return splitter?.let {
+            "$name$splitter${quantity.stripTrailingZeros()}U"
+        } ?: let {
+            val ext = tradeName.ifEmpty { manufacturer.ifEmpty { "" } }
+            name.plus(if (ext.isNotEmpty()) "(${ext})" else "")
+                .plus("(${quantity.stripTrailingZeros()}U)")
+        }
+    }
+
+    override fun toString(): String {
+        return "InsulinDetailEntity(presetUuid=$presetUuid, relUuid=$relUuid, categoryName='$categoryName', tradeName='$tradeName', comment='$comment', manufacturer='$manufacturer', quantity=$quantity, unit=$unit, delete_flag=$delete_flag, createTime=$createTime, updateTime=$updateTime)"
     }
 
 

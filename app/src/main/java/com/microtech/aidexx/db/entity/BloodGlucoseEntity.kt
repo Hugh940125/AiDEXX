@@ -2,32 +2,20 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
-import io.objectbox.annotation.IndexType
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 
 @Entity
-class BloodGlucoseEntity : EventEntity, EventTimeInfo {
-    @Index(type = IndexType.HASH)
-    override var userId: String? = null
-    override lateinit var time: Date
-    @Id
-    override var idx: Long? = null
-    override var state: Int = 0
-    override var recordIndex: Long? = null
-    override var recordId: String? = null
-    override var deleteStatus: Int = 0
+class BloodGlucoseEntity : BaseEventEntity {
+
     var bloodGlucoseId: String? = UUID.randomUUID().toString().replace("-", "")
-    override var id: String? = null
     var testTag: Int = 0
     var bloodGlucoseMg: Float = 0f
-    override var createTime: Date = Date()
 
     @Index
     var autoIncrementColumn: Long? = null
@@ -35,13 +23,12 @@ class BloodGlucoseEntity : EventEntity, EventTimeInfo {
     @Transient
     var calibration: Boolean = false
 
-    override var language: String = ""
-    override var uploadState: Int = 0
-
     constructor()
     constructor(date: Date, bloodGlucose: Float) {
         this.appTime = date.formatWithoutZone()
         this.timestamp = date.time
+    constructor(testTime: Date, bloodGlucose: Float) {
+        setTimeInfo(testTime)
         this.bloodGlucoseMg = bloodGlucose
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
@@ -81,6 +68,6 @@ class BloodGlucoseEntity : EventEntity, EventTimeInfo {
     }
 
     override fun toString(): String {
-        return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTime=$appTime, testTag=$testTag, bloodGlucoseMg=$bloodGlucoseMg, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
+        return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTag=$testTag, bloodGlucoseMg=$bloodGlucoseMg, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
     }
 }

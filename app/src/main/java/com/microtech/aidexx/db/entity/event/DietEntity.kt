@@ -1,31 +1,23 @@
-package com.microtech.aidexx.db.entity
+package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.common.getMutableListType
+import com.microtech.aidexx.common.stripTrailingZeros
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.LanguageUnitManager
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.Convert
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import java.lang.reflect.Type
+import java.util.Date
+import java.util.UUID
 
 
 @Entity
-class DietEntity : EventEntity {
-
-    @Id
-    override var idx: Long? = null
-
-    @Index
-    override var state: Int = 0
-    override var id: String? = null
-
-    override var createTime: Date = Date()
-
-    @Index
-    override var recordIndex: Long? = null
-
-    @Index
-    override var deleteStatus: Int = 0
+class DietEntity : BaseEventEntity {
 
     @Index
     var mealTime: Date = Date()
@@ -37,14 +29,9 @@ class DietEntity : EventEntity {
 
     var isPreset: Boolean = false
 
-    override var recordId: String? = null
-
-    @Convert(converter = DietDetailEntity::class, dbType = String::class)
-    var relList: MutableList<DietDetailEntity> = ArrayList()
+    @Convert(converter = DietDetail::class, dbType = String::class)
+    var relList: MutableList<DietDetail> = ArrayList()
     var momentType: Int = 0
-
-    @Index(type = IndexType.HASH)
-    override var userId: String? = null
 
     @Transient
     override var time: Date = mealTime
@@ -55,8 +42,7 @@ class DietEntity : EventEntity {
             field = time
             mealTime = time
         }
-    override var language: String = ""
-    override var uploadState: Int = 0
+
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
@@ -121,5 +107,30 @@ class DietEntity : EventEntity {
             else -> ""
         }
     }
+
+}
+
+
+data class DietDetail(
+    var foodPresetId: Long? = null,
+    var categoryName: String = "",
+    var quantity: Double = 0.0,
+    var unit: Int = 0,
+    var protein: Double = 0.0,
+    var fat: Double = 0.0,
+    var carbohydrate: Double = 0.0,
+    var createTime: Date? = Date(),
+) : BaseEventDetail() {
+
+    override fun toString(): String {
+        return "DietDetailEntity(id=$id, foodPresetId=$foodPresetId, type=$presetType, name='$name', categoryName='$categoryName', quantity=$quantity, unit=$unit, protein=$protein, fat=$fat, carbohydrate=$carbohydrate)"
+    }
+
+    override fun getEventDesc(spliter: String?): String {
+        return "$name(${quantity.stripTrailingZeros()}${unitStr})"
+    }
+
+    override fun getCurrClassMutableListType(): Type = getMutableListType<DietDetail>()
+
 
 }

@@ -16,13 +16,13 @@ import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
-import com.microtech.aidexx.db.entity.DietEntity
 import com.microtech.aidexx.db.entity.EventEntity
-import com.microtech.aidexx.db.entity.ExerciseEntity
-import com.microtech.aidexx.db.entity.InsulinEntity
-import com.microtech.aidexx.db.entity.MedicationEntity
-import com.microtech.aidexx.db.entity.OthersEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.event.DietEntity
+import com.microtech.aidexx.db.entity.event.ExerciseEntity
+import com.microtech.aidexx.db.entity.event.InsulinEntity
+import com.microtech.aidexx.db.entity.event.MedicationEntity
+import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.CalibrateManager
 import com.microtech.aidexx.utils.LogUtil
@@ -324,7 +324,7 @@ class ChartViewModel: ViewModel() {
             when (data.first) {
                 DataChangedType.ADD -> {
                     val rets = data.second.filter {
-                        it.testTime.time >= curXMinTimeMillis()
+                        it.timestamp >= curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
                         addBgData(rets)
@@ -596,7 +596,7 @@ class ChartViewModel: ViewModel() {
             entry.icon = BgDataSet.icon
             bgSet.addEntryOrdered(entry)
             xMaxMin(xValue)
-            calDateMaxMin(bg.testTime)
+            calDateMaxMin(Date(bg.timestamp))
         }
     }
 

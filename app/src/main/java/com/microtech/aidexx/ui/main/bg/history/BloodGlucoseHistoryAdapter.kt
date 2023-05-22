@@ -1,7 +1,6 @@
 package com.microtech.aidexx.ui.main.bg.history
 
 import com.microtech.aidexx.R
-import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder

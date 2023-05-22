@@ -1,8 +1,3 @@
-package com.microtech.aidexx.db.entity
-
-import io.objectbox.annotation.BaseEntity
-import java.text.SimpleDateFormat
-import java.util.TimeZone
 
 @BaseEntity
 open class EventTimeInfo {
@@ -12,8 +7,6 @@ open class EventTimeInfo {
     var appTime: String? = null
         set(value) {
             field = value
-            appTimeZone = TimeZone.getDefault().id
-            dstOffset = TimeZone.getDefault().dstSavings
             calTimestamp()
         }
 
@@ -33,7 +26,7 @@ open class EventTimeInfo {
         if (canCalTimestamp()) {
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             sdf.timeZone = TimeZone.getTimeZone(appTimeZone)
-            timestamp = sdf.parse(appTime!!)?.let {
+            timestamp = sdf.parse(appTime)?.let {
                 it.time / 1000
             } ?:let {
                 System.currentTimeMillis() / 1000
@@ -42,4 +35,6 @@ open class EventTimeInfo {
     }
 
     private fun canCalTimestamp() = appTime != null && appTimeZone != null && dstOffset != null
+
+
 }
