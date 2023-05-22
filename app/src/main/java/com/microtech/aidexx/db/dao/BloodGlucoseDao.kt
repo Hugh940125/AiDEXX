@@ -29,9 +29,9 @@ object BloodGlucoseDao {
         awaitCallInTx {
             box.query()
                 .between(
-                    BloodGlucoseEntity_.testTime,
-                    startDate,
-                    endDate
+                    BloodGlucoseEntity_.timestamp,
+                    startDate.time,
+                    endDate.time
                 )
                 .equal( BloodGlucoseEntity_.userId, authorId, QueryBuilder.StringOrder.CASE_SENSITIVE )
                 .equal(BloodGlucoseEntity_.deleteStatus, 0)

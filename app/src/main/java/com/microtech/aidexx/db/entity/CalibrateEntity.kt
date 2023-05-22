@@ -4,7 +4,6 @@ import android.content.res.Resources
 import com.microtech.aidexx.utils.EncryptUtils
 import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.Unique
@@ -15,18 +14,11 @@ import java.util.Date
  *
  * */
 @Entity
-class CalibrateEntity : EventEntity, EventTimeInfo() {
-    @Id
-    override var idx: Long? = null
-    override var state: Int = 0
-    override var userId: String? = null
+class CalibrateEntity : BaseEventEntity() {
     var calTime: Date = Date()
-    override var createTime: Date = Date()
-    override var recordId: String? = null
 
     @Transient
     override var language: String = ""
-    override var uploadState: Int = 0
 
     @Transient
     override var time: Date = calTime
@@ -37,11 +29,8 @@ class CalibrateEntity : EventEntity, EventTimeInfo() {
             field = time
             calTime = time
         }
-    override var id: String? = null
     var deviceId: String = ""
     var eventIndex = 0
-    override var recordIndex: Long? = 0L
-    override var deleteStatus: Int = 0
 
     @Unique(onConflict = ConflictStrategy.REPLACE)
     var calibrationId: String? = null

@@ -99,7 +99,7 @@
     },
     {
       "id": "2:2659511795003322512",
-      "lastPropertyId": "19:7769021705376890940",
+      "lastPropertyId": "23:579426193175041894",
       "name": "BloodGlucoseEntity",
       "properties": [
         {
@@ -181,6 +181,26 @@
           "indexId": "54:2222283051497754930",
           "type": 6,
           "flags": 8
+        },
+        {
+          "id": "20:4849691174432895349",
+          "name": "timestamp",
+          "type": 6
+        },
+        {
+          "id": "21:2450385978921859339",
+          "name": "appTime",
+          "type": 9
+        },
+        {
+          "id": "22:9113565389350266489",
+          "name": "appTimeZone",
+          "type": 9
+        },
+        {
+          "id": "23:579426193175041894",
+          "name": "dstOffset",
+          "type": 5
         }
       ],
       "relations": []

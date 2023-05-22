@@ -31,11 +31,14 @@ import com.microtech.aidexx.databinding.FragmentBgBinding
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.ui.main.bg.history.BloodGlucoseHistoryActivity
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.ThemeManager
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.fromGlucoseValue
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.time.TimePicker
@@ -45,7 +48,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToInt
 
 private const val ANTI_FAST_RESUME = 1

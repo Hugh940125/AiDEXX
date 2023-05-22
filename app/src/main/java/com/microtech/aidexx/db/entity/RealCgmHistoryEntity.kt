@@ -12,7 +12,6 @@ import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
 import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import io.objectbox.annotation.Unique
@@ -20,15 +19,10 @@ import java.util.Date
 import java.util.TimeZone
 
 @Entity
-class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity, EventTimeInfo() {
-    @Id(assignable = true)
-    override var idx: Long? = null
+class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
     var briefUploadState = 0 //0原始转态 1更新待上传 2已上传
     var rawUploadState = 0
 
-    @Index
-    override var state: Int = 0
-    override var id: String? = null
 
     @Index(type = IndexType.HASH)
     var deviceSn: String? = null
@@ -37,8 +31,6 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity, EventTimeInfo() {
     @Index(type = IndexType.HASH)
     var sensorId: String? = null
 
-    @Index(type = IndexType.HASH)
-    override var userId: String? = null
 
     @Index
     var deviceTime = Date()
@@ -58,11 +50,7 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity, EventTimeInfo() {
     @Index
     var dataStatus = 0 // 0，原始数据，1代表待上传 2代表已上传
 
-    @Index
-    override var recordIndex: Long? = null
 
-    @Index
-    override var deleteStatus: Int = 0
     var eventType: Int? = null
     var glucose: Float? = null
     var eventDataOrigin: Float? = null
@@ -96,8 +84,6 @@ class RealCgmHistoryEntity : EventEntity, CgmHistoryEntity, EventTimeInfo() {
 
     @Transient
     override var language: String = ""
-    override var uploadState: Int = 0
-    override var recordId: String? = null
 
     @Index(type = IndexType.HASH)
     @Unique(onConflict = ConflictStrategy.REPLACE)

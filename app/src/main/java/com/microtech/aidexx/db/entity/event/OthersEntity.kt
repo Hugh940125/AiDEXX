@@ -1,35 +1,21 @@
-package com.microtech.aidexx.db.entity
+package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 
 @Entity
-class OthersEntity : EventEntity, EventActions {
-    @Id
-    override var idx: Long? = null
+class OthersEntity : BaseEventEntity, EventActions {
 
-    @Index
-    override var state: Int = 0
-    override var id: String? = null
-
-    @Index
-    override var recordIndex: Long? = null
-
-    @Index
-    override var deleteStatus: Int = 0
 
     @Index(type = IndexType.HASH)
     var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
-
-    override var recordId: String? = null
-
-    override var createTime: Date = Date()
 
     var content: String = ""
     var deleteFlag: Int? = 0
@@ -39,12 +25,6 @@ class OthersEntity : EventEntity, EventActions {
                 deleteStatus = 2
             }
         }
-
-    @Index(type = IndexType.HASH)
-    override var userId: String? = null
-
-    override var language: String = ""
-    override var uploadState: Int = 0
 
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
