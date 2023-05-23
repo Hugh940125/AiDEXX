@@ -571,7 +571,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 calibrateEntity.index = calibration.index
                 calibrateEntity.timeOffset = calibration.timeOffset
                 val historyDate = (calibration.timeOffset).toHistoryDate(entity.sensorStartTime!!)
-                calibrateEntity.timestamp = historyDate.time
                 calibrateEntity.setTimeInfo(historyDate)
                 calibrateEntity.userId = userId
                 calibrateEntity.calibrationId = calibrateEntity.updateCalibrationId()

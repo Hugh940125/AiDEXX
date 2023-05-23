@@ -39,7 +39,6 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
             appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
             appTimeZone = TimeZone.getDefault().id //
             dstOffset = TimeZone.getDefault().dstSavings //
-            timestamp = value.time
         }
 
     @Index
