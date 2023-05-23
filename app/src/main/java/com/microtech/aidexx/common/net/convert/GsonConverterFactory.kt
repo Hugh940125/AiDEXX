@@ -20,14 +20,15 @@ import java.lang.reflect.Type
  */
 class GsonConverterFactory private constructor(
     private val gson: Gson,
-    private val checkBizCodeIsSuccess: ((bodyStr: String) -> Throwable?)? = null
+    private val checkBizCodeIsSuccess: ((bodyStr: String) -> Throwable?)? = null,
+    private val afterConvert: ((result: Any?) -> Unit)? = null
 ) : Converter.Factory() {
 
     override fun responseBodyConverter(
         type: Type, annotations: Array<Annotation>, retrofit: Retrofit
     ): Converter<ResponseBody, *> {
         val adapter = gson.getAdapter(TypeToken.get(type))
-        return GsonResponseBodyConverter<Any>(gson, adapter, checkBizCodeIsSuccess)
+        return GsonResponseBodyConverter<Any>(gson, adapter, checkBizCodeIsSuccess, afterConvert)
     }
 
     override fun requestBodyConverter(
@@ -52,10 +53,11 @@ class GsonConverterFactory private constructor(
         @JvmOverloads  // Guarding public API nullability.
         fun create(
             gson: Gson? = Gson(),
-            checkBizCodeIsSuccess: ((bodyStr: String) -> Throwable?)? = null
+            checkBizCodeIsSuccess: ((bodyStr: String) -> Throwable?)? = null,
+            afterConvert: ((result: Any?) -> Unit)? = null
         ): GsonConverterFactory {
             if (gson == null) throw NullPointerException("gson == null")
-            return GsonConverterFactory(gson, checkBizCodeIsSuccess)
+            return GsonConverterFactory(gson, checkBizCodeIsSuccess, afterConvert)
         }
     }
 }

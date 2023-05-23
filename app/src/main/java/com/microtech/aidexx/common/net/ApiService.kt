@@ -11,6 +11,7 @@ import com.microtech.aidexx.common.net.cookie.CookieStore
 import com.microtech.aidexx.common.net.entity.*
 import com.microtech.aidexx.common.net.interceptors.*
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
@@ -28,7 +29,6 @@ import java.io.File
 import java.lang.reflect.Type
 import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 
 const val middleUrl = "/backend/aidex-v2"
@@ -187,7 +187,7 @@ interface ApiService {
         val instance: ApiService by lazy {
             buildRetrofit(
                 BuildConfig.baseUrl,
-                GsonConverterFactory.create(createGson(), ::checkBizCodeIsSuccess),
+                GsonConverterFactory.create(createGson(), ::checkBizCodeIsSuccess, ::afterGsonConvert),
                 client = okClient
             ).create(ApiService::class.java)
         }
@@ -213,6 +213,28 @@ interface ApiService {
                 }
             }
             return ret
+        }
+
+        private fun afterGsonConvert(result: Any?) {
+            result?.let {
+                if (it !is BaseResponse<*>) {
+                    return
+                }
+                it.data?.let { data ->
+                    when (data) {
+                        is BaseEventEntity -> data.calTimestamp()
+                        is List<*> -> {
+                            data.forEach { item ->
+                                if (item is BaseEventEntity) {
+                                    item.calTimestamp()
+                                } else {
+                                    return@let
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private fun getOkHttpClient(): OkHttpClient {

@@ -10,7 +10,8 @@ import java.io.IOException
 internal class GsonResponseBodyConverter<T>(
     private val gson: Gson,
     private val adapter: TypeAdapter<out T>,
-    private val checkBizCodeIsSuccess: ((bodyStr: String) -> Throwable?)? = null
+    private val checkBizCodeIsSuccess: ((bodyStr: String) -> Throwable?)? = null,
+    private val afterConvert: ((result: T?) -> Unit)? = null
 ) :
     Converter<ResponseBody, T> {
     @Throws(IOException::class)
@@ -25,11 +26,7 @@ internal class GsonResponseBodyConverter<T>(
 
             val result: T = adapter.fromJson(bodyStr)
 
-//            val jsonReader = gson.newJsonReader(value.charStream())
-//            val result1: T = adapter.read(jsonReader)
-//            if (jsonReader.peek() != JsonToken.END_DOCUMENT) {
-//                throw JsonIOException("JSON document was not fully consumed.")
-//            }
+            afterConvert?.invoke(result)
 
             result
         }

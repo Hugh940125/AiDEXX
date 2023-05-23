@@ -85,11 +85,6 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             val result = getRemoteData(userId)
             return result?.let {
                 if (it.isNotEmpty()) {
-                    val start = System.currentTimeMillis()
-                    it.forEach { baseEventEntity ->
-                        baseEventEntity.calTimestamp()
-                    }
-                    LogUtil.d("===DATASYNC=== size=${it.size} calTsCost=${System.currentTimeMillis() - start}")
                     replaceEventData(responseList = it, type = 3, userId = userId)
                 }
                 if (it.size >= PAGE_SIZE) {
