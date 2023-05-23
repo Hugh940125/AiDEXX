@@ -80,7 +80,7 @@ abstract class BaseEventEntity {
         dstOffset = TimeZone.getDefault().dstSavings //
     }
 
-    private fun calTimestamp() {
+    fun calTimestamp() {
         if (canCalTimestamp()) {
             val sdf = SimpleDateFormat(DATE_FORMAT_YMDHMS, Locale.ENGLISH)
             sdf.timeZone = TimeZone.getTimeZone(appTimeZone)

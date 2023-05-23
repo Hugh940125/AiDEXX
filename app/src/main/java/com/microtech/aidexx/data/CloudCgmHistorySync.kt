@@ -165,16 +165,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         userId: String?,
     ) {
         responseList?.let {
-            if (type == 3) { //下载
-                if (responseList.isNotEmpty()) {
-                    CgmCalibBgRepository.insertCgm(responseList)
-                    MmkvManager.setEventDataMinId(
-                        getDataSyncFlagKey(userId!!),
-                        responseList.last().autoIncrementColumn
-                    )
-                }
-                return
-            }
             if (responseList.isNotEmpty()) {
                 when (type) {
                     1 -> {
@@ -201,6 +191,13 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                             entity.rawUploadState = 2
                         }
                         entityBox.put(origin)
+                    }
+                    3 -> { // 下载
+                        CgmCalibBgRepository.insertCgm(responseList)
+                        MmkvManager.setEventDataMinId(
+                            getDataSyncFlagKey(userId!!),
+                            responseList.last().autoIncrementColumn
+                        )
                     }
                 }
             }
