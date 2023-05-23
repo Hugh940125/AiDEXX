@@ -74,7 +74,7 @@ abstract class BaseEventEntity {
         return str
     }
 
-    protected fun setTimeInfo(date: Date) {
+    fun setTimeInfo(date: Date) {
         appTime = date.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
         appTimeZone = TimeZone.getDefault().id //
         dstOffset = TimeZone.getDefault().dstSavings //

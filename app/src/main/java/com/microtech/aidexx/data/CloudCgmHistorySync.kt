@@ -43,7 +43,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         get() = RealCgmHistoryEntity_.uploadState
     val eventWarning: Property<RealCgmHistoryEntity> = RealCgmHistoryEntity_.eventWarning
     private var gsonBuilder: Gson? = null
-    private val tempList = mutableListOf<RealCgmHistoryEntity>()
 
     override suspend fun postLocalData(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
         return null
@@ -176,14 +175,14 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                 return
             }
             if (responseList.isNotEmpty()) {
-                when (type) {
-                    1 -> {
-                        tempList.clear()
-                        for (entity in responseList) {
-                            entity.frontRecordId?.let { frontRecordId ->
-                                val oldEntity = ObjectBox.cgmHistoryBox!!.query()
-                                    .equal(RealCgmHistoryEntity_.frontRecordId, frontRecordId)
-                                    .order(RealCgmHistoryEntity_.idx).build().findFirst()
+                val tempList = mutableListOf<RealCgmHistoryEntity>()
+                for (entity in responseList) {
+                    entity.frontRecordId?.let { frontRecordId ->
+                        val oldEntity = ObjectBox.cgmHistoryBox!!.query()
+                            .equal(RealCgmHistoryEntity_.frontRecordId, frontRecordId)
+                            .order(RealCgmHistoryEntity_.idx).build().findFirst()
+                        when (type) {
+                            1 -> {
                                 oldEntity?.let { old ->
                                     old.briefUploadState = 2
                                     if (old.autoIncrementColumn == 0L)
@@ -193,16 +192,17 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                                     tempList.add(oldEntity)
                                 }
                             }
+                            2 -> {
+                                oldEntity?.let { old ->
+                                    old.rawUploadState = 2
+                                    tempList.add(oldEntity)
+                                }
+                            }
+                            else -> {}
                         }
-                        entityBox.put(tempList)
-                    }
-                    2 -> {
-                        for (entity in origin) {
-                            entity.rawUploadState = 2
-                        }
-                        entityBox.put(origin)
                     }
                 }
+                entityBox.put(tempList)
             }
         }
     }

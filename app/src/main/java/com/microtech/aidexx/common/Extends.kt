@@ -36,6 +36,12 @@ const val DATE_FORMAT_YMDHMS = "yyyy-MM-dd HH:mm:ss"
 const val DATE_FORMAT_YMDHM = "yyyy/MM/dd HH:mm"
 const val DATE_FORMAT_HM = "HH:mm"
 
+
+fun Int.toHistoryDate(sensorStartTime: Date): Date {
+    val timeLong = sensorStartTime.time.plus(this * 60 * 1000)
+    return Date(timeLong)
+}
+
 fun Int.toUuid(): UUID {
     var hexString = Integer.toHexString(this).uppercase()
     if (hexString.length < 4) {

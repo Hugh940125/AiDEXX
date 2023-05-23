@@ -7,11 +7,7 @@ import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
-import com.microtech.aidexx.common.date2ymdhm
-import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.common.millisToHours
-import com.microtech.aidexx.common.millisToMinutes
-import com.microtech.aidexx.common.millisToSeconds
+import com.microtech.aidexx.common.*
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -19,11 +15,7 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.AlertSettingsEntity
-import com.microtech.aidexx.db.entity.CalibrateEntity
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
-import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.db.entity.*
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
@@ -47,11 +39,7 @@ import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
-import com.microtechmd.blecomm.parser.AidexXCalibrationEntity
-import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
-import com.microtechmd.blecomm.parser.AidexXHistoryEntity
-import com.microtechmd.blecomm.parser.AidexXParser
-import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
+import com.microtechmd.blecomm.parser.*
 import io.objectbox.kotlin.equal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,7 +47,7 @@ import kotlinx.coroutines.withContext
 import java.math.RoundingMode
 import java.nio.charset.Charset
 import java.text.DecimalFormat
-import java.util.Date
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
@@ -367,11 +355,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, true)
     }
 
-    private fun getHistoryDate(timeOffset: Int): Date {
-        val timeLong = entity.sensorStartTime!!.time.plus(timeOffset * 60 * 1000)
-        return Date(timeLong)
-    }
-
     override
     fun handleAdvertisement(data: ByteArray) {
         val elapsedRealtime = SystemClock.elapsedRealtime()
@@ -429,7 +412,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
         glucoseLevel = getGlucoseLevel(glucose)
         latestHistory?.let {
-            val historyDate = getHistoryDate(it.timeOffset)
+            val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
             if (glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
                 lastHistoryTime = historyDate
             }
@@ -587,6 +570,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 calibrateEntity.sensorId = entity.sensorId
                 calibrateEntity.index = calibration.index
                 calibrateEntity.timeOffset = calibration.timeOffset
+                val historyDate = (calibration.timeOffset).toHistoryDate(entity.sensorStartTime!!)
+                calibrateEntity.timestamp = historyDate.time
+                calibrateEntity.setTimeInfo(historyDate)
                 calibrateEntity.userId = userId
                 calibrateEntity.calibrationId = calibrateEntity.updateCalibrationId()
                 calibrateEntity.cf = calibration.cf
@@ -650,7 +636,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                 }
                 historyEntity.timeOffset = history.timeOffset
-                val historyDate = getHistoryDate(history.timeOffset)
+                val historyDate = (history.timeOffset).toHistoryDate(entity.sensorStartTime!!)
                 historyEntity.deviceTime = historyDate
                 historyEntity.sensorId = entity.sensorId
                 historyEntity.sensorIndex = entity.startTimeToIndex()
