@@ -48,8 +48,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.util.Date
-import java.util.Locale
+import java.util.*
 import kotlin.math.roundToInt
 
 private const val ANTI_FAST_RESUME = 1
@@ -305,10 +304,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                                         else glucoseValue!!).roundToInt()
                                     MessageDistributor.instance().observer(mObserver)
                                     model.calibration(
-                                        CalibrationInfo(
-                                            value,
-                                            model.latestHistory!!.timeOffset
-                                        )
+                                        CalibrationInfo(value, model.latestHistory!!.timeOffset)
                                     )
                                 })
                         }

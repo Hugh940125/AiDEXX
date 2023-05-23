@@ -191,13 +191,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                             else -> {}
                         }
                     }
-                    3 -> { // 下载
-                        CgmCalibBgRepository.insertCgm(responseList)
-                        MmkvManager.setEventDataMinId(
-                            getDataSyncFlagKey(userId!!),
-                            responseList.last().autoIncrementColumn
-                        )
-                    }
                 }
                 entityBox.put(tempList)
             }

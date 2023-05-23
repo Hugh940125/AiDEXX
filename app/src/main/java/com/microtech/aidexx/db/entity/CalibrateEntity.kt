@@ -54,6 +54,6 @@ class CalibrateEntity : BaseEventEntity() {
     }
 
     override fun toString(): String {
-        return "CalibrateEntity(idx=$idx, authorizationId=$userId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, recordUuid=$calibrationId, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$cf, calOffset=$offset)"
+        return "CalibrateEntity(idx=$idx, authorizationId=$userId, calTime=$calTime, id=$id, deviceId='$deviceId', recordIndex=$recordIndex, calibrationId=$calibrationId, sensorIndex=$sensorIndex, referenceGlucose=$referenceGlucose, indexBeforeCal=$indexBeforeCal, indexAfterCal=$indexAfterCal, calFactor=$cf, calOffset=$offset)"
     }
 }
