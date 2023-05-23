@@ -165,6 +165,16 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     ) {
         responseList?.let {
             if (responseList.isNotEmpty()) {
+
+                if (type == 3) {
+                    CgmCalibBgRepository.insertCgm(responseList)
+                    MmkvManager.setEventDataMinId(
+                        getDataSyncFlagKey(userId!!),
+                        responseList.last().autoIncrementColumn
+                    )
+                    return@let
+                }
+
                 val tempList = mutableListOf<RealCgmHistoryEntity>()
                 for (entity in responseList) {
                     entity.frontRecordId?.let { frontRecordId ->
@@ -190,13 +200,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
                             }
                             else -> {}
                         }
-                    }
-                    3 -> { // 下载
-                        CgmCalibBgRepository.insertCgm(responseList)
-                        MmkvManager.setEventDataMinId(
-                            getDataSyncFlagKey(userId!!),
-                            responseList.last().autoIncrementColumn
-                        )
                     }
                 }
                 entityBox.put(tempList)
