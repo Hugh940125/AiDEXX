@@ -6,6 +6,7 @@ import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.RESULT_OK
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BaseEventEntity
@@ -84,6 +85,11 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             val result = getRemoteData(userId)
             return result?.let {
                 if (it.isNotEmpty()) {
+                    val start = System.currentTimeMillis()
+                    it.forEach { baseEventEntity ->
+                        baseEventEntity.calTimestamp()
+                    }
+                    LogUtil.d("===DATASYNC=== size=${it.size} calTsCost=${System.currentTimeMillis() - start}")
                     replaceEventData(responseList = it, type = 3, userId = userId)
                 }
                 if (it.size >= PAGE_SIZE) {

@@ -67,6 +67,9 @@ object EventRepository {
                             }
                             return@withContext true
                         } else {
+                            it.forEach { bee->
+                                bee.calTimestamp()
+                            }
                             CgmCalibBgRepository.insertCgm(it)
                             MmkvManager.setEventDataMinId(
                                 CloudCgmHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
@@ -122,6 +125,9 @@ object EventRepository {
                             }
                             return@withContext true
                         } else {
+                            it.forEach { bee->
+                                bee.calTimestamp()
+                            }
                             CgmCalibBgRepository.insertBg(it)
                             MmkvManager.setEventDataMinId(
                                 CloudBgHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
@@ -175,6 +181,9 @@ object EventRepository {
                             }
                             return@withContext true
                         } else {
+                            it.forEach { bee->
+                                bee.calTimestamp()
+                            }
                             CgmCalibBgRepository.insertCal(it)
                             MmkvManager.setEventDataMinId(
                                 CloudCalHistorySync.getDataSyncFlagKey(userId), it.last().autoIncrementColumn)
