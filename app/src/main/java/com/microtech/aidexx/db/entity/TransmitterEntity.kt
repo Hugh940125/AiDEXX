@@ -66,6 +66,11 @@ class TransmitterEntity {
         return sensorStartTime?.time?.millisToIntSeconds() ?: 0
     }
 
+    fun startTimeToIndex(startTime: Date?): Int {
+        if (startTime == null) return 0
+        return startTime.time.millisToIntSeconds()
+    }
+
     override fun toString(): String {
         return "TransmitterEntity(et=$expirationTime,idx=$idx, id=$id, deviceMac='$deviceMac', deviceSn='$deviceSn', accessId=${accessId?.contentToString()}, encryptionKey=${encryptionKey?.contentToString()}, sensorIndex=$sensorIndex, eventIndex=$eventIndex, fullEventIndex=$fullEventIndex, fullSensorIndex=$fullSensorIndex, hyperThreshold=$hyperThreshold, hypoThreshold=$hypoThreshold)"
     }

@@ -235,32 +235,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             is ApiResult.Success -> {
                 apiResult.result.run {
                     this.data?.let {
-                        val record = it.record
-                        if (record != null) {
-                            targetEventIndex = record.timeOffset
-                            nextEventIndex = record.timeOffset + 1
-                            entity.eventIndex = record.timeOffset
-                        } else {
-                            targetEventIndex = 1
-                            nextEventIndex = 1
-                            entity.eventIndex = 0
-                        }
-                        val originRecord = it.originRecord
-                        if (originRecord != null) {
-                            nextFullEventIndex = originRecord.timeOffset + 1
-                            entity.fullEventIndex = originRecord.timeOffset
-                        } else {
-                            nextFullEventIndex = 1
-                            entity.fullEventIndex = 0
-                        }
-                        val calibrationRecord = it.calibrationRecord
-                        if (calibrationRecord != null) {
-                            nextCalIndex = calibrationRecord.index + 1
-                            entity.calIndex = calibrationRecord.index
-                        } else {
-                            nextCalIndex = 1
-                            entity.calIndex = 0
-                        }
                         it.deviceId?.let { id ->
                             entity.id = id
                         }
@@ -362,16 +336,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             return
         }
         latestAdTime = elapsedRealtime
-        val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data)
+        val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
         LogUtil.eAiDEX("Advertising ----> $broadcast")
-        broadcast?.let {
-            val refreshSensorState = refreshSensorState(broadcast)
-            if (refreshSensorState) return
-        }
-        if (entity.sensorStartTime == null) {
-            getController().startTime
-            return
-        }
         if (broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
             onCalibrationPermitChange?.invoke(false)
         } else {
@@ -387,6 +353,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 History.GENERAL_DEVICE_FAULT -> faultType = 2
             }
         }
+        val refreshSensorState = refreshSensorState(broadcast)
+        if (entity.sensorStartTime == null) {
+            getController().startTime
+            return
+        }
+        if (refreshSensorState) return
         val adHistories = broadcast.history
         latestAd = broadcast
         if (UserInfoManager.shareUserInfo != null) {

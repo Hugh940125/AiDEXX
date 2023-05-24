@@ -47,9 +47,9 @@ class TransmitterManager private constructor() {
                     it.deviceInfo?.let { deviceIfo ->
                         val newEntity = TransmitterEntity()
                         newEntity.id = deviceIfo.deviceId
-                        newEntity.sensorId = deviceIfo.sensorId
-                        newEntity.sensorIndex = deviceIfo.sensorIndex
-                        newEntity.sensorStartTime = deviceIfo.sensorStartUp
+//                        newEntity.sensorId = deviceIfo.sensorId
+//                        newEntity.sensorIndex = deviceIfo.sensorIndex
+//                        newEntity.sensorStartTime = deviceIfo.sensorStartUp
                         newEntity.deviceModel = deviceIfo.deviceModel
                         newEntity.deviceSn = deviceIfo.deviceSn
                         newEntity.deviceMac = deviceIfo.deviceMac

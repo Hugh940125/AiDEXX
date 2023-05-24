@@ -31,9 +31,9 @@ class CalibrateEntity : BaseEventEntity() {
     var indexAfterCal: Int = 0
     var cf: Float = 1f //校准系数
     var offset: Float = 0f //校准偏移量
-    var isValid = 0
+    var isValid: Int? = null
     var index = 0
-    var autoIncrementColumn = 0
+    var autoIncrementColumn = 0L
 
     @Index
     var timeOffset = 0

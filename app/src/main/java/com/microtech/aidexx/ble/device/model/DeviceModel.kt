@@ -1,9 +1,15 @@
 package com.microtech.aidexx.ble.device.model
 
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
+import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.entity.CalibrateEntity_
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.utils.EncryptUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerProxy
@@ -19,7 +25,6 @@ import java.util.*
 const val X_NAME = "AiDEX X"
 
 abstract class DeviceModel(val entity: TransmitterEntity) {
-
     var faultType = 0 // 1.异常状态，可恢复 2.需要更换
     var targetEventIndex = 0
     var nextEventIndex = 0
@@ -89,14 +94,43 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract suspend fun deletePair()
 
-    fun updateStartTime(sensorStartTime: Date?, callback: ((Boolean) -> Unit)? = null) {
+    fun updateStartTime(sensorStartTime: Date?) {
         ObjectBox.runAsync({
-            entity.sensorStartTime = sensorStartTime
+            val sensorId = EncryptUtils.md5(
+                UserInfoManager.instance().userId()
+                        + entity.deviceSn
+                        + entity.startTimeToIndex(sensorStartTime)
+                        + entity.startTimeToIndex(sensorStartTime)
+            )
+            sensorId.let {
+                val lastBrief = ObjectBox.cgmHistoryBox!!.query()
+                    .equal(RealCgmHistoryEntity_.sensorId, it)
+                    .orderDesc(RealCgmHistoryEntity_.timeOffset)
+                    .build()
+                    .findFirst()
+                entity.eventIndex = lastBrief?.timeOffset ?: 0
+                nextEventIndex = entity.eventIndex + 1
+                val lastRaw = ObjectBox.cgmHistoryBox!!.query()
+                    .equal(RealCgmHistoryEntity_.sensorId, it)
+                    .notNull(RealCgmHistoryEntity_.rawIsValid)
+                    .orderDesc(RealCgmHistoryEntity_.timeOffset)
+                    .build()
+                    .findFirst()
+                entity.fullEventIndex = lastRaw?.timeOffset ?: 0
+                nextFullEventIndex = entity.fullEventIndex + 1
+                val lastCal = ObjectBox.calibrationBox!!.query()
+                    .equal(CalibrateEntity_.sensorId, it)
+                    .orderDesc(CalibrateEntity_.index)
+                    .build()
+                    .findFirst()
+                entity.calIndex = lastCal?.timeOffset ?: 0
+                nextCalIndex = entity.calIndex + 1
+            }
             ObjectBox.transmitterBox!!.put(entity)
         }, onSuccess = {
-            callback?.invoke(true)
+            LogUtil.eAiDEX("Init data start index, brief index:${entity.eventIndex},raw index:${entity.fullEventIndex},cal index:${entity.calIndex}")
+            entity.sensorStartTime = sensorStartTime
         }, onError = {
-            callback?.invoke(false)
         })
     }
 

@@ -8,7 +8,6 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.widget.dialog.lib.TipDialog
 import com.microtech.aidexx.widget.dialog.lib.WaitDialog
-import com.microtech.aidexx.widget.dialog.lib.interfaces.OnBindView
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.option.OptionsPickerBuilder
 import com.microtech.aidexx.widget.selector.option.OptionsPickerView
@@ -20,6 +19,7 @@ import com.microtech.aidexx.widget.selector.option.OptionsPickerView
  */
 object Dialogs {
     private var dialogList = mutableListOf<StandardDialog>()
+    private var whetherDialogMap = hashMapOf<String, StandardDialog>()
 
     class Picker(private val context: Context) {
 
@@ -93,9 +93,13 @@ object Dialogs {
         title: String? = null,
         content: String? = null,
         confirm: (() -> Unit)?,
-        cancel: (() -> Unit)? = null
+        cancel: (() -> Unit)? = null,
+        key: String? = null
     ) {
-        StandardDialog.Setter(context)
+        key?.let {
+            whetherDialogMap[it]?.dismiss()
+        }
+        val create = StandardDialog.Setter(context)
             .content(content)
             .title(title)
             .setPositive { dialog, _ ->
@@ -104,7 +108,11 @@ object Dialogs {
             }.setCancel { dialog, _ ->
                 dialog.dismiss()
                 cancel?.invoke()
-            }.create().show()
+            }.create()
+        key?.let {
+            whetherDialogMap[it] = create
+        }
+        create.show()
     }
 
     fun showWait(

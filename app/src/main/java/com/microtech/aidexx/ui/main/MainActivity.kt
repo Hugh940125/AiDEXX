@@ -72,13 +72,16 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
-                            if (!hasIgnored) {
+                            if (!hasIgnored && (ActivityUtil.isHarmonyOS() || ActivityUtil.isMIUI())) {
                                 Dialogs.showWhether(
                                     activity,
                                     content = activity.getString(R.string.content_ignore_battery),
+                                    cancel = {
+                                    },
                                     confirm = {
                                         ignoreBatteryOptimization(activity)
-                                    })
+                                    }, key = "battery_optimize"
+                                )
                             }
                         }
                     }
@@ -97,9 +100,11 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                         "com.android.settings",
                         "com.android.settings.Settings\$HighPowerApplicationsActivity"
                     )
-                } else {
+                } else if (ActivityUtil.isMIUI()) {
                     intent = Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                     intent.data = Uri.parse("package:" + activity.packageName)
+                } else {
+                    return
                 }
                 activity.startActivity(intent)
             } catch (e: Exception) {

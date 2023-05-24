@@ -102,7 +102,7 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
     while (calibrationsParser.hasNext()) {
         const AidexXCalibrationEntity *calbration = calibrationsParser.getCalibration();
         if (calbration != nullptr) {
-            LOGE("calbration : %d",calbration->offset);
+//            LOGE("calbration : %d",calbration->offset);
             jobject historyObject = env->NewObject(history_Class, caliConstructMId,
                                                    calbration->index,
                                                    calbration->timeOffset,

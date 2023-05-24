@@ -38,6 +38,11 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.setting.OtherSettingActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
             android:name=".ui.setting.alert.AlertSettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait"
@@ -85,7 +90,6 @@
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
-
         <activity
             android:name=".ui.setting.AboutActivity"
             android:exported="false"
@@ -108,17 +112,16 @@
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.setting.share.ShareAddUserByWechatActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
-            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.setting.share.ShareAndFollowEditActivity"
+            android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
-            android:exported="false"
             tools:ignore="LockedOrientationActivity" />
-
         <activity
             android:name=".ui.main.bg.history.BloodGlucoseHistoryActivity"
             android:exported="false"

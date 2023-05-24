@@ -6,6 +6,7 @@ import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity_
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 
@@ -53,6 +54,14 @@ object CloudCalHistorySync : CloudHistorySync<CalibrateEntity>() {
         userId: String?
     ) {
         responseList?.let {
+            if (type == 3) {
+                CgmCalibBgRepository.insertCal(it)
+                MmkvManager.setEventDataMinId(
+                    getDataSyncFlagKey(userId!!),
+                    responseList.last().autoIncrementColumn
+                )
+                return@let
+            }
             for ((index, entity) in origin.withIndex()) {
                 entity.uploadState = 2
                 entity.autoIncrementColumn = responseList[index].autoIncrementColumn

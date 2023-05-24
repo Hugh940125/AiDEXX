@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.os.Process
@@ -22,6 +23,14 @@ object ActivityUtil {
             return HARMONY_OS == method.invoke(clz)
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+        return false
+    }
+
+    fun isMIUI(): Boolean {
+        val manufacturer = Build.MANUFACTURER
+        if ("Xiaomi".equals(manufacturer, true)) {
+            return true
         }
         return false
     }

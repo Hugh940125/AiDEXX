@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
-import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.setting.alert.*
@@ -213,7 +212,7 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
             content = resources.getString(R.string.location_service),
             confirm = {
                 LocationUtils.enableLocationService(this)
-            }
+            }, key = "location_service"
         )
     }
 

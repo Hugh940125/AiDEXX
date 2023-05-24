@@ -48,7 +48,7 @@ open class ActionBarWidget : ConstraintLayout {
         val parent = inflater.inflate(R.layout.widget_action_bar, this, true)
         parent.setPadding(0, getStatusBarHeight(),8.dp2px(), 8.dp2px())
         mViewBinding = WidgetActionBarBinding.bind(parent)
-        ivRightIcon = parent.findViewById(R.id.ll_title)
+        ivRightIcon = parent.findViewById(R.id.iv_right)
     }
 
     //获取状态栏的高度
