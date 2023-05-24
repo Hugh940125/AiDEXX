@@ -68,6 +68,6 @@ fun Float.toGlucoseStringWithUnit(): String {
 
 fun roundOffDecimal(number: Float): Float {
     val df = DecimalFormat("#.#")
-    df.roundingMode = RoundingMode.CEILING
+    df.roundingMode = RoundingMode.FLOOR
     return df.format(number).toFloat()
 }

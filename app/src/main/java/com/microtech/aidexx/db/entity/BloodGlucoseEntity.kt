@@ -4,10 +4,10 @@ import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.roundOffDecimal
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
-import java.util.Date
-import java.util.UUID
+import java.util.*
 
 
 @Entity
@@ -59,7 +59,7 @@ class BloodGlucoseEntity : BaseEventEntity {
     override fun getValueDescription(res: Resources): String {
         val unit = UnitManager.glucoseUnit.text
         return when (UnitManager.glucoseUnit) {
-            UnitManager.GlucoseUnit.MMOL_PER_L -> "${bloodGlucoseMg / 18}$unit"
+            UnitManager.GlucoseUnit.MMOL_PER_L -> "${roundOffDecimal(bloodGlucoseMg / 18)}$unit"
             UnitManager.GlucoseUnit.MG_PER_DL -> "$bloodGlucoseMg$unit"
         }
     }
