@@ -79,7 +79,7 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 }
             }
             settingOther.setOnClickListener {
-                startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
+                //startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
             }
             settingAbout.setOnClickListener {
                 startActivity(Intent(this@SettingActivity, AboutActivity::class.java))

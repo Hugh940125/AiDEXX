@@ -123,7 +123,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
                     .orderDesc(CalibrateEntity_.index)
                     .build()
                     .findFirst()
-                entity.calIndex = lastCal?.timeOffset ?: 0
+                entity.calIndex = lastCal?.index ?: 0
                 nextCalIndex = entity.calIndex + 1
             }
             ObjectBox.transmitterBox!!.put(entity)

@@ -40,6 +40,9 @@ object AlertUtil {
     private lateinit var mSoundPool: SoundPool
     private var playingSound: Int = -1
     private var vibrator: Vibrator? = null
+    var alertFrequency:Long = calculateFrequency(2)
+    var urgentFrequency: Long = calculateFrequency(0)
+
 
     fun init(context: Context) {
         soundMap = hashMapOf()
@@ -116,7 +119,7 @@ object AlertUtil {
 
     suspend fun loadSettingsFromDb(): AlertSettingsEntity? {
         return ObjectBox.store.awaitCallInTx {
-            ObjectBox.AlertSettingsBox!!.query()
+            val findFirst = ObjectBox.AlertSettingsBox!!.query()
                 .equal(
                     AlertSettingsEntity_.authorizationId,
                     UserInfoManager.instance().userId()
@@ -124,6 +127,11 @@ object AlertUtil {
                 .orderDesc(AlertSettingsEntity_.idx)
                 .build()
                 .findFirst()
+            findFirst?.let {
+                alertFrequency = calculateFrequency(it.alertFrequency)
+                urgentFrequency = calculateFrequency(it.urgentAlertFrequency)
+            }
+            findFirst
         }
     }
 
@@ -151,6 +159,7 @@ object AlertUtil {
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val alertSettings = getAlertSettings()
             alertSettings.alertFrequency = index
+            alertFrequency = calculateFrequency(index)
             save(alertSettings)
         }
     }
@@ -223,6 +232,7 @@ object AlertUtil {
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val alertSettings = getAlertSettings()
             alertSettings.urgentAlertFrequency = index
+            urgentFrequency = calculateFrequency(index)
             save(alertSettings)
         }
     }

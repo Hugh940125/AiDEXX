@@ -7,7 +7,6 @@ import android.os.Message
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
@@ -18,7 +17,6 @@ import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentGlucosePanelBinding
 import com.microtech.aidexx.ui.main.home.HomeBackGroundSelector
-import com.microtech.aidexx.ui.main.home.chart.ChartViewModel
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
@@ -26,7 +24,7 @@ import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.entity.BleMessage
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Timer
+import java.util.*
 import kotlin.concurrent.schedule
 
 private const val REFRESH_PANEL = 2006
@@ -130,7 +128,8 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 HomeBackGroundSelector.instance().getHomeBg(null)
         }
         binding.tvGlucoseState.visibility = View.GONE
-        if (deviceModel.minutesAgo != null && deviceModel.minutesAgo!! in 0..15 && deviceModel.glucose != null) {
+        //&& deviceModel.minutesAgo!! in 0..15
+        if (deviceModel.minutesAgo != null && deviceModel.glucose != null) {
             binding.tvGlucoseState.visibility = View.GONE
             binding.tvGlucoseState.text = ""
             if (deviceModel.isMalfunction) {
