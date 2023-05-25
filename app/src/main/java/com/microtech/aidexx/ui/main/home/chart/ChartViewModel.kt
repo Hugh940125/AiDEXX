@@ -31,6 +31,7 @@ import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.CalDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.toGlucoseValue
@@ -328,6 +329,23 @@ class ChartViewModel: ViewModel() {
                     }
                     if (rets.isNotEmpty()) {
                         addBgData(rets)
+                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    }
+                }
+                else -> {}
+            }
+        }
+    }
+
+    suspend fun onCalDataChanged(data: CalDataChangedInfo) {
+        withContext(Dispatchers.IO) {
+            when (data.first) {
+                DataChangedType.ADD -> {
+                    val rets = data.second.filter {
+                        it.timestamp >= curXMinTimeMillis()
+                    }
+                    if (rets.isNotEmpty()) {
+                        addCalData(rets)
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }

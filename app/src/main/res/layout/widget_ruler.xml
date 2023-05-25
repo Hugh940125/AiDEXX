@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:text="5"
             android:textAlignment="center"
-            android:textSize="48sp"
+            android:textSize="40sp"
             tools:ignore="HardcodedText" />
 
         <TextView
@@ -47,13 +47,13 @@
         android:layout_height="wrap_content"
         android:text="▼"
         android:textAlignment="center"
-        android:textSize="18sp"
+        android:textSize="16sp"
         tools:ignore="HardcodedText" />
 
     <com.microtech.aidexx.widget.ruler.RulerView
         android:id="@+id/rv_number"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         app:gv_gradationGap="10dp"
         app:zjun_bgColor="?containerBackgroundDark"
         app:zjun_gradationColor="?android:textColor"

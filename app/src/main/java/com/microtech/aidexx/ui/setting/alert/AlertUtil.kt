@@ -14,7 +14,10 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.AlertSettingsEntity
 import com.microtech.aidexx.db.entity.AlertSettingsEntity_
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtechmd.blecomm.constant.History
 import io.objectbox.kotlin.awaitCallInTx
+import io.objectbox.kotlin.equal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -40,8 +43,11 @@ object AlertUtil {
     private lateinit var mSoundPool: SoundPool
     private var playingSound: Int = -1
     private var vibrator: Vibrator? = null
-    var alertFrequency:Long = calculateFrequency(2)
+    var alertFrequency: Long = calculateFrequency(2)
     var urgentFrequency: Long = calculateFrequency(0)
+    var hyperSwitchEnable: Boolean = true
+    var hypoSwitchEnable: Boolean = true
+    var urgentLowSwitchEnable: Boolean = true
 
 
     fun init(context: Context) {
@@ -130,6 +136,9 @@ object AlertUtil {
             findFirst?.let {
                 alertFrequency = calculateFrequency(it.alertFrequency)
                 urgentFrequency = calculateFrequency(it.urgentAlertFrequency)
+                hyperSwitchEnable = it.isHyperEnable
+                hypoSwitchEnable = it.isHypoEnable
+                urgentLowSwitchEnable = it.isUrgentLowEnable
             }
             findFirst
         }
@@ -168,6 +177,7 @@ object AlertUtil {
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val alertSettings = getAlertSettings()
             alertSettings.isHypoEnable = enable
+            hypoSwitchEnable = enable
             save(alertSettings)
         }
     }
@@ -184,6 +194,7 @@ object AlertUtil {
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val alertSettings = getAlertSettings()
             alertSettings.isHyperEnable = value
+            hyperSwitchEnable = value
             save(alertSettings)
         }
     }
@@ -216,6 +227,7 @@ object AlertUtil {
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val alertSettings = getAlertSettings()
             alertSettings.isUrgentLowEnable = enable
+            urgentLowSwitchEnable = enable
             save(alertSettings)
         }
     }

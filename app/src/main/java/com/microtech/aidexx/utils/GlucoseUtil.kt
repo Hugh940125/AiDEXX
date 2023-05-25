@@ -22,7 +22,7 @@ fun Int.toGlucoseValue(): Float {
 
 fun Float.fromGlucoseValue(): Float {
     return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this * 18
+        UnitManager.GlucoseUnit.MMOL_PER_L -> this * 18f
         UnitManager.GlucoseUnit.MG_PER_DL -> this
     }
 }
@@ -68,6 +68,6 @@ fun Float.toGlucoseStringWithUnit(): String {
 
 fun roundOffDecimal(number: Float): Float {
     val df = DecimalFormat("#.#")
-    df.roundingMode = RoundingMode.FLOOR
+    df.roundingMode = RoundingMode.HALF_EVEN
     return df.format(number).toFloat()
 }

@@ -70,7 +70,7 @@ data class ReqGetCgmByPage(
 data class ReqGetEventByPage(
     val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
     val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
-    val downAutoIncrementColumn: Long?,//
+    val endAutoIncrementColumn: Long?,//
     val userId: String?,//	是 String (String)
 ): ReqEntity()
 //endregion

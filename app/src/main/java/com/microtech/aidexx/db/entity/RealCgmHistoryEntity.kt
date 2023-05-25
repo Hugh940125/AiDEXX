@@ -206,12 +206,14 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
 
 
     fun getHighOrLowGlucoseType(): Int {
-        if (glucose!! > ThresholdManager.hyper) {
-            return 2
-        } else if (glucose!! < ThresholdManager.hypo && glucose!! >= ThresholdManager.URGENT_HYPO) {
-            return 1
-        } else if (glucose!! < ThresholdManager.URGENT_HYPO) {
-            return 3
+        glucose?.let {
+            if (it >= ThresholdManager.hyper) {
+                return History.HISTORY_LOCAL_HYPER
+            } else if (it <= ThresholdManager.hypo && it > ThresholdManager.URGENT_HYPO) {
+                return History.HISTORY_LOCAL_HYPO
+            } else if (it <= ThresholdManager.URGENT_HYPO) {
+                return History.HISTORY_LOCAL_URGENT_HYPO
+            }
         }
         return 0
     }

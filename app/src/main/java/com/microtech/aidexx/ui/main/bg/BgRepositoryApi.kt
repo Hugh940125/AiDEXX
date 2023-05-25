@@ -16,7 +16,7 @@ import java.util.*
  *@desc
  */
 object BgRepositoryApi {
-    suspend fun getLastGlucoseHistory(): BloodGlucoseEntity? {
+    fun getLastGlucoseHistory(): BloodGlucoseEntity? {
         val mutableList = ObjectBox.bgHistoryBox!!.query()
             .equal(
                 BloodGlucoseEntity_.userId,
@@ -24,7 +24,7 @@ object BgRepositoryApi {
                 QueryBuilder.StringOrder.CASE_INSENSITIVE
             )
             .equal(BloodGlucoseEntity_.deleteStatus, 0)
-            .order(BloodGlucoseEntity_.idx)
+            .order(BloodGlucoseEntity_.timestamp)
             .build()
             .find()
         return if (mutableList.isEmpty()) {

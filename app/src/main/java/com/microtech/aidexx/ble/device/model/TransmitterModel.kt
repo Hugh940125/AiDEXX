@@ -28,10 +28,7 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
-import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.DataChangedType
-import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.*
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
@@ -44,9 +41,7 @@ import io.objectbox.kotlin.equal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.math.RoundingMode
 import java.nio.charset.Charset
-import java.text.DecimalFormat
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.exp
@@ -103,17 +98,14 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     var dataTypeNeedSync = 0
     var isSensorExpired: Boolean = false
-    private val typeHyperAlert = 1
-    private val typeHypoAlert = 2
-    private val typeUrgentAlert = 3
     private var newestEventIndex: Int = 0
     private var newestCalIndex: Int = 0
     private var rawRangeStartIndex: Int = 0
     private var briefRangeStartIndex: Int = 0
     private var calRangeStartIndex: Int = 0
-    private var lastHyperAlertTime: Long? = null
-    private var lastHypoAlertTime: Long? = null
-    private var lastUrgentAlertTime: Long? = null
+    private var lastHyperAlertTime: Long = 0
+    private var lastHypoAlertTime: Long = 0
+    private var lastUrgentAlertTime: Long = 0
     private var alertSetting: AlertSettingsEntity? = null
     private val cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
@@ -544,12 +536,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    private fun roundOffDecimal(number: Float): Float {
-        val df = DecimalFormat("#.#")
-        df.roundingMode = RoundingMode.HALF_UP
-        return df.format(number).toFloat()
-    }
-
     private fun saveCalHistory(data: ByteArray?) {
         val aidexXCalibration = AidexXParser.getAidexXCalibration<AidexXCalibrationEntity>(data)
         val userId = UserInfoManager.instance().userId()
@@ -582,6 +568,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             entity.calIndex = aidexXCalibration.last().index
             nextCalIndex = entity.calIndex + 1
             transmitterBox!!.put(entity)
+            EventBusManager.send(
+                EventBusKey.EVENT_CAL_DATA_CHANGED,
+                CalDataChangedInfo(DataChangedType.ADD, mutableListOf<CalibrateEntity>().also {
+                    it.addAll(tempCalList)
+                })
+            )
             tempCalList.clear()
             continueCalFetch()
         }, {
@@ -607,9 +599,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({
             val now = TimeUtils.currentTimeMillis
             val alertFrequency = AlertUtil.alertFrequency
-            val alertRange = alertFrequency..2 * alertFrequency
+//            val alertRange = alertFrequency..2 * alertFrequency
             val urgentFrequency = AlertUtil.urgentFrequency
-            val urgentRange = urgentFrequency..2 * urgentFrequency
+//            val urgentRange = urgentFrequency..2 * urgentFrequency
             tempBriefList.clear()
             for (history in histories) {
                 val historyEntity = RealCgmHistoryEntity()
@@ -649,15 +641,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         if (isMalfunction || history.timeOffset < 60) {
                             historyEntity.eventWarning = -1
                         } else {
-                            if (historyEntity.isHighOrLow()) {
-                                when {
-                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPER -> {
-                                        if (alertSetting?.isHyperEnable == true) {
-                                            if (lastHyperAlertTime == null) {
-                                                lastHyperAlertTime = getLastAlertTime(sensorId, typeHyperAlert)
+                            val highOrLowGlucoseType = historyEntity.getHighOrLowGlucoseType()
+                            if (highOrLowGlucoseType != 0) {
+                                when (highOrLowGlucoseType) {
+                                    History.HISTORY_LOCAL_HYPER -> {
+                                        if (AlertUtil.hyperSwitchEnable) {
+                                            if (lastHyperAlertTime == 0L) {
+                                                lastHyperAlertTime =
+                                                    getLastAlertTime(sensorId, History.HISTORY_LOCAL_HYPER)
                                             }
-                                            if (lastHyperAlertTime == null
-                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
+                                            if (lastHyperAlertTime == 0L
+                                                || deviceTimeMillis - lastHyperAlertTime > alertFrequency
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
                                                 alert?.invoke(
@@ -667,15 +661,15 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                             }
                                         }
                                     }
-                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_HYPO -> {
-                                        if (alertSetting?.isHypoEnable == true) {
-                                            if (lastHypoAlertTime == null) {
+                                    History.HISTORY_LOCAL_HYPO -> {
+                                        if (AlertUtil.hypoSwitchEnable) {
+                                            if (lastHypoAlertTime == 0L) {
                                                 lastHypoAlertTime = getLastAlertTime(
-                                                    sensorId, typeHypoAlert
+                                                    sensorId, History.HISTORY_LOCAL_HYPO
                                                 )
                                             }
-                                            if (lastHypoAlertTime == null
-                                                || TimeUtils.currentTimeMillis - deviceTimeMillis in alertRange
+                                            if (lastHypoAlertTime == 0L
+                                                || deviceTimeMillis - lastHypoAlertTime > alertFrequency
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
                                                 alert?.invoke(
@@ -685,13 +679,14 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                             }
                                         }
                                     }
-                                    historyEntity.getHighOrLowGlucoseType() == History.HISTORY_LOCAL_URGENT_HYPO -> {
-                                        if (alertSetting?.isUrgentLowEnable == true) {
-                                            if (lastUrgentAlertTime == null) {
+                                    History.HISTORY_LOCAL_URGENT_HYPO -> {
+                                        if (AlertUtil.urgentLowSwitchEnable) {
+                                            if (lastUrgentAlertTime == 0L) {
                                                 lastUrgentAlertTime =
-                                                    getLastAlertTime(sensorId, typeUrgentAlert)
+                                                    getLastAlertTime(sensorId, History.HISTORY_LOCAL_URGENT_HYPO)
                                             }
-                                            if (lastUrgentAlertTime == null || TimeUtils.currentTimeMillis - deviceTimeMillis in urgentRange
+                                            if (lastUrgentAlertTime == 0L
+                                                || deviceTimeMillis - lastUrgentAlertTime > urgentFrequency
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
                                                 alert?.invoke(
@@ -760,10 +755,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    private fun getLastAlertTime(sensorId: String, type: Int): Long? {
+    private fun getLastAlertTime(sensorId: String, type: Int): Long {
         val build = cgmHistoryBox!!.query().equal(
-            RealCgmHistoryEntity_.sensorIndex, entity.startTimeToIndex()
-        ).equal(
             RealCgmHistoryEntity_.sensorId, sensorId
         )
         when (type) {
@@ -778,7 +771,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             )
         }
         val lastAlert = build.orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
-        return lastAlert?.deviceTime?.time
+        return lastAlert?.deviceTime?.time ?: 0
     }
 
     private fun saveRawHistory(rawHistories: List<AidexXRawHistoryEntity>) {

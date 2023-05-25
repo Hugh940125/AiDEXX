@@ -28,9 +28,9 @@ object CalibrateDao {
         awaitCallInTx {
             box.query()
                 .between(
-                    CalibrateEntity_.calTime,
-                    startDate,
-                    endDate
+                    CalibrateEntity_.timestamp,
+                    startDate.time,
+                    endDate.time
                 )
                 .equal( CalibrateEntity_.userId, authorId, QueryBuilder.StringOrder.CASE_SENSITIVE )
                 .equal(CalibrateEntity_.deleteStatus, 0)

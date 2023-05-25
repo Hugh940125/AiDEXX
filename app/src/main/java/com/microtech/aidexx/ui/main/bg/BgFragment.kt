@@ -240,7 +240,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 binding.tvMoreHistory.visibility = View.VISIBLE
                 binding.llBgRecode.apply {
                     llContainer.visibility = View.VISIBLE
-                    tvGlucoseTime.text = lastGlucoseRecord.getDisplayTime("yyyy-MM-DD HH:mm")
+                    tvGlucoseTime.text = lastGlucoseRecord.getDisplayTime("yyyy-MM-dd HH:mm")
                     var tagText = lastGlucoseRecord.getTagText(requireContext().resources)
                     if (tagText.isNullOrEmpty()) {
                         tagText = "— —"
@@ -300,7 +300,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                                     Dialogs.showWait()
                                     val value =
                                         (if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L)
-                                            (glucoseValue!! * 18)
+                                            glucoseValue!! * 18f
                                         else glucoseValue!!).roundToInt()
                                     MessageDistributor.instance().observer(mObserver)
                                     model.calibration(
