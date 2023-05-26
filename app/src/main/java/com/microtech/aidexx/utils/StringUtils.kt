@@ -67,25 +67,7 @@ object StringUtils {
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         sp2.setSpan(
-            object : ClickableSpan() {
-                override fun onClick(view: View) {
-                    val intent = Intent(contextRef, WebActivity::class.java)
-                    intent.putExtra(
-                        IntentKey.WEB_TITLE,
-                        contextRef?.getString(R.string.User_Agreement)
-                    )
-                    intent.putExtra(
-                        IntentKey.WEB_URL,
-                        contextRef?.getString(R.string.Terms_of_Service_url)
-                    )
-                    contextRef?.startActivity(intent)
-                }
-
-                override fun updateDrawState(ds: TextPaint) {
-                    ds.color = appColorAccent
-                    ds.isUnderlineText = true
-                }
-            },
+            ClickSpan(contextRef, appColorAccent),
             0,
             context.getString(R.string.User_Agreement).length,
             Spanned.SPAN_INCLUSIVE_EXCLUSIVE
@@ -130,6 +112,27 @@ object StringUtils {
         return bundle.append(sp3)
     }
 
+    class ClickSpan(private val contextRef: Context?, val color: Int) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            contextRef?.let {
+                val intent = Intent(it, WebActivity::class.java)
+                intent.putExtra(
+                    IntentKey.WEB_TITLE,
+                    it.getString(R.string.User_Agreement)
+                )
+                intent.putExtra(
+                    IntentKey.WEB_URL,
+                    it.getString(R.string.Terms_of_Service_url)
+                )
+                it.startActivity(intent)
+            }
+        }
+
+        override fun updateDrawState(ds: TextPaint) {
+            ds.color = color
+            ds.isUnderlineText = true
+        }
+    }
 
     /** 版本比较
      * @param setupVer 字符串格式 2.5.1 或者 2.5.12
