@@ -1,14 +1,18 @@
 package com.microtech.aidexx.ui.pair
 
+import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import com.microtech.aidexx.R
+import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
-import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -21,13 +25,14 @@ import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+
 object PairUtil {
+    private var isBonding = false
+
     enum class Operation { PAIR, UNPAIR }
 
     private var operation: Operation? = null
-
-    private const
-    val DISMISS_DIALOG = 1
+    private const val DISMISS_DIALOG = 1
     private const val TIMEOUT_MILLIS = 40 * 1000L
 
     val handler = object : Handler(Looper.getMainLooper()) {
@@ -37,6 +42,34 @@ object PairUtil {
     }
 
     private var isForceUnpair: Boolean = false
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action
+            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
+                when (intent!!.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1)) {
+                    BluetoothDevice.BOND_BONDING -> {
+                        LogUtil.eAiDEX("BluetoothDevice.BOND_BONDING")
+                        isBonding = true
+                    }
+                    BluetoothDevice.BOND_BONDED -> {
+                        LogUtil.eAiDEX("BluetoothDevice.BOND_BONDED")
+                        isBonding = false
+                    }
+                    BluetoothDevice.BOND_NONE -> {
+                        LogUtil.eAiDEX("BluetoothDevice.BOND_NONE")
+                        if (isBonding) {
+                            AidexBleAdapter.getInstance().executeDisconnect()
+                            LogUtil.eAiDEX("BluetoothDevice.BOND_NONE dismissWait")
+                            isBonding = false
+                        }
+                    }
+                    else -> {
+                    }
+                }
+            }
+        }
+    }
 
     fun fail() {
         handler.removeMessages(DISMISS_DIALOG)
@@ -143,6 +176,15 @@ object PairUtil {
         isForceUnpair = isForce
         val model = TransmitterManager.instance().getDefault()
         model?.getController()?.clearPair()
+    }
+
+    fun registerBondStateChangeReceiver(context: Context) {
+        val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+        context.registerReceiver(receiver, filter)
+    }
+
+    fun unregisterBondStateChangeReceiver(context: Context) {
+        context.unregisterReceiver(receiver)
     }
 
     private fun pairFailedTips(context: Context) {

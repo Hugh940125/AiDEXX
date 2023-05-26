@@ -26,7 +26,7 @@ class BloodGlucoseEntity : BaseEventEntity {
     constructor()
     constructor(testTime: Date, bloodGlucose: Float) {
         setTimeInfo(testTime)
-        this.bloodGlucoseMg = bloodGlucose
+        this.bloodGlucoseMg = roundOffDecimal(bloodGlucose)
         this.language = LanguageUnitManager.getCurrentLanguageCode()
     }
 

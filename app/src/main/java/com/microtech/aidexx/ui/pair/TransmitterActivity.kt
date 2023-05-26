@@ -76,6 +76,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         AidexxApp.isPairing = true
         transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
+        PairUtil.registerBondStateChangeReceiver(this)
         loadSavedTransmitter()
         initAnim()
         initView()
@@ -167,6 +168,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     override fun onDestroy() {
         super.onDestroy()
         rotateAnimation.cancel()
+        PairUtil.unregisterBondStateChangeReceiver(this)
         MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()
         AidexxApp.isPairing = false

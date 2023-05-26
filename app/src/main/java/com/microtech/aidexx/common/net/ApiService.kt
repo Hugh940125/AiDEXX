@@ -31,7 +31,7 @@ import java.text.DecimalFormat
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLSession
 
-const val middleUrl = "/backend/aidex-v2"
+const val middleUrl = "/backend/aidex-x"
 
 // region 账号
 const val USER_URL = "$middleUrl/user"

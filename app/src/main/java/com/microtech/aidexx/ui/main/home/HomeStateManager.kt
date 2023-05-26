@@ -81,5 +81,6 @@ class HomeStateManager private constructor() {
     fun cancel() {
         timer?.cancel()
         timer = null
+        onHomeStateChange = null
     }
 }
