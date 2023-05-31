@@ -260,15 +260,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override fun savePair(
-        model: Int,
-        version: String?,
-        sensorStartTime: Date?
     ) {
         entity.encryptionKey = controller?.key
         entity.deviceMac = controller?.mac
         entity.accessId = controller?.id
-        entity.deviceModel = model
-        entity.version = version
         entity.deviceName = "$X_NAME-${entity.deviceSn}"
         ObjectBox.runAsync({
             transmitterBox!!.put(entity)

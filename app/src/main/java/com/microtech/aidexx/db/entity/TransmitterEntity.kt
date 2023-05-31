@@ -36,7 +36,16 @@ class TransmitterEntity {
         }
     var needReplace = false
     var deviceModel: Int = 0
-    var expirationTime: Int = 15
+        set(value) {
+            field = value
+            expirationTime = when (field) {
+                0, 3 -> 15
+                1, 4 -> 10
+                2, 5 -> 8
+                else -> 0
+            }
+        }
+    var expirationTime: Int = 0
         set(value) {
             field = value
             et = value
@@ -72,6 +81,6 @@ class TransmitterEntity {
     }
 
     override fun toString(): String {
-        return "TransmitterEntity(et=$expirationTime,idx=$idx, id=$id, deviceMac='$deviceMac', deviceSn='$deviceSn', accessId=${accessId?.contentToString()}, encryptionKey=${encryptionKey?.contentToString()}, sensorIndex=$sensorIndex, eventIndex=$eventIndex, fullEventIndex=$fullEventIndex, fullSensorIndex=$fullSensorIndex, hyperThreshold=$hyperThreshold, hypoThreshold=$hypoThreshold)"
+        return "TransmitterEntity(calIndex=$calIndex, idx=$idx, id=$id, deviceMac=$deviceMac, version=$version, deviceSn=$deviceSn, accessId=${accessId?.contentToString()}, encryptionKey=${encryptionKey?.contentToString()}, sensorStartTime=$sensorStartTime, needReplace=$needReplace, deviceModel=$deviceModel, expirationTime=$expirationTime, sensorIndex=$sensorIndex, eventIndex=$eventIndex, fullEventIndex=$fullEventIndex, fullSensorIndex=$fullSensorIndex, hyperThreshold=$hyperThreshold, hypoThreshold=$hypoThreshold, deviceKey=$deviceKey, et=$et, deviceName=$deviceName, deviceType=$deviceType, sensorId=$sensorId)"
     }
 }

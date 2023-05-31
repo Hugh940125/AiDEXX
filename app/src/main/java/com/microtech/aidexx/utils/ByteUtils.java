@@ -58,4 +58,16 @@ public class ByteUtils {
         ca.set(Calendar.MILLISECOND, 0);
         return ca.getTime();
     }
+
+    public static String getDeviceSoftVersion(byte[] data) {
+        int major = Byte.toUnsignedInt(data[2]);
+        int minor = Byte.toUnsignedInt(data[3]);
+        int revision = Byte.toUnsignedInt(data[4]);
+        int build = Byte.toUnsignedInt(data[5]);
+        return major + "." + minor + "." + revision + "." + build;
+    }
+
+    public static int getDeviceType(byte[] data) {
+        return Byte.toUnsignedInt(data[1]);
+    }
 }

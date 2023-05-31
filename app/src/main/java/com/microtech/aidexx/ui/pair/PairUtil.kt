@@ -49,15 +49,12 @@ object PairUtil {
             if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
                 when (intent!!.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, -1)) {
                     BluetoothDevice.BOND_BONDING -> {
-                        LogUtil.eAiDEX("BluetoothDevice.BOND_BONDING")
                         isBonding = true
                     }
                     BluetoothDevice.BOND_BONDED -> {
-                        LogUtil.eAiDEX("BluetoothDevice.BOND_BONDED")
                         isBonding = false
                     }
                     BluetoothDevice.BOND_NONE -> {
-                        LogUtil.eAiDEX("BluetoothDevice.BOND_NONE")
                         if (isBonding) {
                             AidexBleAdapter.getInstance().executeDisconnect()
                             LogUtil.eAiDEX("BluetoothDevice.BOND_NONE dismissWait")
@@ -142,11 +139,19 @@ object PairUtil {
                         AidexXOperation.GET_START_TIME -> {
                             val data = message.data
                             val startTimePair = ByteUtils.checkToDate(data)
+                            default.entity.sensorStartTime = startTimePair
                             scope.launch {
-                                default.savePair(sensorStartTime = startTimePair)
+                                default.savePair()
                             }
                         }
-                        AidexXOperation.GET_DEVICE_INFO -> {}
+                        AidexXOperation.GET_DEVICE_INFO -> {
+                            val data = message.data
+                            val deviceSoftVersion = ByteUtils.getDeviceSoftVersion(data)
+                            val deviceType = ByteUtils.getDeviceType(data)
+                            default.entity.version = deviceSoftVersion
+                            default.entity.deviceModel = deviceType
+                            default.getController().startTime()
+                        }
 
                         AidexXOperation.DISCONNECT -> {
                             LogUtil.eAiDEX("Pair ----> disconnect:$success")
@@ -166,7 +171,7 @@ object PairUtil {
         val buildModel =
             TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
         buildModel.getController().pair()
-        buildModel.getController().startTime()
+        buildModel.getController().getTransInfo()
     }
 
     fun startUnpair(context: Context, isForce: Boolean) {

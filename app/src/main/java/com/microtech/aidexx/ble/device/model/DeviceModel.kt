@@ -86,11 +86,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     abstract fun isAllowCalibration(): Boolean
 
     abstract suspend fun uploadPairInfo()
-    abstract fun savePair(
-        model: Int = 0,
-        version: String? = null,
-        sensorStartTime: Date? = null
-    )
+    abstract fun savePair()
 
     abstract suspend fun deletePair()
 
