@@ -43,11 +43,13 @@ class EnquireManager private constructor() {
                     }
                     onPositive?.invoke()
                     dialog.dismiss()
+                    enquireList.clear()
                 }.setCancel(
                     context.getString(R.string.dont_allow)
                 ) { dialog, _ ->
                     onNegative?.invoke()
                     dialog.dismiss()
+                    enquireList.clear()
                 }.create(StandardDialog.TYPE_VERTICAL)
             dialog.show()
             enquireList.add(dialog)

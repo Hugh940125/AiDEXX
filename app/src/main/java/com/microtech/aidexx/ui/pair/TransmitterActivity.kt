@@ -73,7 +73,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        AidexxApp.isPairing = true
         transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
         PairUtil.registerBondStateChangeReceiver(this)
@@ -171,7 +170,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         PairUtil.unregisterBondStateChangeReceiver(this)
         MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()
-        AidexxApp.isPairing = false
         if ((transmitter == null || transmitter?.accessId == null) && scanStarted) {
             AidexBleAdapter.getInstance().stopBtScan(false)
         }

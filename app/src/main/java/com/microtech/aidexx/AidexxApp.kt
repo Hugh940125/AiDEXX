@@ -27,7 +27,6 @@ class AidexxApp : Application() {
     private var activityAliveCount: AtomicInteger = AtomicInteger(0)
 
     companion object {
-        var isPairing: Boolean = false
         lateinit var instance: AidexxApp
         lateinit var mainScope: CoroutineScope
     }

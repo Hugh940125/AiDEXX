@@ -68,6 +68,7 @@ object Dialogs {
             .setPositive { dialog, _ ->
                 dialog.dismiss()
                 callBack?.invoke()
+                dialogList.clear()
             }.create()
         dialogList.add(standardDialog)
         standardDialog.show()
@@ -105,9 +106,11 @@ object Dialogs {
             .setPositive { dialog, _ ->
                 dialog.dismiss()
                 confirm?.invoke()
+                whetherDialogMap.remove(key)
             }.setCancel { dialog, _ ->
                 dialog.dismiss()
                 cancel?.invoke()
+                whetherDialogMap.remove(key)
             }.create()
         key?.let {
             whetherDialogMap[it] = create

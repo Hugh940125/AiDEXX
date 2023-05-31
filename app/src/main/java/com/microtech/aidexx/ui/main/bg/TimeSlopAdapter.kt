@@ -100,7 +100,7 @@ class TimeSlopAdapter(val context: Context) : RecyclerView.Adapter<TimeSlopAdapt
                     if (index != 8)
                         onSelect?.invoke(index + 1)
                     else
-                        onSelect?.invoke(255)
+                        onSelect?.invoke(99)
                 }
             }
             notifyDataSetChanged()

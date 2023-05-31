@@ -267,7 +267,7 @@ class MainService : Service(), LifecycleOwner {
             var isUrgent = false
             var showCustomerService = false
             val res = ContextUtil.getResources()
-            var alertMethod = if (AidexxApp.instance.isForeground() && AidexxApp.instance.isDisplayOn()) {
+            var alertMethod = if (AidexxApp.instance.isForeground()) {
                 METHOD_DIALOG
             } else {
                 METHOD_NOTIFICATION

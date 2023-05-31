@@ -55,7 +55,7 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     }
                     AidexXOperation.SET_NEW_SENSOR -> {
                         TransmitterManager.instance().getDefault()?.reset()
-                        WaitDialog.dismiss()
+                        Dialogs.showSuccess(getString(R.string.str_succ))
                     }
                     else -> {
 
