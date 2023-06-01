@@ -594,9 +594,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         ObjectBox.runAsync({
             val now = TimeUtils.currentTimeMillis
             val alertFrequency = AlertUtil.alertFrequency
-            val alertRange = alertFrequency..2 * alertFrequency
             val urgentFrequency = AlertUtil.urgentFrequency
-            val urgentRange = urgentFrequency..2 * urgentFrequency
             tempBriefList.clear()
             for (history in histories) {
                 val historyEntity = RealCgmHistoryEntity()
@@ -645,9 +643,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 lastHyperAlertTime =
                                                     getLastAlertTime(sensorId, History.HISTORY_LOCAL_HYPER)
                                             }
-                                            if (lastHyperAlertTime == 0L
-                                                || (deviceTimeMillis - lastHyperAlertTime > alertFrequency
-                                                        && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency)
+                                            if ((lastHyperAlertTime == 0L
+                                                        || deviceTimeMillis - lastHyperAlertTime > alertFrequency)
+                                                && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
                                                 alert?.invoke(
@@ -664,9 +662,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                     sensorId, History.HISTORY_LOCAL_HYPO
                                                 )
                                             }
-                                            if (lastHypoAlertTime == 0L
-                                                || (deviceTimeMillis - lastHypoAlertTime > alertFrequency
-                                                        && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency)
+                                            if ((lastHypoAlertTime == 0L
+                                                        || deviceTimeMillis - lastHypoAlertTime > alertFrequency)
+                                                && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
                                                 alert?.invoke(
@@ -682,9 +680,9 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 lastUrgentAlertTime =
                                                     getLastAlertTime(sensorId, History.HISTORY_LOCAL_URGENT_HYPO)
                                             }
-                                            if (lastUrgentAlertTime == 0L
-                                                || (deviceTimeMillis - lastUrgentAlertTime > urgentFrequency
-                                                        && TimeUtils.currentTimeMillis - deviceTimeMillis <= urgentFrequency)
+                                            if ((lastUrgentAlertTime == 0L
+                                                        || deviceTimeMillis - lastUrgentAlertTime > urgentFrequency)
+                                                && TimeUtils.currentTimeMillis - deviceTimeMillis <= urgentFrequency
                                             ) {
                                                 historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
                                                 alert?.invoke(

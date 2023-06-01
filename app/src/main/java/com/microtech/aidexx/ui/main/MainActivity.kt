@@ -116,18 +116,27 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        try {
-            if (!ActivityUtil.isServiceRunning(this, MainService::class.java)) {
-                startService(Intent(this, MainService::class.java))
-            }
-        } catch (e: Exception) {
-            LogUtil.eAiDEX(e.message.toString())
-        }
         mHandler = MainHandler(this)
         initSDKs()
         fitOrientation()
         initView()
         loadData()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        try {
+            if (!ActivityUtil.isServiceRunning(this, MainService::class.java)) {
+                val intent = Intent(this, MainService::class.java)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+            }
+        } catch (e: Exception) {
+            LogUtil.eAiDEX("Start service error:${e.message.toString()}")
+        }
     }
 
     private fun loadData() {
