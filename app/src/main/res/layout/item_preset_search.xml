@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingTop="15dp">
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/flItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:alignContent="center"
+        app:alignItems="center"
+        app:justifyContent="space_between">
+
+        <TextView
+            android:id="@+id/tvContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:maxWidth="150dp"
+            android:textSize="15sp"
+            tools:text="Apple" />
+
+        <LinearLayout
+            android:id="@+id/llDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="40dp">
+
+            <ImageView
+                android:id="@+id/ivFoodCustom"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_star" />
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/ivFoodInputIcon"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="center_vertical"
+                android:adjustViewBounds="true"
+                android:src="@drawable/event_point" />
+
+            <ImageView
+                android:id="@+id/ivFoodEdit"
+                android:layout_width="19dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_arrow_right" />
+        </LinearLayout>
+    </com.google.android.flexbox.FlexboxLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="@color/event_line" />
+
+</LinearLayout>

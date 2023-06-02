@@ -2,9 +2,12 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.utils.EncryptUtils
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.ConflictStrategy
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import io.objectbox.annotation.Unique
+import java.util.Date
 
 /**
  * 校准记录
@@ -33,7 +36,6 @@ class CalibrateEntity : BaseEventEntity() {
     var offset: Float = 0f //校准偏移量
     var isValid: Int? = null
     var index = 0
-    var autoIncrementColumn = 0L
 
     @Index
     var timeOffset = 0

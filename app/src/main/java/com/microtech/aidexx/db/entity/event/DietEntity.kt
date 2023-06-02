@@ -2,6 +2,7 @@ package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
@@ -13,6 +14,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import java.lang.reflect.Type
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 
 
@@ -21,16 +23,22 @@ class DietEntity : BaseEventEntity {
 
     @Index
     var mealTime: Date = Date()
+        set(value) {
+            field = value
+            appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
+            appTimeZone = TimeZone.getDefault().id //
+            dstOffset = TimeZone.getDefault().dstSavings //
+        }
 
     @Index(type = IndexType.HASH)
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+    var foodId: String? = UUID.randomUUID().toString().replace("-", "")
     var mealRemark: String? = null
     var carbohydrate: Int? = null
 
     var isPreset: Boolean = false
 
     @Convert(converter = DietDetail::class, dbType = String::class)
-    var relList: MutableList<DietDetail> = ArrayList()
+    var expandList: MutableList<DietDetail> = ArrayList()
     var momentType: Int = 0
 
     constructor() {
@@ -44,7 +52,7 @@ class DietEntity : BaseEventEntity {
 
     override fun getEventDescription(res: Resources): String {
         var description = ""
-        if (relList.isNullOrEmpty()) {
+        if (expandList.isNullOrEmpty()) {
             description =
                 mealRemark + "(${carbohydrate}克)"
         } else {
@@ -57,7 +65,7 @@ class DietEntity : BaseEventEntity {
             var protein = 0.0
             var carbohydrate = 0.0
 
-            relList.forEach { dietDetailEntity ->
+            expandList.forEach { dietDetailEntity ->
                 fat += dietDetailEntity.fat
                 protein += dietDetailEntity.protein
                 carbohydrate += dietDetailEntity.carbohydrate
@@ -75,7 +83,7 @@ class DietEntity : BaseEventEntity {
     }
 
     fun getEventValue(res: Resources): String {
-        return if (relList.isEmpty()) {
+        return if (expandList.isEmpty()) {
             carbohydrate.toString()
         } else {
             ""
@@ -84,7 +92,7 @@ class DietEntity : BaseEventEntity {
     }
 
     override fun toString(): String {
-        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, recordUuid=$recordUuid, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$relList, authorizationId=$userId, timestamp=$timestamp)"
+        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, foodId=$foodId, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$expandList, authorizationId=$userId, timestamp=$timestamp)"
     }
 
 
@@ -98,6 +106,16 @@ class DietEntity : BaseEventEntity {
         }
     }
 
+    override fun hashCode(): Int {
+        return foodId.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is DietEntity && it.foodId == this.foodId
+        } ?: false
+    }
+
 }
 
 
@@ -109,7 +127,7 @@ data class DietDetail(
     var protein: Double = 0.0,
     var fat: Double = 0.0,
     var carbohydrate: Double = 0.0,
-    var createTime: Date? = Date(),
+    var foodId: String? = null
 ) : BaseEventDetail() {
 
     override fun toString(): String {

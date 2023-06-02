@@ -186,6 +186,9 @@ dependencies {
     implementation 'com.flyco.roundview:FlycoRoundView_Lib:1.1.4@aar'
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.8.0"
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.10'
+
+    //阴影layout
+    implementation 'com.github.lihangleo2:ShadowLayout:3.3.2'
 }
 
 apply plugin: 'io.objectbox'

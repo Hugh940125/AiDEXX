@@ -53,3 +53,8 @@ data class UpgradeInfo(
         val configId: Int = 0
     )
 }
+
+data class ResEventPresetVersion(
+    val sysVersion: String?,
+    val userVersion: String?
+)

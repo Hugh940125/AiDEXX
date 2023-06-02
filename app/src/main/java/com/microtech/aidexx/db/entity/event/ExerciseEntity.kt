@@ -2,6 +2,7 @@ package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
@@ -13,6 +14,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import java.lang.reflect.Type
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 
 
@@ -22,16 +24,24 @@ class ExerciseEntity : BaseEventEntity {
 
 
     @Index(type = IndexType.HASH)
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+    var exerciseId: String? = UUID.randomUUID().toString().replace("-", "")
 
     @Index
     var startTime: Date = Date()
+        set(value) {
+            field = value
+            appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
+            appTimeZone = TimeZone.getDefault().id //
+            dstOffset = TimeZone.getDefault().dstSavings //
+        }
+
+
     var duration: Int? = null
     var intensity: Int? = null
     var isPreset: Boolean = false
 
     @Convert(converter = ExerciseDetail::class, dbType = String::class)
-    var relList: MutableList<ExerciseDetail> = ArrayList()
+    var expandList: MutableList<ExerciseDetail> = ArrayList()
 
     constructor() {
         this.language = LanguageUnitManager.getCurrentLanguageCode()
@@ -43,7 +53,7 @@ class ExerciseEntity : BaseEventEntity {
     }
 
     override fun getEventDescription(res: Resources): String {
-        return if (relList.isEmpty()) {
+        return if (expandList.isEmpty()) {
             "${
                 (getExerciseMap()[(intensity ?: 1).coerceIn(
                     1,
@@ -52,7 +62,7 @@ class ExerciseEntity : BaseEventEntity {
             }" + "(${duration}${getContext().getString(R.string.min)})"
         } else {
             val sports = mutableListOf<String>()
-            relList?.forEach { exerciseDetailEntity ->
+            expandList?.forEach { exerciseDetailEntity ->
                 sports.add(exerciseDetailEntity.getEventDesc())
             }
             sports.joinToString(";")
@@ -67,6 +77,16 @@ class ExerciseEntity : BaseEventEntity {
 
     fun getEventValue(res: Resources): String {
         return duration.toString()
+    }
+
+    override fun hashCode(): Int {
+        return exerciseId.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is ExerciseEntity && it.exerciseId == this.exerciseId
+        } ?: false
     }
 
     companion object {
@@ -90,7 +110,7 @@ data class ExerciseDetail(
     var hour_kcal_per_kg: Double = 0.0, // 每小时单位公斤消费千卡数
     var quantity: Double = 0.0, //数量
     var unit: Int = 0, // 单位 0:分钟 1：小时
-    var createTime: Date? = Date()
+    var exerciseId: String? = null
 
 ) : BaseEventDetail() {
     override fun toString(): String {

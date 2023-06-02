@@ -3,6 +3,7 @@ package com.microtech.aidexx.utils.mmkv
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.ui.main.event.viewmodels.EventType
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Date
@@ -41,6 +42,26 @@ object MmkvManager {
     private const val SurName = "SurName"
     private const val GivenName = "GivenName"
     private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "already_show_dialog_guide"
+    private const val PRESET_VERSION_ = "PRESET_VERSION_"
+    private const val UNIT_LATEST_UPDATE_TIME = "UNIT_LATEST_UPDATE_TIME"
+    private const val UNIT_VERSION = "UNIT_VERSION"
+    private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
+
+    fun getUnitVersion() = MmkvUtil.decodeInt(UNIT_VERSION, 0)
+    fun setUnitVersion(v: Int) = MmkvUtil.encodeInt(UNIT_VERSION, v)
+
+    fun getUnitLoadedApkVersion() = MmkvUtil.decodeInt(UNIT_LOADED_APK_VERSION, 0)
+    fun setUnitLoadedApkVersion(v: Int) = MmkvUtil.encodeInt(UNIT_LOADED_APK_VERSION, v)
+
+    fun getUnitLatestUpdateTime() = MmkvUtil.decodeLong(UNIT_LATEST_UPDATE_TIME, 0)
+    fun setUnitLatestUpdateTime(time: Long) = MmkvUtil.encodeLong(UNIT_LATEST_UPDATE_TIME, time)
+
+    fun setPresetVersion(@EventType type: Int, version: String, isSys: Boolean) {
+        return MmkvUtil.encodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", version)
+    }
+    fun getPresetVersion(@EventType type: Int, isSys: Boolean): String {
+        return MmkvUtil.decodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", "")
+    }
 
     inline fun <reified T> setEventDataMinId(key: String, autoIncrementColumn: T) {
         when (autoIncrementColumn) {

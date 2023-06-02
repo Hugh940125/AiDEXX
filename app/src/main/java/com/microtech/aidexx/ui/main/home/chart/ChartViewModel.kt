@@ -24,16 +24,17 @@ import com.microtech.aidexx.db.entity.event.InsulinEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
+import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.CalibrateManager
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CalDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
@@ -391,6 +392,7 @@ class ChartViewModel: ViewModel() {
     private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
     private val nextPageBgData = mutableListOf<BloodGlucoseEntity>()
     private val nextPageCalData = mutableListOf<CalibrateEntity>()
+    private val nextPageEventData = mutableListOf<BaseEventEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
@@ -446,7 +448,19 @@ class ChartViewModel: ViewModel() {
                             }
                         }
                     },
-                    //分页加载其他事件相关数据...
+                    async {
+                        EventDbRepository.queryEventByPage(startDate, endDate).let { d ->
+                            if (d.isNotEmpty() && d[0].userId != UserInfoManager.getCurShowUserId()) {
+                                isSuccess = false
+                            } else {
+                                if (needApply) {
+                                    addEvent(d)
+                                } else {
+                                    nextPageEventData.addAll(d)
+                                }
+                            }
+                        }
+                    }
                 )
                 loadTasks.awaitAll()
             }
@@ -609,7 +623,7 @@ class ChartViewModel: ViewModel() {
     private fun addBgData(bgs: List<BloodGlucoseEntity>) {
         for (bg in bgs) {
             val xValue = ChartUtil.millSecondToX(bg.timestamp)
-            val entry = Entry(xValue, getGlucoseValue(bg))
+            val entry = Entry(xValue, bg.getGlucoseValue())
             entry.data = bg
             entry.icon = BgDataSet.icon
             bgSet.addEntryOrdered(entry)
@@ -617,27 +631,6 @@ class ChartViewModel: ViewModel() {
             calDateMaxMin(Date(bg.timestamp))
         }
     }
-
-    private fun getGlucoseValue(bg: BloodGlucoseEntity): Float {
-        if (bg.bloodGlucoseMg < 2 * 18) {
-            return (2f * 18).toGlucoseValue()
-        }
-        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
-            if (bg.bloodGlucoseMg > 30 * 18) {
-                return (30f * 18).toGlucoseValue()
-            } else {
-                bg.bloodGlucoseMg.toGlucoseValue()
-            }
-        } else {
-            return if (bg.bloodGlucoseMg >= 600) {
-                600f.toGlucoseValue()
-            } else {
-                bg.bloodGlucoseMg.toGlucoseValue()
-            }
-        }
-        return bg.bloodGlucoseMg.toGlucoseValue()
-    }
-
 
     //endregion
 
@@ -673,11 +666,11 @@ class ChartViewModel: ViewModel() {
 
     // endregion
 
-    fun <T : BaseEventEntity> initIconSet(es: List<T>) {
+    //region 事件
+    private fun <T : BaseEventEntity> addEvent(es: List<T>) {
         LogUtils.error("initIconSet")
-        eventSet.clear()
         for (e in es) {
-            val entry = Entry(ChartUtil.millSecondToX(e.timestamp), 5f.toGlucoseValue())
+            val entry = Entry(ChartUtil.millSecondToX(e.timestamp), (5f * 18).toGlucoseValue())
             entry.data = e
             entry.icon = when (e.javaClass) {
                 InsulinEntity::class.java -> IconDataSet.insulinIcon
@@ -692,21 +685,23 @@ class ChartViewModel: ViewModel() {
         LogUtil.d("eventSet :" + eventSet.entries?.size)
     }
 
-    fun <T : BaseEventEntity> updateIconSet(es: List<T>) {
-        for (e in es) {
-            val entry = Entry(ChartUtil.millSecondToX(e.timestamp), 5f.toGlucoseValue())
-            entry.data = e
-            entry.icon = when (e.javaClass) {
-                InsulinEntity::class.java -> IconDataSet.insulinIcon
-                DietEntity::class.java -> IconDataSet.dietIcon
-                MedicationEntity::class.java -> IconDataSet.medicineIcon
-                ExerciseEntity::class.java -> IconDataSet.exerciseIcon
-                OthersEntity::class.java -> IconDataSet.otherMarkIcon
-                else -> null
+    suspend fun onEventDataChanged(changedInfo: EventDataChangedInfo) {
+        withContext(Dispatchers.IO) {
+            when (changedInfo.first) {
+                DataChangedType.ADD -> {
+                    val rets = changedInfo.second.filter {
+                        it.timestamp >= curXMinTimeMillis()
+                    }
+                    if (rets.isNotEmpty()) {
+                        addEvent(rets)
+                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    }
+                }
+                else -> {}
             }
-            eventSet.addEntryOrdered(entry)
         }
     }
+    //endregion
 
     private fun getGlucoseSets(): List<LineDataSet> {
         for (glucoseSet in glucoseSets) {

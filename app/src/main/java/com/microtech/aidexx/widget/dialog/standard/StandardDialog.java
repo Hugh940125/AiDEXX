@@ -3,10 +3,12 @@ package com.microtech.aidexx.widget.dialog.standard;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.GravityInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
@@ -36,6 +38,7 @@ public class StandardDialog extends AlertDialog {
     public static class Setter {
         private final Context mContext;
         private String mContent, mCancel, mConfirm, mTitle;
+        private @GravityInt int mGravity = Gravity.CENTER;
         private OnClickListener positiveClickListener;
         private OnClickListener cancelClickListener;
         private StandardDialog mStandardDialog;
@@ -94,6 +97,9 @@ public class StandardDialog extends AlertDialog {
             });
             mStandardDialog.setView(view);
             mStandardDialog.setCanceledOnTouchOutside(false);
+
+            mStandardDialog.getWindow().setGravity(mGravity);
+
             return mStandardDialog;
         }
 
@@ -137,6 +143,11 @@ public class StandardDialog extends AlertDialog {
 
         public Setter title(String title) {
             this.mTitle = title;
+            return this;
+        }
+
+        public Setter gravity(@GravityInt int gravity) {
+            this.mGravity = gravity;
             return this;
         }
     }

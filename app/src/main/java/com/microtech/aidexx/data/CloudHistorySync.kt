@@ -2,14 +2,27 @@ package com.microtech.aidexx.data
 
 import com.google.gson.GsonBuilder
 import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.entity.BG_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
+import com.microtech.aidexx.common.net.entity.CAL_RECENT_COUNT
+import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
+import com.microtech.aidexx.common.net.entity.EVENT_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.event.DietEntity
+import com.microtech.aidexx.db.entity.event.ExerciseEntity
+import com.microtech.aidexx.db.entity.event.InsulinEntity
+import com.microtech.aidexx.db.entity.event.MedicationEntity
+import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.Box
 import io.objectbox.Property
@@ -36,7 +49,11 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
         return null
     }
 
-    abstract suspend fun getRemoteData(userId: String): List<T>?
+    open suspend fun getRemoteData(userId: String): List<Any>? =
+        when (val apiResult = EventRepository.getEventRecordsByPageInfo(userId, PAGE_SIZE, getSyncMaxId(userId), tClazz)) {
+            is ApiResult.Success -> apiResult.result.data
+            is ApiResult.Failure -> null
+        }
 
     open suspend fun upload() {
         val needUploadData = getNeedUploadData()
@@ -85,7 +102,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             val result = getRemoteData(userId)
             return result?.let {
                 if (it.isNotEmpty()) {
-                    replaceEventData(responseList = it, type = 3, userId = userId)
+                    applyData(userId, it as List<T>)
                 }
                 if (it.size >= PAGE_SIZE) {
                     LogUtil.d("===DATASYNC=== 开始下一页数据下载")
@@ -138,9 +155,14 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             }
 
             val tasks = listOf(
-                async { updateStatus(EventRepository.getRecentCgmData(userId)) },
-                async { updateStatus(EventRepository.getRecentBgData(userId)) },
-                async { updateStatus(EventRepository.getRecentCalData(userId)) }
+                async { updateStatus(EventRepository.getRecentData<RealCgmHistoryEntity>(userId, CGM_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<BloodGlucoseEntity>(userId, BG_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<CalibrateEntity>(userId, CAL_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<DietEntity>(userId, EVENT_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<ExerciseEntity>(userId, EVENT_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<MedicationEntity>(userId, EVENT_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<InsulinEntity>(userId, EVENT_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<OthersEntity>(userId, EVENT_RECENT_COUNT)) }
                 //...
             )
             tasks.awaitAll()
@@ -174,6 +196,11 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                 { CloudCgmHistorySync.startDownload(userId = userId, cb = callback) },
                 { CloudBgHistorySync.startDownload(userId = userId, cb = callback) },
                 { CloudCalHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudDietHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudExerciseHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudMedicineHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudInsulinHistorySync.startDownload(userId = userId, cb = callback) },
+                { CloudOthersHistorySync.startDownload(userId = userId, cb = callback) },
                 //...
             )
 
@@ -200,7 +227,12 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                 val tasks = listOf(
                     async { CloudCgmHistorySync.upload() },
                     async { CloudBgHistorySync.upload() },
-                    async { CloudCalHistorySync.upload() }
+                    async { CloudCalHistorySync.upload() },
+                    async { CloudDietHistorySync.upload() },
+                    async { CloudExerciseHistorySync.upload() },
+                    async { CloudMedicineHistorySync.upload() },
+                    async { CloudInsulinHistorySync.upload() },
+                    async { CloudOthersHistorySync.upload() },
                     //...
                 )
                 tasks.awaitAll()

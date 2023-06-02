@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:theme="@style/BaseDialog">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/glPercent"
+        android:layout_width="20dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.2" />
+
+    <com.flyco.roundview.RoundLinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:padding="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHeight_default="wrap"
+        app:layout_constraintHeight_max="wrap"
+        app:layout_constraintTop_toBottomOf="@id/glPercent"
+        app:layout_constraintVertical_bias="1"
+        app:rv_backgroundColor="@color/event_bg_preset_list"
+        app:rv_cornerRadius_TL="8dp"
+        app:rv_cornerRadius_TR="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <View
+                android:id="@+id/viTag"
+                android:layout_width="4dp"
+                android:layout_height="20dp"
+                android:layout_centerVertical="true"
+                android:background="#FF70BD65" />
+
+            <TextView
+                android:id="@+id/tvCategoryName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="13dp"
+                android:layout_toEndOf="@id/viTag"
+                android:text="蒸南瓜"
+                android:textColor="@color/event_preset_title"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="蒸南瓜" />
+
+            <ImageView
+                android:id="@+id/tvCategoryDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="22dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:adjustViewBounds="true"
+                android:src="@drawable/ic_delete"
+                android:visibility="invisible" />
+
+
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/food_weight"
+                        android:textColor="@color/event_preset_label"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/et_weight"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginStart="20dp"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:includeFontPadding="false"
+                            android:inputType="textVisiblePassword"
+                            android:maxLength="100"
+                            android:maxLines="1"
+                            android:textColor="@color/event_preset_input" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="12dp"
+                            android:layout_gravity="center_vertical"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/ic_edit" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/event_line" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/food_unit"
+                        android:textColor="@color/event_preset_label"
+                        android:textSize="16sp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSpecification"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:overScrollMode="never" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/event_line" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/carbWithUnit"
+                        android:textColor="@color/event_preset_label"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/et_carbohydrate"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginStart="20dp"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:includeFontPadding="false"
+                            android:inputType="textVisiblePassword"
+                            android:maxLength="100"
+                            android:maxLines="1"
+                            android:textColor="@color/event_preset_input" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="12dp"
+                            android:layout_gravity="center_vertical"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/ic_edit"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/event_line" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/proteinWithUnit"
+                        android:textColor="@color/event_preset_label"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/et_protein"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginStart="20dp"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:includeFontPadding="false"
+                            android:inputType="textVisiblePassword"
+                            android:maxLength="100"
+                            android:maxLines="1"
+                            android:textColor="@color/event_preset_input" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="12dp"
+                            android:layout_gravity="center_vertical"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/ic_edit"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/event_line" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:text="@string/fatWithUnit"
+                        android:textColor="@color/event_preset_label"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/et_fat"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginStart="20dp"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:includeFontPadding="false"
+                            android:inputType="textVisiblePassword"
+                            android:maxLength="100"
+                            android:maxLines="1"
+                            android:textColor="@color/event_preset_input" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="12dp"
+                            android:layout_gravity="center_vertical"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/ic_edit"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/event_line" />
+
+                </LinearLayout>
+            </LinearLayout>
+
+        </ScrollView>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.flyco.roundview.RoundTextView
+                android:id="@+id/btnCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:gravity="center"
+                android:minHeight="48dp"
+                android:padding="11dp"
+                android:text="@string/btn_cancel"
+                android:textColor="@color/event_cancel_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/glDivider"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:rv_backgroundColor="@color/transparent"
+                app:rv_backgroundPressColor="@color/light_colorIconArrowNext"
+                app:rv_cornerRadius="4dp"
+                app:rv_strokeColor="@color/event_cancel_border"
+                app:rv_strokeWidth="1dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/glDivider"
+                android:layout_width="20dp"
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                app:layout_constraintGuide_percent="0.5" />
+
+            <com.flyco.roundview.RoundTextView
+                android:id="@+id/btnOk"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+
+                android:gravity="center"
+                android:minHeight="48dp"
+                android:padding="11dp"
+                android:text="@string/btn_ok"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/glDivider"
+                app:layout_constraintTop_toTopOf="parent"
+                app:rv_backgroundColor="@color/green_65"
+                app:rv_backgroundPressColor="@color/green_7400"
+                app:rv_cornerRadius="4dp"
+                app:rv_strokeWidth="1dp" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.flyco.roundview.RoundLinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

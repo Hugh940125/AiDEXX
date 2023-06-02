@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:layout_marginEnd="10dp">
+
+    <com.flyco.roundview.RoundFrameLayout
+        android:id="@+id/flSpecificationContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="48dp"
+        android:minHeight="20dp"
+        app:rv_cornerRadius="48dp"
+        app:rv_strokeColor="#33171A1D"
+        app:rv_strokeWidth="1dp">
+
+        <TextView
+            android:id="@+id/tvSpecification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:ellipsize="end"
+            android:includeFontPadding="false"
+            android:lines="1"
+            android:maxEms="10"
+            android:maxLength="10"
+            android:paddingStart="10dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="2dp"
+            tools:text="千克" />
+    </com.flyco.roundview.RoundFrameLayout>
+
+</LinearLayout>

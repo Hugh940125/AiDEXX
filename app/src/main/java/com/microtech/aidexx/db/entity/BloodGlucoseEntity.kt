@@ -4,9 +4,11 @@ import android.content.res.Resources
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.utils.roundOffDecimal
 import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Index
+import java.util.Date
+import java.util.UUID
 import java.util.*
 
 
@@ -16,9 +18,6 @@ class BloodGlucoseEntity : BaseEventEntity {
     var bloodGlucoseId: String? = UUID.randomUUID().toString().replace("-", "")
     var testTag: Int = 0
     var bloodGlucoseMg: Float = 0f
-
-    @Index
-    var autoIncrementColumn: Long? = null
 
     @Transient
     var calibration: Boolean = false
@@ -66,5 +65,25 @@ class BloodGlucoseEntity : BaseEventEntity {
 
     override fun toString(): String {
         return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTag=$testTag, bloodGlucoseMg=$bloodGlucoseMg, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
+    }
+
+    fun getGlucoseValue(): Float {
+        if (bloodGlucoseMg < 2 * 18) {
+            return (2f * 18).toGlucoseValue()
+        }
+        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) {
+            if (bloodGlucoseMg > 30 * 18) {
+                return (30f * 18).toGlucoseValue()
+            } else {
+                bloodGlucoseMg.toGlucoseValue()
+            }
+        } else {
+            return if (bloodGlucoseMg >= 600) {
+                600f.toGlucoseValue()
+            } else {
+                bloodGlucoseMg.toGlucoseValue()
+            }
+        }
+        return bloodGlucoseMg.toGlucoseValue()
     }
 }

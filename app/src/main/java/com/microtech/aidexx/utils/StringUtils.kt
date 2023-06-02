@@ -3,7 +3,11 @@ package com.microtech.aidexx.utils
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.text.*
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.TextUtils
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.view.View
@@ -135,13 +139,13 @@ object StringUtils {
     }
 
     /** 版本比较
-     * @param setupVer 字符串格式 2.5.1 或者 2.5.12
-     * @param onLineVer 字符串格式 2.5.1 或者 2.5.12
+     * @param runningVer  运行的版本 字符串格式 2.5.1 或者 2.5.12
+     * @param newVer 服务器最新版本 字符串格式 2.5.1 或者 2.5.12
      * @return  true:更新  false:不更新
      */
-    fun versionCompare(setupVer: String, onLineVer: String): Boolean {
-        var setupVer = setupVer
-        var onLineVer = onLineVer
+    fun versionCompare(runningVer: String, newVer: String): Boolean {
+        var setupVer = runningVer
+        var onLineVer = newVer
         if (TextUtils.isEmpty(setupVer) || TextUtils.isEmpty(onLineVer)) {
             return false
         }
@@ -158,8 +162,11 @@ object StringUtils {
         setupVer = setupVer.replace(".", "")
         onLineVer = onLineVer.replace(".", "")
 
-        //MyLog.debug_s("setupVer: "+setupVer+",onLineVer="+onLineVer);
-        return onLineVer.toInt() > setupVer.toInt()
+        return try {
+            onLineVer.toInt() > setupVer.toInt()
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /**

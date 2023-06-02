@@ -8,14 +8,11 @@ import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
-import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
 import kotlinx.coroutines.Dispatchers
@@ -59,14 +56,14 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
         }
     }
 
-    override suspend fun getRemoteData(userId: String): List<RealCgmHistoryEntity>? =
-        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
-            userId = userId,
-            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it - 1 },
-        )) {
-            is ApiResult.Success -> apiResult.result.data
-            is ApiResult.Failure -> null
-        }
+//    override suspend fun getRemoteData(userId: String): List<RealCgmHistoryEntity>? =
+//        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
+//            userId = userId,
+//            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it - 1 },
+//        )) {
+//            is ApiResult.Success -> apiResult.result.data
+//            is ApiResult.Failure -> null
+//        }
 
     private suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
         val userId = UserInfoManager.instance().userId()
@@ -165,15 +162,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     ) {
         responseList?.let {
             if (responseList.isNotEmpty()) {
-
-                if (type == 3) {
-                    CgmCalibBgRepository.insertCgm(responseList)
-                    MmkvManager.setEventDataMinId(
-                        getDataSyncFlagKey(userId!!),
-                        responseList.last().autoIncrementColumn
-                    )
-                    return@let
-                }
 
                 val tempList = mutableListOf<RealCgmHistoryEntity>()
                 for (entity in responseList) {

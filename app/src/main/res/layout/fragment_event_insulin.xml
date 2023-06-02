@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="70dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        >
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/shape_round_corner"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tvInjectionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/using_time"
+                android:textColor="@color/event_label"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvInjectionType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="15dp"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/event_switch_content"
+                android:textSize="16sp"
+                app:drawableEndCompat="@drawable/ic_arrow_right"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInjectionTitle"
+                tools:text="早餐" />
+
+            <View
+                android:id="@+id/diet_divider1"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="20dp"
+                android:background="@color/event_line"
+                app:layout_constraintTop_toBottomOf="@id/tvInjectionType" />
+
+            <TextView
+                android:id="@+id/tvInjectionTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/time_given"
+                android:textColor="@color/event_label"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/diet_divider1" />
+
+            <TextView
+                android:id="@+id/tvInjectionTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="15dp"
+                android:includeFontPadding="false"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/event_switch_content"
+                android:textSize="16sp"
+                app:drawableEndCompat="@drawable/ic_arrow_right"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInjectionTimeText"
+                tools:text="2022/05/03 15:36" />
+
+            <View
+                android:id="@+id/diet_divider2"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="20dp"
+                android:background="@color/event_line"
+                app:layout_constraintTop_toBottomOf="@id/tvInjectionTime" />
+
+            <TextView
+                android:id="@+id/tvInsulinName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/insulin_type"
+                android:textColor="@color/event_label"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/diet_divider2" />
+
+            <EditText
+                android:id="@+id/etInsulinName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:background="@color/transparent"
+                android:hint="@string/insulin_input_tip"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
+                android:textColor="@color/event_switch_content"
+                android:textColorHint="@color/event_hint"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvInsulinName" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvInjectInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etInsulinName" />
+
+            <View
+                android:id="@+id/diet_divider3"
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
+                android:background="@color/event_line"
+                app:layout_constraintTop_toBottomOf="@id/rvInjectInput" />
+
+
+            <TextView
+                android:id="@+id/tvInjectionHistoryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/history_record"
+                android:textColor="@color/event_label"
+                android:textSize="17sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/diet_divider3" />
+
+            <LinearLayout
+                android:id="@+id/llInjectionHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/tvInjectionHistoryTitle">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvInjectionHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvInjectionNoRecord"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/no_record"
+                    android:textColor="@color/event_switch_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvInjectionHistoryTitle" />
+
+            </LinearLayout>
+
+            <com.lihang.ShadowLayout
+                android:id="@+id/slInjectionPreset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:hl_cornerRadius_leftBottom="8dp"
+                app:hl_cornerRadius_rightBottom="8dp"
+                app:hl_layoutBackground="@color/event_bg_preset_list"
+                app:hl_shadowColor="#FF555555"
+                app:hl_shadowHiddenTop="true"
+                app:hl_shadowLimit="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_default="wrap"
+                app:layout_constraintHeight_max="200dp"
+                app:layout_constraintHeight_min="100dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etInsulinName"
+                tools:visibility="visible">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvInjectionPreset"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="20dp" />
+
+            </com.lihang.ShadowLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                app:layout_constraintTop_toBottomOf="@id/llInjectionHistory" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.flyco.roundview.RoundTextView
+        android:id="@+id/btSaveInjection"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="22dp"
+        android:gravity="center"
+        android:text="@string/save"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:rv_backgroundColor="@color/green_65"
+        app:rv_cornerRadius="4dp"
+        app:rv_strokeWidth="1dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

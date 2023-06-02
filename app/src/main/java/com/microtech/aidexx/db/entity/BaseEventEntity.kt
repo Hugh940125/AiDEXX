@@ -35,6 +35,9 @@ abstract class BaseEventEntity {
     open var language: String = "" // 保存事件时的语言状态
     open var uploadState: Int = 0  //1 待上传 2 已上传
 
+    @Index
+    var autoIncrementColumn: Long? = null
+
 
     var timestamp: Long = 0L
 

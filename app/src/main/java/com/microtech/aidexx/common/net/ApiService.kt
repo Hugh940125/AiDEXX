@@ -16,6 +16,17 @@ import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
+import com.microtech.aidexx.db.entity.event.DietEntity
+import com.microtech.aidexx.db.entity.event.ExerciseEntity
+import com.microtech.aidexx.db.entity.event.InsulinEntity
+import com.microtech.aidexx.db.entity.event.MedicationEntity
+import com.microtech.aidexx.db.entity.event.OthersEntity
+import com.microtech.aidexx.db.entity.event.UnitConfig
+import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.InsulinUsrPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.MedicineUsrPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.SportUsrPresetEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -67,6 +78,58 @@ const val getBloodGlucoseRecordsByPageInfo = "$BG_URL/getBloodGlucoseRecordsByPa
 const val CAL_URL = "$middleUrl/cgmCalibration"
 const val getCalibrationList = "$CAL_URL/getCalibrationList"
 
+//endregion
+
+//region 事件
+const val EVENT_URL = "$middleUrl/event"
+const val getSysPresetVersion = "$EVENT_URL/getSysPresetVersion"
+
+const val EVENT_EXERCISE_USR_URL = "$EVENT_URL/exerciseUsrPreset"
+const val EVENT_EXERCISE_SYS_URL = "$EVENT_URL/exerciseSysPreset"
+const val getExerciseUserPresetList = "$EVENT_EXERCISE_USR_URL/getExerciseUserPresetList"
+const val saveOrUpdateExerciseUserPreset = "$EVENT_EXERCISE_USR_URL/saveOrUpdateExerciseUserPreset"
+const val deleteExerciseUserPresetRecord = "$EVENT_EXERCISE_USR_URL/deleteExerciseUserPresetRecord"
+const val getExerciseSysPresetList = "$EVENT_EXERCISE_SYS_URL/getExerciseSysPresetList"
+
+const val FOOD_PRESET_URL = "$EVENT_URL/foodUsrPreset"
+const val findFoodUserPresetList = "$FOOD_PRESET_URL/findFoodUserPresetList"
+const val saveOrUpdateUserFoodPreset = "$FOOD_PRESET_URL/saveOrUpdateUserFoodPreset"
+
+const val INSULIN_PRESET_URL = "$EVENT_URL/insulinUsrPreset"
+const val findInsulinUserPresetList = "$INSULIN_PRESET_URL/findInsulinUserPresetList"
+const val saveOrUpdateUserInsulinPreset = "$INSULIN_PRESET_URL/saveOrUpdateUserInsulinPreset"
+
+const val MEDICATION_PRESET_URL = "$EVENT_URL/medicationUsrPreset"
+const val findMedicationUsrPresetList = "$MEDICATION_PRESET_URL/findMedicationUsrPresetList"
+const val saveOrUpdateMedicationUsrPreset = "$MEDICATION_PRESET_URL/saveOrUpdateMedicationUsrPreset"
+
+const val FOOD_URL = "$EVENT_URL/foodRecord"
+const val saveOrUpdateFoodRecord = "$FOOD_URL/saveOrUpdateFoodRecord"
+const val findFoodRecordList = "$FOOD_URL/findFoodRecordList"
+const val deleteByIdsFood = "$FOOD_URL/deleteByIds"
+
+const val INSULIN_URL = "$EVENT_URL/insulinRecord"
+const val saveOrUpdateInsulinRecord = "$INSULIN_URL/saveOrUpdateInsulinRecord"
+const val findInsulinRecordList = "$INSULIN_URL/findInsulinRecordList"
+const val deleteByIdsInsulin = "$INSULIN_URL/deleteByIds"
+
+const val EXERCISE_URL = "$EVENT_URL/exercise"
+const val saveOrUpdateExerciseRecord = "$EXERCISE_URL/saveOrUpdateExerciseRecord"
+const val getExerciseList = "$EXERCISE_URL/getExerciseList"
+const val deleteExerciseRecord = "$EXERCISE_URL/deleteExerciseRecord"
+
+const val MEDICATION_URL = "$EVENT_URL/medicationRecord"
+const val saveOrUpdateMedicationRecord = "$MEDICATION_URL/saveOrUpdateMedicationRecord"
+const val findMedicationRecordList = "$MEDICATION_URL/findMedicationRecordList"
+const val deleteByIdsMedication = "$MEDICATION_URL/deleteByIds"
+
+const val OTHERS_URL = "$EVENT_URL/otherRecord"
+const val saveOrUpdateOtherRecord = "$OTHERS_URL/saveOrUpdateOtherRecord"
+const val findOtherRecordList = "$OTHERS_URL/findOtherRecordList"
+const val deleteByIdsOthers = "$OTHERS_URL/deleteByIds"
+
+
+const val getUnit = ""
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -133,7 +196,7 @@ interface ApiService {
     ): ApiResult<BaseResponse<UpgradeInfo>>
     //endregion
 
-    //region 数据事件相关
+    //region cgm bg cal数据
     @GET(getCgmRecordsByPageInfo)
     suspend fun getCgmRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>
 
@@ -144,6 +207,83 @@ interface ApiService {
     suspend fun getCalibrationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<CalibrateEntity>>>
 
     //endregion
+
+    //region 事件
+    @GET(getSysPresetVersion)
+    suspend fun getPresetVersion(@Query("eventType") eventType: Int?): ApiResult<BaseResponse<List<ResEventPresetVersion>>>
+    @GET(getExerciseSysPresetList)
+    suspend fun getExerciseSysPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<SportSysPresetEntity>>>
+    @GET(getExerciseUserPresetList)
+    suspend fun getExerciseUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<SportUsrPresetEntity>>>
+    @POST(saveOrUpdateExerciseUserPreset)
+    suspend fun saveOrUpdateExerciseUserPreset(@Body data: ReqSaveOrUpdateEventRecords<SportUsrPresetEntity>): ApiResult<BaseResponse<List<SportUsrPresetEntity>>>
+
+
+    @GET(findFoodUserPresetList)
+    suspend fun getFoodUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<DietUsrPresetEntity>>>
+    @POST(saveOrUpdateUserFoodPreset)
+    suspend fun saveOrUpdateUserFoodPreset(@Body data: ReqSaveOrUpdateEventRecords<DietUsrPresetEntity>): ApiResult<BaseResponse<List<DietUsrPresetEntity>>>
+
+
+    @GET(findInsulinUserPresetList)
+    suspend fun getInsulinUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<InsulinUsrPresetEntity>>>
+    @POST(saveOrUpdateUserInsulinPreset)
+    suspend fun saveOrUpdateUserInsulinPreset(@Body data: ReqSaveOrUpdateEventRecords<InsulinUsrPresetEntity>): ApiResult<BaseResponse<List<InsulinUsrPresetEntity>>>
+
+
+    @GET(findMedicationUsrPresetList)
+    suspend fun getMedicineUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<MedicineUsrPresetEntity>>>
+    @POST(saveOrUpdateMedicationUsrPreset)
+    suspend fun saveOrUpdateMedicationUsrPreset(@Body data: ReqSaveOrUpdateEventRecords<MedicineUsrPresetEntity>): ApiResult<BaseResponse<List<MedicineUsrPresetEntity>>>
+
+
+    @GET(findFoodRecordList)
+    suspend fun getFoodRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<DietEntity>>>
+    @POST(saveOrUpdateFoodRecord)
+    suspend fun saveOrUpdateFoodRecord(@Body data: ReqSaveOrUpdateEventRecords<DietEntity>): ApiResult<BaseResponse<MutableList<DietEntity>>>
+    @POST(deleteByIdsFood)
+    suspend fun deleteByIdsFood(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
+
+    @GET(findInsulinRecordList)
+    suspend fun getInsulinRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<InsulinEntity>>>
+    @POST(saveOrUpdateInsulinRecord)
+    suspend fun saveOrUpdateInsulinRecord(@Body data: ReqSaveOrUpdateEventRecords<InsulinEntity>): ApiResult<BaseResponse<MutableList<InsulinEntity>>>
+    @POST(deleteByIdsInsulin)
+    suspend fun deleteByIdsInsulin(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
+
+
+    @GET(getExerciseList)
+    suspend fun getExerciseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ExerciseEntity>>>
+    @POST(saveOrUpdateExerciseRecord)
+    suspend fun saveOrUpdateExerciseRecord(@Body data: ReqSaveOrUpdateEventRecords<ExerciseEntity>): ApiResult<BaseResponse<MutableList<ExerciseEntity>>>
+    @POST(deleteExerciseRecord)
+    suspend fun deleteExerciseRecord(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
+
+
+
+    @GET(findMedicationRecordList)
+    suspend fun getMedicationRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<MedicationEntity>>>
+    @POST(saveOrUpdateMedicationRecord)
+    suspend fun saveOrUpdateMedicationRecord(@Body data: ReqSaveOrUpdateEventRecords<MedicationEntity>): ApiResult<BaseResponse<MutableList<MedicationEntity>>>
+    @POST(deleteByIdsMedication)
+    suspend fun deleteByIdsMedication(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
+
+    @GET(findOtherRecordList)
+    suspend fun getOthersRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<OthersEntity>>>
+    @POST(saveOrUpdateOtherRecord)
+    suspend fun saveOrUpdateOtherRecord(@Body data: ReqSaveOrUpdateEventRecords<OthersEntity>): ApiResult<BaseResponse<MutableList<OthersEntity>>>
+    @POST(deleteByIdsOthers)
+    suspend fun deleteByIdsOthers(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
+
+
+
+
+    @GET(getUnit)
+    suspend fun getUnit(): ApiResult<BaseResponse<UnitConfig>>
+
+
+    //endregion
+
 
     @GET("$CGM_LIST_RECENT?{params}")
     suspend fun getRecentHistories(@Path("params") params: String)

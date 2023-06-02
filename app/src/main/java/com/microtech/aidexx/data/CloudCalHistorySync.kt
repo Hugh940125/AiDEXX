@@ -3,11 +3,8 @@ package com.microtech.aidexx.data
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity_
-import com.microtech.aidexx.db.repository.CgmCalibBgRepository
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 
 object CloudCalHistorySync : CloudHistorySync<CalibrateEntity>() {
@@ -23,17 +20,6 @@ object CloudCalHistorySync : CloudHistorySync<CalibrateEntity>() {
         get() = CalibrateEntity_.deleteStatus
     override val uploadState: Property<CalibrateEntity>
         get() = CalibrateEntity_.uploadState
-
-    override suspend fun getRemoteData(userId: String): List<CalibrateEntity>? =
-        when (val apiResult = EventRepository.getCalRecordsByPageInfo(
-            userId = userId,
-            downAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(
-                getDataSyncFlagKey(userId)
-            )?.let { it - 1 },
-        )) {
-            is ApiResult.Success -> apiResult.result.data
-            is ApiResult.Failure -> null
-        }
 
 
     override suspend fun postLocalData(map: HashMap<String, MutableList<CalibrateEntity>>): BaseResponse<List<CalibrateEntity>>? {
@@ -54,14 +40,6 @@ object CloudCalHistorySync : CloudHistorySync<CalibrateEntity>() {
         userId: String?
     ) {
         responseList?.let {
-            if (type == 3) {
-                CgmCalibBgRepository.insertCal(it)
-                MmkvManager.setEventDataMinId(
-                    getDataSyncFlagKey(userId!!),
-                    responseList.last().autoIncrementColumn
-                )
-                return@let
-            }
             for ((index, entity) in origin.withIndex()) {
                 entity.uploadState = 2
                 entity.autoIncrementColumn = responseList[index].autoIncrementColumn

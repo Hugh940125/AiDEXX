@@ -15,6 +15,7 @@ object EventBusKey {
     const val EVENT_UNPAIR_RESULT: String = "EVENT_UNPAIR_RESULT"
     const val EVENT_CGM_DATA_CHANGED: String = "EVENT_CGM_DATA_CHANGED"
     const val EVENT_BG_DATA_CHANGED: String = "EVENT_BG_DATA_CHANGED"
+    const val EVENT_DATA_CHANGED: String = "EVENT_DATA_CHANGED"
     const val EVENT_CAL_DATA_CHANGED: String = "EVENT_CAL_DATA_CHANGED"
     const val EVENT_PAIR_RESULT: String = "EVENT_PAIR_RESULT"
 
@@ -23,4 +24,7 @@ object EventBusKey {
 
     /** 血糖阈值变动 */
     const val EVENT_HYP_CHANGE: String = "EVENT_HYP_CHANGE"
+
+    /** 事件保存成功后跳转到首页 */
+    const val EVENT_JUMP_TO_TAB: String = "EVENT_JUMP_TO_TAB"
 }
