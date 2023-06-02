@@ -92,7 +92,9 @@ class DietEntity : BaseEventEntity {
     }
 
     override fun toString(): String {
-        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, foodId=$foodId, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=$expandList, authorizationId=$userId, timestamp=$timestamp)"
+        return "DietEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, mealTime=$mealTime, foodId=$foodId, mealRemark=$mealRemark, carbohydrate=$carbohydrate, isPreset=$isPreset, relList=${expandList.joinToString(
+            ","
+        )}, authorizationId=$userId, timestamp=$timestamp)"
     }
 
 

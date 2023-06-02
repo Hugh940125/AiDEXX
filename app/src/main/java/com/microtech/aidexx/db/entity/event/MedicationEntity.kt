@@ -97,6 +97,14 @@ class MedicationEntity : BaseEventEntity {
         } ?: false
     }
 
+    override fun toString(): String {
+        return "InsulinEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, isPreset=$isPreset, authorizationId=$userId, relList=${
+            expandList.joinToString(
+                ","
+            )
+        }, timestamp=$timestamp)"
+    }
+
 }
 
 data class MedicationDetail(

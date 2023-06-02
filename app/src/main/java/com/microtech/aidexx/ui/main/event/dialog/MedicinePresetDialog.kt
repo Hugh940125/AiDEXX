@@ -93,6 +93,9 @@ class MedicinePresetDialog(
                                 onConfirmClick.invoke(medicineDetailEntity)
                             }
                         }
+                    } else {
+                        dismiss()
+                        onConfirmClick.invoke(medicineDetailEntity)
                     }
                 }
             }

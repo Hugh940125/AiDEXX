@@ -575,29 +575,6 @@ class ChartViewModel: ViewModel() {
                 }
             }
         }
-
-        /*loop@ for (history in cgmHistories) {
-            when (history.eventType) {
-                History.HISTORY_GLUCOSE, History.HISTORY_GLUCOSE_RECOMMEND_CAL -> {
-                    if (history.glucose == null || history.eventWarning == -1) continue@loop
-                    val dateTime = ChartUtil.dateToX(history.deviceTime)
-                    val entry = Entry(dateTime, history.glucose!!.toFloat().toGlucoseValue())
-                    if (entry.y < 2f.toGlucoseValue()) {
-                        entry.y = 2f.toGlucoseValue()
-                    }// 小于2的数值 都当2处理
-                    if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
-                    glucoseSets.last().addEntryOrdered(entry)
-                    xMaxMin(dateTime)
-                    calDateMaxMin(history.deviceTime)
-                }
-                History.HISTORY_CALIBRATION -> {
-                    if (!isGp) {
-                        updateCnCalibrationSet(history)
-                    }
-                }
-            }
-        }*/
-
         LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
 
         if (isGp) {

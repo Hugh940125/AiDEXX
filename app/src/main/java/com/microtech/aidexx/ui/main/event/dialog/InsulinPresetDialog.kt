@@ -90,6 +90,9 @@ class InsulinPresetDialog(
                                 onConfirmClick.invoke(oldInsulinEntity)
                             }
                         }
+                    } else {
+                        dismiss()
+                        onConfirmClick.invoke(oldInsulinEntity)
                     }
                 }
             }

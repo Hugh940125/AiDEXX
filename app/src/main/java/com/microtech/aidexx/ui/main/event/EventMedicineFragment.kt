@@ -6,14 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.databinding.FragmentEventMedicineBinding
 import com.microtech.aidexx.db.entity.event.BaseEventDetail
 import com.microtech.aidexx.db.entity.event.MedicationDetail
+import com.microtech.aidexx.db.entity.event.preset.MedicineUsrPresetEntity
 import com.microtech.aidexx.ui.main.event.dialog.MedicinePresetDialog
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
 import com.microtech.aidexx.ui.main.event.viewmodels.MedicineViewModel
+import com.microtech.aidexx.utils.LogUtil
+import kotlinx.coroutines.launch
 import java.util.*
 
 class EventMedicineFragment: BaseEventFragment<BaseViewModel, FragmentEventMedicineBinding>() {
@@ -49,6 +54,15 @@ class EventMedicineFragment: BaseEventFragment<BaseViewModel, FragmentEventMedic
             tvMedicineTime.text = vm.updateEventTime()
             tvMedicineType.text = vm.refreshEventPeriod()
         }
+
+        lifecycleScope.launch {
+            EventRepository.syncEventPreset<MedicineUsrPresetEntity>().collect {
+                LogUtil.d("down medicine preset isDone=${it.first} page=${it.second}",
+                    EventFragment.TAG
+                )
+            }
+        }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")

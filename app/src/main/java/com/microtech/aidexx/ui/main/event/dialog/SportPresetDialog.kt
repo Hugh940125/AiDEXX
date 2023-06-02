@@ -42,7 +42,7 @@ class SportPresetDialog(
     private val vm: SportViewModel by mFragment.viewModels()
 
 
-    val timeUnits = EventUnitManager.getTimeUnitList()
+    private val timeUnits = EventUnitManager.getTimeUnitList()
     lateinit var binding: DialogSportPresetBinding
     private lateinit var textWatcher: DecimalInputTextWatcher
 
@@ -96,6 +96,9 @@ class SportPresetDialog(
                                 onConfirmClick.invoke(sportDetailEntity)
                             }
                         }
+                    } else {
+                        dismiss()
+                        onConfirmClick.invoke(sportDetailEntity)
                     }
                 }
 

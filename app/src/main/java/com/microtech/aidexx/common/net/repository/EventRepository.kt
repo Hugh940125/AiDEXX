@@ -365,7 +365,7 @@ object EventRepository {
             endAutoIncrementColumn = endAutoIncrementColumn
         ) { isDone, pageIndex ->
             trySend(isDone to pageIndex)
-            if (isDone == true) close()
+            if (isDone != false) close()
         }
 
         awaitClose()

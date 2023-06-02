@@ -89,6 +89,14 @@ class ExerciseEntity : BaseEventEntity {
         } ?: false
     }
 
+    override fun toString(): String {
+        return "ExerciseEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, isPreset=$isPreset, authorizationId=$userId, relList=${
+            expandList.joinToString(
+                ","
+            )
+        }, timestamp=$timestamp)"
+    }
+
     companion object {
         fun getExerciseMap(): Map<Int, String> {
             val result = mutableMapOf<Int, String>()

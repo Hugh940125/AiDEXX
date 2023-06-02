@@ -5,14 +5,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.databinding.FragmentEventInsulinBinding
 import com.microtech.aidexx.db.entity.event.BaseEventDetail
 import com.microtech.aidexx.db.entity.event.InsulinDetail
+import com.microtech.aidexx.db.entity.event.preset.InsulinUsrPresetEntity
 import com.microtech.aidexx.ui.main.event.dialog.InsulinPresetDialog
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
 import com.microtech.aidexx.ui.main.event.viewmodels.InsulinViewModel
+import com.microtech.aidexx.utils.LogUtil
+import kotlinx.coroutines.launch
 
 class EventInsulinFragment : BaseEventFragment<BaseViewModel, FragmentEventInsulinBinding>() {
 
@@ -47,6 +52,13 @@ class EventInsulinFragment : BaseEventFragment<BaseViewModel, FragmentEventInsul
         binding.apply {
             tvInjectionTime.text = vm.updateEventTime()
             tvInjectionType.text = vm.refreshEventPeriod()
+        }
+        lifecycleScope.launch {
+            EventRepository.syncEventPreset<InsulinUsrPresetEntity>().collect {
+                LogUtil.d("down insulin preset isDone=${it.first} page=${it.second}",
+                    EventFragment.TAG
+                )
+            }
         }
     }
 
