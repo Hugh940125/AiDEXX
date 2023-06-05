@@ -9,6 +9,8 @@ import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.UserEntity_
 import com.microtech.aidexx.db.repository.AccountDbRepository
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.kotlin.awaitCallInTx
 import kotlinx.coroutines.Dispatchers
@@ -131,4 +133,16 @@ class UserInfoManager {
             it
         } ?: -1
     }
+
+    /**
+     * @param from 0-主动退出 1-被踢
+     */
+    suspend fun onUserExit(from: Int = 0) {
+        this@UserInfoManager.userEntity = null
+        shareUserInfo = null
+        updateLoginFlag(false)
+        // 用户退出登录
+        EventBusManager.send(EventBusKey.EVENT_LOGOUT, 0)
+    }
+
 }

@@ -36,6 +36,9 @@ object EventDbRepository {
     suspend inline fun <reified T: BasePresetEntity> findMaxPresetId(): Long? = EventDao.findMaxPresetId<T>()
     suspend inline fun <reified T: BasePresetEntity> findMinPresetId(): Long? = EventDao.findMinPresetId<T>()
 
+    suspend inline fun <reified T: BaseEventEntity> findMaxEventId(): Long? = EventDao.findMaxEventId<T>()
+    suspend inline fun <reified T: BaseEventEntity> findMinEventId(): Long? = EventDao.findMinEventId<T>()
+
     suspend fun queryDietPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),

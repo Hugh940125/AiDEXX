@@ -3,6 +3,7 @@ package com.microtech.aidexx.widget.dialog
 import android.content.Context
 import android.view.View
 import android.widget.TextView
+import androidx.annotation.IntDef
 import androidx.appcompat.app.AppCompatActivity
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.ThemeManager
@@ -11,6 +12,13 @@ import com.microtech.aidexx.widget.dialog.lib.WaitDialog
 import com.microtech.aidexx.widget.dialog.standard.StandardDialog
 import com.microtech.aidexx.widget.selector.option.OptionsPickerBuilder
 import com.microtech.aidexx.widget.selector.option.OptionsPickerView
+
+
+const val DIALOGS_TYPE_STANDARD = 0
+const val DIALOGS_TYPE_VERTICAL = 1
+
+@IntDef(DIALOGS_TYPE_STANDARD,DIALOGS_TYPE_VERTICAL)
+annotation class DialogBtnOrientation
 
 /**
  *@date 2023/2/9
@@ -95,7 +103,10 @@ object Dialogs {
         content: String? = null,
         confirm: (() -> Unit)?,
         cancel: (() -> Unit)? = null,
-        key: String? = null
+        key: String? = null,
+        confirmBtnText: String? = null,
+        cancelBtnText: String? = null,
+        @DialogBtnOrientation btnOrientation: Int = DIALOGS_TYPE_STANDARD
     ) {
         key?.let {
             whetherDialogMap[it]?.dismiss()
@@ -103,15 +114,15 @@ object Dialogs {
         val create = StandardDialog.Setter(context)
             .content(content)
             .title(title)
-            .setPositive { dialog, _ ->
+            .setPositive(confirmBtnText) { dialog, _ ->
                 dialog.dismiss()
                 confirm?.invoke()
                 whetherDialogMap.remove(key)
-            }.setCancel { dialog, _ ->
+            }.setCancel(cancelBtnText) { dialog, _ ->
                 dialog.dismiss()
                 cancel?.invoke()
                 whetherDialogMap.remove(key)
-            }.create()
+            }.create(btnOrientation)
         key?.let {
             whetherDialogMap[it] = create
         }

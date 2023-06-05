@@ -83,19 +83,20 @@ object EventRepository {
     suspend fun getEventRecordsByPageInfo(
         userId: String,
         pageSize: Int = PAGE_SIZE,
-        curMinId: Long?,
+        startAutoIncrementColumn: Long? = null,
+        endAutoIncrementColumn: Long?,
         eventClazz: Class<out BaseEventEntity>
     ): ApiResult<BaseResponse<out List<BaseEventEntity>>> {
 
         return when (eventClazz) {
-            RealCgmHistoryEntity::class.java -> getCgmRecordsByPageInfo(userId = userId, pageSize = pageSize, endAutoIncrementColumn = curMinId)
-            CalibrateEntity::class.java -> getCalRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
-            BloodGlucoseEntity::class.java -> getBgRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
-            DietEntity::class.java -> getDietRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
-            ExerciseEntity::class.java -> getExerciseRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
-            MedicationEntity::class.java -> getMedicineRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
-            InsulinEntity::class.java -> getInsulinRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
-            OthersEntity::class.java -> getOthersRecordsByPageInfo(userId = userId, pageSize = pageSize, downAutoIncrementColumn = curMinId)
+            RealCgmHistoryEntity::class.java -> getCgmRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            CalibrateEntity::class.java -> getCalRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            BloodGlucoseEntity::class.java -> getBgRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            DietEntity::class.java -> getDietRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            ExerciseEntity::class.java -> getExerciseRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            MedicationEntity::class.java -> getMedicineRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            InsulinEntity::class.java -> getInsulinRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
+            OthersEntity::class.java -> getOthersRecordsByPageInfo(userId = userId, pageSize = pageSize, startAutoIncrementColumn= startAutoIncrementColumn, endAutoIncrementColumn = endAutoIncrementColumn)
             else -> {
                 if (BuildConfig.DEBUG) TODO("添加对应类型的分页请求接口")
                 else {
@@ -114,16 +115,24 @@ object EventRepository {
         val clazz = T::class.java
         val dataSyncFlagKey = DataSyncController.getDataSyncFlagKey(userId, clazz)
 
+        var startAutoIncrementColumn = EventDbRepository.findMaxEventId<T>()
+        var endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(dataSyncFlagKey)?.let { it - 1 }
+
         (0 until count).chunked(PAGE_SIZE).all { list ->
 
-            val curMinId = MmkvManager.getEventDataMinId<Long>(dataSyncFlagKey)?.let { it - 1 }
-
-            if (curMinId != null && curMinId <= 0L) {
+            if (endAutoIncrementColumn != null && endAutoIncrementColumn!! <= 0L) {
                 LogUtil.d("最小id为0 代表数据下载完了")
                 return@withContext true
             }
 
-            when (val apiResult = getEventRecordsByPageInfo(userId, list.size, curMinId, clazz)) {
+            when (val apiResult = getEventRecordsByPageInfo(
+                    userId,
+                    list.size,
+                    startAutoIncrementColumn= startAutoIncrementColumn,
+                    endAutoIncrementColumn = endAutoIncrementColumn,
+                    clazz
+                )
+            ) {
                 is ApiResult.Success -> {
 
                     apiResult.result.data?.let {
@@ -134,7 +143,21 @@ object EventRepository {
                             return@withContext true
                         } else {
                             insertToDb(it, clazz)
-                            MmkvManager.setEventDataMinId(dataSyncFlagKey, it.last().autoIncrementColumn)
+
+                            val lastItemId = it.last().autoIncrementColumn
+                            lastItemId?.let { itemId ->
+                                MmkvManager.setEventDataMinId(dataSyncFlagKey, itemId)
+
+                                if (it.size < list.size) {
+                                    return@withContext true
+                                }
+
+                                endAutoIncrementColumn = itemId - 1
+
+                            } ?:let {
+                                LogUtil.xLogE("登录拉数据出现空id情况")
+                                return@withContext true
+                            }
                         }
                     } ?:let {
                         // 和服务端确认 成功不会给null 空的只会是空集合
@@ -193,12 +216,13 @@ object EventRepository {
         pageNum: Int = 1,
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
-        downAutoIncrementColumn: Long?
+        startAutoIncrementColumn: Long? = null,
+        endAutoIncrementColumn: Long?
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
-            null,
-            downAutoIncrementColumn,
+            startAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum
@@ -217,12 +241,13 @@ object EventRepository {
         pageNum: Int = 1,
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
-        downAutoIncrementColumn: Long?
+        startAutoIncrementColumn: Long? = null,
+        endAutoIncrementColumn: Long?
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
-            null,
-            downAutoIncrementColumn,
+            startAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum
@@ -241,12 +266,12 @@ object EventRepository {
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
         startAutoIncrementColumn: Long? = null,
-        downAutoIncrementColumn: Long? = null
+        endAutoIncrementColumn: Long? = null
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
             startAutoIncrementColumn,
-            downAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum
@@ -261,12 +286,12 @@ object EventRepository {
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
         startAutoIncrementColumn: Long? = null,
-        downAutoIncrementColumn: Long? = null
+        endAutoIncrementColumn: Long? = null
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
             startAutoIncrementColumn,
-            downAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum
@@ -281,12 +306,12 @@ object EventRepository {
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
         startAutoIncrementColumn: Long? = null,
-        downAutoIncrementColumn: Long? = null
+        endAutoIncrementColumn: Long? = null
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
             startAutoIncrementColumn,
-            downAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum
@@ -301,12 +326,12 @@ object EventRepository {
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
         startAutoIncrementColumn: Long? = null,
-        downAutoIncrementColumn: Long? = null
+        endAutoIncrementColumn: Long? = null
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
             startAutoIncrementColumn,
-            downAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum
@@ -321,12 +346,12 @@ object EventRepository {
         pageSize: Int = PAGE_SIZE,
         userId: String = UserInfoManager.instance().userId(),
         startAutoIncrementColumn: Long? = null,
-        downAutoIncrementColumn: Long? = null
+        endAutoIncrementColumn: Long? = null
     ) = withContext(dispatcher) {
 
         val req = ReqGetEventByPage(
             startAutoIncrementColumn,
-            downAutoIncrementColumn,
+            endAutoIncrementColumn,
             null
         ).also {
             it.pageNum = pageNum

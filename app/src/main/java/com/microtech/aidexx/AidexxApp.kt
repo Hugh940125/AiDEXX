@@ -4,8 +4,8 @@ import android.app.Activity
 import android.app.Application
 import android.hardware.display.DisplayManager
 import android.os.Bundle
-import android.os.StrictMode
 import android.view.Display
+import androidx.appcompat.app.AppCompatDelegate
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
@@ -19,7 +19,11 @@ import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
 import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
@@ -48,6 +52,12 @@ class AidexxApp : Application() {
         Log.appenderClose()
         mainScope.cancel()
         unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
+
+        AppCompatDelegate.setDefaultNightMode(
+            if (ThemeManager.isLight()) AppCompatDelegate.MODE_NIGHT_NO
+            else AppCompatDelegate.MODE_NIGHT_YES
+        )
+
     }
 
     private fun initSdks() {

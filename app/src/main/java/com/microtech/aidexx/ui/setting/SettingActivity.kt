@@ -2,6 +2,7 @@ package com.microtech.aidexx.ui.setting
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
@@ -73,13 +74,17 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.theme.index) {
                     settingTheme.setValue(themes[it])
                     ThemeManager.theme = ThemeManager.themeByIndex(it)
+                    AppCompatDelegate.setDefaultNightMode(
+                        if (it == 1) AppCompatDelegate.MODE_NIGHT_YES
+                        else AppCompatDelegate.MODE_NIGHT_NO
+                    )
                     for (activity in AidexxApp.instance.activityStack) {
                         activity?.recreate()
                     }
                 }
             }
             settingOther.setOnClickListener {
-                //startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
+                startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
             }
             settingAbout.setOnClickListener {
                 startActivity(Intent(this@SettingActivity, AboutActivity::class.java))

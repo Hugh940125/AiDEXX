@@ -141,6 +141,9 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                 binding.viewpager.currentItem = it
             }
         }
+        EventBusManager.onReceive<Int>(EventBusKey.EVENT_LOGOUT, this) {
+            finish()
+        }
     }
 
     override fun onStart() {

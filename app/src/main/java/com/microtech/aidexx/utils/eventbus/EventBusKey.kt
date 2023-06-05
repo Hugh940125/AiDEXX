@@ -27,4 +27,7 @@ object EventBusKey {
 
     /** 事件保存成功后跳转到首页 */
     const val EVENT_JUMP_TO_TAB: String = "EVENT_JUMP_TO_TAB"
+
+    /** 退出登录 */
+    const val EVENT_LOGOUT: String = "EVENT_LOGOUT"
 }

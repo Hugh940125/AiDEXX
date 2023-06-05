@@ -3,6 +3,7 @@ package com.microtech.aidexx.widget.dialog.standard;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.microtech.aidexx.R;
 public class StandardDialog extends AlertDialog {
     public static final int TYPE_STANDARD = 0;
     public static final int TYPE_VERTICAL = 1;
+
     private long tag;
 
     protected StandardDialog(@NonNull Context context) {
@@ -115,7 +117,9 @@ public class StandardDialog extends AlertDialog {
         }
 
         public Setter setPositive(String confirm, OnClickListener positiveListener) {
-            this.mConfirm = confirm;
+            if (!TextUtils.isEmpty(confirm)) {
+                this.mConfirm = confirm;
+            }
             this.positiveClickListener = positiveListener;
             return this;
         }
@@ -126,7 +130,9 @@ public class StandardDialog extends AlertDialog {
         }
 
         public Setter setCancel(String cancel, OnClickListener cancelListener) {
-            this.mCancel = cancel;
+            if (!TextUtils.isEmpty(cancel)) {
+                this.mCancel = cancel;
+            }
             this.cancelClickListener = cancelListener;
             return this;
         }

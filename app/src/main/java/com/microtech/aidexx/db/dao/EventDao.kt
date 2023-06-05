@@ -3,6 +3,12 @@ package com.microtech.aidexx.db.dao
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.awaitCallInTx
 import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity_
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity_
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.DietEntity_
 import com.microtech.aidexx.db.entity.event.ExerciseEntity
@@ -154,6 +160,42 @@ object EventDao {
     suspend inline fun <reified T: BasePresetEntity> findMinPresetId(): Long? {
 
         val property: Property<out BasePresetEntity>? = getPresetIdPropertyByClazz(T::class.java)
+        property?:let {
+            return null
+        }
+        return awaitCallInTx {
+            ObjectBox.store.boxFor(T::class.java).query().build().property(property as Property<T>).min()
+        }
+    }
+
+
+    fun getEventIdPropertyByClazz(clazz: Class<*>): Property<out BaseEventEntity>? {
+        return when (clazz) {
+            RealCgmHistoryEntity::class.java -> RealCgmHistoryEntity_.autoIncrementColumn
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.autoIncrementColumn
+            CalibrateEntity::class.java -> CalibrateEntity_.autoIncrementColumn
+            DietEntity::class.java -> DietEntity_.autoIncrementColumn
+            MedicationEntity::class.java -> MedicationEntity_.autoIncrementColumn
+            InsulinEntity::class.java -> InsulinEntity_.autoIncrementColumn
+            ExerciseEntity::class.java -> ExerciseEntity_.autoIncrementColumn
+            OthersEntity::class.java -> OthersEntity_.autoIncrementColumn
+            else -> null
+        }
+    }
+    suspend inline fun <reified T: BaseEventEntity> findMaxEventId(): Long? {
+
+        val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(T::class.java)
+        property?:let {
+            return null
+        }
+        return awaitCallInTx {
+            ObjectBox.store.boxFor(T::class.java).query().build().property(property as Property<T>).max()
+        }
+    }
+
+    suspend inline fun <reified T: BaseEventEntity> findMinEventId(): Long? {
+
+        val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(T::class.java)
         property?:let {
             return null
         }
