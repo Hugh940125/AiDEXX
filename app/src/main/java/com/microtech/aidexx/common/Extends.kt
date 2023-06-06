@@ -2,6 +2,7 @@ package com.microtech.aidexx.common
 
 import android.app.Application
 import android.content.Context
+import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -15,14 +16,20 @@ import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 /**
  *@date 2023/2/22
@@ -133,13 +140,32 @@ fun String.isNumber(): Boolean = try {
 
 fun String.toast() = ToastUtil.showLong(this)
 fun String.toastShort() = ToastUtil.showShort(this)
+
+fun String.convertAllPointer(): String {
+    val POINTER =
+        DecimalFormatSymbols.getInstance(LocalManageUtil.getSetLanguageLocale(getContext())).decimalSeparator.toString()
+    return replace(",", POINTER).replace(".", POINTER)
+}
+
 fun Number.stripTrailingZeros(scale: Int? = null): String {
     return (if (scale != null) {
-        BigDecimal(this.toString()).setScale(scale, RoundingMode.HALF_DOWN).stripTrailingZeros()
+        BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros()
             .toPlainString()
     } else {
         BigDecimal(this.toString()).stripTrailingZeros().toPlainString()
-    })
+    }).convertAllPointer()
+}
+
+/**
+ * 不自动适配逗号小数点
+ */
+fun Number.stripTrailingZerosWithoutPointer(scale: Int? = null): String {
+    return if (scale != null) {
+        BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros()
+            .toPlainString()
+    } else {
+        BigDecimal(this.toString()).stripTrailingZeros().toPlainString()
+    }
 }
 
 
@@ -158,3 +184,14 @@ val Application.ioScope: CoroutineScope
     get() {
         return CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
+
+fun View.setDebounceClickListener(time: Long = 500L, listener: View.OnClickListener) {
+    var job: Job? = null
+    this.setOnClickListener {
+        job?.cancel()
+        job = CoroutineScope(Dispatchers.Main).launch {
+            delay(time)
+            listener.onClick(it)
+        }
+    }
+}

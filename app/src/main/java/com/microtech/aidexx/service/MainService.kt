@@ -22,6 +22,7 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudHistorySync
+import com.microtech.aidexx.data.EventPresetSync
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.LogUtil
@@ -153,6 +154,7 @@ class MainService : Service(), LifecycleOwner {
                 if (count % 2 == 0) {
                     serviceMainScope.launch {
                         CloudHistorySync.uploadHistoryData()
+                        EventPresetSync.uploadPreset()
                     }
                 }
                 if (count == 9) {

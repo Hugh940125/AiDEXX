@@ -2,6 +2,7 @@ package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
@@ -13,6 +14,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import java.lang.reflect.Type
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 
 
@@ -20,8 +22,15 @@ import java.util.UUID
 class MedicationEntity : BaseEventEntity {
 
     @Index(type = IndexType.HASH)
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+    var medicationId: String? = UUID.randomUUID().toString().replace("-", "")
+
     var takenTime: Date = Date()
+        set(value) {
+            field = value
+            appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
+            appTimeZone = TimeZone.getDefault().id //
+            dstOffset = TimeZone.getDefault().dstSavings //
+        }
 
     @Index(type = IndexType.HASH)
     var medicineName: String? = null
@@ -32,7 +41,7 @@ class MedicationEntity : BaseEventEntity {
 
 
     @Convert(converter = MedicationDetail::class, dbType = String::class)
-    var relList: MutableList<MedicationDetail> = ArrayList()
+    var expandList: MutableList<MedicationDetail> = ArrayList()
     var momentType: Int = 0
 
     constructor() {
@@ -46,7 +55,7 @@ class MedicationEntity : BaseEventEntity {
 
     override fun getEventDescription(res: Resources): String {
         var description = ""
-        if (relList.isEmpty()) {
+        if (expandList.isEmpty()) {
             description = "${medicineName}(${
                 medicineDosage?.stripTrailingZeros(
                     3
@@ -58,7 +67,7 @@ class MedicationEntity : BaseEventEntity {
             if (!timeSlot.isNullOrBlank()) {
                 description = "$timeSlot："
             }
-            relList?.forEach { exerciseEntity ->
+            expandList?.forEach { exerciseEntity ->
                 medications.add(exerciseEntity.getEventDesc())
             }
             description += medications.joinToString(";")
@@ -78,18 +87,35 @@ class MedicationEntity : BaseEventEntity {
             else -> ""
         }
     }
+
+    override fun hashCode(): Int {
+        return medicationId.hashCode()
+    }
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is MedicationEntity && it.medicationId == this.medicationId
+        } ?: false
+    }
+
+    override fun toString(): String {
+        return "InsulinEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, isPreset=$isPreset, authorizationId=$userId, relList=${
+            expandList.joinToString(
+                ","
+            )
+        }, timestamp=$timestamp)"
+    }
+
 }
 
 data class MedicationDetail(
 
-    var medicine_preset_id: Long? = null,
     var category_name: String? = null, //类别名称
     var tradeName: String = "", // 商品名
     var manufacturer: String = "", // 厂商
     var english_name: String? = null, // 英文名称
     var quantity: Double = 0.0, //数量
     var unit: Int = 0, // 单位，0：毫克，1：克，2：片，3：粒
-    var createTime: Date? = Date()
+    var medicationId: String? = null
 
 ) : BaseEventDetail() {
     override fun toString(): String {

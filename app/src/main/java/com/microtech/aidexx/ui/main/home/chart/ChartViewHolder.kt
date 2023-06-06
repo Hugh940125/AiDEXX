@@ -11,6 +11,11 @@ import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.utils.LogUtils
+import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.*
 import com.microtech.aidexx.widget.chart.GlucoseChart
 import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
@@ -138,6 +143,13 @@ class ChartViewHolder(
                 chartViewModel.onBgDataChanged(it)
             }
         }
+
+        EventBusManager.onReceive<EventDataChangedInfo>(EventBusKey.EVENT_DATA_CHANGED,fragment) {
+            fragment.lifecycleScope.launch {
+                chartViewModel.onEventDataChanged(it)
+            }
+        }
+
         EventBusManager.onReceive<CalDataChangedInfo>(EventBusKey.EVENT_CAL_DATA_CHANGED,fragment) {
             fragment.lifecycleScope.launch {
                 chartViewModel.onCalDataChanged(it)

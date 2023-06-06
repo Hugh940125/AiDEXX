@@ -14,7 +14,7 @@ class OthersEntity : BaseEventEntity, EventActions {
 
 
     @Index(type = IndexType.HASH)
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+    var otherId: String? = UUID.randomUUID().toString().replace("-", "")
 
     var content: String = ""
     var deleteFlag: Int? = 0
@@ -45,7 +45,17 @@ class OthersEntity : BaseEventEntity, EventActions {
 
     override fun toString(): String {
         return "OthersEntity[idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, " +
-                "deleteStatus=$deleteStatus, recordUuid=$recordUuid, startTime=$createTime, content=$content, authorizationId=$userId]"
+                "deleteStatus=$deleteStatus, otherId=$otherId, startTime=$createTime, content=$content, authorizationId=$userId]"
+    }
+
+    override fun hashCode(): Int {
+        return otherId.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is OthersEntity && it.otherId == this.otherId
+        } ?: false
     }
 
 }

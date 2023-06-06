@@ -2,6 +2,7 @@ package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
@@ -13,6 +14,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import java.lang.reflect.Type
 import java.util.Date
+import java.util.TimeZone
 import java.util.UUID
 
 
@@ -20,15 +22,22 @@ import java.util.UUID
 class InsulinEntity : BaseEventEntity {
 
     var injectionTime: Date = Date()
+        set(value) {
+            field = value
+            appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
+            appTimeZone = TimeZone.getDefault().id //
+            dstOffset = TimeZone.getDefault().dstSavings //
+        }
     var insulinName: String? = null
 
     @Index(type = IndexType.HASH)
-    var recordUuid: String? = UUID.randomUUID().toString().replace("-", "")
+    var insulinId: String? = UUID.randomUUID().toString().replace("-", "")
+
     var insulinDosage: Float? = null
     var isPreset: Boolean = false
 
     @Convert(converter = InsulinDetail::class, dbType = String::class)
-    var relList: MutableList<InsulinDetail> = ArrayList()
+    var expandList: MutableList<InsulinDetail> = ArrayList()
     var momentType: Int = 0
 
     constructor() {
@@ -43,7 +52,7 @@ class InsulinEntity : BaseEventEntity {
 
     override fun getEventDescription(res: Resources): String {
         var description = ""
-        if (relList.isNullOrEmpty()) {
+        if (expandList.isNullOrEmpty()) {
             description =
                 insulinName + "(${insulinDosage}U)"
         } else {
@@ -53,7 +62,7 @@ class InsulinEntity : BaseEventEntity {
                 description = "$timeSlot："
             }
 
-            relList?.forEach { insulinDetailEntity ->
+            expandList?.forEach { insulinDetailEntity ->
                 injections.add(
                     insulinDetailEntity.getEventDesc()
                 )
@@ -71,8 +80,8 @@ class InsulinEntity : BaseEventEntity {
     }
 
     override fun toString(): String {
-        return "InsulinEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, injectionTime=$injectionTime, insulinName=$insulinName, recordUuid=$recordUuid, insulinDosage=$insulinDosage, isPreset=$isPreset, authorizationId=$userId, relList=${
-            relList.joinToString(
+        return "InsulinEntity(idx=$idx, state=$state, id=$id, recordIndex=$recordIndex, deleteStatus=$deleteStatus, injectionTime=$injectionTime, insulinName=$insulinName, insulinId=$insulinId, insulinDosage=$insulinDosage, isPreset=$isPreset, authorizationId=$userId, relList=${
+            expandList.joinToString(
                 ","
             )
         }, timestamp=$timestamp)"
@@ -88,11 +97,19 @@ class InsulinEntity : BaseEventEntity {
             else -> ""
         }
     }
+
+    override fun hashCode(): Int {
+        return insulinId.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is InsulinEntity && it.insulinId == this.insulinId
+        } ?: false
+    }
 }
 
 data class InsulinDetail(
-
-    var presetUuid: String? = null,
 
     var relUuid: String? = null,
 
@@ -104,9 +121,10 @@ data class InsulinDetail(
     var unit: Int = 0,
     var delete_flag: Int = 0,
 
-    var createTime: Date = Date(),
     @Transient
-    var updateTime: Date = Date()
+    var updateTime: Date = Date(),
+
+    var insulinId: String? = ""
 ) : BaseEventDetail() {
 
     override fun getCurrClassMutableListType(): Type = getMutableListType<InsulinDetail>()
@@ -122,7 +140,7 @@ data class InsulinDetail(
     }
 
     override fun toString(): String {
-        return "InsulinDetailEntity(presetUuid=$presetUuid, relUuid=$relUuid, categoryName='$categoryName', tradeName='$tradeName', comment='$comment', manufacturer='$manufacturer', quantity=$quantity, unit=$unit, delete_flag=$delete_flag, createTime=$createTime, updateTime=$updateTime)"
+        return "InsulinDetailEntity(presetId=$presetId, relUuid=$relUuid, categoryName='$categoryName', tradeName='$tradeName', comment='$comment', manufacturer='$manufacturer', quantity=$quantity, unit=$unit, delete_flag=$delete_flag, createTime=$createTime, updateTime=$updateTime)"
     }
 
 

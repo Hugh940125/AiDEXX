@@ -356,9 +356,6 @@
     <string name="input_password">输入密码</string>
     <string name="input_repassword">再次输入密码</string>
 
-    <string name="unit_g">g</string>
-    <string name="unit_u">u</string>
-    <string name="unit_mg">mg</string>
     <string name="unit_min">min</string>
     <string name="theme_dark">深色</string>
     <string name="theme_light">浅色</string>
@@ -533,6 +530,10 @@
     <string name="send_to_friend">发送给亲友</string>
     <string name="share_by_wechat_tip">注意\n1、亲友使用微信扫码，进入小程序并关注公众号，查看您的血糖数据。\n2、二维码有效期1天，过期后无法扫码关注，需要重新发送新的二维码。</string>
 
+    <string name="carbWithUnit">碳水含量(克)</string>
+    <string name="proteinWithUnit">蛋白质含量(克)</string>
+    <string name="fatWithUnit">脂肪含量(克)</string>
+
     <string name="event_exercise_duration">运动时长</string>
     <string name="hint_exercise_time">请输入运动时长</string>
     <string name="unit">单位</string>
@@ -561,6 +562,8 @@
     <string name="account">账号</string>
     <string name="follower_account">关注者账号</string>
 
+    <string name="please_input">请完成输入</string>
+    <string name="inject_dose">注射剂量（U）</string>
     <string name="meal_type">用餐类型</string>
     <string name="meal_time">用餐时间</string>
     <string name="food_name">食物名称</string>
@@ -635,4 +638,16 @@
     <string name="monitor_times">监测次数</string>
     <string name="unpairing">正在解配</string>
     <!-- 关注分享 -->
+
+    <!-- 单位 -->
+    <string name="unit_g">克</string>
+    <string name="unit_kg">千克</string>
+    <string name="unit_ml">毫升</string>
+    <string name="unit_l">升</string>
+    <string name="unit_mg">毫克</string>
+    <string name="unit_capsule">胶囊</string>
+    <string name="unit_piece">片</string>
+    <string name="unit_u">u</string>
+    <!-- 单位 -->
+
 </resources>

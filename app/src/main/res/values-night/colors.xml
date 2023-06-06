@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="main_bg">#1F2227</color>
+
+    <!--事件V2-->
+    <color name="bg_item_color">#232323</color>
+    <color name="bg_container_color">#111111</color>
+    <color name="event_label">#FF989898</color>
+    <color name="event_switch_content">#E6E6E6</color>
+    <color name="event_hint">#E6E6E6</color>
+    <color name="event_line">#FF393939</color>
+    <color name="event_tag_bg">#FF3A3A3A</color>
+    <color name="event_tag_color">#99E6E6E6</color>
+    <color name="event_tag_border">#99E6E6E6</color>
+    <color name="event_bg_preset_list">#FF404040</color>
+    <color name="event_preset_title">#DCDCDC</color>
+    <color name="event_preset_label">#99DCDCDC</color>
+    <color name="event_preset_input">#FFDCDCDC</color>
+    <color name="event_unit_color">#FFA1A1A1</color>
+    <color name="event_unit_border">#FF727272</color>
+    <color name="event_cancel_border">#FFE6E6E6</color>
+    <color name="event_cancel_text">#FFBBBBBB</color>
+
+    <!-- 历史模块V2 -->
+    <color name="history_label">#99E6E6E6</color>
+    <color name="history_count_text">#E6E6E6</color>
+    <color name="history_count_unit">#99E6E6E6</color>
+    <color name="history_title">#E6E6E6</color>
+    <color name="history_time">#FFB4B4B4</color>
+    <color name="history_time_line">#FF66A55D</color>
+    <color name="history_bg_icon">#404040</color>
+
+    <color name="time_picker_title_bg">#111111</color>
+
 </resources>

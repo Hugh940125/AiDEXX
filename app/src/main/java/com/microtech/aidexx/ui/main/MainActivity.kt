@@ -18,12 +18,15 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.data.AppUpgradeManager
+import com.microtech.aidexx.data.EventUnitManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
@@ -39,6 +42,14 @@ private const val REQUEST_IGNORE_BATTERY_OPTIMIZATIONS = 2003
 class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
+
+    companion object {
+        const val HISTORY = 0
+        const val TRENDS = 1
+        const val HOME = 2
+        const val BG = 3
+        const val EVENT = 4
+    }
 
     class MainHandler(val activity: MainActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
@@ -119,6 +130,18 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         fitOrientation()
         initView()
         loadData()
+        initEvent()
+    }
+
+    private fun initEvent() {
+        EventBusManager.onReceive<Int>(EventBusKey.EVENT_JUMP_TO_TAB, this) {
+            if (it in 0..4) {
+                binding.viewpager.currentItem = it
+            }
+        }
+        EventBusManager.onReceive<Int>(EventBusKey.EVENT_LOGOUT, this) {
+            finish()
+        }
     }
 
     override fun onStart() {
@@ -141,6 +164,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         lifecycleScope.launch {
             AlertUtil.loadSettingsFromDb()
         }
+        EventUnitManager.loadUnit(LanguageUnitManager.getCurrentLanguageCode())
     }
 
     override fun onResume() {
@@ -204,7 +228,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
             this.offscreenPageLimit = 2
             this.adapter = mainViewPagerAdapter
             this.isUserInputEnabled = false
-            this.setCurrentItem(2, false)
+            this.setCurrentItem(HOME, false)
             this.registerOnPageChangeCallback(object : OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     binding.mainTabView.check(position)

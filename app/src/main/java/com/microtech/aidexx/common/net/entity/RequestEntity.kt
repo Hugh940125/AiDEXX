@@ -3,24 +3,26 @@ package com.microtech.aidexx.common.net.entity
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
-const val PAGE_SIZE = 1000
+const val PAGE_SIZE = 500
 const val CGM_RECENT_COUNT = 5000
 const val BG_RECENT_COUNT = 5000
 const val CAL_RECENT_COUNT = 5000
+const val EVENT_RECENT_COUNT = 5000
 
 /**
  * data class转retrofit QueryMap
  */
 fun <T : ReqEntity> T.toQueryMap(): Map<String, String> {
     return (this::class as KClass<T>).memberProperties.associate { prop ->
-        prop.name to (prop.get(this)?.let { value ->
-            if (value::class.isData) {
+
+        prop.get(this)?.let {
+            prop.name to (if (it::class.isData) {
                 ""
             } else {
-                "$value"
-            }
-        } ?: "" )
-    }
+                "$it"
+            })
+        } ?: ("" to "")
+    }.toMutableMap().also { it.remove("") }
 }
 
 open class ReqEntity
@@ -57,20 +59,39 @@ data class ReqEmailRegister(
 
 //endregion
 
+open class ReqPageInfo(
+    var pageNum: Int = 1, //	是 1 分页参数 页数(Integer)
+    var pageSize: Int = PAGE_SIZE, //	是 100 分页参数 条数(Integer)
+    var userId: String? = null //	是 String (String)
+): ReqEntity()
+
 //region 数据事件
-data class ReqGetCgmByPage(
-    val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
-    val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
-    val userId: String?,//	是 String (String)
+
+data class ReqGetEventByPage(
     val startAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号
     val endAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号  结束点。闭区间
     val orderStrategy: String? //	否 ASC 枚举值.排序规则 默认DESC
+): ReqPageInfo()
+
+data class ReqSysPresetFoodPageInfo(
+    val foodSysPresetId: Long?
+): ReqPageInfo()
+data class ReqSysPresetMedicationPageInfo(
+    val medicationSysPresetId: Long?
+): ReqPageInfo()
+data class ReqSysPresetInsulinPageInfo(
+    val insulinSysPresetId: Long?
+): ReqPageInfo()
+data class ReqSysPresetExercisePageInfo(
+    val exerciseSysPresetId: Long?
+): ReqPageInfo()
+
+data class ReqSaveOrUpdateEventRecords<T>(
+    val records: List<T>
 ): ReqEntity()
 
-data class ReqGetEventByPage(
-    val pageNum: Int = 1,//	是 1 分页参数 页数(Integer)
-    val pageSize: Int = PAGE_SIZE,//	是 100 分页参数 条数(Integer)
-    val endAutoIncrementColumn: Long?,//
-    val userId: String?,//	是 String (String)
+data class ReqDeleteEventIds (
+    val ids: List<Long>
 ): ReqEntity()
+
 //endregion

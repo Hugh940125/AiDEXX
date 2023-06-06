@@ -2,7 +2,6 @@ package com.microtech.aidexx.base
 
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
@@ -10,7 +9,7 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.Throttle
 import java.lang.reflect.ParameterizedType
 
-abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment() {
+abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment(), PageActions {
     lateinit var viewModel: VM
     lateinit var binding: VB
     protected lateinit var throttle: Throttle
@@ -47,4 +46,9 @@ abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment() {
             (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<VM>
         viewModel = ViewModelProvider(this)[clazz]
     }
+
+    fun isBindingInit() = ::binding.isInitialized
+
+    override fun canLeave(): AfterLeaveCallback? = null
+
 }

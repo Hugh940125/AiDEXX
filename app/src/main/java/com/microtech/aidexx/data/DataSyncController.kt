@@ -1,13 +1,28 @@
 package com.microtech.aidexx.data
 
+import com.google.gson.Gson
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.event.DietEntity
+import com.microtech.aidexx.db.entity.event.ExerciseEntity
+import com.microtech.aidexx.db.entity.event.InsulinEntity
+import com.microtech.aidexx.db.entity.event.MedicationEntity
+import com.microtech.aidexx.db.entity.event.OthersEntity
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
+import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -15,14 +30,39 @@ import java.lang.reflect.ParameterizedType
 
 private val dataSyncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-abstract class DataSyncController<T> {
+abstract class DataSyncController<T: BaseEventEntity> {
 
     companion object {
         private const val TAG = "DataSyncController"
         val scope = dataSyncScope
-        const val DATA_EMPTY_MIN_ID = 0L
-    }
 
+        const val DOWNLOAD_INTERVAL: Long = 5 * 1000
+
+        fun getLoginStateKey(userId: String, clazz: Class<*>): String =
+            "LoginState-$userId-${clazz.simpleName}" // 标记登录时这个事件数据是否下载成功
+        fun getLoginMaxIdKey(userId: String, clazz: Class<*>): String =
+            "LoginState-$userId-${clazz.simpleName}-MaxId" // 标记登录时这个事件本地最大id
+
+        fun getTaskItemListKey(userId: String, clazz: Class<*>): String =
+            "TaskItemList-$userId-${clazz.simpleName}" // 标记登录之后的同步任务
+
+        suspend fun insertToDb(data: List<BaseEventEntity>, clazz: Class<out BaseEventEntity>) {
+            when (clazz) {
+                RealCgmHistoryEntity::class.java -> CgmCalibBgRepository.insertCgm(data as List<RealCgmHistoryEntity>)
+                CalibrateEntity::class.java -> CgmCalibBgRepository.insertCal(data as List<CalibrateEntity>)
+                BloodGlucoseEntity::class.java -> CgmCalibBgRepository.insertBg(data as List<BloodGlucoseEntity>)
+
+                DietEntity::class.java, ExerciseEntity::class.java,
+                MedicationEntity::class.java, InsulinEntity::class.java,
+                OthersEntity::class.java -> EventDbRepository.insertEvents(data)
+
+                else -> {
+                    if (BuildConfig.DEBUG) TODO("添加对应类型的数据库写入接口 clazz=${clazz.simpleName}")
+                    else LogUtil.xLogE("不支持当前类型下载数据写入db clazz=${clazz.simpleName}")
+                }
+            }
+        }
+    }
 
     val tClazz =
         (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
@@ -114,6 +154,9 @@ abstract class DataSyncController<T> {
                 scope.launch {
                     downloadShareDataStatusStateFlow.collect {
                         cb?.invoke(it)
+                        if (it is SyncStatus.Success || it is SyncStatus.Failure) {
+                            cancel()
+                        }
                     }
                 }
             }
@@ -123,6 +166,9 @@ abstract class DataSyncController<T> {
                 scope.launch {
                     downloadStatusStateFlow.collect {
                         cb?.invoke(it)
+                        if (it is SyncStatus.Success || it is SyncStatus.Failure) {
+                            cancel()
+                        }
                     }
                 }
             }
@@ -155,8 +201,76 @@ abstract class DataSyncController<T> {
         return ret
     }
 
-    fun getDataSyncFlagKey(userId: String): String = "$userId-${tClazz.simpleName}-DATA-SYNC-FLAG"
+    protected suspend fun applyData(userId: String, data: List<T>) {
+        insertToDb(data, tClazz)
+    }
 
     protected abstract suspend fun downloadData(userId: String): Boolean
+
+
+    /**
+     * 登录下载固定数量数据之后更新这个任务列表
+     */
+    data class SyncTaskItem(
+        var startAutoIncrementColumn: Long?,
+        var endAutoIncrementColumn: Long?
+    ) {
+        override fun hashCode(): Int {
+            return "$startAutoIncrementColumn-$endAutoIncrementColumn".hashCode()
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other?.let {
+                it is SyncTaskItem &&
+                        it.startAutoIncrementColumn == startAutoIncrementColumn &&
+                        it.endAutoIncrementColumn == endAutoIncrementColumn
+            } ?: false
+        }
+    }
+    data class SyncTaskItemList(
+        var list: MutableList<SyncTaskItem>
+    ) {
+        override fun toString(): String {
+            return Gson().toJson(this)
+        }
+        companion object {
+            fun fromString(str: String?): SyncTaskItemList? =
+                runCatching {
+                    Gson().fromJson(str, SyncTaskItemList::class.java)
+                }.getOrNull()
+
+        }
+    }
+
+    protected fun getFirstTaskItem(userId: String) =
+        MmkvManager.getEventSyncTask(getTaskItemListKey(userId, tClazz))?.list?.ifEmpty { null }?.let {
+            it.first()
+        }
+
+    protected fun updateFirstTaskItem(userId: String, taskItem: SyncTaskItem) {
+        val key = getTaskItemListKey(userId, tClazz)
+        MmkvManager.getEventSyncTask(key)?.let { tasks ->
+            tasks.list.ifEmpty { null }?.removeAt(0)?.let {
+                tasks.list.add(0, taskItem)
+                MmkvManager.setEventSyncTask(key, tasks)
+                LogUtil.d("SyncTaskItemList update $key=$tasks", TAG)
+            } ?:let {
+                LogUtil.d("SyncTaskItemList updateFail tasks=empty", TAG)
+            }
+        }?:let {
+            LogUtil.d("SyncTaskItemList updateFail tasks=null", TAG)
+        }
+    }
+
+    protected fun removeFirstTaskItem(userId: String) {
+        val key = getTaskItemListKey(userId, tClazz)
+        MmkvManager.getEventSyncTask(key)?.let {
+            val removed = it.list.ifEmpty { null }?.removeAt(0)
+            MmkvManager.setEventSyncTask(key, it)
+            LogUtil.d("SyncTaskItemList removeFirst=$removed $key=$it", TAG)
+        } ?:let {
+            LogUtil.e("SyncTaskItemList removeFirst fail tasks=null", TAG)
+        }
+    }
 
 }

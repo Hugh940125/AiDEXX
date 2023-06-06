@@ -54,7 +54,7 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
     var glucoseIsValid: Int = 0
     var quality: Int = 0
     var status: Int = 0
-    var autoIncrementColumn: Long = 0
+
     var timeOffset: Int = 0
         set(value) {
             field = value
