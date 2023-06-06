@@ -143,12 +143,10 @@ object AppUpgradeManager {
 
         val isCheckedToday = MmkvManager.getAppCheckVersionTime() == Date().getStartOfTheDay().time
         if (!isManual && isCheckedToday) {
-            LogUtil.xLogE("当天已经检测过", TAG)
             return false
         }
 
         if (!NetUtil.isNetAvailable(getContext())) {
-            LogUtil.xLogE("网络不可用", TAG)
             return false
         }
         return true

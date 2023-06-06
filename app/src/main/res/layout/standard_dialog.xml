@@ -7,6 +7,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:gravity="center"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:background="@drawable/top_round"
@@ -27,14 +28,17 @@
             android:visibility="visible"
             tools:text="这是标题" />
 
-        <com.microtech.aidexx.widget.text.JustifyTextView
-            android:layout_gravity="center"
+        <TextView
+            android:maxLines="3"
+            android:ellipsize="end"
+            tools:text="这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容"
+            android:textAlignment="viewStart"
             android:id="@+id/content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
+            android:layout_marginBottom="20dp"
             android:textSize="16sp" />
 
     </LinearLayout>

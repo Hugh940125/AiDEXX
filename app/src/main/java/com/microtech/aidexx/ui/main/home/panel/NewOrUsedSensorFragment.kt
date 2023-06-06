@@ -10,16 +10,14 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.databinding.FragmentNewOrUsedSensorBinding
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.WaitDialog
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.entity.AidexXDatetimeEntity
 import com.microtechmd.blecomm.entity.BleMessage
@@ -55,7 +53,6 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     }
                     AidexXOperation.SET_NEW_SENSOR -> {
                         TransmitterManager.instance().getDefault()?.reset()
-                        Dialogs.showSuccess(getString(R.string.str_succ))
                     }
                     else -> {
 
@@ -94,7 +91,12 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
 //                    HomeStateManager.instance().setState(glucosePanel)
                     })
             }
+            autoRecognize(model)
         }
+    }
+
+    fun autoRecognize(model: DeviceModel) {
+
     }
 
     override fun onResume() {

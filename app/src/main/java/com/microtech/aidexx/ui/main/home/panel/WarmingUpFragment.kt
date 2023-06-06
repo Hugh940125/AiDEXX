@@ -57,6 +57,7 @@ class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>(
     override fun onDestroy() {
         super.onDestroy()
         binding.bgPanel.clearAnimation()
+        HomeStateManager.onWarmingUpTimeLeftListener = null
     }
 
     companion object {

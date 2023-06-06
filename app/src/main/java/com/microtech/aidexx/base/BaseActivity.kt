@@ -61,12 +61,12 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
                 controller.show(WindowInsets.Type.navigationBars())
             }
         } else {
-            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
             window.statusBarColor = Color.TRANSPARENT
             window.decorView.apply {
                 // 设置状态栏系统栏覆盖在应用内容上
-                systemUiVisibility =
-                    systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             }
         }
     }

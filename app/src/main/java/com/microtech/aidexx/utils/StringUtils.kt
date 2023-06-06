@@ -3,7 +3,10 @@ package com.microtech.aidexx.utils
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.text.*
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.view.View
@@ -13,6 +16,7 @@ import com.microtech.aidexx.ui.web.WebActivity
 import java.lang.ref.WeakReference
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.math.pow
 
 const val WELCOME = 1
 const val LOGIN = 2
@@ -140,26 +144,24 @@ object StringUtils {
      * @return  true:更新  false:不更新
      */
     fun versionCompare(setupVer: String, onLineVer: String): Boolean {
-        var setupVer = setupVer
-        var onLineVer = onLineVer
-        if (TextUtils.isEmpty(setupVer) || TextUtils.isEmpty(onLineVer)) {
-            return false
+        val localVersion = setupVer.split(".")
+        val netVersion = onLineVer.split(".")
+        val minLength = Integer.min(netVersion.size, localVersion.size)
+        var netResult = 0f
+        var localResult = 0f
+        for (i in 0 until minLength) {
+            val netVersionBit = netVersion[i].toIntOrNull()
+            val localVersionBit = localVersion[i].toIntOrNull()
+            if (netVersionBit == null || localVersionBit == null) {
+                return false
+            }
+            netResult += netVersionBit * 256f.pow(minLength - 1 - i)
+            localResult += localVersionBit * 256f.pow(minLength - 1 - i)
         }
-        if (setupVer.length == 5) {
-            val buf = StringBuffer(setupVer)
-            buf.insert(4, "0")
-            setupVer = buf.toString()
+        if (localResult < netResult) {
+            return true
         }
-        if (onLineVer.length == 5) {
-            val buf = StringBuffer(onLineVer)
-            buf.insert(4, "0")
-            onLineVer = buf.toString()
-        }
-        setupVer = setupVer.replace(".", "")
-        onLineVer = onLineVer.replace(".", "")
-
-        //MyLog.debug_s("setupVer: "+setupVer+",onLineVer="+onLineVer);
-        return onLineVer.toInt() > setupVer.toInt()
+        return false
     }
 
     /**

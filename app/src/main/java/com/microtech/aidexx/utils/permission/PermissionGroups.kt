@@ -38,15 +38,10 @@ object PermissionGroups {
         Manifest.permission.BLUETOOTH_CONNECT,
     )
 
-    val Location = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) arrayOf(
-        Manifest.permission.ACCESS_COARSE_LOCATION,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-    ) else arrayOf(
+    val Location = arrayOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
-
 
     /**
      * 获取权限对应的功能描述，需要维护更新

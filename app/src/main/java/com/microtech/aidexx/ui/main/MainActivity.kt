@@ -67,19 +67,19 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                             }
                         }
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
-                            activity.enableLocation()
+                            it.enableLocation()
                         }
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
-                            val powerManager = activity.getSystemService(POWER_SERVICE) as PowerManager
-                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
+                            val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
+                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(it.packageName)
                             if (!hasIgnored && (ActivityUtil.isHarmonyOS() || ActivityUtil.isMIUI())) {
                                 Dialogs.showWhether(
-                                    activity,
+                                    it,
                                     content = activity.getString(R.string.content_ignore_battery),
                                     cancel = {
                                     },
                                     confirm = {
-                                        ignoreBatteryOptimization(activity)
+                                        ignoreBatteryOptimization(it)
                                     }, key = "battery_optimize"
                                 )
                             }
@@ -100,11 +100,9 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                         "com.android.settings",
                         "com.android.settings.Settings\$HighPowerApplicationsActivity"
                     )
-                } else if (ActivityUtil.isMIUI()) {
+                } else {
                     intent = Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                     intent.data = Uri.parse("package:" + activity.packageName)
-                } else {
-                    return
                 }
                 activity.startActivity(intent)
             } catch (e: Exception) {
@@ -161,18 +159,23 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     private fun requestPermission() {
+        var needBtPermission = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
                 mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
                 mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 1 * 1000)
-                return@checkPermissions
+                needBtPermission = true
             }
         } else {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
                 mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
                 mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 1 * 1000)
-                return@checkPermissions
+                needBtPermission = true
             }
+        }
+        if (needBtPermission) {
+            needBtPermission = false
+            return
         }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             mHandler.removeMessages(REQUEST_ENABLE_LOCATION_SERVICE)
@@ -183,6 +186,10 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
             mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
             mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 5 * 1000)
             return@checkPermissions
+        }
+        if (!BleUtil.isBleEnable(this)) {
+            enableBluetooth()
+            return
         }
         mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
         mHandler.sendEmptyMessageDelayed(

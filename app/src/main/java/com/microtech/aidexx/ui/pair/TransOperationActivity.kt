@@ -8,10 +8,12 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.ActivityTransOperationBinding
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtechmd.blecomm.controller.BleControllerInfo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperationBinding>() {
@@ -37,11 +39,18 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
             this
         ) { key, data ->
             if (data) {
-                finish()
-            }else{
-                if (key == EventBusKey.EVENT_PAIR_RESULT){
+                if (key == EventBusKey.EVENT_PAIR_RESULT) {
+                    lifecycleScope.launch {
+                        delay(2000)
+                        ActivityUtil.finishToMain()
+                    }
+                } else {
+                    finish()
+                }
+            } else {
+                if (key == EventBusKey.EVENT_PAIR_RESULT) {
                     ToastUtil.showShort(getString(R.string.pair_fail))
-                }else{
+                } else {
                     ToastUtil.showShort(getString(R.string.unpair_fail))
                 }
             }

@@ -80,11 +80,11 @@
         android:layout_centerHorizontal="true"
         android:gravity="center"
         android:orientation="horizontal"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/ll_new_or_used"
-        app:layout_constraintBottom_toBottomOf="@id/ll_new_or_used">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_sensor_recognize">
 
         <ProgressBar
             android:layout_width="35dp"

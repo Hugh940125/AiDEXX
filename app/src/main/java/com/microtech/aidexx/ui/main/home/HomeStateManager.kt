@@ -25,7 +25,10 @@ class HomeStateManager private constructor() {
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
-                    RESET_HOME_STATE -> resetState(glucosePanel, true)
+                    RESET_HOME_STATE -> {
+                        resetState(glucosePanel, true)
+                        onWarmingUpTimeLeftListener = null
+                    }
                 }
             }
         }

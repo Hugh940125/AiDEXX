@@ -68,6 +68,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
+        judgeState()
     }
 
     override fun onPause() {
@@ -99,7 +100,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun initView() {
-        judgeState()
         HomeStateManager.onHomeStateChange = { tag, reset ->
             if (reset) {
                 lastPageTag = null

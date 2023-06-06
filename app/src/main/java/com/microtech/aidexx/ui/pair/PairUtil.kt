@@ -8,13 +8,16 @@ import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
@@ -155,6 +158,19 @@ object PairUtil {
 
                         AidexXOperation.DISCONNECT -> {
                             LogUtil.eAiDEX("Pair ----> disconnect:$success")
+                            when (operation) {
+                                Operation.PAIR -> {
+                                    if (!default.isPaired()) {
+                                        fail()
+                                    }
+                                }
+                                Operation.UNPAIR -> {
+                                    if (default.isPaired()) {
+                                        fail()
+                                    }
+                                }
+                                else -> {}
+                            }
                             Dialogs.dismissWait()
                         }
                         else -> {}
@@ -165,6 +181,10 @@ object PairUtil {
     }
 
     fun startPair(context: Context, controllerInfo: BleControllerInfo) {
+        if (!NetUtil.isNetAvailable(context)) {
+            context.getString(R.string.net_error).toastShort()
+            return
+        }
         operation = Operation.PAIR
         Dialogs.showWait(context.getString(R.string.pairing))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
@@ -175,6 +195,10 @@ object PairUtil {
     }
 
     fun startUnpair(context: Context, isForce: Boolean) {
+        if (!NetUtil.isNetAvailable(context)) {
+            context.getString(R.string.net_error).toastShort()
+            return
+        }
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         Dialogs.showWait(context.getString(R.string.unpairing))
         operation = Operation.UNPAIR
@@ -183,13 +207,13 @@ object PairUtil {
         model?.getController()?.clearPair()
     }
 
-    fun registerBondStateChangeReceiver(context: Context) {
+    fun registerBondStateChangeReceiver() {
         val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
-        context.registerReceiver(receiver, filter)
+        AidexxApp.instance.registerReceiver(receiver, filter)
     }
 
-    fun unregisterBondStateChangeReceiver(context: Context) {
-        context.unregisterReceiver(receiver)
+    fun unregisterBondStateChangeReceiver() {
+        AidexxApp.instance.unregisterReceiver(receiver)
     }
 
     private fun pairFailedTips(context: Context) {

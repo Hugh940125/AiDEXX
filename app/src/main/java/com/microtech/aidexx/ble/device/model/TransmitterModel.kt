@@ -338,13 +338,15 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
-        val elapsedRealtime = SystemClock.elapsedRealtime()
-        if (elapsedRealtime - latestAdTime < 1000) {
-            return
-        }
-        latestAdTime = elapsedRealtime
+//        val elapsedRealtime = SystemClock.elapsedRealtime()
+//        if (elapsedRealtime - latestAdTime < 1000) {
+//            return
+//        }
+//        latestAdTime = elapsedRealtime
         val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
         LogUtil.eAiDEX("Advertising ----> $broadcast")
+        val refreshSensorState = refreshSensorState(broadcast)
+        if (refreshSensorState) return
         if (broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
             onCalibrationPermitChange?.invoke(false)
         } else {
@@ -360,8 +362,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 History.GENERAL_DEVICE_FAULT -> faultType = 2
             }
         }
-        val refreshSensorState = refreshSensorState(broadcast)
-        if (refreshSensorState) return
         val adHistories = broadcast.history
         latestAd = broadcast
         if (UserInfoManager.shareUserInfo != null) {

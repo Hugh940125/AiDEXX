@@ -25,6 +25,8 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
+import com.microtech.aidexx.ui.main.MainActivity
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -33,6 +35,7 @@ import com.microtechmd.blecomm.controller.BleControllerInfo
 import io.objectbox.reactive.DataObserver
 import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
@@ -75,7 +78,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         setContentView(binding.root)
         transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
-        PairUtil.registerBondStateChangeReceiver(this)
+        PairUtil.registerBondStateChangeReceiver()
         loadSavedTransmitter()
         initAnim()
         initView()
@@ -91,6 +94,10 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             if (it) {
                 if (window.decorView.visibility == View.VISIBLE) {
                     Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
+                    lifecycleScope.launch {
+                        delay(2000)
+                        ActivityUtil.finishToMain()
+                    }
                 }
             } else {
                 TransmitterManager.instance().removeDefault()
@@ -167,7 +174,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     override fun onDestroy() {
         super.onDestroy()
         rotateAnimation.cancel()
-        PairUtil.unregisterBondStateChangeReceiver(this)
+        PairUtil.unregisterBondStateChangeReceiver()
         MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()
         if ((transmitter == null || transmitter?.accessId == null) && scanStarted) {

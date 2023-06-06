@@ -9,12 +9,23 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.os.Process
 import android.text.TextUtils
+import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.ui.main.MainActivity
 import java.io.Serializable
 import java.lang.reflect.Method
 
 object ActivityUtil {
 
     private const val HARMONY_OS = "harmony"
+
+    fun finishToMain() {
+        for (activity in AidexxApp.instance.activityStack) {
+            if (activity is MainActivity) {
+                continue
+            }
+            activity?.finish()
+        }
+    }
 
     fun isHarmonyOS(): Boolean {
         try {
