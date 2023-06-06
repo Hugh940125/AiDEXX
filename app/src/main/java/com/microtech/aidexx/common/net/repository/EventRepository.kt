@@ -15,7 +15,6 @@ import com.microtech.aidexx.common.net.entity.ReqSysPresetMedicationPageInfo
 import com.microtech.aidexx.common.net.entity.toQueryMap
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.DataSyncController
-import com.microtech.aidexx.data.DataSyncController.Companion.DATA_EMPTY_MIN_ID
 import com.microtech.aidexx.data.DataSyncController.Companion.insertToDb
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
@@ -107,71 +106,120 @@ object EventRepository {
         }
     }
 
-    suspend inline fun <reified T: BaseEventEntity> getRecentData(
+    suspend inline fun <reified EVENT: BaseEventEntity> getRecentData(
         userId: String,
-        count: Int = CGM_RECENT_COUNT
-    ) = withContext(Dispatchers.IO)  {
+        count: Int = CGM_RECENT_COUNT,
+        isForLogin: Boolean = false
+    ): Boolean {
 
-        val clazz = T::class.java
-        val dataSyncFlagKey = DataSyncController.getDataSyncFlagKey(userId, clazz)
+        val clazz = EVENT::class.java
 
-        var startAutoIncrementColumn = EventDbRepository.findMaxEventId<T>()
-        var endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(dataSyncFlagKey)?.let { it - 1 }
+//        val dataSyncFlagKey = DataSyncController.getDataSyncFlagKey(userId, clazz)
+        val loginStateKey = DataSyncController.getLoginStateKey(userId, clazz) // 标记登录时这个事件数据是否下载成功
+        val loginMaxIdKey = DataSyncController.getLoginMaxIdKey(userId, clazz) // 标记登录时这个事件本地最大id
+        val taskItemListKey = DataSyncController.getTaskItemListKey(userId, clazz) // 标记登录之后的同步任务
 
-        (0 until count).chunked(PAGE_SIZE).all { list ->
+        var startAutoIncrementColumn: Long?
+        var endAutoIncrementColumn: Long? = null
 
-            if (endAutoIncrementColumn != null && endAutoIncrementColumn!! <= 0L) {
-                LogUtil.d("最小id为0 代表数据下载完了")
-                return@withContext true
+        val result = withContext(Dispatchers.IO)  {
+
+
+            if (MmkvManager.isLastLoginEventDownloadSuccess(loginStateKey)) {
+                MmkvManager.setLastLoginEventDownloadState(loginStateKey, false)
+                startAutoIncrementColumn = EventDbRepository.findMaxEventId<EVENT>() ?: 0L
+                startAutoIncrementColumn = if (startAutoIncrementColumn!! <= 0L) null else startAutoIncrementColumn
+
+                // 保存登录同步前本地最大id
+                MmkvManager.setEventDataId(loginMaxIdKey, startAutoIncrementColumn?:-1L)
+            } else {
+                // 上次登录失败 说明库里有脏数据 就从sp取上次登录时本地最大id
+                startAutoIncrementColumn = MmkvManager.getEventDataId(loginMaxIdKey)
             }
 
-            when (val apiResult = getEventRecordsByPageInfo(
+            val breakAll: ()->Unit = {
+                //  中途停止说明 start--end 区间数据不够 已经下载完了
+                // end标记为0代表 登录成功后不 同步任务不需要拉这段数据
+                endAutoIncrementColumn = 0L
+            }
+
+            (0 until count).chunked(PAGE_SIZE).all { list ->
+
+                if (endAutoIncrementColumn != null && endAutoIncrementColumn!! <= 0L) {
+                    LogUtil.d("最小id为0 代表数据下载完了")
+                    breakAll()
+                    return@withContext true
+                }
+
+                when (val apiResult = getEventRecordsByPageInfo(
                     userId,
                     list.size,
-                    startAutoIncrementColumn= startAutoIncrementColumn,
+                    startAutoIncrementColumn = startAutoIncrementColumn,
                     endAutoIncrementColumn = endAutoIncrementColumn,
                     clazz
                 )
-            ) {
-                is ApiResult.Success -> {
+                ) {
+                    is ApiResult.Success -> {
 
-                    apiResult.result.data?.let {
-                        if (it.isEmpty()) {
-                            if (list[0] == 0) {
-                                MmkvManager.setEventDataMinId(dataSyncFlagKey, DATA_EMPTY_MIN_ID)
-                            }
-                            return@withContext true
-                        } else {
-                            insertToDb(it, clazz)
+                        apiResult.result.data?.let {
+                            if (it.isEmpty()) {
+                                if (list[0] == 0) {
+//                                    MmkvManager.setEventDataId(dataSyncFlagKey, DATA_EMPTY_MIN_ID)
+                                }
+                                breakAll()
+                                //这页数据为空说明拉完了
+                                return@withContext true
+                            } else {
+                                insertToDb(it, clazz)
 
-                            val lastItemId = it.last().autoIncrementColumn
-                            lastItemId?.let { itemId ->
-                                MmkvManager.setEventDataMinId(dataSyncFlagKey, itemId)
+                                val lastItemId = it.last().autoIncrementColumn
+                                lastItemId?.let { itemId ->
 
-                                if (it.size < list.size) {
+                                    endAutoIncrementColumn = itemId - 1
+
+                                    if (it.size < list.size) {
+                                        //这页数据数量不够分页大小 说明拉完了
+                                        breakAll()
+                                        return@withContext true
+                                    }
+
+                                } ?:let {
+                                    LogUtil.xLogE("getrecent fail ${clazz.simpleName} 登录拉数据出现空id情况")
                                     return@withContext true
                                 }
-
-                                endAutoIncrementColumn = itemId - 1
-
-                            } ?:let {
-                                LogUtil.xLogE("登录拉数据出现空id情况")
-                                return@withContext true
                             }
+                        } ?:let {
+                            // 和服务端确认 成功不会给null 空的只会是空集合
+                            // 如果是null 就是不确定是否有数据 不记录最小id 让下载任务去下载
+                            LogUtil.xLogE("getrecent fail ${clazz.simpleName} apiResult.result.data = null")
+                            return@withContext true
                         }
-                    } ?:let {
-                        // 和服务端确认 成功不会给null 空的只会是空集合
-                        // 如果是null 就是不确定是否有数据 不记录最小id 让下载任务去下载
-                        return@withContext true
-                    }
-                    true
-                }
 
-                is ApiResult.Failure -> {
-                    return@all false
+                        true
+                    }
+
+                    is ApiResult.Failure -> {
+                        LogUtil.xLogE("getrecent fail ${clazz.simpleName} ${apiResult.code} ${apiResult.msg}")
+                        false
+                    }
                 }
             }
         }
+
+        if (result) {
+            MmkvManager.setLastLoginEventDownloadState(loginStateKey, true)
+            // 更新同步任务项
+            if ( endAutoIncrementColumn != null && endAutoIncrementColumn != 0L) {
+                var taskItemList = MmkvManager.getEventSyncTask(taskItemListKey)
+                taskItemList = taskItemList ?: DataSyncController.SyncTaskItemList(list = mutableListOf())
+                taskItemList.list.add(0, DataSyncController.SyncTaskItem(startAutoIncrementColumn, endAutoIncrementColumn))
+                MmkvManager.setEventSyncTask(taskItemListKey, taskItemList)
+                LogUtil.d("SyncTaskItemList $taskItemListKey=$taskItemList", "getRecentData")
+            }
+        }
+
+        return result
+
     }
 
     //region CGM

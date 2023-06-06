@@ -1,10 +1,9 @@
 package com.microtech.aidexx.utils.mmkv
 
-import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.data.DataSyncController
 import com.microtech.aidexx.ui.main.event.viewmodels.EventType
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Date
 
@@ -47,6 +46,17 @@ object MmkvManager {
     private const val UNIT_VERSION = "UNIT_VERSION"
     private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
 
+    fun setLastLoginEventDownloadState(key: String, isSuccess: Boolean) = MmkvUtil.encodeBoolean(key, isSuccess)
+    fun isLastLoginEventDownloadSuccess(key: String): Boolean = MmkvUtil.decodeBoolean(key, true)
+
+    fun setEventSyncTask(key: String, tasks: DataSyncController.SyncTaskItemList?) {
+        MmkvUtil.encodeString(key, tasks?.toString()?:"")
+    }
+    fun getEventSyncTask(key: String): DataSyncController.SyncTaskItemList? =
+        DataSyncController.SyncTaskItemList.fromString(
+            MmkvUtil.decodeString(key, "")
+        )
+
     fun getUnitVersion() = MmkvUtil.decodeInt(UNIT_VERSION, 0)
     fun setUnitVersion(v: Int) = MmkvUtil.encodeInt(UNIT_VERSION, v)
 
@@ -61,22 +71,6 @@ object MmkvManager {
     }
     fun getPresetVersion(@EventType type: Int, isSys: Boolean): String {
         return MmkvUtil.decodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", "")
-    }
-
-    inline fun <reified T> setEventDataMinId(key: String, autoIncrementColumn: T) {
-        when (autoIncrementColumn) {
-            is Long -> MmkvUtil.encodeLong(key, autoIncrementColumn)
-            is String -> MmkvUtil.encodeString(key, autoIncrementColumn)
-        }
-        LogUtil.d("$key=$autoIncrementColumn", "MmkvManager")
-    }
-    inline fun <reified R> getEventDataMinId(key: String): R? {
-        val ret = when (R::class.java.simpleName) {
-            "Long" -> MmkvUtil.decodeLong(key, -1)
-            "String" -> MmkvUtil.decodeString(key, "")
-            else -> null
-        } as R?
-        return if (ret == -1L) null else ret
     }
 
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)

@@ -185,9 +185,7 @@ object EventDao {
     suspend inline fun <reified T: BaseEventEntity> findMaxEventId(): Long? {
 
         val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(T::class.java)
-        property?:let {
-            return null
-        }
+        property ?: return null
         return awaitCallInTx {
             ObjectBox.store.boxFor(T::class.java).query().build().property(property as Property<T>).max()
         }

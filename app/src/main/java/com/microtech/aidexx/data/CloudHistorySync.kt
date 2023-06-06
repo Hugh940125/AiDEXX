@@ -31,6 +31,7 @@ import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CountDownLatch
 
@@ -49,8 +50,14 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
         return null
     }
 
-    open suspend fun getRemoteData(userId: String): List<Any>? =
-        when (val apiResult = EventRepository.getEventRecordsByPageInfo(userId, PAGE_SIZE, getSyncMaxId(userId), tClazz)) {
+    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<Any>? =
+        when (val apiResult = EventRepository.getEventRecordsByPageInfo(
+            userId,
+            PAGE_SIZE,
+            startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
+            endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
+            tClazz)
+        ) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null
         }
@@ -99,16 +106,29 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
     override suspend fun downloadData(userId: String): Boolean {
         if (canSync()) {
-            val result = getRemoteData(userId)
+
+            val syncTaskItem = getFirstTaskItem(userId) ?:let {
+                LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}")
+                return true
+            }
+
+            val result = getRemoteData(userId, syncTaskItem)
             return result?.let {
                 if (it.isNotEmpty()) {
                     applyData(userId, it as List<T>)
                 }
+
                 if (it.size >= PAGE_SIZE) {
-                    LogUtil.d("===DATASYNC=== 开始下一页数据下载")
-                    // todo 是否需要加个间隔 不然可能会很快
-                    downloadData(userId)
-                } else true
+                    // 更新第一条任务的起始点
+                    syncTaskItem.endAutoIncrementColumn = (it as List<T>).last().autoIncrementColumn
+                    updateFirstTaskItem(userId, syncTaskItem)
+                } else {
+                    // 数据量小于页大小 说明这个区间下载完毕 移除这条任务
+                    removeFirstTaskItem(userId)
+                }
+                delay(DOWNLOAD_INTERVAL)
+                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+                downloadData(userId)
             } ?: false
         }
         return false

@@ -5,6 +5,7 @@ import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.LogUtil
+import kotlinx.coroutines.delay
 
 abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
@@ -15,8 +16,14 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             is ApiResult.Failure -> null
         }
 
-    open suspend fun getRemoteData(userId: String): List<T>? =
-        when (val apiResult = EventRepository.getEventRecordsByPageInfo(userId, PAGE_SIZE, getSyncMaxId(userId), tClazz)) {
+    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<T>? =
+        when (val apiResult = EventRepository.getEventRecordsByPageInfo(
+            userId,
+            PAGE_SIZE,
+            startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
+            endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
+            tClazz)
+        ) {
             is ApiResult.Success -> apiResult.result.data as List<T>
             is ApiResult.Failure -> null
         }
@@ -32,16 +39,26 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
     override suspend fun downloadData(userId: String): Boolean {
         if (canSync()) {
-            val result = getRemoteData(userId)
+
+            val syncTaskItem = getFirstTaskItem(userId) ?: return true
+
+            val result = getRemoteData(userId, syncTaskItem)
             return result?.let {
                 if (it.isNotEmpty()) {
                     applyData(userId, it)
                 }
                 if (it.size >= PAGE_SIZE) {
-                    LogUtil.d("===DATASYNC=== 开始下一页数据下载")
-                    // todo 是否需要加个间隔 不然可能会很快
-                    downloadData(userId)
-                } else true
+                    // 更新第一条任务的起始点
+                    syncTaskItem.endAutoIncrementColumn = it.last().autoIncrementColumn
+                    updateFirstTaskItem(userId, syncTaskItem)
+                } else {
+                    // 数据量小于页大小 说明这个区间下载完毕 移除这条任务
+                    removeFirstTaskItem(userId)
+                }
+
+                delay(DOWNLOAD_INTERVAL)
+                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+                downloadData(userId)
             } ?: false
         }
         return false
