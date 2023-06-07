@@ -198,7 +198,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
             }
         }
         if (needBtPermission) {
-            needBtPermission = false
             return
         }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {

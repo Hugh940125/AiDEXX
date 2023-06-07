@@ -88,7 +88,11 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
                 changeLoginMethod()
             }
             binding.loginByCode.btnGetVerCode -> {
-                getVerCode()
+                if (NetUtil.isNetAvailable(this)){
+                    getVerCode()
+                }else{
+                    Dialogs.showError(getString(R.string.net_error))
+                }
             }
             binding.btnLogin -> {
                 checkLoginInfo()
@@ -103,7 +107,6 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         val user = binding.etUsername.text.toString().trim()
         if (user.isNotEmpty() && user.length >= 11) {
             Dialogs.showWait(getString(R.string.loading))
-
             lifecycleScope.launch {
                 if (viewModel.sendRegisterPhoneVerificationCode(user.trim())) {
                     viewModel.startCountDown()

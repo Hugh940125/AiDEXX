@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
@@ -22,6 +23,8 @@ import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.entity.AidexXDatetimeEntity
 import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.entity.NewSensorEntity
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
 
 class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSensorBinding>() {
@@ -32,9 +35,17 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentNewOrUsedSensorBinding.inflate(layoutInflater)
-        initView()
+        val model = TransmitterManager.instance().getDefault()
+        initView(model)
         initEvent()
+        processAuto(model)
         return binding.root
+    }
+
+    private fun processAuto(model: DeviceModel?) {
+        if (model?.deviceType() == TYPE_X) {
+            autoNewSensor(model)
+        }
     }
 
     private fun initEvent() {
@@ -47,7 +58,7 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                         Dialogs.dismissWait()
                     }
                     AidexXOperation.CONNECT -> {
-                        if (!success){
+                        if (!success) {
                             Dialogs.dismissWait()
                         }
                     }
@@ -62,8 +73,7 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
         })
     }
 
-    private fun initView() {
-        val model = TransmitterManager.instance().getDefault()
+    private fun initView(model: DeviceModel?) {
         model?.let {
             if (model.deviceType() == TYPE_X) {
                 binding.buttonOldSensor.visibility = View.GONE
@@ -91,12 +101,19 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
 //                    HomeStateManager.instance().setState(glucosePanel)
                     })
             }
-            autoRecognize(model)
         }
     }
 
-    fun autoRecognize(model: DeviceModel) {
-
+    private fun autoNewSensor(model: DeviceModel) {
+        lifecycleScope.launch {
+            binding.llAutoNew.visibility = View.VISIBLE
+            binding.llNewOrUsed.visibility = View.GONE
+            model.getController().newSensor(
+                NewSensorEntity(AidexXDatetimeEntity(Calendar.getInstance()))
+            )
+            delay(2000)
+            HomeStateManager.instance().setState(glucosePanel)
+        }
     }
 
     override fun onResume() {

@@ -17,6 +17,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
@@ -51,10 +52,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private val switchOrientation: Int = 1
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
-
     private val homeViewModel: HomeViewModel by viewModels(ownerProducer = { requireActivity() })
-
     private lateinit var chartViewHolder: ChartViewHolder
+    private var transChangeCallback = fun(_: DeviceModel?) { judgeState() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,16 +68,20 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
-        judgeState()
     }
 
     override fun onPause() {
         super.onPause()
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        HomeStateManager.instance().cancel()
+        TransmitterManager.removeOnTransmitterChangeListener(transChangeCallback)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        HomeStateManager.instance().cancel()
     }
 
     override fun onCreateView(
@@ -100,6 +104,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun initView() {
+        judgeState()
         HomeStateManager.onHomeStateChange = { tag, reset ->
             if (reset) {
                 lastPageTag = null
@@ -109,11 +114,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         HomeBackGroundSelector.instance().onLevelChange = { bg ->
             binding.homeRoot.setBackgroundResource(bg)
         }
-        TransmitterManager.setOnTransmitterChangeListener {
-            lifecycleScope.launch {
-                judgeState()
-            }
-        }
+        TransmitterManager.setOnTransmitterChangeListener(transChangeCallback)
         binding.ivScale.setOnClickListener {
             orientation(switchOrientation)
         }

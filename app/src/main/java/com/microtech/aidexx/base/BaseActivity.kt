@@ -173,16 +173,20 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
             enableBluetooth()
             return
         }
+        var needBtPermission = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
                 PermissionsUtil.requestPermissions(this, PermissionGroups.Bluetooth)
-                return@checkPermissions
+                needBtPermission = true
             }
         } else {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
                 PermissionsUtil.requestPermissions(this, PermissionGroups.Location)
-                return@checkPermissions
+                needBtPermission = true
             }
+        }
+        if (needBtPermission) {
+            return
         }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             enableLocation()

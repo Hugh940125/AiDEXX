@@ -67,9 +67,7 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
         }
         binding.tvPair.setOnClickListener {
             bleControllerInfo?.let {
-                checkEnvironment {
-                    PairUtil.startPair(this@TransOperationActivity, bleControllerInfo)
-                }
+                PairUtil.startPair(this@TransOperationActivity, bleControllerInfo)
             }
         }
         binding.tvUnpair.setOnClickListener {

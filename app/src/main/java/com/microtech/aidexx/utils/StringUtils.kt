@@ -146,17 +146,33 @@ object StringUtils {
     fun versionCompare(setupVer: String, onLineVer: String): Boolean {
         val localVersion = setupVer.split(".")
         val netVersion = onLineVer.split(".")
+        var condition = 0
+        if (localVersion.size != netVersion.size) {
+            condition = if (localVersion.size > netVersion.size) 1 else 2
+        }
+        val maxLength = Integer.max(netVersion.size, localVersion.size)
         val minLength = Integer.min(netVersion.size, localVersion.size)
         var netResult = 0f
         var localResult = 0f
-        for (i in 0 until minLength) {
-            val netVersionBit = netVersion[i].toIntOrNull()
-            val localVersionBit = localVersion[i].toIntOrNull()
-            if (netVersionBit == null || localVersionBit == null) {
-                return false
+        for (i in 0 until maxLength) {
+            when (condition) {
+                0, 1 -> {
+                    if (i < minLength) {
+                        val netVersionBit = netVersion[i].toIntOrNull() ?: return false
+                        netResult += netVersionBit * 256f.pow(minLength - 1 - i)
+                    }
+                    val localVersionBit = localVersion[i].toIntOrNull() ?: return false
+                    localResult += localVersionBit * 256f.pow(minLength - 1 - i)
+                }
+                2 -> {
+                    if (i < minLength) {
+                        val localVersionBit = localVersion[i].toIntOrNull() ?: return false
+                        localResult += localVersionBit * 256f.pow(minLength - 1 - i)
+                    }
+                    val netVersionBit = netVersion[i].toIntOrNull() ?: return false
+                    netResult += netVersionBit * 256f.pow(minLength - 1 - i)
+                }
             }
-            netResult += netVersionBit * 256f.pow(minLength - 1 - i)
-            localResult += localVersionBit * 256f.pow(minLength - 1 - i)
         }
         if (localResult < netResult) {
             return true

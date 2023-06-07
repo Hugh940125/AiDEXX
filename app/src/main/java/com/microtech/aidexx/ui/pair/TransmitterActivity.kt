@@ -12,7 +12,6 @@ import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -25,7 +24,6 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
-import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -49,6 +47,7 @@ const val BLE_INFO = "info"
 
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(),
     OnClickListener {
+    private var checkPass: Boolean = false
     private var needSetMessageCallback = true
     private var scanStarted = false
     private lateinit var rotateAnimation: RotateAnimation
@@ -75,12 +74,10 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkPass = false
         setContentView(binding.root)
         transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
-        PairUtil.registerBondStateChangeReceiver()
-        loadSavedTransmitter()
-        initAnim()
         initView()
         initEvent()
     }
@@ -139,6 +136,16 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     override fun onResume() {
         super.onResume()
+        if (!checkPass){
+            checkEnvironment {
+                checkPass = true
+                initAnim()
+                Dialogs.showWait(getString(R.string.loading))
+                loadSavedTransmitter()
+                transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
+                PairUtil.registerBondStateChangeReceiver()
+            }
+        }
     }
 
     override fun onPause() {
@@ -150,25 +157,19 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
         transmitterAdapter.onPairClick = {
-            checkEnvironment {
-                transmitter?.let {
-                    when (it.deviceType) {
-                        TYPE_G7 -> {
-                            ToastUtil.showLong("请先解配存在的设备")
-                            return@checkEnvironment
-                        }
-                        TYPE_X -> {
-
-                        }
+            transmitter?.let { entity ->
+                when (entity.deviceType) {
+                    TYPE_G7 -> {
+                        ToastUtil.showLong("请先解配存在的设备")
+                    }
+                    TYPE_X -> {
+                        PairUtil.startPair(this@TransmitterActivity, it)
                     }
                 }
-                PairUtil.startPair(this@TransmitterActivity, it)
             }
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
         binding.rvOtherTrans.adapter = transmitterAdapter
-        Dialogs.showWait(getString(R.string.loading))
-        transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
     }
 
     override fun onDestroy() {

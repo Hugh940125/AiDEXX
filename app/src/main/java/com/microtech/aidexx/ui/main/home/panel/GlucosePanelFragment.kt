@@ -61,14 +61,6 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         MessageDistributor.instance().observer(mObserver)
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         timer?.cancel()
@@ -137,11 +129,12 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                     binding.tvGlucoseState.visibility = View.VISIBLE
                     binding.tvGlucoseState.text =
                         resources.getString(R.string.Sensor_error)
-                } else if (deviceModel.faultType == 2) {
-                    binding.tvGlucoseState.visibility = View.VISIBLE
-                    binding.tvGlucoseState.text =
-                        resources.getString(R.string.insert_sensor_error)
                 }
+//                else if (deviceModel.faultType == 2) {
+//                    binding.tvGlucoseState.visibility = View.VISIBLE
+//                    binding.tvGlucoseState.text =
+//                        resources.getString(R.string.insert_sensor_error)
+//                }
             } else {
                 deviceModel.latestHistory?.let {
                     if (it.isValid == 1) {

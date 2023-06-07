@@ -2,6 +2,7 @@ package com.microtech.aidexx.common
 
 import android.app.Application
 import android.content.Context
+import android.os.SystemClock
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
@@ -14,22 +15,14 @@ import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import java.util.UUID
+import java.util.*
 
 /**
  *@date 2023/2/22
@@ -186,12 +179,12 @@ val Application.ioScope: CoroutineScope
     }
 
 fun View.setDebounceClickListener(time: Long = 500L, listener: View.OnClickListener) {
-    var job: Job? = null
+    var lastClick = 0L
     this.setOnClickListener {
-        job?.cancel()
-        job = CoroutineScope(Dispatchers.Main).launch {
-            delay(time)
+        val elapsedRealtime = SystemClock.elapsedRealtime()
+        if (elapsedRealtime - lastClick > time) {
             listener.onClick(it)
+            lastClick = elapsedRealtime
         }
     }
 }

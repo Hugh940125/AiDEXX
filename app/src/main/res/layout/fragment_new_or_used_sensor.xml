@@ -20,87 +20,97 @@
         android:textAlignment="viewStart"
         android:textColor="@color/green_65"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@id/ll_new_or_used"
+        app:layout_constraintBottom_toTopOf="@id/cl_all"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
 
-    <LinearLayout
-        android:visibility="visible"
-        android:id="@+id/ll_new_or_used"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_all"
+        android:layout_marginTop="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:gravity="center"
-        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_sensor_recognize">
 
-        <TextView
-            android:id="@+id/button_old_sensor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_bt_pair"
-            android:gravity="center"
-            android:paddingStart="20dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="6dp"
-            android:maxEms="8"
-            android:lines="1"
-            android:ellipsize="end"
-            android:text="@string/Continue_Current_Sensor"
-            android:textColor="@color/green_65"
-            android:textSize="18sp" />
-
-        <TextView
-            android:maxEms="8"
-            android:lines="1"
-            android:ellipsize="end"
-            android:id="@+id/button_new_sensor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:background="@drawable/bg_bt_used_sensor"
-            android:gravity="center"
-            android:paddingStart="20dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="6dp"
-            android:text="@string/New_Sensor"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/txt_confirm_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_sensor_recognize">
-
-        <ProgressBar
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:indeterminateBehavior="repeat"
-            android:indeterminateDrawable="@drawable/progress_new_sensor_auto"
-            android:indeterminateOnly="true" />
-
-        <TextView
+        <LinearLayout
+            android:visibility="visible"
+            android:id="@+id/ll_new_or_used"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="@string/sensor_confirm"
-            android:textAlignment="center"
-            android:textColor="@color/green_65"
-            android:textSize="18sp" />
-    </LinearLayout>
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
+            <TextView
+                android:id="@+id/button_old_sensor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_bt_pair"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="6dp"
+                android:maxEms="8"
+                android:lines="1"
+                android:ellipsize="end"
+                android:text="@string/Continue_Current_Sensor"
+                android:textColor="@color/green_65"
+                android:textSize="18sp" />
+
+            <TextView
+                android:maxEms="8"
+                android:lines="1"
+                android:ellipsize="end"
+                android:id="@+id/button_new_sensor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:background="@drawable/bg_bt_used_sensor"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="6dp"
+                android:text="@string/New_Sensor"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_auto_new"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ProgressBar
+                android:indeterminateDuration="1000"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:indeterminateBehavior="repeat"
+                android:indeterminateDrawable="@drawable/auto_new_sensor_progress_bar"
+                android:indeterminateOnly="true" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/sensor_confirm"
+                android:textAlignment="center"
+                android:textColor="@color/green_65"
+                android:textSize="18sp" />
+        </LinearLayout>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -44,6 +44,7 @@ class TransmitterEntity {
                 2, 5 -> 8
                 else -> 0
             }
+            et = expirationTime
         }
     var expirationTime: Int = 0
         set(value) {
