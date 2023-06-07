@@ -45,7 +45,10 @@ object MmkvManager {
     private const val UNIT_LATEST_UPDATE_TIME = "UNIT_LATEST_UPDATE_TIME"
     private const val UNIT_VERSION = "UNIT_VERSION"
     private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
+    private const val RESOURCE_VERSION = "RESOURCE_VERSION"
 
+    fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
+    fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
     fun setLastLoginEventDownloadState(key: String, isSuccess: Boolean) = MmkvUtil.encodeBoolean(key, isSuccess)
     fun isLastLoginEventDownloadSuccess(key: String): Boolean = MmkvUtil.decodeBoolean(key, true)
 
@@ -56,6 +59,13 @@ object MmkvManager {
         DataSyncController.SyncTaskItemList.fromString(
             MmkvUtil.decodeString(key, "")
         )
+    fun setEventDataId(key: String, eventId: Long?) {
+        MmkvUtil.encodeLong(key, eventId ?: -1L)
+    }
+    fun getEventDataId(key: String): Long? {
+        val id = MmkvUtil.decodeLong(key, -1L)
+        return if (id == -1L) null else id
+    }
 
     fun getUnitVersion() = MmkvUtil.decodeInt(UNIT_VERSION, 0)
     fun setUnitVersion(v: Int) = MmkvUtil.encodeInt(UNIT_VERSION, v)
