@@ -145,6 +145,9 @@ object EventDbRepository {
     suspend fun loadUnit(language: String): MutableList<UnitEntity>? = EventDao.loadUnit(language)
     suspend fun insertUnit(data: List<UnitEntity>) = EventDao.insertUnit(data)
 
+    suspend fun removeUnit(exceptVersion: String) = EventDao.removeUnit(exceptVersion)
+    suspend fun removeAllUnit() = EventDao.removeAllUnit()
+
     suspend fun getDietNeedUploadEvent(userId: String = UserInfoManager.instance().userId()) =
         EventDao.getDietNeedUploadEvent(userId)
     suspend fun getExerciseNeedUploadEvent(userId: String = UserInfoManager.instance().userId()) =

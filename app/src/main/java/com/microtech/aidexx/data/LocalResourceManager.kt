@@ -16,6 +16,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.common.net.repository.ApiRepository
+import com.microtech.aidexx.db.entity.event.UnitEntity
 import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
 import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity
@@ -118,7 +119,7 @@ object LocalResourceManager {
             LogUtil.xLogE("资源文件解压失败 v=$version e=${it.message}")
         } ?:let {
 
-            val versionMenu = readJsonFileToObj(unzipPath,FILE_VERSION_MENU, clazz = VersionMenu::class.java)
+            val versionMenu = readJsonFileToObj("$unzipPath$FILE_VERSION_MENU", clazz = VersionMenu::class.java)
             versionMenu?.let {
                 withContext(Dispatchers.IO) {
                     val parseTaskList = listOf(
@@ -154,8 +155,8 @@ object LocalResourceManager {
         newVersion?.let {
             val oldVersion = MmkvManager.getEventSysPresetVersion(clazz)
             if (it > oldVersion) {
-                val filePath = "$unzipPath/$fileName"
-                if (FileUtils.isFileExists(filePath)) {
+                val jsonFilePath = "$unzipPath$fileName"
+                if (FileUtils.isFileExists(jsonFilePath)) {
 
                     fun getTypeToken() = when(clazz) {
                         DietSysPresetEntity::class.java -> object : TypeToken<MutableList<DietSysPresetEntity>>() {}
@@ -166,8 +167,7 @@ object LocalResourceManager {
                     }
 
                     val dataList = readJsonFileToObj(
-                        unzipPath,
-                        fileName,
+                        jsonFilePath,
                         typeToken = getTypeToken()
                     )
 
@@ -182,11 +182,13 @@ object LocalResourceManager {
                             EventDbRepository.removeSysPresetOfOtherVersion(it, clazz)
                             MmkvManager.setEventSysPresetVersion(it, clazz)
                         } else {
-                            LogUtil.xLogE("资源文件转 entity 为空 ${clazz.simpleName}", TAG)
+                            LogUtil.xLogE("updateEventSysPreset 资源文件转 entity 为空 ${clazz.simpleName}", TAG)
                         }
                     } ?:let {
-                        LogUtil.xLogE("资源文件转 entity 失败 ${clazz.simpleName}", TAG)
+                        LogUtil.xLogE("updateEventSysPreset 资源文件转 entity 失败 ${clazz.simpleName}", TAG)
                     }
+                } else {
+                    LogUtil.xLogE("updateEventSysPreset 解压后资源文件不存在 ${clazz.simpleName}", TAG)
                 }
             } else {
                 LogUtil.d("updateEventSysPreset ${clazz.simpleName} ov=$oldVersion nv=$it", TAG)
@@ -198,15 +200,46 @@ object LocalResourceManager {
         }
     }
 
-    private fun updateUnit(unzipPath: String, newVersion: String?) {
+    private suspend fun updateUnit(unzipPath: String, newVersion: String?) {
         newVersion?.let {
+            val oldVersion = MmkvManager.getUnitVersion()
+            if (it > oldVersion) {
+                val jsonFilePath = "$unzipPath$FILE_UNIT"
+                if (FileUtils.isFileExists(jsonFilePath)) {
+                    readJsonFileToObj(
+                        jsonFilePath,
+                        typeToken = object : TypeToken<MutableList<UnitEntity>>() {}
+                    )?.let { list ->
 
+                        list.forEach { item ->
+                            item.version = it
+                        }
+                        if (list.isNotEmpty()) {
+                            EventDbRepository.insertUnit(list)
+                            EventDbRepository.removeUnit(it)
+                            MmkvManager.setUnitVersion(it)
+                        } else {
+                            LogUtil.xLogE("updateUnit 资源文件转 entity 为空", TAG)
+                        }
+
+                    } ?:let {
+                        LogUtil.xLogE("updateUnit 资源文件转 entity 失败 ", TAG)
+                    }
+                } else {
+                    LogUtil.xLogE("updateUnit 解压后资源文件不存在", TAG)
+                }
+            } else {
+                LogUtil.d("updateUnit ov=$oldVersion nv=$it", TAG)
+            }
         } ?:let {
             // 删除单位文件
+            EventDbRepository.removeAllUnit()
+            MmkvManager.setUnitVersion("")
+            LogUtil.xLogE("清空单位", TAG)
         }
     }
 
-    private fun updateLanguage(zipPath: String, newVersion: String?) {
+    private fun updateLanguage(unzipPath: String, newVersion: String?) {
         newVersion?.let {
 
         } ?:let {
@@ -214,9 +247,8 @@ object LocalResourceManager {
         }
     }
 
-    private fun <R> readJsonFileToObj(unzipPath: String, fileName: String, clazz: Class<R>? = null, typeToken: TypeToken<R>? = null): R? {
+    private fun <R> readJsonFileToObj(jsonFilePath: String, clazz: Class<R>? = null, typeToken: TypeToken<R>? = null): R? {
         clazz ?: typeToken ?: return null
-        val jsonFilePath = "$unzipPath/$fileName"
         if (FileUtils.isFileExists(jsonFilePath)) {
             val gson = Gson()
             return runCatching {

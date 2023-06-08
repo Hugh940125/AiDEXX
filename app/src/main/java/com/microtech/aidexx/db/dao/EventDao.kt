@@ -351,12 +351,22 @@ object EventDao {
     suspend fun loadUnit(language: String): MutableList<UnitEntity>? =
         awaitCallInTx {
             unitBox.query {
-                equal(UnitEntity_.language, language, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                equal(UnitEntity_.language, language, QueryBuilder.StringOrder.CASE_INSENSITIVE)
             }.find()
         }
 
     suspend fun insertUnit(data: List<UnitEntity>) = awaitCallInTx {
         unitBox.put(data)
+    }
+
+    suspend fun removeUnit(exceptVersion: String) = awaitCallInTx {
+        unitBox.query {
+            notEqual(UnitEntity_.version, exceptVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+        }.remove()
+    }
+
+    suspend fun removeAllUnit() = awaitCallInTx {
+        unitBox.removeAll()
     }
 
     suspend fun getDietNeedUploadEvent(userId: String): MutableList<DietEntity>? {

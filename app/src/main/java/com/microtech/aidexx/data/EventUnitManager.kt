@@ -4,8 +4,6 @@ import com.google.gson.Gson
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
-import com.microtech.aidexx.common.net.ApiResult
-import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.event.UnitConfig
 import com.microtech.aidexx.db.entity.event.UnitEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
@@ -36,6 +34,11 @@ object EventUnitManager {
     private const val GET_UNIT_DATA = "/eventBizUnitMultiLangMap"
     private const val UNIT_CONFIG_FILE_NAME = "unit.json"
 
+    private const val EVENT_TYPE_DIET = 1
+    private const val EVENT_TYPE_EXERCISE = 2
+    private const val EVENT_TYPE_MEDICINE = 3
+    private const val EVENT_TYPE_INSULIN = 4
+
     // debug 1min 间隔检测升级 release 24小时间隔
     private val UPDATE_INTERVAL = if (BuildConfig.DEBUG) 60 * 1000 else 24 * 60 * 60 * 1000
 
@@ -45,7 +48,7 @@ object EventUnitManager {
         stopUpdate()
     }
 
-    private val mUnitMap = mutableMapOf<String, MutableList<SpecificationModel>>()
+    private val mUnitMap = mutableMapOf<Int, MutableList<SpecificationModel>>()
 
     /**
      * 语言单位检测升级
@@ -55,7 +58,7 @@ object EventUnitManager {
         if (canStartTask()) {
             isUpdating = true
             coroutineScope.launch(updateExceptionHandler) {
-                checkAndUpdate()
+//                checkAndUpdate()
             }
         }
     }
@@ -118,26 +121,26 @@ object EventUnitManager {
      *          不会出现天上版本比内置小的情况
      *      更新成功后 更新内置数据释放标记 以及 本地版本
      */
-    private suspend fun checkAndUpdate() {
-
-        if(isLoadedCurrentApkVer()) {
-            LogUtils.debug(TAG,"内置数据释放过")
-            checkAndUpdateFromServer()
-        } else {
-
-            val uc = loadFromAssets()
-
-            LogUtils.debug(TAG,"内置数据未释放过 localUc.ver=${uc.version}")
-            checkAndUpdateFromServer(
-                if(uc.version > MmkvManager.getUnitVersion())
-                    uc
-                else
-                    null
-            )
-
-        }
-        stopUpdate()
-    }
+//    private suspend fun checkAndUpdate() {
+//
+//        if(isLoadedCurrentApkVer()) {
+//            LogUtils.debug(TAG,"内置数据释放过")
+//            checkAndUpdateFromServer()
+//        } else {
+//
+//            val uc = loadFromAssets()
+//
+//            LogUtils.debug(TAG,"内置数据未释放过 localUc.ver=${uc.version}")
+//            checkAndUpdateFromServer(
+//                if(uc.version > MmkvManager.getUnitVersion())
+//                    uc
+//                else
+//                    null
+//            )
+//
+//        }
+//        stopUpdate()
+//    }
 
     private fun loadFromAssets(): UnitConfig {
 
@@ -147,66 +150,30 @@ object EventUnitManager {
         return Gson().fromJson(content, UnitConfig::class.java)
     }
 
-    private fun flatUnitConfig(uc: UnitConfig): List<UnitEntity> {
-
-        return uc.content.flatMap { ucType ->
-            ucType.languageList.flatMap { ucLanguage ->
-                ucLanguage.unitList.flatMap {
-                    val ue = UnitEntity(
-                        key = "${ucType.type}${ucLanguage.language}${it.code}",
-                        isDefault = it.default,
-                        type = ucType.type,
-                        language = ucLanguage.language,
-                        code = it.code,
-                        name = it.name,
-                        ratio = it.ratio,
-                        status = it.status
-                    )
-                    listOf(ue)
-                }
-            }
-        }
-
-    }
-
     /**
      *
      */
-    private suspend fun checkAndUpdateFromServer(localUc: UnitConfig? = null) {
-        val serverUc = loadFromServer()
-        serverUc?.let {
-            if(it.version > MmkvManager.getUnitVersion()) {
-                updateDbAndMemo(serverUc)
-                LogUtils.debug(TAG,"写入天上最新数据")
-            } else {
-                LogUtils.debug(TAG,"天上数据未更新")
-            }
-
-            MmkvManager.setUnitLatestUpdateTime(System.currentTimeMillis())
-
-        } ?: localUc?.let {
-            updateDbAndMemo(localUc)
-            LogUtils.debug(TAG,"写入内置数据")
-        }
-
-    }
-
-    private suspend fun loadFromServer(): UnitConfig? =
-        when ( val apiRet = runCatching { EventRepository.getUnit() }.getOrNull() ) {
-            is ApiResult.Success -> apiRet.result.data
-            is ApiResult.Failure -> {
-                LogUtil.xLogE("fetch unit fail ${apiRet.code} ${apiRet.msg}")
-                null
-            }
-            else -> {
-                LogUtil.xLogE("fetch unit fail ")
-                null
-            }
-        }
+//    private suspend fun checkAndUpdateFromServer(localUc: UnitConfig? = null) {
+//        val serverUc = loadFromServer()
+//        serverUc?.let {
+//            if(it.version > MmkvManager.getUnitVersion()) {
+//                updateDbAndMemo(serverUc)
+//                LogUtils.debug(TAG,"写入天上最新数据")
+//            } else {
+//                LogUtils.debug(TAG,"天上数据未更新")
+//            }
+//
+//            MmkvManager.setUnitLatestUpdateTime(System.currentTimeMillis())
+//
+//        } ?: localUc?.let {
+//            updateDbAndMemo(localUc)
+//            LogUtils.debug(TAG,"写入内置数据")
+//        }
+//
+//    }
 
 
-    private suspend fun updateDbAndMemo(uc: UnitConfig){
-        val list = flatUnitConfig(uc)
+    private suspend fun updateDbAndMemo(list: List<UnitEntity>){
         // 依赖key自动替换
         EventDbRepository.insertUnit(list)
 
@@ -214,23 +181,22 @@ object EventUnitManager {
 
         LogUtils.debug(TAG, "unit loadedApkVersion=${BuildConfig.VERSION_CODE}")
         MmkvManager.setUnitLoadedApkVersion(BuildConfig.VERSION_CODE)
-        MmkvManager.setUnitVersion(uc.version)
     }
 
     /**
      * 更新内存中当前语言对应的单位数据
      */
     private fun updateMemo(list: List<UnitEntity>) {
-        val newestMap = mutableMapOf<String, MutableList<SpecificationModel>>()
+        val newestMap = mutableMapOf<Int, MutableList<SpecificationModel>>()
         list.filter {
-            it.language == LanguageUnitManager.getCurrentLanguageCode() && it.status == 0
+            it.language == LanguageUnitManager.getCurrentLanguageCode() && it.version == MmkvManager.getUnitVersion()
         }.forEach {
-            val sm = SpecificationModel(it.name, it.ratio,  it.isDefault == 1, it.code)
-            if (newestMap.containsKey(it.type)) {
-                assert(newestMap[it.type] != null)
-                newestMap[it.type]?.add(sm)
+            val sm = SpecificationModel(it.name, it.ratio,  it.isDefault == 1, it.value)
+            if (newestMap.containsKey(it.eventType)) {
+                assert(newestMap[it.eventType] != null)
+                newestMap[it.eventType]?.add(sm)
             } else {
-                newestMap[it.type] = mutableListOf(sm)
+                newestMap[it.eventType] = mutableListOf(sm)
             }
         }
         if(newestMap.isNotEmpty()) {
@@ -240,7 +206,7 @@ object EventUnitManager {
 
     }
 
-    fun getDietUnitList(): MutableList<SpecificationModel> = mUnitMap["food"] ?: arrayListOf(
+    fun getDietUnitList(): MutableList<SpecificationModel> = mUnitMap[EVENT_TYPE_DIET] ?: arrayListOf(
         SpecificationModel(getContext().getString(R.string.unit_g), 1.0, true, 0),
         SpecificationModel(getContext().getString(R.string.unit_kg), ratio = 1000.0, false, 1),
         SpecificationModel(getContext().getString(R.string.unit_ml), ratio = 1.0, false, 2),
@@ -255,7 +221,7 @@ object EventUnitManager {
     }
 
 
-    fun getMedicationUnitList(): MutableList<SpecificationModel> = mUnitMap["medicine"] ?: arrayListOf(
+    fun getMedicationUnitList(): MutableList<SpecificationModel> = mUnitMap[EVENT_TYPE_MEDICINE] ?: arrayListOf(
         SpecificationModel(getContext().getString(R.string.unit_mg), ratio = 1.0, true, 0),
         SpecificationModel(getContext().getString(R.string.unit_g), ratio = 1000.0, false, 1),
         SpecificationModel(getContext().getString(R.string.unit_piece), ratio = 1.0, false, 2),
@@ -270,7 +236,7 @@ object EventUnitManager {
         }?.specification ?: ""
     }
 
-    fun getTimeUnitList(): MutableList<SpecificationModel> = mUnitMap["exercise"] ?: arrayListOf(
+    fun getTimeUnitList(): MutableList<SpecificationModel> = mUnitMap[EVENT_TYPE_EXERCISE] ?: arrayListOf(
         SpecificationModel(getContext().getString(R.string.min), ratio = 1.0, true, 0),
         SpecificationModel(getContext().getString(R.string.unit_hour), ratio = 60.0, false, 1),
     )
@@ -284,7 +250,7 @@ object EventUnitManager {
     }
 
 
-    fun getInsulinUnit(): MutableList<SpecificationModel> = mUnitMap["insulin"] ?: arrayListOf(
+    fun getInsulinUnit(): MutableList<SpecificationModel> = mUnitMap[EVENT_TYPE_INSULIN] ?: arrayListOf(
         SpecificationModel("U", ratio = 1.0, true, 0),
     )
 }
