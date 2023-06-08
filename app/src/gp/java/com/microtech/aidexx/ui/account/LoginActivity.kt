@@ -26,6 +26,8 @@ import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
 import kotlinx.coroutines.launch
+import com.microtech.aidexx.data.AppUpgradeManager
+import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>() {
 
@@ -43,6 +45,15 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>() {
 
         binding.tvForget.setOnClickListener {
             startActivity(Intent(this, ForgetPwdActivity::class.java))
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            AppUpgradeManager.fetchVersionInfo()?.let {
+                AppUpdateFragment(it).show(supportFragmentManager, AppUpdateFragment.TAG)
+            }
         }
     }
 

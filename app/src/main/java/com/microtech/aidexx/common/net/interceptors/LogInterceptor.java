@@ -6,15 +6,14 @@ import com.microtech.aidexx.utils.LogUtil;
 
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
-import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -22,8 +21,10 @@ import okio.Buffer;
 
 public class LogInterceptor implements Interceptor {
 
-    private List<String> cantReadStringContentType = Arrays.asList(
-            "application/vnd.android.package-archive"
+    private List<String> canReadStringContentType = Arrays.asList(
+//            "application/vnd.android.package-archive",
+//            "application/zip",
+            "application/json"
     );
 
     @NonNull
@@ -83,7 +84,13 @@ public class LogInterceptor implements Interceptor {
     }
 
     private boolean needInterceptor(@NonNull Response response) {
-        return !cantReadStringContentType.contains(response.header("Content-Type"));
+        String curType = response.header("Content-Type");
+        return canReadStringContentType.stream().anyMatch(new Predicate<String>() {
+            @Override
+            public boolean test(String s) {
+                return curType.contains(s);
+            }
+        });
     }
 
     /**

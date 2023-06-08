@@ -9,7 +9,9 @@ import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
 import io.objectbox.annotation.IndexType
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @BaseEntity
 abstract class BaseEventEntity {
@@ -38,7 +40,7 @@ abstract class BaseEventEntity {
     @Index
     var autoIncrementColumn: Long? = null
 
-
+    @Index
     var timestamp: Long = 0L
 
     var appTime: String? = null

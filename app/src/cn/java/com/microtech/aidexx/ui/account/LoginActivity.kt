@@ -13,8 +13,10 @@ import com.microtech.aidexx.common.LOGIN_TYPE_PWD
 import com.microtech.aidexx.common.LOGIN_TYPE_VER_CODE
 import com.microtech.aidexx.common.LoginType
 import com.microtech.aidexx.common.toastShort
+import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
 import com.microtech.aidexx.ui.main.MainActivity
+import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.LOGIN
@@ -34,6 +36,15 @@ class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), Vi
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         initView()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            AppUpgradeManager.fetchVersionInfo()?.let {
+                AppUpdateFragment(it).show(supportFragmentManager, AppUpdateFragment.TAG)
+            }
+        }
     }
 
     private fun initView() {

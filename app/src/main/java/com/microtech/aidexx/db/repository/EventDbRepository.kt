@@ -5,10 +5,19 @@ import com.microtech.aidexx.db.dao.EventDao
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.event.UnitEntity
 import com.microtech.aidexx.db.entity.event.preset.BasePresetEntity
+import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
 import com.microtech.aidexx.db.entity.event.preset.DietPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity_
 import com.microtech.aidexx.db.entity.event.preset.InsulinPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity_
 import com.microtech.aidexx.db.entity.event.preset.MedicinePresetEntity
+import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity_
 import com.microtech.aidexx.db.entity.event.preset.SportPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity_
 import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.Property
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +39,29 @@ object EventDbRepository {
         EventDao.insertPresetData(data)
     }
 
+    suspend fun insertSysPresetData(data: List<BaseSysPreset>) {
+        if (data.isEmpty()) return
+        EventDao.insertSysPresetData(data)
+    }
+
+    suspend fun <T: BaseSysPreset> removeSysPresetOfOtherVersion(exceptVersion: String, clazz: Class<T>) {
+        val pro = when (clazz) {
+            DietSysPresetEntity::class.java -> DietSysPresetEntity_.version
+            SportSysPresetEntity::class.java -> SportSysPresetEntity_.version
+            MedicineSysPresetEntity::class.java -> MedicineSysPresetEntity_.version
+            InsulinSysPresetEntity::class.java -> InsulinSysPresetEntity_.version
+            else -> null
+        } ?: return
+
+        EventDao.removeSysPresetOfOtherVersion(exceptVersion, clazz, pro as Property<T>)
+    }
+
+    suspend fun <T: BaseSysPreset> removeSysPresetData(clazz: Class<T>) {
+        EventDao.removeSysPresetData(clazz)
+    }
+
     suspend fun insertPresetData(data: BasePresetEntity) =
-        EventDao.insertPresetData(data)
+        EventDao.insertSysPresetData(data)
 
     suspend inline fun <reified T: BasePresetEntity> findMaxPresetId(): Long? = EventDao.findMaxPresetId<T>()
     suspend inline fun <reified T: BasePresetEntity> findMinPresetId(): Long? = EventDao.findMinPresetId<T>()

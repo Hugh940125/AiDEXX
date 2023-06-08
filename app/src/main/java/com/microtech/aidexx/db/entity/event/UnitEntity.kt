@@ -73,6 +73,6 @@ data class UnitConfigWithType(
 )
 
 data class UnitConfig(
-    var version: Int,
+    var version: String,
     var content: MutableList<UnitConfigWithType>
 )
