@@ -17,6 +17,7 @@ object PermissionsUtil {
     private lateinit var permissions: Array<String>
     private var mRequestCode = AtomicInteger(100000) //权限请求码
     var mPermissionDialog: AlertDialog? = null
+    var goSystemSettingShowing = false
     private val callBackMap = mutableMapOf<Int, (() -> Unit)?>()
 
     fun checkPermissions(
@@ -99,7 +100,10 @@ object PermissionsUtil {
                 }
             }
             //如果有权限没有被允许
-            if (missedPermissions.isNotEmpty() && context.shouldShowRequestPermissionRationale(missedPermissions[0])) {
+            if (missedPermissions.isNotEmpty() && !context.shouldShowRequestPermissionRationale(
+                    missedPermissions[0]
+                )
+            ) {
                 //跳转到系统设置权限页面，或者直接关闭页面，不让他继续访问
                 if (showSystemSetting) {
                     showSystemPermissionsSettingDialog(context)
@@ -120,17 +124,20 @@ object PermissionsUtil {
                     String.format(
                         context.getString(
                             R.string.permission_open_manual,
-                        ), PermissionGroups.getFuncToPermission(context, permissions)
+                        ),
+                        PermissionGroups.getFuncToPermission(context, permissions),
+                        PermissionGroups.getFuncToPermission(context, permissions)
                     )
                 )
                 .setPositive(
                     context.getString(R.string.permission_to_setting)
                 ) { _, _ ->
                     cancelPermissionDialog()
+                    goSystemSettingShowing = false
                     val intent = Intent()
                     intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                    intent.addCategory(Intent.CATEGORY_DEFAULT)
                     intent.data = Uri.parse("package:${context.packageName}")
+                    intent.addCategory(Intent.CATEGORY_DEFAULT)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
                     intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
@@ -139,9 +146,11 @@ object PermissionsUtil {
                     context.getString(R.string.btn_cancel)
                 ) { _, _ ->
                     cancelPermissionDialog()
+                    goSystemSettingShowing = false
                 }.create()
         }
         mPermissionDialog?.show()
+        goSystemSettingShowing = true
     }
 
     //关闭对话框

@@ -78,10 +78,8 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         super.onDetach()
         HomeStateManager.instance().cancel()
         TransmitterManager.removeOnTransmitterChangeListener(transChangeCallback)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
+        HomeStateManager.onHomeStateChange = null
+        HomeBackGroundSelector.instance().onLevelChange = null
     }
 
     override fun onCreateView(

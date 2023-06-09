@@ -41,7 +41,7 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
             if (data) {
                 if (key == EventBusKey.EVENT_PAIR_RESULT) {
                     lifecycleScope.launch {
-                        delay(2000)
+                        delay(2500)
                         ActivityUtil.finishToMain()
                     }
                 } else {

@@ -57,8 +57,16 @@ object PermissionGroups {
             return context.getString(R.string.camera) + context.getString(R.string.txt_protocal_and) + context.getString(
                 R.string.album_features
             )
-        } else if (Location.contentEquals(permissions)) {
-            return context.getString(R.string.location)
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (Bluetooth.contentEquals(permissions)) {
+                    return context.getString(R.string.bluetooth)
+                }
+            } else {
+                if (Location.contentEquals(permissions)) {
+                    return context.getString(R.string.bluetooth)
+                }
+            }
         }
         return ""
     }

@@ -28,6 +28,7 @@ import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import io.objectbox.reactive.DataObserver
@@ -50,7 +51,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     private var checkPass: Boolean = false
     private var needSetMessageCallback = true
     private var scanStarted = false
-    private lateinit var rotateAnimation: RotateAnimation
+    private var rotateAnimation: RotateAnimation? = null
     private var subscription: DataSubscription? = null
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
@@ -92,7 +93,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (window.decorView.visibility == View.VISIBLE) {
                     Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
                     lifecycleScope.launch {
-                        delay(2000)
+                        delay(2500)
                         ActivityUtil.finishToMain()
                     }
                 }
@@ -126,17 +127,17 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 0f, 360f, RotateAnimation.RELATIVE_TO_SELF,
                 0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f
             )
-        rotateAnimation.fillAfter = true
-        rotateAnimation.interpolator = LinearInterpolator()
-        rotateAnimation.repeatCount = Animation.INFINITE
-        rotateAnimation.repeatMode = Animation.RESTART
-        rotateAnimation.duration = 1500
+        rotateAnimation?.fillAfter = true
+        rotateAnimation?.interpolator = LinearInterpolator()
+        rotateAnimation?.repeatCount = Animation.INFINITE
+        rotateAnimation?.repeatMode = Animation.RESTART
+        rotateAnimation?.duration = 1500
         binding.ivRefreshScan.startAnimation(rotateAnimation)
     }
 
     override fun onResume() {
         super.onResume()
-        if (!checkPass){
+        if (!checkPass && !PermissionsUtil.goSystemSettingShowing) {
             checkEnvironment {
                 checkPass = true
                 initAnim()
@@ -157,8 +158,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
         transmitterAdapter.onPairClick = {
-            transmitter?.let { entity ->
-                when (entity.deviceType) {
+            if (transmitter != null) {
+                when (transmitter?.deviceType) {
                     TYPE_G7 -> {
                         ToastUtil.showLong("请先解配存在的设备")
                     }
@@ -166,6 +167,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                         PairUtil.startPair(this@TransmitterActivity, it)
                     }
                 }
+            } else {
+                PairUtil.startPair(this@TransmitterActivity, it)
             }
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
@@ -174,7 +177,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     override fun onDestroy() {
         super.onDestroy()
-        rotateAnimation.cancel()
+        rotateAnimation?.cancel()
         PairUtil.unregisterBondStateChangeReceiver()
         MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()

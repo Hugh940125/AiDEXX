@@ -38,10 +38,12 @@ private const val REQUEST_STORAGE_PERMISSION = 2000
 private const val REQUEST_BLUETOOTH_PERMISSION = 2001
 private const val REQUEST_ENABLE_LOCATION_SERVICE = 2002
 private const val REQUEST_IGNORE_BATTERY_OPTIMIZATIONS = 2003
+private const val REQUEST_ENABLE_BLUETOOTH = 2004
 
 class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
+    private var checkStep = 0
 
     companion object {
         const val HISTORY = 0
@@ -71,19 +73,30 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                 )
                         }
                         REQUEST_BLUETOOTH_PERMISSION -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                PermissionsUtil.requestPermissions(it, PermissionGroups.Bluetooth)
-                            } else {
-                                PermissionsUtil.requestPermissions(it, PermissionGroups.Location)
-                            }
+                            EnquireManager.instance()
+                                .showEnquireOrNot(
+                                    it,
+                                    it.getString(R.string.need_bt_permission),
+                                    it.getString(R.string.bt_permission_use_for), {
+                                        PermissionsUtil.requestPermissions(
+                                            it,
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PermissionGroups.Bluetooth
+                                            else PermissionGroups.Location
+                                        )
+                                    }, flag = null
+                                )
                         }
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             it.enableLocation()
                         }
+                        REQUEST_ENABLE_BLUETOOTH -> {
+                            activity.enableBluetooth()
+                        }
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
-                            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(it.packageName)
-                            if (!hasIgnored && (ActivityUtil.isHarmonyOS() || ActivityUtil.isMIUI())) {
+                            val hasIgnored =
+                                powerManager.isIgnoringBatteryOptimizations(it.packageName)
+                            if (!hasIgnored) {
                                 Dialogs.showWhether(
                                     it,
                                     content = activity.getString(R.string.content_ignore_battery),
@@ -169,7 +182,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     override fun onResume() {
         super.onResume()
-        requestPermission()
+        checkPermission()
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo()?.let {
                 AppUpdateFragment(it).show(supportFragmentManager, AppUpdateFragment.TAG)
@@ -182,36 +195,62 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         mHandler.removeCallbacksAndMessages(null)
     }
 
-    private fun requestPermission() {
+    private fun checkPermission() {
+        if (PermissionsUtil.goSystemSettingShowing) {
+            return
+        }
         var needBtPermission = false
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
                 mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
-                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 1 * 1000)
+                mHandler.sendEmptyMessageDelayed(
+                    REQUEST_BLUETOOTH_PERMISSION,
+                    if (checkStep != 1) 1000 else 30 * 1000
+                )
                 needBtPermission = true
             }
         } else {
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
                 mHandler.removeMessages(REQUEST_BLUETOOTH_PERMISSION)
-                mHandler.sendEmptyMessageDelayed(REQUEST_BLUETOOTH_PERMISSION, 1 * 1000)
+                mHandler.sendEmptyMessageDelayed(
+                    REQUEST_BLUETOOTH_PERMISSION,
+                    if (checkStep != 1) 1000 else 30 * 1000
+                )
                 needBtPermission = true
             }
         }
         if (needBtPermission) {
+            checkStep = 1
             return
         }
         if (!LocationUtils.isLocationServiceEnable(this) && Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             mHandler.removeMessages(REQUEST_ENABLE_LOCATION_SERVICE)
-            mHandler.sendEmptyMessageDelayed(REQUEST_ENABLE_LOCATION_SERVICE, 1 * 1000)
+            mHandler.sendEmptyMessageDelayed(
+                REQUEST_ENABLE_LOCATION_SERVICE,
+                if (checkStep != 2) 1000 else 30 * 1000
+            )
+            checkStep = 2
             return
         }
-        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
-            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
-            mHandler.sendEmptyMessageDelayed(REQUEST_STORAGE_PERMISSION, 5 * 1000)
-            return@checkPermissions
-        }
         if (!BleUtil.isBleEnable(this)) {
-            enableBluetooth()
+            mHandler.removeMessages(REQUEST_ENABLE_BLUETOOTH)
+            mHandler.sendEmptyMessageDelayed(
+                REQUEST_ENABLE_BLUETOOTH,
+                if (checkStep != 3) 1000 else 30 * 1000
+            )
+            checkStep = 3
+            return
+        }
+//        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
+//            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
+//            mHandler.sendEmptyMessageDelayed(
+//                REQUEST_STORAGE_PERMISSION,
+//                if (checkStep != 4) 5 * 1000 else 30 * 1000
+//            )
+//            needBtPermission = true
+//        }
+        if (needBtPermission) {
+            checkStep = 4
             return
         }
         mHandler.removeMessages(REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)

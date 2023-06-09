@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 
 object PairUtil {
     private var isBonding = false
+    private var isBondListenerRegister = false
 
     enum class Operation { PAIR, UNPAIR }
 
@@ -210,10 +211,14 @@ object PairUtil {
     fun registerBondStateChangeReceiver() {
         val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         AidexxApp.instance.registerReceiver(receiver, filter)
+        isBondListenerRegister = true
     }
 
     fun unregisterBondStateChangeReceiver() {
-        AidexxApp.instance.unregisterReceiver(receiver)
+        if (isBondListenerRegister) {
+            AidexxApp.instance.unregisterReceiver(receiver)
+            isBondListenerRegister = false
+        }
     }
 
     private fun pairFailedTips(context: Context) {

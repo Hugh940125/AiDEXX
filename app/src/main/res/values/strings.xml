@@ -1,5 +1,5 @@
 <resources>
-    <string name="permission_open_manual">已禁用权限，请手动授予，否则无法正常使用%s</string>
+    <string name="permission_open_manual">%s权限已被禁用，请在系统设置中授予，否则无法正常使用%s</string>
     <string name="permission_to_setting">去设置</string>
     <string-array name="exerciseLevel">
         <item>轻度</item>
@@ -490,8 +490,10 @@
     <string name="dont_allow">不允许</string>
     <string name="want_visit_camera">“微泰动态“想访问相机</string>
     <string name="use_camera_to_bind">使用相机扫描二维码绑定发射器</string>
-    <string name="need_storage">微泰动态需要你的存储权限</string>
-    <string name="storage_use_for">用于记录应用日志，下载AGP报告，OTA升级等功能</string>
+    <string name="need_storage">"微泰动态"需要你的存储权限</string>
+    <string name="need_bt_permission">"微泰动态"需要你的蓝牙权限</string>
+    <string name="storage_use_for">用于设置头像，记录应用日志，下载AGP报告，OTA升级等功能</string>
+    <string name="bt_permission_use_for">需要蓝牙权限才能与CGM进行蓝牙连接</string>
     <string name="access_location">微泰动态需要你的位置权限</string>
     <string name="bt_need_location">蓝牙连接需要位置权限</string>
     <string name="scan">扫一扫</string>
@@ -506,7 +508,7 @@
     <string name="invalid_code">无效二维码</string>
     <string name="camera">相机</string>
     <string name="video_capture">拍摄</string>
-    <string name="album_features">相册</string>
+    <string name="album_features">外部存储</string>
     <string name="microphone">麦克风</string>
     <string name="location">定位</string>
     <string name="permission_setting_tips">请到 “应用信息 -> 权限” 中授予，不然无法使用%s功能</string>
@@ -648,6 +650,7 @@
     <string name="unit_capsule">胶囊</string>
     <string name="unit_piece">片</string>
     <string name="unit_u">u</string>
+    <string name="bluetooth">蓝牙</string>
     <!-- 单位 -->
 
 </resources>
