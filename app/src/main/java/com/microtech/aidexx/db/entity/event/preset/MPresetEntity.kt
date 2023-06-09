@@ -43,6 +43,18 @@ open class BasePresetEntity: EventActions {
     open fun getServerPresetId(): Long? = null
     open fun setServerPresetId(serverId: Long?){}
 
+    /**
+     * detail  里面使用
+     * 系统预设返回预设id
+     * 用户预设返回前端生成的id
+     */
+    open fun getPresetId(): String {
+        if (!isUserPreset()) {
+            return "${getServerPresetId()}"
+        }
+        return ""
+    }
+
 }
 
 //region 饮食
@@ -70,6 +82,7 @@ class DietSysPresetEntity: DietPresetEntity(), BaseSysPreset {
     var foodSysPresetId: Long? = null	 //integer 必须 1 mock: @integer
     override var version: String = ""
     override fun getServerPresetId(): Long? = foodSysPresetId
+
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
     }
@@ -86,6 +99,8 @@ class DietUsrPresetEntity: DietPresetEntity() {
     override fun setServerPresetId(serverId: Long?) {
         autoIncrementColumn = serverId
     }
+
+    override fun getPresetId(): String = foodUserPresetId
 
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
@@ -138,7 +153,7 @@ class SportUsrPresetEntity: SportPresetEntity() {
     override fun setServerPresetId(serverId: Long?) {
         autoIncrementColumn = serverId
     }
-
+    override fun getPresetId(): String = exerciseUserPresetId
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
     }
@@ -199,7 +214,7 @@ class MedicineUsrPresetEntity: MedicinePresetEntity() {
     override fun setServerPresetId(serverId: Long?) {
         autoIncrementColumn = serverId
     }
-
+    override fun getPresetId(): String = medicationUserPresetId
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
     }
@@ -259,7 +274,7 @@ class InsulinUsrPresetEntity: InsulinPresetEntity() {
     override fun setServerPresetId(serverId: Long?) {
         autoIncrementColumn = serverId
     }
-
+    override fun getPresetId(): String = insulinUserPresetId
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
     }

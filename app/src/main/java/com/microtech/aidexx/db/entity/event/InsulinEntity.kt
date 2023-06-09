@@ -112,7 +112,6 @@ class InsulinEntity : BaseEventEntity {
 data class InsulinDetail(
 
     var relUuid: String? = null,
-
     var categoryName: String = "",
     var tradeName: String = "",
     var comment: String = "",
@@ -120,6 +119,7 @@ data class InsulinDetail(
     var quantity: Double = 0.0,
     var unit: Int = 0,
     var delete_flag: Int = 0,
+    var insulinPresetId: String? = null,
 
     @Transient
     var updateTime: Date = Date(),
@@ -140,7 +140,7 @@ data class InsulinDetail(
     }
 
     override fun toString(): String {
-        return "InsulinDetailEntity(presetId=$presetId, relUuid=$relUuid, categoryName='$categoryName', tradeName='$tradeName', comment='$comment', manufacturer='$manufacturer', quantity=$quantity, unit=$unit, delete_flag=$delete_flag, createTime=$createTime, updateTime=$updateTime)"
+        return "InsulinDetailEntity(insulinPresetId=$insulinPresetId, relUuid=$relUuid, categoryName='$categoryName', tradeName='$tradeName', comment='$comment', manufacturer='$manufacturer', quantity=$quantity, unit=$unit, delete_flag=$delete_flag, createTime=$createTime, updateTime=$updateTime)"
     }
 
 

@@ -115,7 +115,8 @@ data class MedicationDetail(
     var english_name: String? = null, // 英文名称
     var quantity: Double = 0.0, //数量
     var unit: Int = 0, // 单位，0：毫克，1：克，2：片，3：粒
-    var medicationId: String? = null
+    var medicationId: String? = null,
+    var medicationPresetId: String? = null
 
 ) : BaseEventDetail() {
     override fun toString(): String {

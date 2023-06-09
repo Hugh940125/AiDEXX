@@ -9,7 +9,6 @@ abstract class BaseEventDetail: EventActions,
     PropertyConverter<MutableList<in BaseEventDetail>, String> {
 
     var id: Long = 0
-    var presetId: Long? = null
     var presetType: Int = 0 // 类型，0：系统，1：用户
     var name: String = ""
     var unitStr: String = ""

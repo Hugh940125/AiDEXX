@@ -110,7 +110,7 @@ class DietNewPresetDialog(
                         vm.savePreset(presetEntity).collect {
                             it?.let {
                                 dismiss()
-                                dietDetail.presetId = it
+                                dietDetail.foodPresetId = presetEntity.getPresetId()
                                 onConfirmClick.invoke(dietDetail)
                             }
                         }

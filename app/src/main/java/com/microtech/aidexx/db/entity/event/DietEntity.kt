@@ -122,14 +122,14 @@ class DietEntity : BaseEventEntity {
 
 
 data class DietDetail(
-    var foodPresetId: Long? = null,
+    var foodPresetId: String? = null,
     var categoryName: String = "",
     var quantity: Double = 0.0,
     var unit: Int = 0,
     var protein: Double = 0.0,
     var fat: Double = 0.0,
     var carbohydrate: Double = 0.0,
-    var foodId: String? = null
+    var foodId: String? = null,
 ) : BaseEventDetail() {
 
     override fun toString(): String {

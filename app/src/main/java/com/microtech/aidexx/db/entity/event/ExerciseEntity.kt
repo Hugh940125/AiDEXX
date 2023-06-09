@@ -118,7 +118,8 @@ data class ExerciseDetail(
     var hour_kcal_per_kg: Double = 0.0, // 每小时单位公斤消费千卡数
     var quantity: Double = 0.0, //数量
     var unit: Int = 0, // 单位 0:分钟 1：小时
-    var exerciseId: String? = null
+    var exerciseId: String? = null,
+    var exercisePresetId: String? = null
 
 ) : BaseEventDetail() {
     override fun toString(): String {

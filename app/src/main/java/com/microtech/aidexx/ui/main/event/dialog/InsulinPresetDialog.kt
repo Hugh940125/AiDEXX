@@ -76,17 +76,17 @@ class InsulinPresetDialog(
                 insulinEntity.name = oldInsulinEntity.name
                 insulinEntity.quantity = quantity
 
-
-                val presetEntity = InsulinUsrPresetEntity()
-                presetEntity.name = oldInsulinEntity.name
-                presetEntity.userId = UserInfoManager.instance().userId()
-
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && oldInsulinEntity.presetId == null) {
+                    if (needSaveNewPreset && oldInsulinEntity.insulinPresetId == null) {
+
+                        val presetEntity = InsulinUsrPresetEntity()
+                        presetEntity.name = oldInsulinEntity.name
+                        presetEntity.userId = UserInfoManager.instance().userId()
+
                         vm.savePreset(presetEntity).collect {
                             it?.let {
                                 dismiss()
-                                oldInsulinEntity.presetId = it
+                                oldInsulinEntity.insulinPresetId = presetEntity.getPresetId()
                                 onConfirmClick.invoke(oldInsulinEntity)
                             }
                         }
