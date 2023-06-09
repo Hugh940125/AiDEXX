@@ -8,7 +8,9 @@ import io.objectbox.annotation.Index
 import java.util.Date
 import java.util.UUID
 
-interface BaseSysPreset
+interface BaseSysPreset {
+    var version: String
+}
 
 @BaseEntity
 open class BasePresetEntity: EventActions {
@@ -66,6 +68,7 @@ class DietSysPresetEntity: DietPresetEntity(), BaseSysPreset {
 
     var energyKcal: Double = 0.0	//number 非必须 0.111111 能量，千卡 mock: @float
     var foodSysPresetId: Long? = null	 //integer 必须 1 mock: @integer
+    override var version: String = ""
     override fun getServerPresetId(): Long? = foodSysPresetId
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
@@ -119,6 +122,7 @@ open class SportPresetEntity: BasePresetEntity() {
 class SportSysPresetEntity: SportPresetEntity(), BaseSysPreset {
 
     var exerciseSysPresetId: Long? = null	//number 必须 表id mock: @integer
+    override var version: String = ""
     override fun getServerPresetId(): Long? = exerciseSysPresetId
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
@@ -178,6 +182,7 @@ open class MedicinePresetEntity: BasePresetEntity() {
 class MedicineSysPresetEntity: MedicinePresetEntity(), BaseSysPreset {
 
     var medicationSysPresetId: Long? = null	//integer 非必须 1 mock: @integer
+    override var version: String = ""
     override fun getServerPresetId(): Long? = medicationSysPresetId
     override fun toString(): String {
         return "${this.javaClass.simpleName}${super.toString()}"
@@ -236,6 +241,7 @@ open class InsulinPresetEntity: BasePresetEntity() {
 class InsulinSysPresetEntity: InsulinPresetEntity(), BaseSysPreset {
 
     var insulinSysPresetId: Long? = null	// integer 非必须 1 自增主键 mock: @integer
+    override var version: String = ""
 
     override fun getServerPresetId(): Long? = insulinSysPresetId
     override fun toString(): String {

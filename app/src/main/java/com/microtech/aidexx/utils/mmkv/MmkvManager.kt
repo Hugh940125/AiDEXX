@@ -3,6 +3,11 @@ package com.microtech.aidexx.utils.mmkv
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.DataSyncController
+import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
+import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity
+import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.ui.main.event.viewmodels.EventType
 import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Date
@@ -43,9 +48,36 @@ object MmkvManager {
     private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "already_show_dialog_guide"
     private const val PRESET_VERSION_ = "PRESET_VERSION_"
     private const val UNIT_LATEST_UPDATE_TIME = "UNIT_LATEST_UPDATE_TIME"
-    private const val UNIT_VERSION = "UNIT_VERSION"
     private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
     private const val RESOURCE_VERSION = "RESOURCE_VERSION"
+    private const val VERSION_UNIT = "VERSION_UNIT"
+    private const val VERSION_LANGUAGE = "VERSION_LANGUAGE"
+    private const val VERSION_FOOD_SYS_PRESET = "VERSION_FOOD_SYS_PRESET"
+    private const val VERSION_EXERCISE_SYS_PRESET = "VERSION_EXERCISE_SYS_PRESET"
+    private const val VERSION_MEDICINE_SYS_PRESET = "VERSION_MEDICINE_SYS_PRESET"
+    private const val VERSION_INSULIN_SYS_PRESET = "VERSION_INSULIN_SYS_PRESET"
+
+
+    private fun <T: BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when(clazz) {
+        DietSysPresetEntity::class.java -> VERSION_FOOD_SYS_PRESET
+        SportSysPresetEntity::class.java -> VERSION_EXERCISE_SYS_PRESET
+        MedicineSysPresetEntity::class.java -> VERSION_MEDICINE_SYS_PRESET
+        InsulinSysPresetEntity::class.java -> VERSION_INSULIN_SYS_PRESET
+        else -> null
+    }
+    fun <T: BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
+        return getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
+    }
+    fun <T: BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
+        getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, version) }
+    }
+
+
+    fun setLanguageVersion(version: String) = MmkvUtil.encodeString(VERSION_LANGUAGE, version)
+    fun getLanguageVersion():String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
+    fun setUnitVersion(version: String) = MmkvUtil.encodeString(VERSION_UNIT, version)
+    fun getUnitVersion():String = MmkvUtil.decodeString(VERSION_UNIT, "")
+
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
@@ -66,9 +98,6 @@ object MmkvManager {
         val id = MmkvUtil.decodeLong(key, -1L)
         return if (id == -1L) null else id
     }
-
-    fun getUnitVersion() = MmkvUtil.decodeInt(UNIT_VERSION, 0)
-    fun setUnitVersion(v: Int) = MmkvUtil.encodeInt(UNIT_VERSION, v)
 
     fun getUnitLoadedApkVersion() = MmkvUtil.decodeInt(UNIT_LOADED_APK_VERSION, 0)
     fun setUnitLoadedApkVersion(v: Int) = MmkvUtil.encodeInt(UNIT_LOADED_APK_VERSION, v)

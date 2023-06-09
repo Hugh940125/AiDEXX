@@ -13,6 +13,7 @@ import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.common.net.repository.ApiRepository
+import com.microtech.aidexx.utils.FileUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.StringUtils
@@ -21,7 +22,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
-import java.io.IOException
 import java.util.*
 
 private val appUpgradeScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -67,7 +67,7 @@ object AppUpgradeManager {
                         }
 
                         val fileName = "app_${it.appUpdateInfo!!.info.version}.apk"
-                        val downloadPath = getDownloadDir("downloads")
+                        val downloadPath = FileUtils.getDownloadDir("downloads")
                         // 启动下载
                         ApiRepository.downloadFile(it.appUpdateInfo.info.downloadpath, downloadPath, fileName).collect { ret ->
                             when (ret) {
@@ -108,6 +108,22 @@ object AppUpgradeManager {
                 is ApiResult.Success -> {
                     MmkvManager.updateAppCheckVersionTime()
                     val info = apiResult.result
+
+
+//                    LocalResourceManager.startUpgrade(UpgradeInfo.VersionInfo(
+//                        isForce = false,
+//                        info = UpgradeInfo.VersionData(
+//                            version = "0.0.2",
+//                            downloadpath = "https://static.pancares.com/vcs/resource/63.zip"
+//                        )
+//                    ))
+
+                    // 资源包分析升级
+                    val versionInfo =  info.data?.resourceUpdateInfo
+                    versionInfo?.info?.let {
+                        LocalResourceManager.startUpgrade(versionInfo)
+                    }
+
                     if (StringUtils.versionCompare(BuildConfig.VERSION_NAME,
                             info.data?.appUpdateInfo?.info?.version ?: "")) {
                         info.data
@@ -157,7 +173,7 @@ object AppUpgradeManager {
      */
     private fun installApk(path: String) {
         val apkFile = File(path)
-        setPermission(apkFile.path)
+        FileUtils.setPermission(apkFile.path)
         if (!apkFile.exists()) {
             return
         }
@@ -179,33 +195,6 @@ object AppUpgradeManager {
         }
 
         getContext().startActivity(i)
-    }
-
-
-
-    private fun setPermission(filePath: String) {
-        val command = "chmod 777 $filePath"
-        val runtime = Runtime.getRuntime()
-        try {
-            runtime.exec(command)
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun getDownloadDir(subDir: String?): String {
-        var sdpath: String = getContext().externalCacheDir!!.absolutePath
-
-        sdpath = if (subDir != null) {
-            "$sdpath/aidex/$subDir/"
-        } else {
-            "$sdpath/aidex/"
-        }
-        val saveDir = File(sdpath)
-        if (!saveDir.exists()) {
-            saveDir.mkdirs()
-        }
-        return sdpath
     }
 
 }

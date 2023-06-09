@@ -2,7 +2,7 @@ package com.microtech.aidexx.common.net.repository
 
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
-import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -20,11 +20,12 @@ object ApiRepository {
         data class Failure(val code:String, val msg:String): NetResult<Nothing>()
     }
 
-
-
     suspend fun checkAppUpdate() = withContext(dispatcher) {
         val appId = "cn" // 国际版再改
-        ApiService.instance.checkAppUpdate(appId)
+        ApiService.instance.checkAppUpdate(
+            appId,
+            resourceVersion = MmkvManager.getResourceVersion()
+        )
     }
 
     /**
@@ -36,42 +37,38 @@ object ApiRepository {
         when (val apiResult = ApiService.instance.downloadFile(downloadUrl)){
             is ApiResult.Success -> {
 
-                var bufferedInputStream: BufferedInputStream? = null
-                var outPutStream: FileOutputStream? = null
+                var bufferedInputStream: BufferedInputStream?
+                var outPutStream: FileOutputStream?
 
-                try {
+                val responseBody = apiResult.result
+                val length = responseBody.contentLength()
 
-                    val responseBody = apiResult.result
-                    val length = responseBody.contentLength()
+                val targetFile = java.io.File(downloadPath, fileName)
+                if(targetFile.exists()){
+                    targetFile.delete()
+                }
 
-                    val targetFile = java.io.File(downloadPath, fileName)
-                    if(targetFile.exists()){
-                        targetFile.delete()
-                    }
-
-                    outPutStream = FileOutputStream(targetFile)
-
+                outPutStream = FileOutputStream(targetFile)
+                outPutStream.use { fileOutStream ->
                     var currentLength = 0
                     val bufferSize = 1024 * 8
                     val buffer = ByteArray(bufferSize)
+
                     bufferedInputStream = BufferedInputStream(responseBody.byteStream(),bufferSize)
-                    var readLength: Int
-                    while ( responseBody.byteStream().read(buffer,0,bufferSize).also { readLength = it } != -1){
-                        outPutStream.write(buffer,0,readLength)
-                        currentLength += readLength
-                        emit(NetResult.Loading(((currentLength / length.toFloat()) * 100).toInt()))
+                    bufferedInputStream?.use {  bufferIs ->
+                        var readLength: Int
+                        while (bufferIs.read(buffer,0, bufferSize).also { readLength = it } != -1){
+                            fileOutStream.write(buffer,0, readLength)
+                            currentLength += readLength
+                            emit(NetResult.Loading(((currentLength / length.toFloat()) * 100).toInt()))
+                        }
+
+                        emit(NetResult.Success(targetFile.absolutePath))
+                        return@flow
                     }
-
-                    emit(NetResult.Success(targetFile.absolutePath))
-
-                }catch (e:Exception){
-                    LogUtil.xLogE(e.message?:e.toString(), "ApiRepository")
-                    emit(NetResult.Failure("0", "fail"))
-                }finally {
-                    bufferedInputStream?.close()
-                    outPutStream?.close()
                 }
 
+                emit(NetResult.Failure("0", "fail"))
             }
             is ApiResult.Failure -> {
                 emit(NetResult.Failure(apiResult.code, apiResult.msg))

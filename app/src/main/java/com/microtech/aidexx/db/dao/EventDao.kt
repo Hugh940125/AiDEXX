@@ -22,6 +22,7 @@ import com.microtech.aidexx.db.entity.event.OthersEntity_
 import com.microtech.aidexx.db.entity.event.UnitEntity
 import com.microtech.aidexx.db.entity.event.UnitEntity_
 import com.microtech.aidexx.db.entity.event.preset.BasePresetEntity
+import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
 import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity_
 import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
@@ -127,9 +128,30 @@ object EventDao {
         }
     }
 
-    suspend fun insertPresetData(entity: BasePresetEntity) =
+    suspend fun insertSysPresetData(list: List<BaseSysPreset>) {
+
+        if (list.isEmpty()) return
+
+        awaitCallInTx {
+            ObjectBox.store.boxFor(list.first().javaClass).put(list)
+        }
+    }
+
+    suspend fun insertSysPresetData(entity: BasePresetEntity) =
         awaitCallInTx {
             ObjectBox.store.boxFor(entity.javaClass).put(entity)
+        }
+
+    suspend fun <T: BaseSysPreset> removeSysPresetOfOtherVersion(exceptVersion: String, clazz: Class<T>, property: Property<T>) =
+        awaitCallInTx {
+            ObjectBox.store.boxFor(clazz).query {
+                notEqual(property, exceptVersion, QueryBuilder.StringOrder.CASE_SENSITIVE)
+            }.remove()
+        }
+
+    suspend fun <T> removeSysPresetData(type: Class<T>) =
+        awaitCallInTx {
+            ObjectBox.store.boxFor(type).removeAll()
         }
 
     fun getPresetIdPropertyByClazz(clazz: Class<*>): Property<out BasePresetEntity>? {
@@ -329,12 +351,22 @@ object EventDao {
     suspend fun loadUnit(language: String): MutableList<UnitEntity>? =
         awaitCallInTx {
             unitBox.query {
-                equal(UnitEntity_.language, language, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                equal(UnitEntity_.language, language, QueryBuilder.StringOrder.CASE_INSENSITIVE)
             }.find()
         }
 
     suspend fun insertUnit(data: List<UnitEntity>) = awaitCallInTx {
         unitBox.put(data)
+    }
+
+    suspend fun removeUnit(exceptVersion: String) = awaitCallInTx {
+        unitBox.query {
+            notEqual(UnitEntity_.version, exceptVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+        }.remove()
+    }
+
+    suspend fun removeAllUnit() = awaitCallInTx {
+        unitBox.removeAll()
     }
 
     suspend fun getDietNeedUploadEvent(userId: String): MutableList<DietEntity>? {
