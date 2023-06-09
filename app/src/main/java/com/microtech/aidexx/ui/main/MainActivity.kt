@@ -285,16 +285,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     fun fitOrientation() {
-        binding.container.setOnApplyWindowInsetsListener { _, insets ->
-            val navigationBarHeight =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    insets.getInsets(WindowInsets.Type.navigationBars()).bottom
-                } else {
-                    insets.systemWindowInsetBottom
-                }
-            binding.container.setPadding(0, 0, 0, navigationBarHeight)
-            insets
-        }
         val window = this.window
         val decorView = window.decorView
         if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -344,6 +334,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onDestroy() {
         super.onDestroy()
         Log.appenderClose()
+        binding.mainTabView.onTabChange = null
     }
 
     override fun onBackPressed() {

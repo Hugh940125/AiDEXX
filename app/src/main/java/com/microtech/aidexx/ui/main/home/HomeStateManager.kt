@@ -55,10 +55,10 @@ class HomeStateManager private constructor() {
 
     fun setState(tag: String) {
         if (tag != glucosePanel) {
-            if (tag != needPair) {
-                countDownToReset()
-            }
             EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
+        }
+        if (tag != needPair) {
+            countDownToReset()
         }
         if (tag == warmingUp) {
             timeLeft = null

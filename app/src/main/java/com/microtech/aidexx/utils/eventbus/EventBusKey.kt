@@ -5,6 +5,7 @@ package com.microtech.aidexx.utils.eventbus
  *@desc 统一定义EventBus key值
  */
 object EventBusKey {
+    const val RESET_PANEL_GLUCOSE: String = "RESET_PANEL_GLUCOSE"
     const val UPDATE_NOTIFICATION: String = "UPDATE_NOTIFICATION"
     const val EVENT_GO_TO_HISTORY: String = "EVENT_GO_TO_HISTORY"
     const val TOKEN_EXPIRED: String = "TOKEN_EXPIRED"

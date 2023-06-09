@@ -87,7 +87,7 @@
 
         <TextView
             tools:text="传感器异常\n请等待恢复"
-            android:lines="2"
+            android:maxLines="2"
             android:visibility="visible"
             android:id="@+id/tv_glucose_state"
             android:ellipsize="end"

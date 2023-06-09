@@ -7,7 +7,7 @@
     tools:context=".ui.setting.OtherSettingActivity">
 
     <com.microtech.aidexx.widget.ActionBarWidget
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         app:leftIcon="@drawable/ic_back"
         app:titleText="@string/setting_other"
         android:id="@+id/action_bar_other_setting"
