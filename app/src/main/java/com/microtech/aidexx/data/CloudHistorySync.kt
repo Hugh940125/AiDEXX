@@ -108,7 +108,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
         if (canSync()) {
 
             val syncTaskItem = getFirstTaskItem(userId) ?:let {
-                LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}")
+                LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}", TAG)
                 return true
             }
 
@@ -168,6 +168,9 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     }
 
     companion object {
+
+        private const val TAG = "CloudHistorySync"
+
         suspend fun downloadRecentData(userId: String): Boolean = withContext(scope.coroutineContext) {
             var isSuccess = true
             fun updateStatus(ret: Boolean) {

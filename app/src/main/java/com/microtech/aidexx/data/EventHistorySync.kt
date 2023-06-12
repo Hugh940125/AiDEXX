@@ -9,7 +9,9 @@ import kotlinx.coroutines.delay
 
 abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
-
+    companion object {
+        private const val TAG = "EventHistorySync"
+    }
     private suspend fun saveOrUpload(data: List<T>): MutableList<T>? =
         when (val apiResult = EventRepository.saveOrUpdateRecords(data)) {
             is ApiResult.Success -> apiResult.result.data as MutableList<T>
@@ -40,7 +42,10 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     override suspend fun downloadData(userId: String): Boolean {
         if (canSync()) {
 
-            val syncTaskItem = getFirstTaskItem(userId) ?: return true
+            val syncTaskItem = getFirstTaskItem(userId) ?:let {
+                LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}", TAG)
+                return true
+            }
 
             val result = getRemoteData(userId, syncTaskItem)
             return result?.let {
