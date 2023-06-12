@@ -23,6 +23,7 @@ import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
+import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
@@ -263,21 +264,40 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     private fun initView() {
         val mainViewPagerAdapter = MainViewPagerAdapter(this)
-        binding.viewpager.apply {
-            this.offscreenPageLimit = 2
-            this.adapter = mainViewPagerAdapter
-            this.isUserInputEnabled = false
-            this.setCurrentItem(HOME, false)
-            this.registerOnPageChangeCallback(object : OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    binding.mainTabView.check(position)
+
+        binding.apply {
+
+            viewpager.apply {
+                this.offscreenPageLimit = 2
+                this.adapter = mainViewPagerAdapter
+                this.isUserInputEnabled = false
+                this.setCurrentItem(HOME, false)
+                this.registerOnPageChangeCallback(object : OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        binding.mainTabView.check(position)
+                    }
+                })
+            }
+
+            mainTabView.onTabChange = {
+                if (viewpager.currentItem == EVENT) {
+                    val hasConfirm =
+                        ((viewpager.adapter as MainViewPagerAdapter).getItem(EVENT) as EventFragment?)?.needConfirmLeave {
+                            viewpager.setCurrentItem(it, false)
+                        } ?: true
+                    if (!hasConfirm) {
+                        viewpager.setCurrentItem(it, false)
+                        true
+                    } else {
+                        false
+                    }
+                } else {
+                    viewpager.setCurrentItem(it, false)
+                    true
                 }
-            })
+            }
         }
-        binding.mainTabView.onTabChange = {
-            binding.viewpager.setCurrentItem(it, false)
-            true
-        }
+
     }
 
     private fun initSDKs() {

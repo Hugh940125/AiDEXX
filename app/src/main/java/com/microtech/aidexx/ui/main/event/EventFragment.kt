@@ -100,6 +100,9 @@ class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {
             }
         }
 
+        binding.vpEventContent.run {
+            (adapter as EventPageAdapter?)?.getFragmentByPosition(currentItem)?.onResume()
+        }
 
     }
 

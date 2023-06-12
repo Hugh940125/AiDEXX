@@ -68,10 +68,6 @@ abstract class BaseEventFragment<VM:BaseViewModel, VB: ViewBinding>: BaseFragmen
 //                    }
 //                }
 //            }
-
-//        LiveEventBus.get<Boolean>(EventKey.ON_EVENT_TAB_CHANGE).observe(this) {
-//            onResume()
-//        }
     }
 
 
