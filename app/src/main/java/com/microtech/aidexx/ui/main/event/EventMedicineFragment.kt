@@ -76,7 +76,7 @@ class EventMedicineFragment: BaseEventFragment<BaseViewModel, FragmentEventMedic
             }
 
             tvMedicineType.setDebounceClickListener {
-                onEventTimeTypeClick(TYPE_SLOT_MEDICINE) { str ->
+                onEventTimeTypeClick(vm.getEventSlotType()) { str ->
                     tvMedicineType.text = str
                 }
             }

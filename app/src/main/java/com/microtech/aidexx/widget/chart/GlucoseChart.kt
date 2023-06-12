@@ -12,6 +12,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.CombinedData
@@ -116,6 +118,8 @@ class GlucoseChart : MyChart {
 
     var textColor: Int? = null
 
+    private var lifecycleOwner: LifecycleOwner? = null
+
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(
@@ -123,6 +127,18 @@ class GlucoseChart : MyChart {
         attrs,
         defStyle
     )
+
+    fun setAndUseLifecycleOwnerEvent(lifecycleOwner: LifecycleOwner) {
+        this.lifecycleOwner = lifecycleOwner
+
+        this.lifecycleOwner?.lifecycle?.addObserver(object: DefaultLifecycleObserver {
+            override fun onDestroy(owner: LifecycleOwner) {
+                super.onDestroy(owner)
+                this@GlucoseChart.lifecycleOwner?.lifecycle?.removeObserver(this)
+                timerHandler.removeMessages(MSG_TIME_TO_REFRESH_CHART)
+            }
+        })
+    }
 
     class THandler(val chart: GlucoseChart): Handler(Looper.getMainLooper()) {
         private val mChart: WeakReference<GlucoseChart> = WeakReference(chart)
@@ -172,7 +188,7 @@ class GlucoseChart : MyChart {
 
         setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
             private val formatSD =
-                LanguageUnitManager.languageUnitByIndex(context).hmFormat
+                LanguageUnitManager.getCurLanguageConf(context).hmFormat
 
             override fun onValueSelected(e: Entry, h: Highlight) {
                 extraParams?.outerDescriptionX?.text = formatSD.format(ChartUtil.xToSecond(h.x) * 1000)
@@ -396,9 +412,9 @@ class GlucoseChart : MyChart {
         xAxis.valueFormatter = object : ValueFormatter() {
 
             private val mFormatD =
-                LanguageUnitManager.languageUnitByIndex(context).monthDayDateFormat
+                LanguageUnitManager.getCurLanguageConf(context).monthDayDateFormat
             private var mFormatT: SimpleDateFormat =
-                LanguageUnitManager.languageUnitByIndex(context).hmFormat
+                LanguageUnitManager.getCurLanguageConf(context).hmFormat
 
             override fun getFormattedValue(value: Float): String {
                 val second: Long = ChartUtil.xToSecond(value)

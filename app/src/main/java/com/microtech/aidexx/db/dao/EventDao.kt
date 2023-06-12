@@ -359,7 +359,7 @@ object EventDao {
         unitBox.put(data)
     }
 
-    suspend fun removeUnit(exceptVersion: String) = awaitCallInTx {
+    suspend fun removeUnitOfOtherVersion(exceptVersion: String) = awaitCallInTx {
         unitBox.query {
             notEqual(UnitEntity_.version, exceptVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
         }.remove()

@@ -99,7 +99,7 @@
     },
     {
       "id": "2:2659511795003322512",
-      "lastPropertyId": "24:7894073872678984920",
+      "lastPropertyId": "25:2189339613815624930",
       "name": "BloodGlucoseEntity",
       "properties": [
         {
@@ -204,13 +204,18 @@
           "id": "23:579426193175041894",
           "name": "dstOffset",
           "type": 5
+        },
+        {
+          "id": "25:2189339613815624930",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "3:3935464691192281220",
-      "lastPropertyId": "34:9001348856415619724",
+      "lastPropertyId": "35:4005768965931230206",
       "name": "CalibrateEntity",
       "properties": [
         {
@@ -376,13 +381,18 @@
           "id": "34:9001348856415619724",
           "name": "language",
           "type": 9
+        },
+        {
+          "id": "35:4005768965931230206",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "4:31306500703423503",
-      "lastPropertyId": "26:4379017716405474123",
+      "lastPropertyId": "27:6037008240831689813",
       "name": "DietEntity",
       "properties": [
         {
@@ -450,11 +460,6 @@
           "type": 9
         },
         {
-          "id": "14:4725065813190156940",
-          "name": "momentType",
-          "type": 5
-        },
-        {
           "id": "16:6454178309052537251",
           "name": "language",
           "type": 9
@@ -511,13 +516,18 @@
           "id": "26:4379017716405474123",
           "name": "expandList",
           "type": 9
+        },
+        {
+          "id": "27:6037008240831689813",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "5:6182581021651504097",
-      "lastPropertyId": "25:4835259137349614069",
+      "lastPropertyId": "26:8656250967508961869",
       "name": "ExerciseEntity",
       "properties": [
         {
@@ -641,13 +651,18 @@
           "id": "25:4835259137349614069",
           "name": "expandList",
           "type": 9
+        },
+        {
+          "id": "26:8656250967508961869",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "6:2416889281656664236",
-      "lastPropertyId": "26:3269722083594655439",
+      "lastPropertyId": "27:5255100178545898670",
       "name": "InsulinEntity",
       "properties": [
         {
@@ -706,11 +721,6 @@
           "id": "11:1670128331277709055",
           "name": "isPreset",
           "type": 1
-        },
-        {
-          "id": "14:3081048383945580299",
-          "name": "momentType",
-          "type": 5
         },
         {
           "id": "15:6360114125267440917",
@@ -774,13 +784,18 @@
           "id": "26:3269722083594655439",
           "name": "expandList",
           "type": 9
+        },
+        {
+          "id": "27:5255100178545898670",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "7:7734804275381559465",
-      "lastPropertyId": "26:310492549741306083",
+      "lastPropertyId": "27:755864418463837730",
       "name": "MedicationEntity",
       "properties": [
         {
@@ -841,11 +856,6 @@
           "id": "11:9062615321823156235",
           "name": "isPreset",
           "type": 1
-        },
-        {
-          "id": "13:1840523892494260173",
-          "name": "momentType",
-          "type": 5
         },
         {
           "id": "15:8986096121625046197",
@@ -909,13 +919,18 @@
           "id": "26:310492549741306083",
           "name": "expandList",
           "type": 9
+        },
+        {
+          "id": "27:755864418463837730",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "8:5959231583720793488",
-      "lastPropertyId": "21:1329983598866059621",
+      "lastPropertyId": "22:3420216362314518723",
       "name": "OthersEntity",
       "properties": [
         {
@@ -1022,13 +1037,18 @@
           "indexId": "106:5132997832980388387",
           "type": 9,
           "flags": 2048
+        },
+        {
+          "id": "22:3420216362314518723",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
     },
     {
       "id": "9:1281865382070029411",
-      "lastPropertyId": "62:7577912289732818909",
+      "lastPropertyId": "63:8685576284229221316",
       "name": "RealCgmHistoryEntity",
       "properties": [
         {
@@ -1306,6 +1326,11 @@
           "id": "62:7577912289732818909",
           "name": "language",
           "type": 9
+        },
+        {
+          "id": "63:8685576284229221316",
+          "name": "moment",
+          "type": 5
         }
       ],
       "relations": []
@@ -2071,10 +2096,55 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "25:1427408717192841464",
+      "lastPropertyId": "6:3846256734689009489",
+      "name": "LanguageEntity",
+      "properties": [
+        {
+          "id": "1:5363728080836365659",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7037259140514999646",
+          "name": "key",
+          "type": 9
+        },
+        {
+          "id": "3:5144873761686809870",
+          "name": "value",
+          "type": 9
+        },
+        {
+          "id": "4:6189265443214906938",
+          "name": "language",
+          "indexId": "115:3879603874006052199",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "5:5046728434083632439",
+          "name": "module",
+          "indexId": "116:3143160686766882314",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "6:3846256734689009489",
+          "name": "version",
+          "indexId": "117:9023363476471754759",
+          "type": 9,
+          "flags": 2048
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "24:3159698116653616097",
-  "lastIndexId": "114:7463630457957761413",
+  "lastEntityId": "25:1427408717192841464",
+  "lastIndexId": "117:9023363476471754759",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -2238,7 +2308,10 @@
     3446210257330806522,
     2426239082706063315,
     8272185869849056959,
-    7857898267835803511
+    7857898267835803511,
+    3081048383945580299,
+    4725065813190156940,
+    1840523892494260173
   ],
   "retiredRelationUids": [],
   "version": 1

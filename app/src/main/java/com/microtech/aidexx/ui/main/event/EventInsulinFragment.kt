@@ -93,7 +93,7 @@ class EventInsulinFragment : BaseEventFragment<BaseViewModel, FragmentEventInsul
             }
 
             tvInjectionType.setDebounceClickListener {
-                onEventTimeTypeClick(TYPE_SLOT_INSULIN) { str ->
+                onEventTimeTypeClick(vm.getEventSlotType()) { str ->
                     tvInjectionType.text = str
                 }
             }

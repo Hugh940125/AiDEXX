@@ -40,7 +40,7 @@ public class LogInterceptor implements Interceptor {
 
         okhttp3.MediaType mediaType = null;
 
-        String content = " not support show";
+        String content = "不显示内容：content-type非application/json";
         boolean needInterceptor = needInterceptor(response);
         if(needInterceptor) {
             mediaType = Objects.requireNonNull(response.body()).contentType();

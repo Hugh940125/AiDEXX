@@ -40,7 +40,7 @@ class InsulinViewModel
             it
         })
         insulinEntity.injectionTime = eventTime
-        insulinEntity.momentType = eventMomentTypeIndex
+        insulinEntity.moment = eventMomentTypeIndex
         insulinEntity.userId = UserInfoManager.instance().userId()
         insulinEntity.insulinDosage = toSaveDetailList.last().quantity.toFloat()
         insulinEntity.insulinName = toSaveDetailList.last().name

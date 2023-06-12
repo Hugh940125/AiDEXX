@@ -4,11 +4,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.setDebounceClickListener
+import com.microtech.aidexx.common.toast
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.databinding.ActivitySettingBinding
 import com.microtech.aidexx.ui.pair.TransmitterActivity
 import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
@@ -18,6 +22,9 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.widget.dialog.Dialogs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
     private val units = listOf(UnitManager.GlucoseUnit.MMOL_PER_L.text, UnitManager.GlucoseUnit.MG_PER_DL.text)
@@ -83,6 +90,35 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                     }
                 }
             }
+            settingLanguage.setDebounceClickListener {
+                lifecycleScope.launch {
+
+                    withContext(Dispatchers.IO) {
+                        LocalManager.getSupportLanguages()
+                    }?.let { supportLanguages ->
+
+                        Dialogs.Picker(this@SettingActivity).singlePick(
+                                supportLanguages,
+                                supportLanguages.indexOf(LocalManager.getCurLanguageTag()) ) {
+
+                            "选中了第 $it 个，切换暂未实现".toast()
+                            return@singlePick
+
+                            lifecycleScope.launch {
+                                withContext(Dispatchers.IO) {
+                                    LocalManager.onLanguageChanged(supportLanguages[it])
+                                }
+                                settingLanguage.setValue(themes[it])
+                                for (activity in AidexxApp.instance.activityStack) {
+                                    activity?.recreate()
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
             settingOther.setOnClickListener {
                 startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
             }

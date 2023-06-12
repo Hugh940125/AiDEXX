@@ -2,14 +2,13 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.utils.roundOffDecimal
+import com.microtech.aidexx.utils.toGlucoseValue
 import io.objectbox.annotation.Entity
 import java.util.Date
 import java.util.UUID
-import java.util.*
 
 
 @Entity
@@ -26,7 +25,7 @@ class BloodGlucoseEntity : BaseEventEntity {
     constructor(testTime: Date, bloodGlucose: Float) {
         setTimeInfo(testTime)
         this.bloodGlucoseMg = roundOffDecimal(bloodGlucose)
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
+        this.language = LocalManager.getCurLanguageTag()
     }
 
     override fun getEventDescription(res: Resources): String =

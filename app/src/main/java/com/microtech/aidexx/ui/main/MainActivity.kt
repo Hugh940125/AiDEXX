@@ -19,6 +19,7 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
@@ -177,7 +178,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         lifecycleScope.launch {
             AlertUtil.loadSettingsFromDb()
         }
-        EventUnitManager.loadUnit(LanguageUnitManager.getCurrentLanguageCode())
+        EventUnitManager.loadUnit(LocalManager.getCurLanguageTag())
     }
 
     override fun onResume() {

@@ -7,7 +7,6 @@ import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.db.entity.event.UnitConfig
 import com.microtech.aidexx.db.entity.event.UnitEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
-import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -189,7 +188,7 @@ object EventUnitManager {
     private fun updateMemo(list: List<UnitEntity>) {
         val newestMap = mutableMapOf<Int, MutableList<SpecificationModel>>()
         list.filter {
-            it.language == LanguageUnitManager.getCurrentLanguageCode() && it.version == MmkvManager.getUnitVersion()
+            it.language == LocalManager.getCurLanguageTag() && it.version == MmkvManager.getUnitVersion()
         }.forEach {
             val sm = SpecificationModel(it.name, it.ratio,  it.isDefault == 1, it.value)
             if (newestMap.containsKey(it.eventType)) {

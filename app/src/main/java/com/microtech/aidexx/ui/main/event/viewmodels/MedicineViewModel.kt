@@ -43,7 +43,7 @@ class MedicineViewModel
             it
         })
 
-        medicationEntity.momentType = eventMomentTypeIndex
+        medicationEntity.moment = eventMomentTypeIndex
 
         // 优先取最后一个输入的自定义药物 没有的话取最后一个系统预设用药
         val lastDetail = toSaveDetailList.sortedBy {

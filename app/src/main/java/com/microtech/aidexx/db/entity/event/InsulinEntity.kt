@@ -6,8 +6,8 @@ import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
-import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -38,10 +38,9 @@ class InsulinEntity : BaseEventEntity {
 
     @Convert(converter = InsulinDetail::class, dbType = String::class)
     var expandList: MutableList<InsulinDetail> = ArrayList()
-    var momentType: Int = 0
 
     constructor() {
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
+        this.language = LocalManager.getCurLanguageTag()
     }
 
     constructor(insulinName: String? = null, insulinDosage: Float? = null) : this() {
@@ -88,7 +87,7 @@ class InsulinEntity : BaseEventEntity {
     }
 
     private fun getTypeText(): String {
-        return when (momentType) {
+        return when (moment) {
             1 -> return getContext().getString(R.string.breakfast)
             2 -> return getContext().getString(R.string.lunch)
             3 -> return getContext().getString(R.string.dinner)

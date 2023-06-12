@@ -43,6 +43,8 @@ abstract class BaseEventEntity {
     @Index
     var timestamp: Long = 0L
 
+    var moment: Int = 0
+
     var appTime: String? = null
         set(value) {
             field = value

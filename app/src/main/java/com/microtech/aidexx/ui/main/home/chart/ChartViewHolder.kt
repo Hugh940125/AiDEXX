@@ -12,11 +12,11 @@ import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.CalDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.*
 import com.microtech.aidexx.widget.chart.GlucoseChart
 import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
 import com.microtech.aidexx.widget.chart.MyChart
@@ -49,6 +49,8 @@ class ChartViewHolder(
                 }
                 chartViewModel.updateGranularity(newModel)
             }
+
+            chart.setAndUseLifecycleOwnerEvent(fragment)
 
             chart.extraParams = object: GlucoseChart.ExtraParams {
                 override var outerDescriptionView: View? = descriptions

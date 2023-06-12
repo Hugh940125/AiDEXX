@@ -104,11 +104,12 @@ public class AnimatedZoomJob extends AnimatedViewPortJob implements Animator.Ani
     public void onAnimationEnd(Animator animation) {
         ((BarLineChartBase) view).calculateOffsets();
         view.postInvalidate();
+        super.onAnimationEnd(animation);
     }
 
     @Override
     public void onAnimationCancel(Animator animation) {
-
+        super.onAnimationCancel(animation);
     }
 
     @Override
