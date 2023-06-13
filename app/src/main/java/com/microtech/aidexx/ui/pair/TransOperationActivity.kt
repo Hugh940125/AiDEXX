@@ -45,6 +45,7 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
                         ActivityUtil.finishToMain()
                     }
                 } else {
+                    EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
                     finish()
                 }
             } else {

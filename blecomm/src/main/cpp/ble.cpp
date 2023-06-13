@@ -11,8 +11,7 @@
 
 #define ATT_MTU_SIZE    20
 
-Ble::Ble()
-{
+Ble::Ble() {
     discoverTimeoutSeconds = 10;
 
     state = IDLE;
@@ -26,8 +25,7 @@ Ble::Ble()
     pOnDisconTimer = new CTimer();
 }
 
-Ble::~Ble()
-{
+Ble::~Ble() {
     delete buffer;
     delete pSearchTimer;
     delete pAckTimer;
@@ -59,25 +57,25 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
     string sn;
     vector<uint8> params;
 
-    for (int i=0;i<length;) {
+    for (int i = 0; i < length;) {
         int len = data[i++];
-        if (len ==0 || len+1 > length) {
+        if (len == 0 || len + 1 > length) {
             break;
         }
         uint8 flag = data[i++];
         if (flag == 0x09) {
-            name = ByteUtils::bytesToUtf8String(data+i, len-1);
+            name = ByteUtils::bytesToUtf8String(data + i, len - 1);
         } else if (flag == 0xFF) {
             if (len == 7) {
-                sn = ByteUtils::bytesToSnString(data+i, 6);
+                sn = ByteUtils::bytesToSnString(data + i, 6);
             } else if (len >= 9) {
-                sn = ByteUtils::bytesToSnString(data+i+2, 6);
-                params = vector<uint8>(data+i+8, data+i+len-1);
+                sn = ByteUtils::bytesToSnString(data + i + 2, 6);
+                params = vector<uint8>(data + i + 8, data + i + len - 1);
             }
         }
-        i+=len-1;
+        i += len - 1;
     }
-    
+
     string delimiter = "-";
     string tmp = name;
     string::size_type pos = tmp.find(delimiter);
@@ -87,11 +85,11 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
         name.erase(pos, tmp.length() + delimiter.length());
         name = ByteUtils::trim(name);
     }
-    
+
     if (sn.empty() || name.empty()) {
         return;
     }
-    
+
     BleControllerInfo info;
     info.address = address;
     info.name = name;
@@ -99,14 +97,14 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
     info.rssi = rssi;
     info.params = vector<uint8>(params);
 
-    std::map<string, BleController*>::iterator iter = controllers.find(address);
-    if (iter!=controllers.end()) {
+    std::map<string, BleController *>::iterator iter = controllers.find(address);
+    if (iter != controllers.end()) {
         BleController *controller = iter->second;
         controller->setInfo(info);
     }
 
     if (connectWhenDiscovered) {
-        if(isFoundCurrent(address, name, sn)) {
+        if (isFoundCurrent(address, name, sn)) {
             pSearchTimer->Cancel();
             LOGD("executeStopScan 1");
             executeStopScan();
@@ -121,12 +119,13 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
     }
 }
 
-void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const char *data, uint16 length) {
+void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const char *data,
+                               uint16 length) {
     string sn;
     vector<uint8> params;
     name = ByteUtils::trim(name);
-	
-    list<string> snInNameList {"GoChek", "Insight", "Exactive", "AiDEX X"};
+
+    list<string> snInNameList{"GoChek", "Insight", "Exactive", "AiDEX X"};
     bool found = false;
     for (list<string>::iterator it = snInNameList.begin(); it != snInNameList.end(); ++it) {
         string::size_type idx = name.find(it->data());
@@ -135,7 +134,7 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
             break;
         }
     }
-    
+
     if (found) {
         string delimiter = "-";
         string tmp = name;
@@ -146,23 +145,22 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
             name.erase(pos, tmp.length() + delimiter.length());
             name = ByteUtils::trim(name);
         }
-    }
-    else {
+    } else {
         string aidex = "AiDEX";
-		if (aidex.find(name) != string::npos) {
-			if (length >= 28) {
-		        sn = ByteUtils::bytesToSnString(data+2+20, 6);
-		        params = vector<uint8>(data+2+20+6, data+length);
-		    }
-		} else if (length >= 6){
-	        sn = ByteUtils::bytesToSnString(data+length-6, 6);
-		}
-	}
-	
+        if (aidex.find(name) != string::npos) {
+            if (length >= 28) {
+                sn = ByteUtils::bytesToSnString(data + 2 + 20, 6);
+                params = vector<uint8>(data + 2 + 20 + 6, data + length);
+            }
+        } else if (length >= 6) {
+            sn = ByteUtils::bytesToSnString(data + length - 6, 6);
+        }
+    }
+
     if (sn.empty() || name.empty()) {
         return;
     }
-    
+
     BleControllerInfo info;
     info.address = address;
     info.name = name;
@@ -170,12 +168,12 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
     info.rssi = rssi;
     info.params = vector<uint8>(params);
 
-    std::map<string, BleController*>::iterator iter = controllers.find(address);
-    if (iter!=controllers.end()) {
+    std::map<string, BleController *>::iterator iter = controllers.find(address);
+    if (iter != controllers.end()) {
         BleController *controller = iter->second;
         controller->setInfo(info);
     }
-    
+
     if (connectWhenDiscovered && isFoundCurrent(address, name, sn)) {
         pSearchTimer->Cancel();
         LOGD("executeStopScan 2");
@@ -192,48 +190,52 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
 
 void Ble::onAdvertise(string address, int32 rssi, const char *data, uint16 length) {
     if (state != SCANNING) return;
-    
-    std::map<string, BleController*>::iterator iter = controllers.find(address);
-    if (iter==controllers.end()) {
+
+    std::map<string, BleController *>::iterator iter = controllers.find(address);
+    if (iter == controllers.end()) {
         return;
     }
-    
+
     BleController *controller = iter->second;
     controller->setRssi(rssi);
-    
-    for (int i=0;i<length;) {
+
+    for (int i = 0; i < length;) {
         int len = data[i++];
-        if (len ==0 || len+1 > length) {
+        if (len == 0 || len + 1 > length) {
             break;
         }
         uint8 flag = data[i++];
         if (flag == 0xFF && len > 4) {
-            if (data[i+len-1-1] == LibChecksum_GetChecksum8Bit((const uint8 *)data+i+2, len-1-2-1))
-                controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)data+i+2, len-1-2-1);
+            if (data[i + len - 1 - 1] ==
+                LibChecksum_GetChecksum8Bit((const uint8 *) data + i + 2, len - 1 - 2 - 1))
+                controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *) data + i + 2,
+                                      len - 1 - 2 - 1);
         }
-        i+=len-1;
+        i += len - 1;
     }
 }
 
-void Ble::onAdvertiseDecoded(string address, string name, int32 rssi, const char *data, uint16 length) {
+void
+Ble::onAdvertiseDecoded(string address, string name, int32 rssi, const char *data, uint16 length) {
     if (state != SCANNING) return;
 
-    std::map<string, BleController*>::iterator iter = controllers.find(address);
-    if (iter==controllers.end()) {
+    std::map<string, BleController *>::iterator iter = controllers.find(address);
+    if (iter == controllers.end()) {
         return;
     }
 
-     BleController *controller = iter->second;
+    BleController *controller = iter->second;
     //没必要，onScanRespondDecoded 已设置
     // controller->setRssi(rssi);
     // controller->setName(name);
 
     if (length > 2) {
-	    controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)data+2, length-2);
+        controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *) data + 2, length - 2);
     }
 }
 
-void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char *data, uint16 length) {
+void
+Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char *data, uint16 length) {
     //if (state != SCANNING) return;
     string name;
     string sn;
@@ -241,7 +243,7 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
 
     uint8 bufferLength = 0;
     char buffer[40] = {0};
-    
+
     bool isFirstManufactureData = true;
     for (int i = 0; i < length;) {
         int len = data[i++];
@@ -250,7 +252,7 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
         }
         uint8 flag = data[i++];
         if (flag == 0x09) {
-            name = ByteUtils::bytesToUtf8String(data+i, len-1);
+            name = ByteUtils::bytesToUtf8String(data + i, len - 1);
             string delimiter = "-";
             string tmp = name;
             string::size_type pos = tmp.find(delimiter);
@@ -262,32 +264,36 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
             }
         } else if (flag == 0xFF) {
             if (isFirstManufactureData) {
-                if (len > 4 && data[i+len-1-1] == LibChecksum_GetChecksum8Bit((const uint8 *)data+i+2, len-1-2-1)) {
-                    ByteUtils::copy(buffer+bufferLength, (const char*)data+i + 2, len-1-2);
-                    bufferLength += len-1-2;
+                if (len > 4 && data[i + len - 1 - 1] ==
+                               LibChecksum_GetChecksum8Bit((const uint8 *) data + i + 2,
+                                                           len - 1 - 2 - 1)) {
+                    ByteUtils::copy(buffer + bufferLength, (const char *) data + i + 2,
+                                    len - 1 - 2);
+                    bufferLength += len - 1 - 2;
                 }
             } else {
-                if (sn.empty()) {
+                if (!name.empty() && sn.empty()) { //一代 LocalName 中没有sn，sn 在 Manufacture Data 中)
                     if (len == 7) {//无 Manufacture ID 的情况
-                        sn = ByteUtils::bytesToSnString(data+i, 6);
+                        sn = ByteUtils::bytesToSnString(data + i, 6);
                     } else if (len >= 9) {
-                        sn = ByteUtils::bytesToSnString(data+i+2, 6);
-                        params = vector<uint8>(data+i+8, data+i+len-1);
+                        sn = ByteUtils::bytesToSnString(data + i + 2, 6);
+                        params = vector<uint8>(data + i + 8, data + i + len - 1);
                     }
                 } else {
-                    ByteUtils::copy(buffer+bufferLength, (const char*)data+i + 2, len-1-2);
-                    bufferLength += len-1-2;
+                    ByteUtils::copy(buffer + bufferLength, (const char *) data + i + 2,
+                                    len - 1 - 2);
+                    bufferLength += len - 1 - 2;
                 }
             }
             isFirstManufactureData = false;
         }
-        i+=len-1;
+        i += len - 1;
     }
-        
+
     if (sn.empty() || name.empty()) {
         return;
     }
-    
+
     BleControllerInfo info;
     info.address = address;
     info.name = name;
@@ -295,16 +301,16 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
     info.rssi = rssi;
     info.params = vector<uint8>(params);
 
-    std::map<string, BleController*>::iterator iter = controllers.find(address);
-    if (iter!=controllers.end()) {
+    std::map<string, BleController *>::iterator iter = controllers.find(address);
+    if (iter != controllers.end()) {
         BleController *controller = iter->second;
         controller->setInfo(info);
         controller->setRssi(rssi);
-        controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)buffer, bufferLength);
+        controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *) buffer, bufferLength);
     }
 
     if (connectWhenDiscovered) {
-        if(isFoundCurrent(address, name, sn)) {
+        if (isFoundCurrent(address, name, sn)) {
             pSearchTimer->Cancel();
             LOGD("executeStopScan 1");
             executeStopScan();
@@ -348,15 +354,16 @@ void Ble::onConnectSuccess() {
         if (controller->isAuthenticated()) {
             continueSending();
         } else {
-            if (!commandList.empty() && commandList.front().port == 0xFF && commandList.front().op == 0xFF) {
+            if (!commandList.empty() && commandList.front().port == 0xFF &&
+                commandList.front().op == 0xFF) {
                 //Force Operation
                 BleCommand command = commandList.front();
-                write(controller->getPrivateCharacteristicUUID(), &(command.data)[0], command.data.size());
+                write(controller->getPrivateCharacteristicUUID(), &(command.data)[0],
+                      command.data.size());
             } else {
                 if (controller->getDevCommType() == DEV_COMM_TYPE_0) {
                     sendBondCommand();
-                }
-                else {
+                } else {
                     if (controller->isPaired() && !commandList.empty()) {
                         executeReadCharacteristic(controller->getCharacteristicUUID());
                     } else {
@@ -399,35 +406,36 @@ void Ble::onDisconnected() {
 }
 
 void Ble::onReceiveData(const char *data, uint16 length) {
-	if (controller == NULL) return;
-	if (controller->isBufferEnabled()) {
-        if (buffer->push((uint8*)data, length)) {
+    if (controller == NULL) return;
+    if (controller->isBufferEnabled()) {
+        if (buffer->push((uint8 *) data, length)) {
             DevComm::getInstance()->receive(&(buffer->receiveData)[0], buffer->receiveData.size());
         }
     } else {
         //一体机型号血糖仪（蓝牙连接后，主动发送数据）存在状态未connected时，就收到数据的情况
         //原因 iOS enableNotify 回调延迟导致onConnectSuccess时，数据正在接收中
         if (controller->isFrameEnabled() && (state != CONNECTED && state != DISCONNECTING)) return;
-        DevComm::getInstance()->receive((const uint8*)data, length);
+        DevComm::getInstance()->receive((const uint8 *) data, length);
     }
 }
 
 void Ble::onReceiveData(uint16 uuid, const char *data, uint16 length) {
     if (controller == NULL) return;
-    
+
     if (uuid == controller->getCharacteristicUUID()) {
-        
+
         if (controller->getDevCommType() == DEV_COMM_TYPE_0) {
             onReceiveData(data, length);
             return;
         }
-        
+
         if (controller->isAuthenticated()) {
             onReceiveData(data, length);
             return;
         }
         if (length == controller->getKeyLength() + 1) {
-            bool success = controller->handleCommand(0xFF, 0xFF, 0xFF, (const uint8 *)data, length);
+            bool success = controller->handleCommand(0xFF, 0xFF, 0xFF, (const uint8 *) data,
+                                                     length);
             if (success) {
                 if (!commandList.empty()) {
                     continueSending();
@@ -440,15 +448,18 @@ void Ble::onReceiveData(uint16 uuid, const char *data, uint16 length) {
     }
 
     if (controller->getDevCommType() == DEV_COMM_TYPE_0) {
-        if (!commandList.empty() && commandList.front().port == 0xFF && commandList.front().op == 0xFF) {
+        if (!commandList.empty() && commandList.front().port == 0xFF &&
+            commandList.front().op == 0xFF) {
             BleCommand command = commandList.front();
             commandList.pop_front();
-            bool success = controller->handleCommand(0xFF, 0xFF, command.param, (const uint8 *)data, length);
+            bool success = controller->handleCommand(0xFF, 0xFF, command.param,
+                                                     (const uint8 *) data, length);
             if (success && !commandList.empty()) {
                 if (commandList.front().port == 0xFF && commandList.front().op == 0xFF) {
                     //Force Operation
                     BleCommand command = commandList.front();
-                    write(controller->getPrivateCharacteristicUUID(), &(command.data)[0], command.data.size());
+                    write(controller->getPrivateCharacteristicUUID(), &(command.data)[0],
+                          command.data.size());
                 }
             } else {
                 disconnect();
@@ -456,8 +467,8 @@ void Ble::onReceiveData(uint16 uuid, const char *data, uint16 length) {
             return;
         }
     }
-    
-    bool success = controller->handleCommand(0xFF, 0xFF, 0xFF, (const uint8 *)data, length);
+
+    bool success = controller->handleCommand(0xFF, 0xFF, 0xFF, (const uint8 *) data, length);
     if (success) {
         if (!commandList.empty()) {
             executeReadCharacteristic(controller->getCharacteristicUUID());
@@ -494,7 +505,8 @@ bool Ble::pair(BleController *controller) {
     }
 }
 
-bool Ble::send(BleController *controller, uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length) {
+bool Ble::send(BleController *controller, uint8 port, uint8 op, uint8 param, const uint8 *data,
+               uint16 length) {
     if (controller == NULL) return false;
     if (state == DISCONNECTING) {
         LOGE("Ble DISCONNECTING");
@@ -507,22 +519,25 @@ bool Ble::send(BleController *controller, uint8 port, uint8 op, uint8 param, con
         pairWhenConnected = false;
         connect();
         return true;
-    } else if (this->controller == controller || this->controller->getMac() == controller->getMac()) {
+    } else if (this->controller == controller ||
+               this->controller->getMac() == controller->getMac()) {
         pAckTimer->Cancel();
         pDisconTimer->Cancel();
         LOGD("send, pAckTimer、pDisconTimer cancel");
 
-        if (controller->isAuthenticated() && commandList.empty() && !DevComm::getInstance()->isBusy()) {
+        if (controller->isAuthenticated() && commandList.empty() &&
+            !DevComm::getInstance()->isBusy()) {
             DevComm::getInstance()->send(
-                        command.port,
-                        Global::MODE_ACKNOWLEDGE,
-                        command.op,
-                        command.param,
-                        &(command.data)[0],
-                        command.data.size());
+                    command.port,
+                    Global::MODE_ACKNOWLEDGE,
+                    command.op,
+                    command.param,
+                    &(command.data)[0],
+                    command.data.size());
         } else {
             commandList.push_back(command);
-            if (controller->getDevCommType() == DEV_COMM_TYPE_1 && controller->isPaired() && !controller->isAuthenticated()) {
+            if (controller->getDevCommType() == DEV_COMM_TYPE_1 && controller->isPaired() &&
+                !controller->isAuthenticated()) {
                 executeReadCharacteristic(controller->getCharacteristicUUID());
             }
         }
@@ -538,7 +553,8 @@ bool Ble::isInConnection() {
 
 bool Ble::isFoundCurrent(string address, string name, string sn) {
     if (controller == NULL) return false;
-    if (sn == controller->getSn() && ByteUtils::trim(name) == ByteUtils::trim(controller->getName())) {
+    if (sn == controller->getSn() &&
+        ByteUtils::trim(name) == ByteUtils::trim(controller->getName())) {
         controller->setMac(address);
         return true;
     } else {
@@ -566,7 +582,7 @@ void Ble::connect() {
         executeConnect(mac);
     } else {
         pSearchTimer->Cancel();
-        pSearchTimer->AsyncOnce(discoverTimeoutSeconds*1000, [this](){
+        pSearchTimer->AsyncOnce(discoverTimeoutSeconds * 1000, [this]() {
             if (connectWhenDiscovered) {
                 connectWhenDiscovered = false;
                 if (controller != NULL) {
@@ -587,7 +603,7 @@ void Ble::disconnect() {
     }
     commandList.clear();
     executeDisconnect();
-    bool ok = pDisconTimer->AsyncOnce(2000, [this](){
+    bool ok = pDisconTimer->AsyncOnce(2000, [this]() {
         LOGI("pOnDisconTimer execute");
         if (state == DISCONNECTING) {
             onDisconnected();
@@ -601,12 +617,12 @@ void Ble::sendPairCommand() {
     vector<uint8> data = vector<uint8>(controller->hostAddress);
     data.insert(data.end(), controller->pairParameter.begin(), controller->pairParameter.end());
     DevComm::getInstance()->send(
-                controller->getCommPort(),
-                Global::MODE_ACKNOWLEDGE,
-                Global::OPERATION_PAIR,
-                DEVICE_TYPE,
-                &data[0],
-                data.size());
+            controller->getCommPort(),
+            Global::MODE_ACKNOWLEDGE,
+            Global::OPERATION_PAIR,
+            DEVICE_TYPE,
+            &data[0],
+            data.size());
 }
 
 void Ble::sendBondCommand() {
@@ -615,14 +631,15 @@ void Ble::sendBondCommand() {
     uint8 rxRate = controller->getRxRate();
     if (rxRate > 0) data.push_back(rxRate);
     DevComm::getInstance()->send(
-                controller->getCommPort(),
-                Global::MODE_ACKNOWLEDGE,
-                Global::OPERATION_BOND,
-                DEVICE_TYPE,
-                &data[0],
-                data.size());
+            controller->getCommPort(),
+            Global::MODE_ACKNOWLEDGE,
+            Global::OPERATION_BOND,
+            DEVICE_TYPE,
+            &data[0],
+            data.size());
     if (controller->isEncryptionEnabled()) {
-        DevComm::getInstance()->readyForEncryption((uint8*)(controller->accessKey.data()), controller->accessKey.size());
+        DevComm::getInstance()->readyForEncryption((uint8 *) (controller->accessKey.data()),
+                                                   controller->accessKey.size());
     }
 }
 
@@ -646,9 +663,9 @@ void Ble::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, ui
 
     if (port == controller->getCommPort()) {
         success = data[0] == Global::FUNCTION_OK;
-        if (op==Global::OPERATION_PAIR) bleOp = BleOperation::PAIR;
-        if (op==Global::OPERATION_UNPAIR) bleOp = BleOperation::UNPAIR;
-        if (op==Global::OPERATION_BOND) {
+        if (op == Global::OPERATION_PAIR) bleOp = BleOperation::PAIR;
+        if (op == Global::OPERATION_UNPAIR) bleOp = BleOperation::UNPAIR;
+        if (op == Global::OPERATION_BOND) {
             bleOp = BleOperation::BOND;
             success |= length >= 1 + keyLength;
         }
@@ -656,8 +673,8 @@ void Ble::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, ui
 
     if (bleOp == BleOperation::PAIR) {
         if (success) {
-            controller->setId((char*)data+1);
-            controller->setKey((char*)data+1+controller->getIdLength());
+            controller->setId((char *) data + 1);
+            controller->setKey((char *) data + 1 + controller->getIdLength());
         }
     } else if (!controller->isAuthenticated()) {
         if (bleOp == BleOperation::BOND) {
@@ -686,7 +703,7 @@ void Ble::handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, ui
         controller->setId(NULL);
         controller->setKey(NULL);
     }
-    
+
     if (success && bleOp != BleOperation::UNPAIR) {
         if (controller->isAuthenticated()) {
             if (controller->isAutoSending())
@@ -712,18 +729,18 @@ void Ble::write(const uint8 *data, uint16 length) {
 
         uint8 i = 0;
         while (length >= i + ATT_MTU_SIZE) {
-            ByteUtils::copy(buffer, (const char*)data + i, ATT_MTU_SIZE - 1);
+            ByteUtils::copy(buffer, (const char *) data + i, ATT_MTU_SIZE - 1);
             buffer[ATT_MTU_SIZE - 1] = ctn;
             executeWrite(buffer, ATT_MTU_SIZE);
             i += ATT_MTU_SIZE - 1;
         }
-        ByteUtils::copy(buffer, (const char*)data + i, length - i);
+        ByteUtils::copy(buffer, (const char *) data + i, length - i);
         buffer[length - i] = end;
         executeWrite(buffer, length - i + 1);
     } else {
-        executeWrite((const char*)data, length);
+        executeWrite((const char *) data, length);
     }
-    
+
     if (state != DISCONNECTING) {
         pAckTimer->Cancel();
         pDisconTimer->Cancel();
@@ -731,7 +748,7 @@ void Ble::write(const uint8 *data, uint16 length) {
     }
 
     if (state == DISCONNECTING && controller != NULL && controller->isAutoDisconnect()) {
-		bool ok;
+        bool ok;
         ok = pDisconTimer->AsyncOnce(200, [this]() {
             LOGD("pDisconTimer execute");
             disconnect();
@@ -743,7 +760,7 @@ void Ble::write(const uint8 *data, uint16 length) {
 void Ble::write(uint16 uuid, const uint8 *data, uint16 length) {
     if (controller == NULL || (state != CONNECTED && state != DISCONNECTING)) return;
 
-    executeWriteCharacteristic(uuid, (const char*)data, length);
+    executeWriteCharacteristic(uuid, (const char *) data, length);
 }
 
 void Ble::continueSending() {
@@ -755,20 +772,22 @@ void Ble::continueSending() {
         LOGD("pAckTimer Cancel");
         BleCommand command = commandList.front();
         commandList.pop_front();
-        DevComm::getInstance()->send(command.port, 0, command.op, command.param, &(command.data)[0], command.data.size());
+        DevComm::getInstance()->send(command.port, 0, command.op, command.param, &(command.data)[0],
+                                     command.data.size());
     } else if (controller->isAutoDisconnect() || controller->isAcknowledgement()) {
         bool ok;
-        ok = pAckTimer->AsyncOnce(200, [this](){
+        ok = pAckTimer->AsyncOnce(200, [this]() {
             LOGI("pAckTimer execute");
-            
+
             if (controller != NULL && controller->isAutoDisconnect()) {
                 LOGI("DISCONNECTING");
                 state = DISCONNECTING;
             }
             if (controller != NULL && controller->isAcknowledgement()) {
-                DevComm::getInstance()->send(controller->getCommPort(), Global::MODE_NO_ACKNOWLEDGE, Global::OPERATION_ACKNOWLEDGE, 0, 0, 0);
+                DevComm::getInstance()->send(controller->getCommPort(), Global::MODE_NO_ACKNOWLEDGE,
+                                             Global::OPERATION_ACKNOWLEDGE, 0, 0, 0);
                 LOGI("ACK");
-            } else if (controller != NULL && controller->isAutoDisconnect()){
+            } else if (controller != NULL && controller->isAutoDisconnect()) {
                 LOGI("DISCONNECT NO_ACK");
                 disconnect();
             }
@@ -796,10 +815,10 @@ bool Ble::ReceiveBuffer::push(const uint8 *data, uint16 length) {
     int index = (data[length - 1] & 0xf0) >> 4;
     int last = data[length - 1] & 0x0f;
 
-    vector<uint8> add(data, data+length);
+    vector<uint8> add(data, data + length);
     add.pop_back();
 
-    if (index != mIndex || (mPointer + (int)add.size()) > mMaxLength) {
+    if (index != mIndex || (mPointer + (int) add.size()) > mMaxLength) {
         mIndex = index;
         flush();
     }
@@ -824,5 +843,5 @@ Ble::BleCommand::BleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data
     this->port = port;
     this->op = op;
     this->param = param;
-    this->data = vector<uint8>(data, data+length);
+    this->data = vector<uint8>(data, data + length);
 }

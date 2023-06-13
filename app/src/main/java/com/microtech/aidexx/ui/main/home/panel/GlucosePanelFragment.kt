@@ -72,6 +72,13 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         fun newInstance() = GlucosePanelFragment()
     }
 
+    fun resetState() {
+        binding.tvValueTime.text = ""
+        binding.tvSensorRemainTime.text = ""
+        binding.tvGlucoseState.text = ""
+        binding.bgPanel.setBackgroundResource(R.drawable.bg_panel_blank)
+    }
+
     private fun update() {
         val deviceModel = TransmitterManager.instance().getDefault() ?: return
         if (deviceModel.latestHistory != null && deviceModel.latestHistory!!.timeOffset < 60) {
@@ -116,12 +123,14 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         } else {
             binding.tvValueTime.text = ""
             binding.tvGlucoseValue.text = "--"
-            if (UserInfoManager.shareUserInfo == null)
+            if (UserInfoManager.shareUserInfo == null) {
                 HomeBackGroundSelector.instance().getHomeBg(null)
+            }
+            HomeBackGroundSelector.instance().getBgForTrend(null, null)
         }
         binding.tvGlucoseState.visibility = View.GONE
-        //&& deviceModel.minutesAgo!! in 0..15
-        if (deviceModel.minutesAgo != null && deviceModel.glucose != null) {
+        if (deviceModel.minutesAgo != null && deviceModel.glucose != null
+            && deviceModel.minutesAgo!! in 0..15) {
             binding.tvGlucoseState.visibility = View.GONE
             binding.tvGlucoseState.text = ""
             if (deviceModel.isMalfunction) {
@@ -165,7 +174,8 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 if (remainingTime <= 1) {
                     binding.tvSensorRemainTime.text = String.format(resources.getString(R.string.expiring_in_hour), 1)
                 } else {
-                    binding.tvSensorRemainTime.text = String.format(resources.getString(R.string.expiring_in_hour), remainingTime)
+                    binding.tvSensorRemainTime.text =
+                        String.format(resources.getString(R.string.expiring_in_hour), remainingTime)
                 }
                 binding.tvSensorRemainTime.visibility = View.VISIBLE
             } else if (remainingTime <= deviceModel.entity.expirationTime * TimeUtils.oneDayHour) {

@@ -26,7 +26,7 @@ class HomeStateManager private constructor() {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     RESET_HOME_STATE -> {
-                        resetState(glucosePanel, true)
+                        resetState(glucosePanel)
                         onWarmingUpTimeLeftListener = null
                     }
                 }
@@ -34,14 +34,14 @@ class HomeStateManager private constructor() {
         }
     }
 
-    fun resetState(tag: String, reset: Boolean) {
+    fun resetState(tag: String) {
         currentState = tag
-        onHomeStateChange?.invoke(tag, reset)
+        onHomeStateChange?.invoke(tag)
     }
 
     companion object {
         var onWarmingUpTimeLeftListener: ((timeLeft: Int?) -> Unit)? = null
-        var onHomeStateChange: ((tag: String, rest: Boolean) -> Unit)? = null
+        var onHomeStateChange: ((tag: String) -> Unit)? = null
         private var homeStateManager: HomeStateManager? = null
 
         @Synchronized
@@ -64,7 +64,7 @@ class HomeStateManager private constructor() {
             timeLeft = null
         }
         currentState = tag
-        onHomeStateChange?.invoke(tag, false)
+        onHomeStateChange?.invoke(tag)
     }
 
     fun setWarmingUpTimeLeft(time: Int) {
@@ -85,5 +85,6 @@ class HomeStateManager private constructor() {
         timer?.cancel()
         timer = null
         onHomeStateChange = null
+        handler.removeCallbacksAndMessages(null)
     }
 }

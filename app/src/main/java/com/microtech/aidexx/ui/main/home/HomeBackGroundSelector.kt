@@ -24,8 +24,9 @@ class HomeBackGroundSelector private constructor() {
                     else R.drawable.unknow_yellow_dark
                     DeviceModel.GlucoseLevel.LOW -> if (ThemeManager.isLight()) R.drawable.unknow_red_light
                     else R.drawable.unknow_red_dark
-                    else -> if (ThemeManager.isLight()) R.drawable.unknow_blue_light
+                    DeviceModel.GlucoseLevel.NORMAL -> if (ThemeManager.isLight()) R.drawable.unknow_blue_light
                     else R.drawable.unknow_blue_dark
+                    null -> R.drawable.bg_panel_blank
                 }
             }
             DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.SUPER_FAST_DOWN -> {

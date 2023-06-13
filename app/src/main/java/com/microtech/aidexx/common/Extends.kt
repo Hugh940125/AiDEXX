@@ -15,14 +15,20 @@ import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 /**
  *@date 2023/2/22
@@ -36,6 +42,12 @@ const val DATE_FORMAT_YMDHMS = "yyyy-MM-dd HH:mm:ss"
 const val DATE_FORMAT_YMDHM = "yyyy/MM/dd HH:mm"
 const val DATE_FORMAT_HM = "HH:mm"
 
+
+fun Float.roundTwoDigits(): Float {
+    val df = DecimalFormat("#.##")
+    df.roundingMode = RoundingMode.HALF_EVEN
+    return df.format(this).toFloat()
+}
 
 fun Int.toHistoryDate(sensorStartTime: Date): Date {
     val timeLong = sensorStartTime.time.plus(this * 60 * 1000)

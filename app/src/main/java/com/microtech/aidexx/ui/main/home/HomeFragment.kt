@@ -103,10 +103,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private fun initView() {
         judgeState()
-        HomeStateManager.onHomeStateChange = { tag, reset ->
-            if (reset) {
-                lastPageTag = null
-            }
+        HomeStateManager.onHomeStateChange = { tag ->
             replaceFragment(tag)
         }
         HomeBackGroundSelector.instance().onLevelChange = { bg ->
@@ -192,7 +189,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private fun replaceFragment(pageTag: String) {
         if (pageTag == lastPageTag) return
-        if (lastPageTag == glucosePanel && pageTag != glucosePanel) {
+        if ((lastPageTag == glucosePanel && pageTag != glucosePanel)) {
             binding.homeRoot.setBackgroundResource(0)
         }
         val fragment = when (pageTag) {
@@ -202,7 +199,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             newOrUsedSensor -> NewOrUsedSensorFragment.newInstance()
             else -> return
         }
-        if (childFragmentManager.findFragmentByTag(tag) == null) {
+        if (childFragmentManager.findFragmentByTag(pageTag) == null) {
             lastPageTag = pageTag
             try {
                 val transaction = childFragmentManager.beginTransaction()

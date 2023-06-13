@@ -209,8 +209,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override fun isDataValid(): Boolean {
-        //&& minutesAgo != null && minutesAgo in 0..15
-        return (lastHistoryTime != null && glucose != null && !isMalfunction && isHistoryValid)
+        return (lastHistoryTime != null && glucose != null && !isMalfunction && isHistoryValid && minutesAgo != null && minutesAgo in 0..15)
     }
 
     fun isDeviceFault(): Boolean {
@@ -549,8 +548,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 calibrateEntity.setTimeInfo(historyDate)
                 calibrateEntity.userId = userId
                 calibrateEntity.calibrationId = calibrateEntity.updateCalibrationId()
-                calibrateEntity.cf = calibration.cf
-                calibrateEntity.offset = calibration.offset
+                calibrateEntity.cf = calibration.cf.roundTwoDigits()
+                calibrateEntity.offset = calibration.offset.roundTwoDigits()
                 calibrateEntity.referenceGlucose = calibration.referenceGlucose
                 calibrateEntity.isValid = calibration.isValid
                 calibrateEntity.uploadState = 1

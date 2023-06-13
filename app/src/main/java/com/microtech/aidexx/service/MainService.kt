@@ -244,10 +244,10 @@ class MainService : Service(), LifecycleOwner {
 
     private fun updateNotification(normal: Boolean) {
         val model = TransmitterManager.instance().getDefault()
-        model?.let {
-            val remoteViews = ForegroundServiceNotification(
-                this, notificationPendingIntent!!, packageName
-            )
+        val remoteViews = ForegroundServiceNotification(
+            this, notificationPendingIntent!!, packageName
+        )
+        if (model != null) {
             if (model.isDataValid() && normal) {
                 remoteViews.setGlucose(
                     if (model.minutesAgo == 0) ContextUtil.getResources()
@@ -258,9 +258,11 @@ class MainService : Service(), LifecycleOwner {
             } else {
                 remoteViews.setGlucose("--", null)
             }
-            buildNotification(remoteViews)
-            notificationManager?.notify(FOREGROUND_ID, foregroundNotification)
+        } else {
+            remoteViews.setGlucose("--", null)
         }
+        buildNotification(remoteViews)
+        notificationManager?.notify(FOREGROUND_ID, foregroundNotification)
     }
 
     private fun observeAlert(model: DeviceModel) {
@@ -280,33 +282,42 @@ class MainService : Service(), LifecycleOwner {
                         "$time ${res.getString(R.string.need_replace_sensor_and_getCustomer_service)}"
                     showCustomerService = true
                 }
+
                 MESSAGE_TYPE_GLUCOSE_HIGH -> {
                     content = "$time ${res.getString(R.string.hyper_item)}"
                 }
+
                 MESSAGE_TYPE_GLUCOSE_LOW -> {
                     content = "$time ${res.getString(R.string.hypo_item)}"
                 }
+
                 MESSAGE_TYPE_GLUCOSE_LOW_URGENT -> {
                     content = "$time ${res.getString(R.string.urgent_low_title)}"
                     isUrgent = true
                 }
+
                 MESSAGE_TYPE_GLUCOSE_DOWN -> {
                     content = "$time ${res.getString(R.string.Falling_Fast)}"
                 }
+
                 MESSAGE_TYPE_GLUCOSE_UP -> {
                     content = "$time ${res.getString(R.string.Rising_Fast)}"
                 }
+
                 MESSAGE_TYPE_SIGNAL_LOST -> {
                     content = "$time ${res.getString(R.string.Signal_Loss)}"
                     alertMethod = METHOD_NOTIFICATION
                 }
+
                 MESSAGE_TYPE_NEW_SENSOR -> {
                     content = "$time ${res.getString(R.string.New_Sensor)}"
                     alertMethod = METHOD_NOTIFICATION
                 }
+
                 MESSAGE_TYPE_DEVICE_TIME_ERROR -> {
                     content = "$time ${res.getString(R.string.message_device_error)}"
                 }
+
                 else -> {
                     content = ""
                 }
@@ -318,6 +329,7 @@ class MainService : Service(), LifecycleOwner {
                         EventBusKey.EVENT_SHOW_ALERT, AlertInfo(content, type, showCustomerService)
                     )
                 }
+
                 METHOD_NOTIFICATION -> {
                     notificationAlert(content, type)
                 }
