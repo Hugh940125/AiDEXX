@@ -106,7 +106,7 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:includeFontPadding="false"
-                            android:inputType="textVisiblePassword"
+                            android:inputType="numberDecimal"
                             android:maxLength="100"
                             android:maxLines="1"
                             android:textColor="@color/event_preset_input" />
@@ -187,10 +187,11 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:includeFontPadding="false"
-                            android:inputType="textVisiblePassword"
+                            android:inputType="numberDecimal"
                             android:maxLength="100"
                             android:maxLines="1"
                             android:textColor="@color/event_preset_input" />
+<!--                        android:inputType="textVisiblePassword" -->
 
                         <ImageView
                             android:layout_width="wrap_content"
@@ -239,7 +240,7 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:includeFontPadding="false"
-                            android:inputType="textVisiblePassword"
+                            android:inputType="numberDecimal"
                             android:maxLength="100"
                             android:maxLines="1"
                             android:textColor="@color/event_preset_input" />
@@ -291,7 +292,7 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:includeFontPadding="false"
-                            android:inputType="textVisiblePassword"
+                            android:inputType="numberDecimal"
                             android:maxLength="100"
                             android:maxLines="1"
                             android:textColor="@color/event_preset_input" />

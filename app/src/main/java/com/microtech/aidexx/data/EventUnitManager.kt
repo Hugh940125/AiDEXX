@@ -34,8 +34,8 @@ object EventUnitManager {
     private const val UNIT_CONFIG_FILE_NAME = "unit.json"
 
     private const val EVENT_TYPE_DIET = 1
-    private const val EVENT_TYPE_EXERCISE = 2
-    private const val EVENT_TYPE_MEDICINE = 3
+    private const val EVENT_TYPE_MEDICINE = 2
+    private const val EVENT_TYPE_EXERCISE = 3
     private const val EVENT_TYPE_INSULIN = 4
 
     // debug 1min 间隔检测升级 release 24小时间隔

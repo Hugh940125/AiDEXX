@@ -84,7 +84,7 @@ class SportPresetDialog(
                 sportDetailEntity.quantity = duration
 
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && sportDetailEntity.exercisePresetId == null) {
+                    if (needSaveNewPreset && sportDetailEntity.exercisePresetId == "") {
 
                         val presetEntity = SportUsrPresetEntity()
                         presetEntity.name = sportDetailEntity.name

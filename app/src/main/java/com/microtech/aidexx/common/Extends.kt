@@ -15,14 +15,19 @@ import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.UnitManager
 import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 /**
  *@date 2023/2/22
@@ -160,6 +165,10 @@ fun Number.stripTrailingZerosWithoutPointer(scale: Int? = null): String {
         BigDecimal(this.toString()).stripTrailingZeros().toPlainString()
     }
 }
+
+fun Double.format(scale: Int = 3): Double =
+    BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros().toDouble()
+
 
 
 inline fun <reified T> getMutableListType() = object : TypeToken<MutableList<T>>() {}.type

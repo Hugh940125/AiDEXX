@@ -162,9 +162,9 @@ public class DigitFilter implements InputFilter {
                 if ((ZERO.contentEquals(source)) && (ZERO.contentEquals(dest))) {
                     return "";
                 }
-                if (!(POINTER.contentEquals(source)) && (ZERO.contentEquals(dest))) {
-                    return "";
-                }
+//                if (!(POINTER.contentEquals(source)) && (ZERO.contentEquals(dest))) {
+//                    return "";
+//                }
             }
         }
 

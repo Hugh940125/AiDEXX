@@ -12,6 +12,7 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.format
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -101,9 +102,9 @@ class DietNewPresetDialog(
                     val presetEntity = DietUsrPresetEntity()
                     presetEntity.idx = 0
                     presetEntity.name = dietDetail.name
-                    presetEntity.carbohydrate = dietDetail.carbohydrate / factor
-                    presetEntity.protein = dietDetail.protein / factor
-                    presetEntity.fat = dietDetail.fat / factor
+                    presetEntity.carbohydrate = (dietDetail.carbohydrate / factor).format()
+                    presetEntity.protein = (dietDetail.protein / factor).format()
+                    presetEntity.fat = (dietDetail.fat / factor).format()
                     presetEntity.userId = UserInfoManager.instance().userId()
 
                     mFragment.lifecycleScope.launch {

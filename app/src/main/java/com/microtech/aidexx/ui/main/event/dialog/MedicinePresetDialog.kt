@@ -81,7 +81,7 @@ class MedicinePresetDialog(
                 medicineDetailEntity.quantity = quantity
 
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && medicineDetailEntity.medicationPresetId == null) {
+                    if (needSaveNewPreset && medicineDetailEntity.medicationPresetId == "") {
 
                         val presetEntity = MedicineUsrPresetEntity()
                         presetEntity.name = medicineDetailEntity.name

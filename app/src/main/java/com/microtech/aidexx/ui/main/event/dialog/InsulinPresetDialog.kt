@@ -77,7 +77,7 @@ class InsulinPresetDialog(
                 insulinEntity.quantity = quantity
 
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && oldInsulinEntity.insulinPresetId == null) {
+                    if (needSaveNewPreset && oldInsulinEntity.insulinPresetId == "") {
 
                         val presetEntity = InsulinUsrPresetEntity()
                         presetEntity.name = oldInsulinEntity.name

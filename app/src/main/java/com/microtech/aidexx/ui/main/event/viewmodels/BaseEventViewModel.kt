@@ -106,10 +106,11 @@ abstract class BaseEventViewModel<T: BaseEventEntity, D: BaseEventDetail, P: Bas
 
 
     suspend fun loadHistory() = flow {
-        val result = getDetailHistory()
+        val result = getDetailHistory().take(15)
         result.sortedByDescending {
             it.createTime
         }
+
         _detailHistory.clear()
         _detailHistory.addAll(result)
         emit(_detailHistory.size)
