@@ -189,7 +189,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     private fun replaceFragment(pageTag: String) {
         if (pageTag == lastPageTag) return
-        if ((lastPageTag == glucosePanel && pageTag != glucosePanel)) {
+        if (lastPageTag == glucosePanel) {
             binding.homeRoot.setBackgroundResource(0)
         }
         val fragment = when (pageTag) {

@@ -241,14 +241,14 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
             checkStep = 3
             return
         }
-//        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
-//            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
-//            mHandler.sendEmptyMessageDelayed(
-//                REQUEST_STORAGE_PERMISSION,
-//                if (checkStep != 4) 5 * 1000 else 30 * 1000
-//            )
-//            needBtPermission = true
-//        }
+        PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
+            mHandler.removeMessages(REQUEST_STORAGE_PERMISSION)
+            mHandler.sendEmptyMessageDelayed(
+                REQUEST_STORAGE_PERMISSION,
+                if (checkStep != 4) 5 * 1000 else 30 * 1000
+            )
+            needBtPermission = true
+        }
         if (needBtPermission) {
             checkStep = 4
             return

@@ -7,15 +7,25 @@ import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
-import com.microtech.aidexx.common.*
+import com.microtech.aidexx.common.date2ymdhm
+import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.millisToHours
+import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.millisToSeconds
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
+import com.microtech.aidexx.common.roundTwoDigits
+import com.microtech.aidexx.common.toHistoryDate
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.*
+import com.microtech.aidexx.db.entity.AlertSettingsEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
@@ -28,7 +38,11 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
-import com.microtech.aidexx.utils.eventbus.*
+import com.microtech.aidexx.utils.eventbus.CalDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
+import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
@@ -36,13 +50,17 @@ import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
-import com.microtechmd.blecomm.parser.*
+import com.microtechmd.blecomm.parser.AidexXCalibrationEntity
+import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
+import com.microtechmd.blecomm.parser.AidexXHistoryEntity
+import com.microtechmd.blecomm.parser.AidexXParser
+import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
 import io.objectbox.kotlin.equal
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
-import java.util.*
+import java.util.Date
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.roundToInt
@@ -125,12 +143,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     handleAdvertisement(message.data)
                 }
             }
+
             AidexXOperation.GET_START_TIME -> {
                 val sensorStartTime = ByteUtils.checkToDate(data)
                 sensorStartTime?.let {
-                    updateStartTime(sensorStartTime)
+                    updateStart(sensorStartTime)
+                    ObjectBox.runAsync({
+                        transmitterBox!!.put(entity)
+                    })
                 }
             }
+
             CgmOperation.GET_DATETIME -> {
             }
 
@@ -148,6 +171,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
             CgmOperation.UNPAIR -> {
             }
+
             AidexXOperation.GET_HISTORY_RANGE -> {
                 message.data.let {
                     briefRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
@@ -161,16 +185,19 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             }
                             getController().getHistories(nextEventIndex)
                         }
+
                         TYPE_RAW -> {
                             if (nextFullEventIndex < rawRangeStartIndex) {
                                 nextFullEventIndex = rawRangeStartIndex
                             }
                             getController().getRawHistories(nextFullEventIndex)
                         }
+
                         else -> {}
                     }
                 }
             }
+
             AidexXOperation.GET_CALIBRATION_RANGE -> {
                 message.data.let {
                     calRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
@@ -178,6 +205,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     LogUtil.eAiDEX("get calibration range --- cal start:$calRangeStartIndex, cal newest:$newestCalIndex")
                 }
             }
+
             AidexXOperation.GET_CALIBRATION -> {
                 if (UserInfoManager.instance().isLogin()) {
                     AidexxApp.mainScope.launch(Dispatchers.IO) {
@@ -185,11 +213,13 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                 }
             }
+
             AidexXOperation.GET_HISTORIES -> {
                 if (UserInfoManager.instance().isLogin()) {
                     saveBriefHistoryFromConnect(message.data)
                 }
             }
+
             AidexXOperation.GET_HISTORIES_RAW -> {
                 if (UserInfoManager.instance().isLogin()) {
                     saveRawHistoryFromConnect(message.data)
@@ -252,6 +282,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                 }
             }
+
             is ApiResult.Failure -> {
                 EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
             }
@@ -306,6 +337,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         clearPairInfo()
                     }
                 }
+
                 is ApiResult.Failure -> {
                     apiResult.msg.run {
                         Dialogs.showError(this)
@@ -322,6 +354,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         controller?.sn = null
         controller?.mac = null
         controller?.id = null
+        controller?.key = null
         controller?.unregister()
         entity.accessId = null
         entity.sensorStartTime = null
@@ -329,8 +362,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         entity.eventIndex = 0
         entity.fullEventIndex = 0
         entity.calIndex = 0
-        TransmitterManager.instance().removeDb()
         TransmitterManager.instance().removeDefault()
+        TransmitterManager.instance().removeDb()
         AidexBleAdapter.getInstance().stopBtScan(false)
         EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, true)
     }
@@ -389,6 +422,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             getController().startTime
             return
         }
+        latestAdTime = SystemClock.elapsedRealtime()
         latestHistory?.let {
             val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
             if (glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
@@ -548,8 +582,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 calibrateEntity.setTimeInfo(historyDate)
                 calibrateEntity.userId = userId
                 calibrateEntity.calibrationId = calibrateEntity.updateCalibrationId()
-                calibrateEntity.cf = calibration.cf.roundTwoDigits()
-                calibrateEntity.offset = calibration.offset.roundTwoDigits()
+                calibrateEntity.cf = (calibration.cf / 100).roundTwoDigits()
+                calibrateEntity.offset = (calibration.offset / 100).roundTwoDigits()
                 calibrateEntity.referenceGlucose = calibration.referenceGlucose
                 calibrateEntity.isValid = calibration.isValid
                 calibrateEntity.uploadState = 1
@@ -604,9 +638,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         History.STATUS_OK -> {
                             historyEntity.eventType = History.HISTORY_GLUCOSE
                         }
+
                         History.STATUS_INVALID -> {
                             historyEntity.eventType = History.HISTORY_GLUCOSE_INVALID
                         }
+
                         History.STATUS_ERROR -> {
                             historyEntity.eventType = History.HISTORY_SENSOR_ERROR
                         }
@@ -654,6 +690,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                             }
                                         }
                                     }
+
                                     History.HISTORY_LOCAL_HYPO -> {
                                         if (AlertUtil.hypoSwitchEnable) {
                                             if (lastHypoAlertTime == 0L) {
@@ -673,6 +710,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                             }
                                         }
                                     }
+
                                     History.HISTORY_LOCAL_URGENT_HYPO -> {
                                         if (AlertUtil.urgentLowSwitchEnable) {
                                             if (lastUrgentAlertTime == 0L) {
@@ -695,6 +733,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             }
                         }
                     }
+
                     History.HISTORY_SENSOR_ERROR -> {
                         if (entity.needReplace && now - deviceTimeMillis < TimeUtils.oneHourSeconds * 1000) {
                             alert?.invoke(
@@ -758,9 +797,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             History.HISTORY_LOCAL_HYPER -> build.equal(
                 RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
             )
+
             History.HISTORY_LOCAL_HYPO -> build.equal(
                 RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
             )
+
             History.HISTORY_LOCAL_URGENT_HYPO -> build.equal(
                 RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_URGENT_HYPO
             )
@@ -889,6 +930,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             MmkvManager.saveFastDownAlertTime(dateTime.time)
                         }
                     }
+
                     GlucoseTrend.SUPER_FAST_UP -> {
                         if (MmkvManager.isFastUpAlertEnable()) {
                             val lastFastUp: Long = MmkvManager.getLastFastUpAlertTime()
@@ -901,6 +943,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             MmkvManager.saveFastUpAlertTime(dateTime.time)
                         }
                     }
+
                     else -> {
                     }
                 }

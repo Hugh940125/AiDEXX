@@ -143,7 +143,7 @@ object PairUtil {
                         AidexXOperation.GET_START_TIME -> {
                             val data = message.data
                             val startTimePair = ByteUtils.checkToDate(data)
-                            default.entity.sensorStartTime = startTimePair
+                            default.updateStart(startTimePair)
                             scope.launch {
                                 default.savePair()
                             }

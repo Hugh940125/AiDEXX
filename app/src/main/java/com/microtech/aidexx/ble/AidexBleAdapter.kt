@@ -97,9 +97,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         override fun onScanFailed(errorCode: Int) {
             super.onScanFailed(errorCode)
             eAiDEX("onScanFailed errorCode:$errorCode")
-            if (errorCode == 2) {
-                //ClientReleaseTool.releaseAllScanClient()
-            }
         }
     }
 

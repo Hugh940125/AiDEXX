@@ -651,6 +651,7 @@
     <string name="unit_piece">片</string>
     <string name="unit_u">u</string>
     <string name="bluetooth">蓝牙</string>
+    <string name="empty_data">无数据</string>
     <!-- 单位 -->
 
 </resources>

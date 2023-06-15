@@ -88,7 +88,7 @@ object StringUtils {
         sp3.setSpan(
             object : ClickableSpan() {
                 override fun onClick(view: View) {
-                    val intent = Intent(context, WebActivity::class.java)
+                    val intent = Intent(contextRef, WebActivity::class.java)
                     intent.putExtra(
                         IntentKey.WEB_TITLE,
                         context.getString(R.string.Privacy_Policy2)
@@ -97,7 +97,7 @@ object StringUtils {
                         IntentKey.WEB_URL,
                         context.getString(R.string.Privacy_Policy_url)
                     )
-                    context.startActivity(intent)
+                    contextRef?.startActivity(intent)
                 }
 
                 override fun updateDrawState(ds: TextPaint) {

@@ -269,6 +269,7 @@ com.microtech.aidexx:string/emailAddress = 0x7f1100f9
 com.microtech.aidexx:string/email_error = 0x7f1100fa
 com.microtech.aidexx:string/email_null = 0x7f1100fb
 com.microtech.aidexx:string/email_password_empty = 0x7f1100fc
+com.microtech.aidexx:string/empty_data = 0x7f11035e
 com.microtech.aidexx:string/empty_stomach = 0x7f1100fd
 com.microtech.aidexx:string/end_date = 0x7f1100fe
 com.microtech.aidexx:string/error_a11y_label = 0x7f1100ff

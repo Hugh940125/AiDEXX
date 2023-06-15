@@ -146,19 +146,13 @@ fun String.isNumber(): Boolean = try {
 fun String.toast() = ToastUtil.showLong(this)
 fun String.toastShort() = ToastUtil.showShort(this)
 
-fun String.convertAllPointer(): String {
-    val POINTER =
-        DecimalFormatSymbols.getInstance(LocalManageUtil.getSetLanguageLocale(getContext())).decimalSeparator.toString()
-    return replace(",", POINTER).replace(".", POINTER)
-}
-
 fun Number.stripTrailingZeros(scale: Int? = null): String {
     return (if (scale != null) {
         BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros()
             .toPlainString()
     } else {
         BigDecimal(this.toString()).stripTrailingZeros().toPlainString()
-    }).convertAllPointer()
+    })
 }
 
 /**

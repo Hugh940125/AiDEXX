@@ -14,7 +14,7 @@ import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerProxy
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
-import java.util.*
+import java.util.Date
 
 /**
  *@date 2023/3/6
@@ -90,44 +90,39 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract suspend fun deletePair()
 
-    fun updateStartTime(sensorStartTime: Date?) {
-        ObjectBox.runAsync({
-            val sensorId = EncryptUtils.md5(
-                UserInfoManager.instance().userId()
-                        + entity.deviceSn
-                        + entity.startTimeToIndex(sensorStartTime)
-                        + entity.startTimeToIndex(sensorStartTime)
-            )
-            sensorId.let {
-                val lastBrief = ObjectBox.cgmHistoryBox!!.query()
-                    .equal(RealCgmHistoryEntity_.sensorId, it)
-                    .orderDesc(RealCgmHistoryEntity_.timeOffset)
-                    .build()
-                    .findFirst()
-                entity.eventIndex = lastBrief?.timeOffset ?: 0
-                nextEventIndex = entity.eventIndex + 1
-                val lastRaw = ObjectBox.cgmHistoryBox!!.query()
-                    .equal(RealCgmHistoryEntity_.sensorId, it)
-                    .notNull(RealCgmHistoryEntity_.rawIsValid)
-                    .orderDesc(RealCgmHistoryEntity_.timeOffset)
-                    .build()
-                    .findFirst()
-                entity.fullEventIndex = lastRaw?.timeOffset ?: 0
-                nextFullEventIndex = entity.fullEventIndex + 1
-                val lastCal = ObjectBox.calibrationBox!!.query()
-                    .equal(CalibrateEntity_.sensorId, it)
-                    .orderDesc(CalibrateEntity_.index)
-                    .build()
-                    .findFirst()
-                entity.calIndex = lastCal?.index ?: 0
-                nextCalIndex = entity.calIndex + 1
-            }
-            ObjectBox.transmitterBox!!.put(entity)
-        }, onSuccess = {
-            LogUtil.eAiDEX("Init data start index, brief index:${entity.eventIndex},raw index:${entity.fullEventIndex},cal index:${entity.calIndex}")
-            entity.sensorStartTime = sensorStartTime
-        }, onError = {
-        })
+    fun updateStart(sensorStartTime: Date?) {
+        val sensorId = EncryptUtils.md5(
+            UserInfoManager.instance().userId()
+                    + entity.deviceSn
+                    + entity.startTimeToIndex(sensorStartTime)
+                    + entity.startTimeToIndex(sensorStartTime)
+        )
+        sensorId.let {
+            val lastBrief = ObjectBox.cgmHistoryBox!!.query()
+                .equal(RealCgmHistoryEntity_.sensorId, it)
+                .orderDesc(RealCgmHistoryEntity_.timeOffset)
+                .build()
+                .findFirst()
+            entity.eventIndex = lastBrief?.timeOffset ?: 0
+            nextEventIndex = entity.eventIndex + 1
+            val lastRaw = ObjectBox.cgmHistoryBox!!.query()
+                .equal(RealCgmHistoryEntity_.sensorId, it)
+                .notNull(RealCgmHistoryEntity_.rawIsValid)
+                .orderDesc(RealCgmHistoryEntity_.timeOffset)
+                .build()
+                .findFirst()
+            entity.fullEventIndex = lastRaw?.timeOffset ?: 0
+            nextFullEventIndex = entity.fullEventIndex + 1
+            val lastCal = ObjectBox.calibrationBox!!.query()
+                .equal(CalibrateEntity_.sensorId, it)
+                .orderDesc(CalibrateEntity_.index)
+                .build()
+                .findFirst()
+            entity.calIndex = lastCal?.index ?: 0
+            nextCalIndex = entity.calIndex + 1
+        }
+        entity.sensorStartTime = sensorStartTime
+        LogUtil.eAiDEX("Init data start index, brief index:${entity.eventIndex},raw index:${entity.fullEventIndex},cal index:${entity.calIndex}")
     }
 
     fun reset() {

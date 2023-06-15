@@ -5,7 +5,7 @@ import android.os.Looper
 import android.os.Message
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import java.util.*
+import java.util.Timer
 
 /**
  *@date 2023/3/9
@@ -57,7 +57,7 @@ class HomeStateManager private constructor() {
         if (tag != glucosePanel) {
             EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, false)
         }
-        if (tag != needPair) {
+        if (tag != needPair && tag != glucosePanel) {
             countDownToReset()
         }
         if (tag == warmingUp) {

@@ -37,7 +37,6 @@ class BloodGlucoseHistoryActivity : BaseActivity<BaseViewModel, ActivityBloodGlu
         setContentView(binding.root)
         initView()
         initData()
-
     }
 
     private fun initView() {
