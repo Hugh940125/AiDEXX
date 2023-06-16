@@ -61,7 +61,7 @@ class EventDietFragment : BaseEventFragment<BaseViewModel, FragmentEventDietBind
             }
 
             tvDietType.setDebounceClickListener {
-                onEventTimeTypeClick(TYPE_SLOT_INSULIN) { str ->
+                onEventTimeTypeClick(vm.getEventSlotType()) { str ->
                     tvDietType.text = str
                 }
             }

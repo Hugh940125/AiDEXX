@@ -3,15 +3,23 @@ package com.microtech.aidexx.widget.calendar
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.Toast
+import androidx.core.view.isVisible
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.setDebounceClickListener
+import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.databinding.DialogCalendarBinding
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.widget.dialog.bottom.BaseBottomPopupView
 import com.microtech.aidexx.widget.ruler.RulerWidget
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import com.haibin.calendarview.Calendar as CalendarCustom
 
-class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSelected: (Date, Date) -> Unit) :
-    BaseBottomPopupView(context) {
+class CalendarDialog(
+    val context: Context,
+    onRangeSelected: (Int) -> Unit,
+    onSelected: (Date, Date) -> Unit
+): BaseBottomPopupView(context) {
 
     init {
         val calendar = Calendar.getInstance()
@@ -45,6 +53,7 @@ class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSel
             bind.calendarView.curMonth,
             bind.calendarView.curDay
         )
+        bind.calendarView.setMonthView(CustomRangeMonthView::class.java)
         bind.calendarView.scrollToCurrent()
         bind.calendarView.setSelectRangeMode()
         bind.calendarView.setOnMonthChangeListener { year, month ->
@@ -136,6 +145,80 @@ class CalendarDialog(val context: Context, onRangeSelected: (Int) -> Unit, onSel
         val btCancel = findViewById<RulerWidget>(R.id.bt_cancel)
         btCancel?.setOnClickListener {
             dismiss()
+        }
+        setKeyBackCancelable(true)
+        setOutSideCancelable(false)
+        show()
+    }
+
+    private fun buildText(year: Int, month: Int): String {
+        return buildString {
+            append(year)
+            append("/")
+            append(month)
+        }
+    }
+}
+
+class CalendarSingleDialog(
+    val context: Context,
+    onSelected: (Date) -> Unit
+): BaseBottomPopupView(context) {
+
+    init {
+        val bind = DialogCalendarBinding.inflate(LayoutInflater.from(context), contentContainer, true)
+        bind.apply {
+
+            calendarView.setTextColor(
+                context.getColor(R.color.green_65),
+                if (ThemeManager.isLight()) context.getColor(R.color.black_33) else context.getColor(R.color.white),
+                if (ThemeManager.isLight()) context.getColor(R.color.gray_e6) else context.getColor(R.color.whiteAlpha30),
+                if (ThemeManager.isLight()) context.getColor(R.color.black_33) else context.getColor(R.color.white),
+                if (ThemeManager.isLight()) context.getColor(R.color.gray_e6) else context.getColor(R.color.whiteAlpha30)
+            )
+
+            tvMonth.text = buildText(calendarView.curYear, calendarView.curMonth)
+            rgSwitch.isVisible = false
+            calendarView.setOnMonthChangeListener { year, month ->
+                tvMonth.text = buildText(year, month)
+            }
+
+            calendarView.setMonthView(CustomMonthView::class.java)
+            calendarView.scrollToCurrent()
+            calendarView.setSelectSingleMode()
+            calendarView.setRange(
+                bind.calendarView.curYear - 1,
+                1,
+                bind.calendarView.curDay,
+                bind.calendarView.curYear,
+                bind.calendarView.curMonth,
+                bind.calendarView.curDay
+            )
+
+            btCancel.setDebounceClickListener {
+                dismiss()
+            }
+
+            btOk.setDebounceClickListener {
+                val calendars: CalendarCustom? = calendarView.selectedCalendar
+                if (calendars != null) {
+                    val calendar = Calendar.getInstance()
+                    calendar[Calendar.HOUR_OF_DAY] = 0
+                    calendar[Calendar.MINUTE] = 0
+                    calendar[Calendar.SECOND] = 0
+                    calendar[Calendar.MILLISECOND] = 0
+
+                    calendar[Calendar.YEAR] = calendars.year
+                    calendar[Calendar.MONTH] = calendars.month - 1
+                    calendar[Calendar.DAY_OF_MONTH] = calendars.day
+                    val selectedDate = Date()
+                    selectedDate.time = calendar.timeInMillis
+                    onSelected(selectedDate)
+                    dismiss()
+                } else {
+                    context.getString(R.string.start_date).toastShort()
+                }
+            }
         }
         setKeyBackCancelable(true)
         setOutSideCancelable(false)

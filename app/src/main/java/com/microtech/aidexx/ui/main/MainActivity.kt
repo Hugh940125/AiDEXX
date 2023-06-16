@@ -20,9 +20,11 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
+import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
@@ -73,7 +75,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
-
                         REQUEST_BLUETOOTH_PERMISSION -> {
                             EnquireManager.instance()
                                 .showEnquireOrNot(
@@ -88,15 +89,12 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
-
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             it.enableLocation()
                         }
-
                         REQUEST_ENABLE_BLUETOOTH -> {
                             activity.enableBluetooth()
                         }
-
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored =
@@ -182,7 +180,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         lifecycleScope.launch {
             AlertUtil.loadSettingsFromDb()
         }
-        EventUnitManager.loadUnit(LanguageUnitManager.getCurrentLanguageCode())
+        EventUnitManager.loadUnit(LocalManager.getCurLanguageTag())
     }
 
     override fun onResume() {
@@ -267,26 +265,41 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     private fun initView() {
         val mainViewPagerAdapter = MainViewPagerAdapter(this)
-        binding.viewpager.apply {
-            this.offscreenPageLimit = 2
-            this.adapter = mainViewPagerAdapter
-            this.isUserInputEnabled = false
-            this.setCurrentItem(HOME, false)
-            this.registerOnPageChangeCallback(object : OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    binding.mainTabView.check(position)
+        binding.apply {
+            viewpager.apply {
+                this.offscreenPageLimit = 2
+                this.adapter = mainViewPagerAdapter
+                this.isUserInputEnabled = false
+                this.setCurrentItem(HOME, false)
+                this.registerOnPageChangeCallback(object : OnPageChangeCallback() {
+                    override fun onPageSelected(position: Int) {
+                        binding.mainTabView.check(position)
+                    }
+                })
+            }
+            binding.viewpager.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    binding.mainTabView.check(binding.viewpager.currentItem)
+                    binding.viewpager.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
             })
-        }
-        binding.viewpager.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                binding.mainTabView.check(binding.viewpager.currentItem)
-                binding.viewpager.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            mainTabView.onTabChange = {
+                if (viewpager.currentItem == EVENT) {
+                    val hasConfirm =
+                        ((viewpager.adapter as MainViewPagerAdapter).getItem(EVENT) as EventFragment?)?.needConfirmLeave {
+                            viewpager.setCurrentItem(it, false)
+                        } ?: true
+                    if (!hasConfirm) {
+                        viewpager.setCurrentItem(it, false)
+                        true
+                    } else {
+                        false
+                    }
+                } else {
+                    viewpager.setCurrentItem(it, false)
+                    true
+                }
             }
-        })
-        binding.mainTabView.onTabChange = {
-            binding.viewpager.setCurrentItem(it, false)
-            true
         }
     }
 

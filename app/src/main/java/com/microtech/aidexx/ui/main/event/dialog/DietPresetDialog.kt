@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.main.event.dialog
 
+//import com.blankj.utilcode.util.KeyboardUtils
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,7 +8,6 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-//import com.blankj.utilcode.util.KeyboardUtils
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -36,7 +36,8 @@ class DietPresetDialog(
     mFragment.requireContext()
 ) {
     lateinit var viewBinding: DialogDietPresetBinding
-    private val dietEntity: DietDetail = oldDietEntity.copy()
+
+    private val dietEntity: DietDetail = copyOldDietEntity()
     private val specificationModelList = EventUnitManager.getDietUnitList()
 
 
@@ -68,7 +69,7 @@ class DietPresetDialog(
     private fun intCustomButton() {
         viewBinding.apply {
             tvCustom.setOnClickListener {
-                val dietDetailEntity = oldDietEntity.copy()
+                val dietDetailEntity = copyOldDietEntity()
                 mFragment.lifecycleScope.launch {
                     setPropertyName(dietDetailEntity)
                     DietNewPresetDialog(mFragment, dietDetailEntity, onConfirmClick = onConfirmClick).show()
@@ -77,6 +78,14 @@ class DietPresetDialog(
             }
         }
     }
+
+    private fun copyOldDietEntity() =
+        oldDietEntity.copy().also {
+            it.id = oldDietEntity.id
+            it.presetType = oldDietEntity.presetType
+            it.name = oldDietEntity.name
+            it.unitStr = oldDietEntity.unitStr
+        }
 
     private suspend fun setPropertyName(dietDetailEntity: DietDetail) {
 

@@ -6,8 +6,8 @@ import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
-import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -44,7 +44,7 @@ class ExerciseEntity : BaseEventEntity {
     var expandList: MutableList<ExerciseDetail> = ArrayList()
 
     constructor() {
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
+        this.language = LocalManager.getCurLanguageTag()
     }
 
     constructor(intensity: Int? = null, duration: Int? = null) : this() {
@@ -118,7 +118,8 @@ data class ExerciseDetail(
     var hour_kcal_per_kg: Double = 0.0, // 每小时单位公斤消费千卡数
     var quantity: Double = 0.0, //数量
     var unit: Int = 0, // 单位 0:分钟 1：小时
-    var exerciseId: String? = null
+    var exerciseId: String? = null,
+    var exercisePresetId: String? = null
 
 ) : BaseEventDetail() {
     override fun toString(): String {

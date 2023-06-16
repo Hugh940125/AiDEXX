@@ -91,7 +91,7 @@ data class ReqSaveOrUpdateEventRecords<T>(
 ): ReqEntity()
 
 data class ReqDeleteEventIds (
-    val ids: List<Long>
+    val ids: List<String>
 ): ReqEntity()
 
 //endregion

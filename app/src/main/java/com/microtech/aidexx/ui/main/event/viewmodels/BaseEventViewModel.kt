@@ -3,10 +3,8 @@ package com.microtech.aidexx.ui.main.event.viewmodels
 import android.annotation.SuppressLint
 import androidx.annotation.IntDef
 import androidx.lifecycle.viewModelScope
-import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.date2ymdhm
-import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BaseEventEntity
@@ -108,10 +106,11 @@ abstract class BaseEventViewModel<T: BaseEventEntity, D: BaseEventDetail, P: Bas
 
 
     suspend fun loadHistory() = flow {
-        val result = getDetailHistory()
+        val result = getDetailHistory().take(15)
         result.sortedByDescending {
             it.createTime
         }
+
         _detailHistory.clear()
         _detailHistory.addAll(result)
         emit(_detailHistory.size)
@@ -122,14 +121,13 @@ abstract class BaseEventViewModel<T: BaseEventEntity, D: BaseEventDetail, P: Bas
         val result = queryPresetByName(name)
 
         _presetList.clear()
-        if (result.isEmpty()) {
-            _presetList.add(genNewPreset(name))
-        } else {
+        if (result.isNotEmpty()) {
             result.sortedBy {
                 PinyinUtils.getPinyinFirstLetter(it.name)
             }
             _presetList.addAll(result)
         }
+        _presetList.add(genNewPreset(name))
 
         emit(_presetList.size)
     }.flowOn(Dispatchers.IO)
@@ -256,15 +254,5 @@ abstract class BaseEventViewModel<T: BaseEventEntity, D: BaseEventDetail, P: Bas
     fun getEventSlot(@EventSlotType type: Int): String = periodMgr.getEventSlot(type)
 
     fun getEventSlotIndex(@EventSlotType type: Int): Int  = periodMgr.getEventSlotIndex(type)
-
-    fun checkAndUploadData() {
-        // todo 事件数据上传 一代是放在预设点击添加到待保存列表时触发
-        AidexxApp.instance.ioScope.launch {
-//            val result = LocalRepository.getMedicineNotUploadedUserPreset()
-//            if (result.isNotEmpty()) {
-//                vm.saveOrUpdateMedicineUsrPresetBatch(result)
-//            }
-        }
-    }
 
 }

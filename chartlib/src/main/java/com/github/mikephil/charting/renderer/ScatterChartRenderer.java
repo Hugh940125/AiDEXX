@@ -103,6 +103,7 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
             for (int i = 0; i < mChart.getScatterData().getDataSetCount(); i++) {
 
                 IScatterDataSet dataSet = dataSets.get(i);
+                boolean attached =  dataSet.isAttachedToLineDataSet();
 
                 if (!shouldDrawValues(dataSet) || dataSet.getEntryCount() < 1)
                     continue;
@@ -143,6 +144,20 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
                     if (entry.getIcon() != null && dataSet.isDrawIconsEnabled()) {
 
                         Drawable icon = entry.getIcon();
+
+                        if (attached) {
+                            for (int k = 0; k < j; k += 2) {
+                                Drawable existingIcon = dataSet.getEntryForIndex(k / 2 + mXBounds.min).getIcon();
+                                if (existingIcon == null) {
+                                    continue;
+                                }
+                                int width = (icon.getIntrinsicWidth() + existingIcon.getIntrinsicWidth()) / 2;
+                                int height = (icon.getIntrinsicHeight() + existingIcon.getIntrinsicHeight()) / 2;
+                                if (Math.abs(positions[j] - positions[k]) < width && Math.abs(positions[j + 1] - positions[k + 1]) < height) {
+                                    positions[j + 1] = positions[k + 1] - height;
+                                }
+                            }
+                        }
 
                         Utils.drawImage(
                                 c,
@@ -229,6 +244,20 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
                     if (entry.getIcon() != null && dataSet.isDrawIconsEnabled()) {
 
                         Drawable icon = entry.getIcon();
+
+                        if (attached) {
+                            for (int k = 0; k < j; k += 2) {
+                                Drawable existingIcon = dataSet.getEntryForIndex(k / 2 + mXBounds.min).getIcon();
+                                if (existingIcon == null) {
+                                    continue;
+                                }
+                                int width = (icon.getIntrinsicWidth() + existingIcon.getIntrinsicWidth()) / 2;
+                                int height = (icon.getIntrinsicHeight() + existingIcon.getIntrinsicHeight()) / 2;
+                                if (Math.abs(positions[j] - positions[k]) < width && Math.abs(positions[j + 1] - positions[k + 1]) < height) {
+                                    positions[j + 1] = positions[k + 1] - height;
+                                }
+                            }
+                        }
 
                         if (attached) {
                             for (int k = 0; k < j; k += 2) {

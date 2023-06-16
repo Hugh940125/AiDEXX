@@ -46,7 +46,7 @@ open class ActionBarWidget : ConstraintLayout {
     private fun initLayout() {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val parent = inflater.inflate(R.layout.widget_action_bar, this, true)
-        parent.setPadding(0, getStatusBarHeight(),8.dp2px(), 8.dp2px())
+        parent.setPadding(0, getStatusBarHeight() + 10.dp2px(),8.dp2px(), 8.dp2px())
         mViewBinding = WidgetActionBarBinding.bind(parent)
         ivRightIcon = parent.findViewById(R.id.iv_right)
     }

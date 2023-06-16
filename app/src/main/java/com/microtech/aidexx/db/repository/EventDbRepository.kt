@@ -1,6 +1,7 @@
 package com.microtech.aidexx.db.repository
 
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.dao.EventDao
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.event.UnitEntity
@@ -18,7 +19,6 @@ import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity_
 import com.microtech.aidexx.db.entity.event.preset.SportPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity_
-import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.Property
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -72,7 +72,7 @@ object EventDbRepository {
     suspend fun queryDietPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LanguageUnitManager.getCurrentLanguageCode()
+        language: String = LocalManager.getCurLanguageTag()
     ): List<DietPresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
@@ -89,7 +89,7 @@ object EventDbRepository {
     suspend fun queryMedicinePresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LanguageUnitManager.getCurrentLanguageCode()
+        language: String = LocalManager.getCurLanguageTag()
     ): List<MedicinePresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
@@ -106,7 +106,7 @@ object EventDbRepository {
     suspend fun queryInsulinPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LanguageUnitManager.getCurrentLanguageCode()
+        language: String = LocalManager.getCurLanguageTag()
     ): List<InsulinPresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
@@ -123,7 +123,7 @@ object EventDbRepository {
     suspend fun querySportPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LanguageUnitManager.getCurrentLanguageCode()
+        language: String = LocalManager.getCurLanguageTag()
     ): List<SportPresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
@@ -145,7 +145,7 @@ object EventDbRepository {
     suspend fun loadUnit(language: String): MutableList<UnitEntity>? = EventDao.loadUnit(language)
     suspend fun insertUnit(data: List<UnitEntity>) = EventDao.insertUnit(data)
 
-    suspend fun removeUnit(exceptVersion: String) = EventDao.removeUnit(exceptVersion)
+    suspend fun removeUnitOfOtherVersion(exceptVersion: String) = EventDao.removeUnitOfOtherVersion(exceptVersion)
     suspend fun removeAllUnit() = EventDao.removeAllUnit()
 
     suspend fun getDietNeedUploadEvent(userId: String = UserInfoManager.instance().userId()) =
@@ -164,4 +164,16 @@ object EventDbRepository {
     suspend fun getMedicineNeedUploadPreset() = EventDao.getMedicineNeedUploadPreset()
     suspend fun getInsulinNeedUploadPreset() = EventDao.getInsulinNeedUploadPreset()
 
+    suspend fun <T: BaseEventEntity> removeEventById(id: Long, clazz: Class<T>) =
+        EventDao.removeEventById(id, clazz)
+
+    suspend fun <T: BaseEventEntity> queryDeletedData(
+        clazz: Class<T>,
+        userId: String = UserInfoManager.instance().userId()
+    ) = EventDao.queryDeletedData(userId, clazz)
+
+    suspend fun <T: BaseEventEntity> updateDeleteStatusByIds(
+        ids: List<String>,
+        clazz: Class<T>
+    ) = EventDao.updateDeleteStatusByIds(ids, clazz)
 }

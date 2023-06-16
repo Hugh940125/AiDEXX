@@ -2,14 +2,13 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.utils.roundOffDecimal
+import com.microtech.aidexx.utils.toGlucoseValue
 import io.objectbox.annotation.Entity
 import java.util.Date
 import java.util.UUID
-import java.util.*
 
 
 @Entity
@@ -26,7 +25,7 @@ class BloodGlucoseEntity : BaseEventEntity {
     constructor(testTime: Date, bloodGlucose: Float) {
         setTimeInfo(testTime)
         this.bloodGlucoseMg = roundOffDecimal(bloodGlucose)
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
+        this.language = LocalManager.getCurLanguageTag()
     }
 
     override fun getEventDescription(res: Resources): String =
@@ -66,7 +65,15 @@ class BloodGlucoseEntity : BaseEventEntity {
     override fun toString(): String {
         return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTag=$testTag, bloodGlucoseMg=$bloodGlucoseMg, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
     }
+    override fun hashCode(): Int {
+        return bloodGlucoseId.hashCode()
+    }
 
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is BloodGlucoseEntity && it.bloodGlucoseId == this.bloodGlucoseId
+        } ?: false
+    }
     fun getGlucoseValue(): Float {
         if (bloodGlucoseMg < 2 * 18) {
             return (2f * 18).toGlucoseValue()

@@ -34,7 +34,6 @@ class InsulinPresetDialog(
 
 
     lateinit var binding: DialogInsulinPresetBinding
-    private val insulinEntity: InsulinDetail = oldInsulinEntity.copy()
     private lateinit var textWatcher: DecimalInputTextWatcher
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,20 +72,19 @@ class InsulinPresetDialog(
                     return@setDebounceClickListener
                 }
 
-                insulinEntity.name = oldInsulinEntity.name
-                insulinEntity.quantity = quantity
-
-
-                val presetEntity = InsulinUsrPresetEntity()
-                presetEntity.name = oldInsulinEntity.name
-                presetEntity.userId = UserInfoManager.instance().userId()
+                oldInsulinEntity.quantity = quantity
 
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && oldInsulinEntity.presetId == null) {
+                    if (needSaveNewPreset && oldInsulinEntity.insulinPresetId == "") {
+
+                        val presetEntity = InsulinUsrPresetEntity()
+                        presetEntity.name = oldInsulinEntity.name
+                        presetEntity.userId = UserInfoManager.instance().userId()
+
                         vm.savePreset(presetEntity).collect {
                             it?.let {
                                 dismiss()
-                                oldInsulinEntity.presetId = it
+                                oldInsulinEntity.insulinPresetId = presetEntity.getPresetId()
                                 onConfirmClick.invoke(oldInsulinEntity)
                             }
                         }

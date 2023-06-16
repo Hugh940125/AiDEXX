@@ -45,7 +45,7 @@ class DietViewModel
         }
         dietEntity.expandList.addAll(toSaveDetailList)
         dietEntity.mealTime = eventTime
-        dietEntity.momentType = eventMomentTypeIndex
+        dietEntity.moment = eventMomentTypeIndex
         dietEntity.mealRemark = toSaveDetailList.last().name
         dietEntity.carbohydrate = toSaveDetailList.last().quantity.roundToInt()
         dietEntity.userId = UserInfoManager.instance().userId()

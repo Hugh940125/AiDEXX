@@ -14,10 +14,7 @@ object EventBusKey {
     const val REFRESH_CHART_DATE: String = "REFRESH_CHART_DATE"
     const val GO_TO_HISTORY: String = "GO_TO_HISTORY"
     const val EVENT_UNPAIR_RESULT: String = "EVENT_UNPAIR_RESULT"
-    const val EVENT_CGM_DATA_CHANGED: String = "EVENT_CGM_DATA_CHANGED"
-    const val EVENT_BG_DATA_CHANGED: String = "EVENT_BG_DATA_CHANGED"
     const val EVENT_DATA_CHANGED: String = "EVENT_DATA_CHANGED"
-    const val EVENT_CAL_DATA_CHANGED: String = "EVENT_CAL_DATA_CHANGED"
     const val EVENT_PAIR_RESULT: String = "EVENT_PAIR_RESULT"
 
     /** 切换查看用户 */

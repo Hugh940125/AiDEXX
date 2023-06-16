@@ -23,6 +23,10 @@ class OtherSettingActivity : BaseActivity<BaseViewModel, ActivityOtherSettingBin
 
         binding.apply {
 
+            actionBarOtherSetting.getLeftIcon().setOnClickListener {
+                finish()
+            }
+
             settingLogout.setDebounceClickListener {
 
                 Dialogs.showWhether(

@@ -13,7 +13,8 @@ import com.microtech.aidexx.ui.main.bg.BgRepositoryApi
 import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.widget.calendar.CalendarDialog
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 /**
  * author:ldp
@@ -94,7 +95,7 @@ class BloodGlucoseHistoryActivity : BaseActivity<BaseViewModel, ActivityBloodGlu
 
     private fun update(startDate: Date, endDate: Date) {
         val formatter =
-            LanguageUnitManager.languageUnitByIndex(this).dmyFormat
+            LanguageUnitManager.getCurLanguageConf(this).dmyFormat
         binding.timeBegin.text = formatter.format(startDate)
         val calendar = Calendar.getInstance()
         calendar.time = endDate

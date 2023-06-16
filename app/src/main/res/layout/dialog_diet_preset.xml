@@ -117,7 +117,7 @@
                             android:layout_weight="1"
                             android:background="@null"
                             android:includeFontPadding="false"
-                            android:inputType="textVisiblePassword"
+                            android:inputType="numberDecimal"
                             android:maxLength="5"
                             android:maxLines="1"
                             android:textColor="@color/event_preset_input" />

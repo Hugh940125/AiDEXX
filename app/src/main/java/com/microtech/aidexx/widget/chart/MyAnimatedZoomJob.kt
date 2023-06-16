@@ -86,11 +86,20 @@ class MyAnimatedZoomJob(viewPortHandler: ViewPortHandler?,
     }
 
     override fun onAnimationEnd(animation: Animator) {
-        super.onAnimationEnd(animation)
         if (inAnimation) {
             inAnimation = false
             animators--
         }
+        super.onAnimationEnd(animation)
+    }
+
+    private fun recycleInstance(instance: MyAnimatedZoomJob) {
+        pool?.recycle(instance)
+    }
+
+    override fun recycleSelf() {
+        recycleInstance(this)
+        super.recycleSelf()
     }
 
     override fun instantiate(): ObjectPool.Poolable {

@@ -80,16 +80,17 @@ class MedicinePresetDialog(
                 }
                 medicineDetailEntity.quantity = quantity
 
-                val presetEntity = MedicineUsrPresetEntity()
-                presetEntity.name = medicineDetailEntity.name
-                presetEntity.userId = UserInfoManager.instance().userId()
-
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && medicineDetailEntity.presetId == null) {
+                    if (needSaveNewPreset && medicineDetailEntity.medicationPresetId == "") {
+
+                        val presetEntity = MedicineUsrPresetEntity()
+                        presetEntity.name = medicineDetailEntity.name
+                        presetEntity.userId = UserInfoManager.instance().userId()
+
                         vm.savePreset(presetEntity).collect {
                             it?.let {
                                 dismiss()
-                                medicineDetailEntity.presetId = it
+                                medicineDetailEntity.medicationPresetId = presetEntity.getPresetId()
                                 onConfirmClick.invoke(medicineDetailEntity)
                             }
                         }

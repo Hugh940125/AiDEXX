@@ -153,6 +153,7 @@ class MainService : Service(), LifecycleOwner {
                 }
                 if (count % 2 == 0) {
                     serviceMainScope.launch {
+                        CloudHistorySync.uploadDeletedData()
                         CloudHistorySync.uploadHistoryData()
                         EventPresetSync.uploadPreset()
                     }

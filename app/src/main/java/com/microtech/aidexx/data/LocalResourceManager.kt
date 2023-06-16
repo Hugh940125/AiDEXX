@@ -1,21 +1,12 @@
 package com.microtech.aidexx.data
 
 import android.R
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.res.Resources
-import android.content.res.TypedArray
 import android.os.Environment
-import android.util.AttributeSet
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.LayoutInflaterCompat
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.common.net.repository.ApiRepository
+import com.microtech.aidexx.db.entity.LanguageEntity
 import com.microtech.aidexx.db.entity.event.UnitEntity
 import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
 import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
@@ -23,10 +14,10 @@ import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
+import com.microtech.aidexx.db.repository.LanguageDbRepository
 import com.microtech.aidexx.utils.FileUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.SettingItemWidget
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -86,9 +77,6 @@ object LocalResourceManager {
             val fileName = "resource_${upInfo.info.version}.zip"
             val downloadPath = FileUtils.getDownloadDir(UNZIP_DIR_NAME)
 
-//            processByVersionFile("$downloadPath/$fileName", upInfo.info.version)
-//            return@launch
-
             // 启动下载
             ApiRepository.downloadFile(upInfo.info.downloadpath, downloadPath, fileName).collect { ret ->
                 when (ret) {
@@ -127,8 +115,11 @@ object LocalResourceManager {
                         async { updateUnit(unzipPath, it.unit) },
                         async { updateLanguage(unzipPath, it.language) },
                     )
-                    parseTaskList.awaitAll()
-                    LogUtil.d("升级完成")
+                    val result = parseTaskList.awaitAll().all { it }
+                    if (result) {
+                        MmkvManager.setResourceVersion(version)
+                    }
+                    LogUtil.d("升级完成 result=$result")
                 }
 
             } ?:let {
@@ -137,7 +128,7 @@ object LocalResourceManager {
         }
     }
 
-    private suspend fun updateEventSysPreset(unzipPath: String, versionMenu: VersionMenu) {
+    private suspend fun updateEventSysPreset(unzipPath: String, versionMenu: VersionMenu): Boolean =
         withContext(Dispatchers.IO) {
             val updateTasks = listOf(
                 async { updatePreset(unzipPath, FILE_FOOD_SYS, versionMenu.food_sys, DietSysPresetEntity::class.java) },
@@ -145,14 +136,17 @@ object LocalResourceManager {
                 async { updatePreset(unzipPath, FILE_MEDICATION_SYS, versionMenu.medication_sys, MedicineSysPresetEntity::class.java) },
                 async { updatePreset(unzipPath, FILE_INSULIN_SYS, versionMenu.insulin_sys, InsulinSysPresetEntity::class.java) },
             )
-            updateTasks.awaitAll()
+            val result = updateTasks.awaitAll().all { it }
             LogUtil.d("系统预设升级完成", TAG)
+            result
         }
-    }
 
-    private suspend fun <T: BaseSysPreset> updatePreset(unzipPath: String, fileName: String, newVersion: String?, clazz: Class<T>) {
-
-        newVersion?.let {
+    private suspend fun <T: BaseSysPreset> updatePreset(
+        unzipPath: String,
+        fileName: String,
+        newVersion: String?,
+        clazz: Class<T>
+    ): Boolean = newVersion?.let {
             val oldVersion = MmkvManager.getEventSysPresetVersion(clazz)
             if (it > oldVersion) {
                 val jsonFilePath = "$unzipPath$fileName"
@@ -181,26 +175,32 @@ object LocalResourceManager {
                             EventDbRepository.insertSysPresetData(list as List<BaseSysPreset>)
                             EventDbRepository.removeSysPresetOfOtherVersion(it, clazz)
                             MmkvManager.setEventSysPresetVersion(it, clazz)
+                            true
                         } else {
                             LogUtil.xLogE("updateEventSysPreset 资源文件转 entity 为空 ${clazz.simpleName}", TAG)
+                            false
                         }
                     } ?:let {
                         LogUtil.xLogE("updateEventSysPreset 资源文件转 entity 失败 ${clazz.simpleName}", TAG)
+                        false
                     }
                 } else {
                     LogUtil.xLogE("updateEventSysPreset 解压后资源文件不存在 ${clazz.simpleName}", TAG)
+                    false
                 }
             } else {
                 LogUtil.d("updateEventSysPreset ${clazz.simpleName} ov=$oldVersion nv=$it", TAG)
+                true
             }
         } ?:let {
             EventDbRepository.removeSysPresetData(clazz)
             MmkvManager.setEventSysPresetVersion("", clazz)
             LogUtil.xLogE("清空预设 ${clazz.simpleName}", TAG)
+            true
         }
-    }
 
-    private suspend fun updateUnit(unzipPath: String, newVersion: String?) {
+    private suspend fun updateUnit(unzipPath: String, newVersion: String?): Boolean {
+        var result = false
         newVersion?.let {
             val oldVersion = MmkvManager.getUnitVersion()
             if (it > oldVersion) {
@@ -216,8 +216,9 @@ object LocalResourceManager {
                         }
                         if (list.isNotEmpty()) {
                             EventDbRepository.insertUnit(list)
-                            EventDbRepository.removeUnit(it)
+                            EventDbRepository.removeUnitOfOtherVersion(it)
                             MmkvManager.setUnitVersion(it)
+                            result = true
                         } else {
                             LogUtil.xLogE("updateUnit 资源文件转 entity 为空", TAG)
                         }
@@ -230,21 +231,63 @@ object LocalResourceManager {
                 }
             } else {
                 LogUtil.d("updateUnit ov=$oldVersion nv=$it", TAG)
+                result = true
             }
         } ?:let {
             // 删除单位文件
             EventDbRepository.removeAllUnit()
             MmkvManager.setUnitVersion("")
             LogUtil.xLogE("清空单位", TAG)
+            result = true
         }
+        return result
     }
 
-    private fun updateLanguage(unzipPath: String, newVersion: String?) {
+    private suspend fun updateLanguage(unzipPath: String, newVersion: String?): Boolean {
+        var result = false
         newVersion?.let {
+            val oldVersion = MmkvManager.getLanguageVersion()
+            if (it > oldVersion) {
+                val jsonFilePath = "$unzipPath$FILE_LANGUAGE"
+                if (FileUtils.isFileExists(jsonFilePath)) {
+
+                    readJsonFileToObj(
+                        jsonFilePath,
+                        typeToken = object : TypeToken<MutableList<LanguageEntity>>() {}
+                    )?.let { list ->
+
+
+                        list.map { item ->
+                            item.version = it
+                        }
+
+                        if (list.isNotEmpty()) {
+                            val languageRepo = LanguageDbRepository()
+                            languageRepo.insert(list)
+                            languageRepo.removeLanguageOfOtherVersion(it)
+                            MmkvManager.setLanguageVersion(it)
+                            result = true
+                        } else {
+                            LogUtil.xLogE("updateLanguage 资源文件转 entity 为空", TAG)
+                        }
+                    } ?:let {
+                        LogUtil.xLogE("updateLanguage 资源文件转 entity 失败 ", TAG)
+                    }
+                } else {
+                    LogUtil.xLogE("updateLanguage 解压后资源文件不存在", TAG)
+                }
+            } else {
+                LogUtil.d("updateLanguage ov=$oldVersion nv=$it", TAG)
+                result = true
+            }
 
         } ?:let {
             // 删除语言文件
+            LanguageDbRepository().removeAll()
+            MmkvManager.setLanguageVersion("")
+            result = true
         }
+        return result
     }
 
     private fun <R> readJsonFileToObj(jsonFilePath: String, clazz: Class<R>? = null, typeToken: TypeToken<R>? = null): R? {
@@ -263,101 +306,6 @@ object LocalResourceManager {
         }
         return null
     }
-
-
-    private lateinit var mResourcesInspector: Resources
-
-    fun getAidexResourceInspector(resources: Resources): Resources {
-        if (!::mResourcesInspector.isInitialized) {
-            mResourcesInspector = object: Resources(
-                resources.assets,
-                resources.displayMetrics,
-                resources.configuration
-            ) {
-                @SuppressLint("ResourceType")
-                override fun getString(id: Int): String {
-                    LogUtil.d("==GB== id=$id name=${resources.getResourceEntryName(id)}")
-                    if (id < 2131800000) {
-                        return super.getString(id)
-                    }
-                    return "哼哼"
-                }
-            }
-        }
-        return mResourcesInspector
-    }
-
-    fun injectFactory2(layoutInflater: LayoutInflater) {
-        LayoutInflaterCompat.setFactory2(layoutInflater, object : LayoutInflater.Factory2 {
-            override fun onCreateView(
-                parent: View?,
-                name: String,
-                context: Context,
-                attrs: AttributeSet
-            ): View? {
-
-                LogUtil.d("==GB== factory2 name=$name")
-                val inflater = LayoutInflater.from(context)
-                var activity: AppCompatActivity? = null
-                if (parent == null) {
-                    if (context is AppCompatActivity) {
-                        activity = context
-                    }
-                } else if (parent.context is AppCompatActivity) {
-                    activity = parent.context as AppCompatActivity
-                }
-
-                if (activity == null) {
-                    LogUtil.xLogE("==GB== injectFactory2 act null", TAG)
-                    return null
-                }
-
-                val actDelegate = activity.delegate
-
-                val set = intArrayOf(
-                    R.attr.text
-                )
-                @SuppressLint("Recycle")
-                val typedArray: TypedArray = context.obtainStyledAttributes(attrs, set)
-
-                var view = actDelegate.createView(parent, name, context, attrs)
-
-                if (view == null && name.indexOf('.') > 0) {
-                    try {
-                        view = inflater.createView(name, null, attrs)
-                        LogUtil.d("==GB== factory2 view=$view name=$name")
-                    } catch (e: ClassNotFoundException) {
-                        e.printStackTrace()
-                        LogUtil.d("==GB== factory2 view=null name=$name e=${e.message}")
-                    }
-                }
-                if (view is TextView) {
-                    val resourceId = typedArray.getResourceId(0, 0)
-                    if (resourceId != 0) {
-                        view.text = "哈哈"
-                    }
-                } else if (view is SettingItemWidget) { // 自定义view看能否找到合理方式
-
-                    @SuppressLint("Recycle")
-                    val typedArray: TypedArray = context.obtainStyledAttributes(attrs, com.microtech.aidexx.R.styleable.SettingItemWidget)
-                    typedArray.getIndex(typedArray.indexCount)
-                    val resourceId = typedArray.getResourceId(com.microtech.aidexx.R.styleable.SettingItemWidget_title, 0)
-                    if (resourceId != 0) {
-                        LogUtil.d("==GB== strName=${view.resources.getResourceEntryName(resourceId)}")
-//                        view.setTitle("自定义")
-                    }
-
-                }
-
-                return view
-            }
-
-            override fun onCreateView(name: String, context: Context, attrs: AttributeSet): View? {
-                return null
-            }
-        })
-    }
-
 
 }
 

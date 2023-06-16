@@ -4,12 +4,15 @@ import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.LogUtil
 import kotlinx.coroutines.delay
 
 abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
-
+    companion object {
+        private const val TAG = "EventHistorySync"
+    }
     private suspend fun saveOrUpload(data: List<T>): MutableList<T>? =
         when (val apiResult = EventRepository.saveOrUpdateRecords(data)) {
             is ApiResult.Success -> apiResult.result.data as MutableList<T>
@@ -40,7 +43,10 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     override suspend fun downloadData(userId: String): Boolean {
         if (canSync()) {
 
-            val syncTaskItem = getFirstTaskItem(userId) ?: return true
+            val syncTaskItem = getFirstTaskItem(userId) ?:let {
+                LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}", TAG)
+                return true
+            }
 
             val result = getRemoteData(userId, syncTaskItem)
             return result?.let {
@@ -83,5 +89,27 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
         }
         insertToDb(origin, CloudDietHistorySync.tClazz)
     }
+
+    // region 同步删除
+    open suspend fun uploadDeletedData(data: List<String>): Boolean =
+        EventRepository.deleteEventByIds(data, tClazz)
+    override suspend fun uploadDeletedData(userId: String): Boolean {
+        if (canSync()) {
+            val data = EventDbRepository.queryDeletedData(tClazz)
+            return data?.ifEmpty {
+                LogUtil.d("DELETE $tClazz EMPTY", TAG)
+                null
+            }?.let {
+                if (uploadDeletedData(data)) {
+                    EventDbRepository.updateDeleteStatusByIds(data, tClazz)
+                } else false
+            } ?: true
+        }
+        return false
+    }
+
+    //endregion
+
+
 
 }

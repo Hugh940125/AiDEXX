@@ -3,12 +3,12 @@ package com.microtech.aidexx.utils
 import android.content.Context
 import com.microtech.aidexx.AidexxApp
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 
 object LanguageUnitManager {
 
 
-    enum class LanguageUnit(
+    enum class LanguageConf(
         val index: Int,
         val language: String,
         val dmyFormat: SimpleDateFormat,
@@ -35,16 +35,16 @@ object LanguageUnitManager {
     }
 
 
-    fun languageUnitByIndex(context: Context): LanguageUnit {
+    fun getCurLanguageConf(context: Context): LanguageConf {
         return when (LanguageUtil.getInstance(context).selectLanguage) {
-            0 -> LanguageUnit.LANGUAGE_EN
-            1 -> LanguageUnit.LANGUAGE_CN
-            else -> LanguageUnit.LANGUAGE_CN
+            0 -> LanguageConf.LANGUAGE_EN
+            1 -> LanguageConf.LANGUAGE_CN
+            else -> LanguageConf.LANGUAGE_CN
         }
     }
 
     fun getCurrentLanguageCode() =
-        languageUnitByIndex(AidexxApp.instance).language.substring(
+        getCurLanguageConf(AidexxApp.instance).language.substring(
             0,
             2
         )

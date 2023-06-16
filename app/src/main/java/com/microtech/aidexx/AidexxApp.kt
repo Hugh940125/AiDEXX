@@ -13,6 +13,7 @@ import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.CrashHandler
 import com.microtech.aidexx.utils.ProcessUtil
 import com.microtech.aidexx.utils.ThemeManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
 import com.tencent.mars.xlog.Log
@@ -24,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
 class AidexxApp : Application() {
@@ -43,6 +45,11 @@ class AidexxApp : Application() {
         CrashHandler.instance?.init()
         initSdks()
         registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        MmkvManager.setCurrentLanguageTag(Locale.getDefault().toLanguageTag())
+        AppCompatDelegate.setDefaultNightMode(
+            if (ThemeManager.isLight()) AppCompatDelegate.MODE_NIGHT_NO
+            else AppCompatDelegate.MODE_NIGHT_YES
+        )
     }
 
     override fun onTerminate() {
@@ -52,11 +59,6 @@ class AidexxApp : Application() {
         Log.appenderClose()
         mainScope.cancel()
         unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
-
-        AppCompatDelegate.setDefaultNightMode(
-            if (ThemeManager.isLight()) AppCompatDelegate.MODE_NIGHT_NO
-            else AppCompatDelegate.MODE_NIGHT_YES
-        )
 
     }
 

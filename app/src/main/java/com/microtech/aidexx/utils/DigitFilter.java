@@ -5,6 +5,8 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.microtech.aidexx.utils.blankj.RomUtils;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,9 +164,9 @@ public class DigitFilter implements InputFilter {
                 if ((ZERO.contentEquals(source)) && (ZERO.contentEquals(dest))) {
                     return "";
                 }
-                if (!(POINTER.contentEquals(source)) && (ZERO.contentEquals(dest))) {
-                    return "";
-                }
+//                if (!(POINTER.contentEquals(source)) && (ZERO.contentEquals(dest))) {
+//                    return "";
+//                }
             }
         }
 

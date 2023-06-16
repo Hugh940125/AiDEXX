@@ -6,8 +6,8 @@ import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
-import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -42,10 +42,9 @@ class MedicationEntity : BaseEventEntity {
 
     @Convert(converter = MedicationDetail::class, dbType = String::class)
     var expandList: MutableList<MedicationDetail> = ArrayList()
-    var momentType: Int = 0
 
     constructor() {
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
+        this.language = LocalManager.getCurLanguageTag()
     }
 
     constructor(medicineName: String? = null, medicineDosage: Float? = null) : this() {
@@ -78,8 +77,8 @@ class MedicationEntity : BaseEventEntity {
     override fun getValueDescription(res: Resources): String = ""
 
     fun getEventValue(res: Resources): String = ""
-    fun getTypeText(): String {
-        return when (momentType) {
+    private fun getTypeText(): String {
+        return when (moment) {
             1 -> return getContext().getString(R.string.breakfast)
             2 -> return getContext().getString(R.string.lunch)
             3 -> return getContext().getString(R.string.dinner)
@@ -115,7 +114,8 @@ data class MedicationDetail(
     var english_name: String? = null, // 英文名称
     var quantity: Double = 0.0, //数量
     var unit: Int = 0, // 单位，0：毫克，1：克，2：片，3：粒
-    var medicationId: String? = null
+    var medicationId: String? = null,
+    var medicationPresetId: String? = null
 
 ) : BaseEventDetail() {
     override fun toString(): String {

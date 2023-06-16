@@ -11,6 +11,7 @@ import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.ui.main.event.viewmodels.EventType
 import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Date
+import java.util.Locale
 
 object MmkvManager {
 
@@ -56,6 +57,12 @@ object MmkvManager {
     private const val VERSION_EXERCISE_SYS_PRESET = "VERSION_EXERCISE_SYS_PRESET"
     private const val VERSION_MEDICINE_SYS_PRESET = "VERSION_MEDICINE_SYS_PRESET"
     private const val VERSION_INSULIN_SYS_PRESET = "VERSION_INSULIN_SYS_PRESET"
+    private const val CURRENT_LANGUAGE_TAG = "CURRENT_LANGUAGE_TAG"
+
+
+    fun setCurrentLanguageTag(tag: String) = MmkvUtil.encodeString(CURRENT_LANGUAGE_TAG, tag)
+    fun getCurrentLanguageTag() =
+        MmkvUtil.decodeString(CURRENT_LANGUAGE_TAG, Locale.getDefault().toLanguageTag())
 
 
     private fun <T: BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when(clazz) {
@@ -77,7 +84,6 @@ object MmkvManager {
     fun getLanguageVersion():String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
     fun setUnitVersion(version: String) = MmkvUtil.encodeString(VERSION_UNIT, version)
     fun getUnitVersion():String = MmkvUtil.decodeString(VERSION_UNIT, "")
-
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")

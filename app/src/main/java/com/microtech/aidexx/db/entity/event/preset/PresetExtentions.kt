@@ -8,7 +8,7 @@ import com.microtech.aidexx.db.entity.event.MedicationDetail
 
 fun DietPresetEntity.toDietDetailEntity(): DietDetail =
     DietDetail().also {
-        it.presetId = getServerPresetId()
+        it.foodPresetId = getPresetId()
         it.name = name
         it.presetType = if (isUserPreset()) 1 else 0
         it.carbohydrate = carbohydrate
@@ -20,7 +20,7 @@ fun DietPresetEntity.toDietDetailEntity(): DietDetail =
 
 fun SportPresetEntity.toExerciseDetailEntity(): ExerciseDetail =
     ExerciseDetail().also {
-        it.presetId = getServerPresetId()
+        it.exercisePresetId = getPresetId()
         it.name = name
         it.presetType = if (isUserPreset()) 1 else 0
         it.intensity_category_name = intensityCategoryName
@@ -29,7 +29,7 @@ fun SportPresetEntity.toExerciseDetailEntity(): ExerciseDetail =
 
 fun MedicinePresetEntity.toMedicineDetailEntity(): MedicationDetail =
     MedicationDetail().also {
-        it.presetId = getServerPresetId()
+        it.medicationPresetId = getPresetId()
         it.name = name
         it.presetType = if (isUserPreset()) 1 else 0
         it.category_name = categoryName
@@ -41,7 +41,7 @@ fun MedicinePresetEntity.toMedicineDetailEntity(): MedicationDetail =
 
 fun InsulinPresetEntity.toInsulinDetailEntity(): InsulinDetail =
     InsulinDetail().also {
-        it.presetId = getServerPresetId()
+        it.insulinPresetId = getPresetId()
         it.name = name
         it.presetType = if (isUserPreset()) 1 else 0
         it.categoryName = categoryName ?: ""

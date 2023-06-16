@@ -21,7 +21,7 @@ object ApiRepository {
     }
 
     suspend fun checkAppUpdate() = withContext(dispatcher) {
-        val appId = "cn" // 国际版再改
+        val appId = "cn" // 国际版填 global
         ApiService.instance.checkAppUpdate(
             appId,
             resourceVersion = MmkvManager.getResourceVersion()

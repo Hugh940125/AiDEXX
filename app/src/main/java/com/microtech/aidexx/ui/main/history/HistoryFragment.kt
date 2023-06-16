@@ -1,47 +1,119 @@
 package com.microtech.aidexx.ui.main.history
 
+import android.graphics.PorterDuff
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.dp2px
+import com.microtech.aidexx.common.getStatusBarHeight
+import com.microtech.aidexx.common.isSameDay
+import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.databinding.FragmentHistoryBinding
+import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.widget.ScrollTab
+import com.microtech.aidexx.widget.calendar.CalendarSingleDialog
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
+    private val vm by activityViewModels<HistoryViewModel>()
+    private lateinit var dateFormat: SimpleDateFormat
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        dateFormat = LanguageUnitManager.getCurLanguageConf(requireContext()).dmyFormat
         binding = FragmentHistoryBinding.inflate(layoutInflater)
+        binding.root.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
+
+        initTitle()
+        initScrollTab()
+        initViewPager()
+
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        vm.refresh()
+    }
+
+    private fun initTitle() {
+
+        binding.apply {
+            lifecycleScope.launch {
+                vm.curDate.collectLatest {
+                    val newDate = it?:Date()
+                    tvTimeSelected.text = dateFormat.format(newDate)
+                    if (Date().isSameDay(newDate)) {
+                        btnNextDay.isClickable = false
+                        btnNextDay.setColorFilter(resources.getColor(R.color.gray1,null), PorterDuff.Mode.SRC_IN)
+                    } else {
+                        btnNextDay.isClickable = true
+                        btnNextDay.clearColorFilter()
+                    }
+                }
+            }
+            btnPreviousDay.setDebounceClickListener { vm.toPreviousDay() }
+            btnNextDay.setDebounceClickListener { vm.toNextDay() }
+            tvTimeSelected.setDebounceClickListener {
+                CalendarSingleDialog(requireContext()) {
+                    vm.updateDate(it)
+                }
+            }
+        }
+    }
+
+    private fun initScrollTab() {
+        val listTitles = mutableListOf(
+            getString(R.string.history_blood_glucose),
+            getString(R.string.alert_and_warnings)
+        )
+        binding.apply {
+            stIndicator.setTitles(listTitles)
+            stIndicator.setOnTabListener(object : ScrollTab.OnTabListener {
+                override fun onChange(position: Int, v: View?): Boolean {
+                    pageHistory.setCurrentItem(position, false)
+                    return true
+                }
+            })
+        }
+    }
+
+    private fun initViewPager() {
+        binding.apply {
+            pageHistory.isUserInputEnabled = false
+            pageHistory.adapter = HistoryPageAdapter(requireActivity())
+        }
+    }
+
+    class HistoryPageAdapter(fragmentActivity: FragmentActivity) :
+        FragmentStateAdapter(fragmentActivity) {
+
+        val event by lazy { EventHistoryFragment.newInstance() }
+        val alert by lazy { AlertHistoryFragment.newInstance() }
+
+        override fun getItemCount(): Int = 2
+
+        override fun createFragment(position: Int): Fragment =
+            when (position) {
+                1 -> alert
+                else -> event
+            }
     }
 
     companion object {

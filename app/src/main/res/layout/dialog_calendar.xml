@@ -113,15 +113,14 @@
             app:current_month_text_color="?textColorPrimary"
             app:max_select_range="-1"
             app:min_select_range="-1"
-            app:month_view="com.microtech.aidexx.widget.calendar.CustomRangeMonthView"
             app:other_month_lunar_text_color="?textColorHint"
             app:other_month_text_color="?textColorHint"
-            app:select_mode="range_mode"
             app:selected_lunar_text_color="?colorAccent"
             app:selected_text_color="@color/white"
             app:selected_theme_color="?appColorAccent"
             app:week_background="?containerBackground"
             app:week_bar_height="25dp"
             app:week_text_color="?textColorPrimary" />
+
     </LinearLayout>
 </FrameLayout>

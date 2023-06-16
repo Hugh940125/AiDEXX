@@ -181,8 +181,9 @@ dependencies {
 
     //阴影layout
     implementation 'com.github.lihangleo2:ShadowLayout:3.3.2'
-
     implementation "net.lingala.zip4j:zip4j:2.11.5"
+    //侧滑删除
+    implementation 'com.github.mcxtzhang:SwipeDelMenuLayout:V1.3.0'
 }
 
 apply plugin: 'io.objectbox'

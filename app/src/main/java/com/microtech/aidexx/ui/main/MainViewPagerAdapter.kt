@@ -16,20 +16,38 @@ import com.microtech.aidexx.ui.main.trend.TrendFragment
  */
 class MainViewPagerAdapter(fragmentActivity: FragmentActivity) :
     FragmentStateAdapter(fragmentActivity) {
+
+
+    private val historyFragment by lazy { HistoryFragment.newInstance() }
+    private val trendFragment by lazy { TrendFragment.newInstance() }
+    private val homeFragment by lazy { HomeFragment.newInstance() }
+    private val bgFragment by lazy { BgFragment.newInstance() }
+    private val eventFragment by lazy { EventFragment.newInstance() }
+
     override fun getItemCount(): Int {
         return 5
     }
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> HistoryFragment.newInstance()
-            1 -> TrendFragment.newInstance()
-            2 -> HomeFragment.newInstance()
-            3 -> BgFragment.newInstance()
-            4 -> EventFragment.newInstance()
-            else -> {
-                HomeFragment.newInstance()
-            }
+            MainActivity.HISTORY -> historyFragment
+            MainActivity.TRENDS -> trendFragment
+            MainActivity.HOME -> homeFragment
+            MainActivity.BG -> bgFragment
+            MainActivity.EVENT -> eventFragment
+            else -> homeFragment
         }
     }
+
+    fun getItem(position: Int): Fragment? =
+        when(position) {
+            MainActivity.HISTORY -> historyFragment
+            MainActivity.TRENDS -> trendFragment
+            MainActivity.HOME -> homeFragment
+            MainActivity.BG -> bgFragment
+            MainActivity.EVENT -> eventFragment
+            else -> null
+        }
+
+
 }

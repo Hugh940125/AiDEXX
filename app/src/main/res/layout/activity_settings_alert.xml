@@ -8,7 +8,6 @@
     tools:context=".ui.setting.alert.AlertSettingsActivity">
 
     <com.microtech.aidexx.widget.ActionBarWidget
-        android:layout_marginTop="10dp"
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

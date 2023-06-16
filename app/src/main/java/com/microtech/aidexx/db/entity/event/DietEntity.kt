@@ -6,8 +6,8 @@ import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
+import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
-import com.microtech.aidexx.utils.LanguageUnitManager
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -39,10 +39,9 @@ class DietEntity : BaseEventEntity {
 
     @Convert(converter = DietDetail::class, dbType = String::class)
     var expandList: MutableList<DietDetail> = ArrayList()
-    var momentType: Int = 0
 
     constructor() {
-        this.language = LanguageUnitManager.getCurrentLanguageCode()
+        this.language = LocalManager.getCurLanguageTag()
     }
 
     constructor(mealRemark: String? = null, carbohydrate: Int? = null) : this() {
@@ -98,8 +97,8 @@ class DietEntity : BaseEventEntity {
     }
 
 
-    fun getTypeText(): String {
-        return when (momentType) {
+    private fun getTypeText(): String {
+        return when (moment) {
             1 -> return getContext().getString(R.string.breakfast)
             2 -> return getContext().getString(R.string.lunch)
             3 -> return getContext().getString(R.string.dinner)
@@ -122,14 +121,14 @@ class DietEntity : BaseEventEntity {
 
 
 data class DietDetail(
-    var foodPresetId: Long? = null,
+    var foodPresetId: String? = null,
     var categoryName: String = "",
     var quantity: Double = 0.0,
     var unit: Int = 0,
     var protein: Double = 0.0,
     var fat: Double = 0.0,
     var carbohydrate: Double = 0.0,
-    var foodId: String? = null
+    var foodId: String? = null,
 ) : BaseEventDetail() {
 
     override fun toString(): String {

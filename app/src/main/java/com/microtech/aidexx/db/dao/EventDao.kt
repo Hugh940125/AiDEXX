@@ -65,6 +65,9 @@ object EventDao {
     private val sportBox by lazy { ObjectBox.store.boxFor<ExerciseEntity>() }
     private val dietBox by lazy { ObjectBox.store.boxFor<DietEntity>() }
     private val otherBox by lazy { ObjectBox.store.boxFor<OthersEntity>() }
+    private val cgmBox by lazy { ObjectBox.store.boxFor<RealCgmHistoryEntity>() }
+    private val bgBox by lazy { ObjectBox.store.boxFor<BloodGlucoseEntity>() }
+    private val calBox by lazy { ObjectBox.store.boxFor<CalibrateEntity>() }
 
     private val unitBox by lazy { ObjectBox.store.boxFor<UnitEntity>() }
 
@@ -224,13 +227,27 @@ object EventDao {
         }
     }
 
+    fun <T> getDeleteStatusProperty(clazz: Class<T>): Property<T>? {
+        return when (clazz) {
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.deleteStatus as Property<T>
+            DietEntity::class.java -> DietEntity_.deleteStatus as Property<T>
+            ExerciseEntity::class.java -> ExerciseEntity_.deleteStatus as Property<T>
+            MedicationEntity::class.java -> MedicationEntity_.deleteStatus as Property<T>
+            InsulinEntity::class.java -> InsulinEntity_.deleteStatus as Property<T>
+            OthersEntity::class.java -> OthersEntity_.deleteStatus as Property<T>
+            else -> null
+        }
+    }
     suspend inline fun <reified T> queryLatestHistory(timestampProperty: Property<T>, limit: Long = 15): MutableList<T>? =
         awaitCallInTx {
-            ObjectBox.store.boxFor(T::class.java).query {
-                orderDesc(timestampProperty)
-            }.find(0, limit)
-        }
+            getDeleteStatusProperty(T::class.java)?.let {
+                ObjectBox.store.boxFor(T::class.java).query {
+                    equal(it, 0)
+                    orderDesc(timestampProperty)
+                }.find(0, limit)
+            }
 
+        }
 
     suspend fun queryDietSysPresetByName(
         name: String,
@@ -359,7 +376,7 @@ object EventDao {
         unitBox.put(data)
     }
 
-    suspend fun removeUnit(exceptVersion: String) = awaitCallInTx {
+    suspend fun removeUnitOfOtherVersion(exceptVersion: String) = awaitCallInTx {
         unitBox.query {
             notEqual(UnitEntity_.version, exceptVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
         }.remove()
@@ -372,7 +389,8 @@ object EventDao {
     suspend fun getDietNeedUploadEvent(userId: String): MutableList<DietEntity>? {
         return awaitCallInTx {
             dietBox.query { 
-                equal(DietEntity_.uploadState, 1)
+                notEqual(DietEntity_.uploadState, 2)
+                equal(DietEntity_.deleteStatus, 0)
                 equal(DietEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(DietEntity_.idx)
             }.find()
@@ -381,7 +399,8 @@ object EventDao {
     suspend fun getExerciseNeedUploadEvent(userId: String): MutableList<ExerciseEntity>? {
         return awaitCallInTx {
             sportBox.query {
-                equal(ExerciseEntity_.uploadState, 1)
+                notEqual(ExerciseEntity_.uploadState, 2)
+                equal(ExerciseEntity_.deleteStatus, 0)
                 equal(ExerciseEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(ExerciseEntity_.idx)
             }.find()
@@ -390,7 +409,8 @@ object EventDao {
     suspend fun getMedicineNeedUploadEvent(userId: String): MutableList<MedicationEntity>? {
         return awaitCallInTx {
             medicineBox.query {
-                equal(MedicationEntity_.uploadState, 1)
+                notEqual(MedicationEntity_.uploadState, 2)
+                equal(MedicationEntity_.deleteStatus, 0)
                 equal(MedicationEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(MedicationEntity_.idx)
             }.find()
@@ -399,7 +419,8 @@ object EventDao {
     suspend fun getInsulinNeedUploadEvent(userId: String): MutableList<InsulinEntity>? {
         return awaitCallInTx {
             insulinBox.query {
-                equal(InsulinEntity_.uploadState, 1)
+                notEqual(InsulinEntity_.uploadState, 2)
+                equal(InsulinEntity_.deleteStatus, 0)
                 equal(InsulinEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(InsulinEntity_.idx)
             }.find()
@@ -408,7 +429,8 @@ object EventDao {
     suspend fun getOthersNeedUploadEvent(userId: String): MutableList<OthersEntity>? {
         return awaitCallInTx {
             otherBox.query {
-                equal(OthersEntity_.uploadState, 1)
+                notEqual(OthersEntity_.uploadState, 2)
+                equal(OthersEntity_.deleteStatus, 0)
                 equal(OthersEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(OthersEntity_.idx)
             }.find()
@@ -444,5 +466,113 @@ object EventDao {
         }
     }
 
+    private fun <T> getIdProperty(clazz: Class<T>): Property<T>? {
+        return when (clazz) {
+            RealCgmHistoryEntity::class.java -> RealCgmHistoryEntity_.__ID_PROPERTY as Property<T>
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.__ID_PROPERTY as Property<T>
+            DietEntity::class.java -> DietEntity_.__ID_PROPERTY as Property<T>
+            ExerciseEntity::class.java -> ExerciseEntity_.__ID_PROPERTY as Property<T>
+            MedicationEntity::class.java -> MedicationEntity_.__ID_PROPERTY as Property<T>
+            InsulinEntity::class.java -> InsulinEntity_.__ID_PROPERTY as Property<T>
+            OthersEntity::class.java -> OthersEntity_.__ID_PROPERTY as Property<T>
+            else -> null
+        }
+    }
+    suspend fun <T: BaseEventEntity> removeEventById(id: Long, clazz: Class<T>) = awaitCallInTx {
+        val box = ObjectBox.store.boxFor(clazz)
+        getIdProperty(clazz)?.let {
+            val removed = box.query {
+                equal(getIdProperty(clazz), id)
+            }.findFirst()
+
+            removed?.let {
+                if (it.deleteStatus == 0) {
+                    it.deleteStatus = 1
+                    box.put(it)
+                }
+                it
+            }
+        }
+    }
+
+    suspend fun <T: BaseEventEntity> queryDeletedData(
+        userId: String,
+        clazz: Class<T>
+    ): List<String>? = awaitCallInTx {
+        when (clazz) {
+            DietEntity::class.java -> {
+                dietBox.query {
+                    equal(DietEntity_.deleteStatus, 1)
+                    equal(DietEntity_.uploadState, 2)
+                    equal(DietEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                }.property(DietEntity_.foodId).findStrings().toList()
+            }
+            ExerciseEntity::class.java -> {
+                sportBox.query {
+                    equal(ExerciseEntity_.deleteStatus, 1)
+                    equal(ExerciseEntity_.uploadState, 2)
+                    equal(ExerciseEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                }.property(ExerciseEntity_.exerciseId).findStrings().toList()
+            }
+            MedicationEntity::class.java -> {
+                medicineBox.query {
+                    equal(MedicationEntity_.deleteStatus, 1)
+                    equal(MedicationEntity_.uploadState, 2)
+                    equal(MedicationEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                }.property(MedicationEntity_.medicationId).findStrings().toList()
+            }
+            InsulinEntity::class.java -> {
+                insulinBox.query {
+                    equal(InsulinEntity_.deleteStatus, 1)
+                    equal(InsulinEntity_.uploadState, 2)
+                    equal(InsulinEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                }.property(InsulinEntity_.insulinId).findStrings().toList()
+            }
+            OthersEntity::class.java -> {
+                otherBox.query {
+                    equal(OthersEntity_.deleteStatus, 1)
+                    equal(OthersEntity_.uploadState, 2)
+                    equal(OthersEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                }.property(OthersEntity_.otherId).findStrings().toList()
+            }
+            BloodGlucoseEntity::class.java -> {
+                bgBox.query {
+                    equal(BloodGlucoseEntity_.deleteStatus, 1)
+                    equal(BloodGlucoseEntity_.uploadState, 2)
+                    equal(BloodGlucoseEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
+                }.property(BloodGlucoseEntity_.bloodGlucoseId).findStrings().toList()
+            }
+            else -> null
+        }
+    }
+
+
+    private fun <T> getFrontIdProperty(clazz: Class<T>): Property<T>? {
+        return when (clazz) {
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.bloodGlucoseId as Property<T>
+            DietEntity::class.java -> DietEntity_.foodId as Property<T>
+            ExerciseEntity::class.java -> ExerciseEntity_.exerciseId as Property<T>
+            MedicationEntity::class.java -> MedicationEntity_.medicationId as Property<T>
+            InsulinEntity::class.java -> InsulinEntity_.insulinId as Property<T>
+            OthersEntity::class.java -> OthersEntity_.otherId as Property<T>
+            else -> null
+        }
+    }
+    suspend fun <T: BaseEventEntity> updateDeleteStatusByIds(
+        ids: List<String>,
+        clazz: Class<T>
+    ): Boolean? = awaitCallInTx {
+        getFrontIdProperty(clazz)?.let {
+            ObjectBox.store.boxFor(clazz).query {
+                `in`(it, ids.toTypedArray(), QueryBuilder.StringOrder.CASE_SENSITIVE)
+            }.find().map {
+                it.deleteStatus = 2
+                it
+            }.ifEmpty { null }?.let {
+                ObjectBox.store.boxFor(clazz).put(it)
+            }
+            true
+        }?: false
+    }
 
 }

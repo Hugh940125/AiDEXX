@@ -83,16 +83,17 @@ class SportPresetDialog(
 
                 sportDetailEntity.quantity = duration
 
-                val presetEntity = SportUsrPresetEntity()
-                presetEntity.name = sportDetailEntity.name
-                presetEntity.userId = UserInfoManager.instance().userId()
-
                 mFragment.lifecycleScope.launch {
-                    if (needSaveNewPreset && sportDetailEntity.presetId == null) {
+                    if (needSaveNewPreset && sportDetailEntity.exercisePresetId == "") {
+
+                        val presetEntity = SportUsrPresetEntity()
+                        presetEntity.name = sportDetailEntity.name
+                        presetEntity.userId = UserInfoManager.instance().userId()
+
                         vm.savePreset(presetEntity).collect {
                             it?.let {
                                 dismiss()
-                                sportDetailEntity.presetId = it
+                                sportDetailEntity.exercisePresetId = presetEntity.getPresetId()
                                 onConfirmClick.invoke(sportDetailEntity)
                             }
                         }

@@ -8,15 +8,15 @@ import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.databinding.FragmentHomeBinding
+import com.microtech.aidexx.db.entity.BloodGlucoseEntity
+import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.utils.LogUtils
-import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.*
 import com.microtech.aidexx.widget.chart.GlucoseChart
 import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
 import com.microtech.aidexx.widget.chart.MyChart
@@ -50,6 +50,8 @@ class ChartViewHolder(
                 chartViewModel.updateGranularity(newModel)
             }
 
+            chart.setAndUseLifecycleOwnerEvent(fragment)
+
             chart.extraParams = object: GlucoseChart.ExtraParams {
                 override var outerDescriptionView: View? = descriptions
 
@@ -71,6 +73,7 @@ class ChartViewHolder(
                 override fun xMargin(): Float = chartViewModel.xMargin()
                 override fun lowerLimit(): Float = chartViewModel.lowerLimit
                 override fun upperLimit(): Float = chartViewModel.upperLimit
+                override fun getYAxisStyle(): Int = 1
             }
 
             chart.onScrollListener = object: MyChart.ScrollListener {
@@ -133,26 +136,16 @@ class ChartViewHolder(
             }
         }
 
-        EventBusManager.onReceive<CgmDataChangedInfo>(EventBusKey.EVENT_CGM_DATA_CHANGED,fragment) {
-            fragment.lifecycleScope.launch {
-                chartViewModel.onCgmDataChanged(it)
-            }
-        }
-        EventBusManager.onReceive<BgDataChangedInfo>(EventBusKey.EVENT_BG_DATA_CHANGED,fragment) {
-            fragment.lifecycleScope.launch {
-                chartViewModel.onBgDataChanged(it)
-            }
-        }
-
         EventBusManager.onReceive<EventDataChangedInfo>(EventBusKey.EVENT_DATA_CHANGED,fragment) {
             fragment.lifecycleScope.launch {
-                chartViewModel.onEventDataChanged(it)
-            }
-        }
-
-        EventBusManager.onReceive<CalDataChangedInfo>(EventBusKey.EVENT_CAL_DATA_CHANGED,fragment) {
-            fragment.lifecycleScope.launch {
-                chartViewModel.onCalDataChanged(it)
+                it.second.firstOrNull()?.let { clazz ->
+                    when (clazz) {
+                        is RealCgmHistoryEntity -> chartViewModel.onCgmDataChanged(it)
+                        is CalibrateEntity -> chartViewModel.onCalDataChanged(it)
+                        is BloodGlucoseEntity -> chartViewModel.onBgDataChanged(it)
+                        else -> chartViewModel.onEventDataChanged(it)
+                    }
+                }
             }
         }
         /** 切换用户 */
