@@ -103,6 +103,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_x_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -132,6 +133,7 @@
                 android:orientation="horizontal">
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/description_tv_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -141,6 +143,7 @@
                     tools:text="5.0 " />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/description_tv_unit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -150,6 +153,7 @@
                     tools:text="11:11" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/description_tv_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -179,6 +183,7 @@
                     tools:ignore="ContentDescription" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/description_tv_content"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -261,6 +266,7 @@
             tools:ignore="HardcodedText" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_sn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -273,6 +279,7 @@
             app:layout_constraintTop_toBottomOf="@id/home_logo" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/data_owner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

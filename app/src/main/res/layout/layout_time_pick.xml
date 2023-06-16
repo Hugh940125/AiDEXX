@@ -3,52 +3,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/white"
     android:orientation="vertical">
 
     <RelativeLayout
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
 
         <TextView
-            android:textSize="16sp"
             android:id="@+id/tv_cancel"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="17dp"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
             android:paddingStart="15dp"
+            android:paddingTop="5dp"
             android:paddingEnd="15dp"
+            android:paddingBottom="5dp"
+            android:text="@string/btn_cancel"
             android:textColor="@color/event_unit_color"
-            android:text="@string/btn_cancel" />
+            android:textSize="16sp" />
 
         <TextView
-            android:visibility="invisible"
             android:id="@+id/iv_title"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:padding="5dp"
             android:text="@string/time_chose"
             android:textColor="@color/black_33"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:visibility="invisible" />
 
         <TextView
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:paddingStart="15dp"
-            android:paddingEnd="15dp"
             android:id="@+id/tv_finish"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="17dp"
             android:padding="5dp"
+            android:paddingStart="15dp"
+            android:paddingTop="5dp"
+            android:paddingEnd="15dp"
+            android:paddingBottom="5dp"
             android:text="@string/confirm_yes"
             android:textColor="@color/green_65"
             android:textSize="16sp"
@@ -58,15 +62,15 @@
 
     <!--此部分需要完整复制过去，删减或者更改ID会导致初始化找不到内容而报空-->
     <LinearLayout
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:paddingStart="30dp"
-        android:paddingEnd="30dp"
         android:id="@+id/timepicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="30dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="10dp">
 
         <com.contrarywind.view.WheelView
             android:id="@+id/year"
@@ -107,6 +111,6 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="45dp"/>
+        android:layout_height="45dp" />
 
 </LinearLayout>

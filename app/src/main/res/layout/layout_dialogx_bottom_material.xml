@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.microtech.aidexx.widget.dialog.lib.views.DialogXBaseRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/box_root"
     android:layout_width="match_parent"
@@ -20,8 +21,8 @@
             android:layout_centerHorizontal="true"
             android:background="@drawable/rect_dialogx_material_bottom_bkg_light"
             android:clickable="true"
-            android:focusableInTouchMode="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:focusableInTouchMode="true">
 
             <ImageView
                 android:id="@+id/img_tab"
@@ -49,7 +50,8 @@
                     android:paddingBottom="10dp"
                     android:text="Title"
                     android:textColor="@color/black"
-                    android:textSize="21sp" />
+                    android:textSize="21sp"
+                    app:emojiCompatEnabled="false" />
 
                 <com.microtech.aidexx.widget.dialog.lib.views.BottomDialogScrollView
                     android:id="@+id/scrollView"
@@ -75,7 +77,8 @@
                             android:paddingBottom="5dp"
                             android:text="This is content text."
                             android:textColor="@color/blackAlpha70"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            app:emojiCompatEnabled="false" />
 
                         <RelativeLayout
                             android:id="@+id/box_custom"
@@ -108,6 +111,7 @@
                         android:layout_marginBottom="10dp"
                         android:background="@drawable/button_dialogx_material_light"
                         android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:paddingLeft="15dp"
                         android:paddingRight="15dp"
@@ -115,7 +119,7 @@
                         android:textColor="@color/colorAccent"
                         android:textSize="15sp"
                         android:visibility="gone"
-                        android:focusable="true" />
+                        app:emojiCompatEnabled="false" />
 
                     <Space
                         android:layout_width="0dp"
@@ -130,6 +134,7 @@
                         android:layout_marginBottom="10dp"
                         android:background="@drawable/button_dialogx_material_light"
                         android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:paddingLeft="15dp"
                         android:paddingRight="15dp"
@@ -137,7 +142,7 @@
                         android:text="Cancel"
                         android:textColor="@color/colorAccent"
                         android:textSize="15sp"
-                        android:focusable="true" />
+                        app:emojiCompatEnabled="false" />
 
                     <TextView
                         android:id="@+id/btn_selectPositive"
@@ -147,13 +152,14 @@
                         android:layout_marginBottom="10dp"
                         android:background="@drawable/button_dialogx_material_light"
                         android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:paddingLeft="15dp"
                         android:paddingRight="15dp"
                         android:text="OK"
                         android:textColor="@color/colorAccent"
                         android:textSize="15sp"
-                        android:focusable="true" />
+                        app:emojiCompatEnabled="false" />
 
                 </LinearLayout>
 

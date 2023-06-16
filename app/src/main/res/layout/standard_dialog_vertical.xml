@@ -3,23 +3,25 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:orientation="vertical">
 
     <LinearLayout
-        android:gravity="center"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:background="@drawable/top_round"
+        android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="20dp">
 
         <TextView
-            android:layout_marginStart="15dp"
-            android:layout_marginEnd="15dp"
             android:id="@+id/title"
+            app:emojiCompatEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
             android:layout_marginBottom="5dp"
             android:gravity="center"
             android:textSize="16sp"
@@ -28,15 +30,16 @@
             tools:text="这个是标题" />
 
         <TextView
-            android:textAlignment="viewStart"
-            android:maxLines="2"
-            android:ellipsize="end"
             android:id="@+id/content"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAlignment="viewStart"
             android:textSize="14sp"
             tools:text="这个是内容" />
 
@@ -51,6 +54,7 @@
 
         <TextView
             android:id="@+id/button_confirm"
+            app:emojiCompatEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:background="@null"
@@ -61,16 +65,18 @@
 
         <TextView
             android:id="@+id/stick"
+            app:emojiCompatEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
             android:background="@color/gray_d8"
             android:visibility="gone" />
 
         <TextView
-            android:layout_marginTop="5dp"
             android:id="@+id/button_cancel"
+            app:emojiCompatEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="40dp"
+            android:layout_marginTop="5dp"
             android:background="@null"
             android:gravity="center"
             android:text="@string/btn_cancel"

@@ -31,6 +31,7 @@
         android:visibility="visible">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -41,6 +42,7 @@
             android:textColor="?colorDesc" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_forget"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

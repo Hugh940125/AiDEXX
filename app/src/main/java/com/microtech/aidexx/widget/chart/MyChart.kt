@@ -107,7 +107,7 @@ open class MyChart : CombinedChart {
 
 
     override fun getChartBitmap(): Bitmap {
-        bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
 
         bitmap?.let {
             canvas = canvas ?: Canvas(it)

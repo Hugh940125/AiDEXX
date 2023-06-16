@@ -22,6 +22,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvInjectionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -34,6 +35,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvInjectionType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -62,6 +64,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tvInjectionType" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvInjectionTimeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -74,6 +77,7 @@
                 app:layout_constraintTop_toBottomOf="@id/diet_divider1" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvInjectionTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,6 +105,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tvInjectionTime" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvInsulinName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -152,6 +157,7 @@
 
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvInjectionHistoryTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -181,6 +187,7 @@
                     app:layout_constraintStart_toStartOf="parent" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tvInjectionNoRecord"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

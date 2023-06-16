@@ -2,53 +2,53 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rl_item_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/rl_item_root">
+    android:layout_height="wrap_content">
 
     <View
         android:id="@+id/divider_top"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
         android:layout_alignParentTop="true"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:background="?attr/colorLine"/>
+        android:background="?attr/colorLine" />
 
     <ImageView
-        app:border_width="6dp"
         android:id="@+id/iv_avatar"
         android:layout_width="44dp"
         android:layout_height="44dp"
-        app:border_color="?homeIconBgColor"
         android:layout_centerVertical="true"
         android:layout_marginStart="20dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
-        />
+        app:border_color="?homeIconBgColor"
+        app:border_width="6dp" />
 
     <TextView
-        android:lines="1"
-        android:maxLength="12"
-        android:ellipsize="end"
         android:id="@+id/txt_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginStart="10dp"
         android:layout_toEndOf="@+id/iv_avatar"
+        android:ellipsize="end"
+        android:lines="1"
+        android:maxLength="12"
         android:textColor="?mainTabIconColor"
         android:textSize="14sp"
+        app:emojiCompatEnabled="false"
         tools:text="User01" />
 
     <ImageView
         android:id="@+id/iv_share_list_arrow"
-        android:layout_centerVertical="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_arrow_right"/>
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/ic_arrow_right" />
 
     <ImageView
         android:id="@+id/iv_share_wechat"

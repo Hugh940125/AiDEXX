@@ -17,6 +17,7 @@
         app:justifyContent="space_between">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tvContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"/>
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:textColor="@color/gray_cc"
             android:layout_marginStart="5dp"
             android:gravity="center"

@@ -76,7 +76,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         binding.tvValueTime.text = ""
         binding.tvSensorRemainTime.text = ""
         binding.tvGlucoseState.text = ""
-        binding.bgPanel.setBackgroundResource(R.drawable.bg_panel_blank)
+        binding.bgPanel.setBackgroundResource(R.drawable.bg_panel_blank_light)
     }
 
     private fun update() {

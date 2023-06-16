@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <include layout="@layout/layout_line" />
@@ -12,7 +13,6 @@
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/et_code"
-            android:textSize="16sp"
             style="@style/MyEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -23,26 +23,28 @@
             android:hint="@string/Verificationcode"
             android:inputType="number"
             android:paddingTop="20dp"
-            android:paddingBottom="20dp" />
+            android:paddingBottom="20dp"
+            android:textSize="16sp" />
 
         <TextView
-            android:textSize="16sp"
-            android:layout_gravity="center_vertical"
             android:id="@+id/btn_get_ver_code"
             style="@style/btnLogin"
+            app:emojiCompatEnabled="false"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:layout_weight="1"
             android:background="?attr/bgColor"
-            android:text="@string/send" />
+            android:text="@string/send"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <include layout="@layout/layout_line" />
 
     <LinearLayout
-        android:layout_marginTop="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
         android:gravity="center_vertical"
         android:visibility="visible">
 
@@ -54,15 +56,17 @@
             android:theme="@style/LoginCheckBox" />
 
         <TextView
-            android:layout_gravity="center_vertical"
             android:id="@+id/txt_user_protocol"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:textSize="14sp" />
 
     </LinearLayout>
 
     <TextView
+        app:emojiCompatEnabled="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"

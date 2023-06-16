@@ -27,6 +27,7 @@
         android:background="?bgSetting">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_account_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -67,6 +68,7 @@
             app:layout_constraintTop_toBottomOf="@id/et_add_account_value" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_alias_add"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

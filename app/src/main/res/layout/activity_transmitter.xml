@@ -36,6 +36,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_my_trans"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -60,6 +61,7 @@
                         layout="@layout/item_transmitter" />
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:id="@+id/tv_pls_select_trans"
                         android:layout_width="match_parent"
                         android:layout_height="60dp"
@@ -93,6 +95,7 @@
                     app:layout_constraintTop_toBottomOf="@id/trans_line">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:id="@+id/tv_other_trans"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

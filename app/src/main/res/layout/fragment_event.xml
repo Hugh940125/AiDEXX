@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_history_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/list_follow_root"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <TextView
-        android:visibility="gone"
+        android:id="@+id/account_pos"
+        app:emojiCompatEnabled="false"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:textColor="@color/gray_b2"
-        android:id="@+id/account_pos"
         android:textSize="26sp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tv_account_info"
+        app:emojiCompatEnabled="false"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -39,9 +42,9 @@
         tools:ignore="ContentDescription" />
 
     <View
-        android:layout_alignParentBottom="true"
-        android:background="@color/gray_e6"
         android:layout_width="match_parent"
-        android:layout_height="0.5dp"/>
+        android:layout_height="0.5dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/gray_e6" />
 
 </RelativeLayout>

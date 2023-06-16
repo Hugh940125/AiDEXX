@@ -241,7 +241,7 @@ public class BlurView extends View {
 
             boolean r = false;
             try {
-                mBitmapToBlur = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
+                mBitmapToBlur = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.RGB_565);
                 if (mBitmapToBlur == null) {
                     return false;
                 }
@@ -256,7 +256,7 @@ public class BlurView extends View {
                 );
                 mBlurOutput = Allocation.createTyped(mRenderScript, mBlurInput.getType());
 
-                mBlurredBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.ARGB_8888);
+                mBlurredBitmap = Bitmap.createBitmap(scaledWidth, scaledHeight, Bitmap.Config.RGB_565);
                 if (mBlurredBitmap == null) {
                     return false;
                 }
@@ -398,12 +398,12 @@ public class BlurView extends View {
                 if (readyDrawBitmap != null) {
                     canvas.drawBitmap(readyDrawBitmap, 0, 0, null);
                 } else {
-                    Bitmap overlyBitmap = drawOverlyColor(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888));
+                    Bitmap overlyBitmap = drawOverlyColor(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565));
                     if (overlyBitmap != null) canvas.drawBitmap(overlyBitmap, 0, 0, null);
                 }
             }
         } else {
-            Bitmap overlyBitmap = drawOverlyColor(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888));
+            Bitmap overlyBitmap = drawOverlyColor(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565));
             if (overlyBitmap != null) canvas.drawBitmap(overlyBitmap, 0, 0, null);
         }
     }
@@ -417,7 +417,7 @@ public class BlurView extends View {
             canvas.drawBitmap(blurredBitmap, mRectSrc, mRectDst, null);
             canvas.drawColor(needRemoveAlphaColor() ? removeAlphaColor(mOverlayColor) : mOverlayColor);
         } else {
-            Bitmap overlyBitmap = drawOverlyColor(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888));
+            Bitmap overlyBitmap = drawOverlyColor(Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.RGB_565));
             if (overlyBitmap != null) canvas.drawBitmap(overlyBitmap, 0, 0, null);
         }
     }
@@ -425,7 +425,7 @@ public class BlurView extends View {
     private Bitmap getRoundedCornerBitmap(Bitmap bitmap, Rect mRectDst) {
         bitmap = drawOverlyColor(resizeImage(bitmap, mRectDst.width(), mRectDst.height()));
         if (bitmap == null) return null;
-        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(output);
         BitmapShader bitmapShader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         Paint paint = new Paint();
@@ -437,7 +437,7 @@ public class BlurView extends View {
 
     private Bitmap drawOverlyColor(Bitmap bitmap) {
         if (bitmap != null) {
-            Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+            Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(output);
             Rect originRect = new Rect();
             originRect.set(0, 0, bitmap.getWidth(), bitmap.getHeight());

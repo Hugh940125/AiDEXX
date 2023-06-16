@@ -23,6 +23,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_diet_type_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -35,6 +36,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_diet_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,6 +65,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_diet_type" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_diet_time_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -75,6 +78,7 @@
                 app:layout_constraintTop_toBottomOf="@id/diet_divider1" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_diet_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -102,6 +106,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_diet_time" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_diet_name_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -155,6 +160,7 @@
 
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_diet_history_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -184,6 +190,7 @@
                     app:layout_constraintStart_toStartOf="parent" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_diet_no_record"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

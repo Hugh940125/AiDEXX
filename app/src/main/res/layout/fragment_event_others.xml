@@ -23,6 +23,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
+                app:emojiCompatEnabled="false"
                 app:layout_constraintTop_toTopOf="parent"
                 android:id="@+id/tv_others_time_title"
                 android:layout_width="wrap_content"
@@ -35,6 +36,7 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
                 android:layout_marginEnd="15dp"
@@ -62,6 +64,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_others_time" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_others_name_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -104,6 +107,7 @@
                 app:layout_constraintTop_toBottomOf="@id/et_others_content" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_sport_history_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -134,6 +138,7 @@
                     app:layout_constraintTop_toBottomOf="@id/tv_sport_history_title" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:layout_gravity="center_horizontal"
                     android:id="@+id/tv_others_no_record"
                     android:textColor="@color/event_switch_content"

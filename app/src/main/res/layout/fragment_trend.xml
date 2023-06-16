@@ -17,6 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:maxEms="8"
             android:lines="1"
             android:id="@+id/tv_trends_title"
@@ -60,6 +61,7 @@
 
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/time_begin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -70,6 +72,7 @@
                 tools:text="2018/4/1" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/time_separate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -81,6 +84,7 @@
                 android:textSize="18sp" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/time_end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -140,6 +144,7 @@
                     app:layout_constraintGuide_percent="0.55"/>
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_cover_time_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -158,6 +163,7 @@
                     app:layout_constraintTop_toBottomOf="@id/tv_cover_time_title">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:id="@+id/tv_cover_time_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -170,6 +176,7 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:textColor="?trendSmallTextColor"
                         android:id="@+id/tv_cover_time_percent"
                         android:layout_width="wrap_content"
@@ -187,6 +194,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_monitor_times_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -198,6 +206,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_monitor_times_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -239,6 +248,7 @@
                     app:layout_constraintGuide_percent="0.55"/>
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="@id/guide_line_one"
                     android:id="@+id/txt_title_glucose"
@@ -264,6 +274,7 @@
                         android:layout_height="wrap_content">
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:id="@+id/trend_hemoglobin"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -284,6 +295,7 @@
                             tools:ignore="ContentDescription" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:textColor="?trendSmallTextColor"
                             android:id="@+id/txt_unit_percent"
                             android:layout_width="wrap_content"
@@ -299,6 +311,7 @@
                 </LinearLayout>
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toEndOf="@id/guide_line_two"
                     android:id="@+id/tv_average"
@@ -324,6 +337,7 @@
                         android:layout_height="wrap_content">
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:id="@+id/tv_glucose_average"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -343,6 +357,7 @@
                             app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average" />
 
                         <TextView
+                            app:emojiCompatEnabled="false"
                             android:textColor="?trendSmallTextColor"
                             android:text=""
                             android:id="@+id/tv_unit"
@@ -360,6 +375,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/txt_title_tir"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -404,6 +420,7 @@
                         app:textSize="12sp" />
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:id="@+id/txt_empty_pies"
                         android:layout_width="100dp"
                         android:layout_height="100dp"
@@ -440,10 +457,12 @@
                             tools:ignore="ContentDescription" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             style="@style/trend_text_TIR"
                             android:text="@string/hyper" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:id="@+id/high_percent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -463,7 +482,8 @@
                             tools:ignore="ContentDescription" />
                     </LinearLayout>
 
-                    <TextView style="@style/trend_desc_TIR"
+                    <TextView
+                app:emojiCompatEnabled="false" style="@style/trend_desc_TIR"
                         android:id="@+id/desc_high"
                         app:layout_constraintBottom_toTopOf="@id/ll_normal"
                         app:layout_constraintTop_toBottomOf="@id/ll_high"
@@ -485,10 +505,12 @@
                             tools:ignore="ContentDescription" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             style="@style/trend_text_TIR"
                             android:text="@string/normal" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="12sp"
@@ -498,7 +520,8 @@
                     </LinearLayout>
 
 
-                    <TextView style="@style/trend_desc_TIR"
+                    <TextView
+                app:emojiCompatEnabled="false" style="@style/trend_desc_TIR"
                         android:id="@+id/desc_normal"
                         app:layout_constraintBottom_toTopOf="@id/ll_low"
                         app:layout_constraintTop_toBottomOf="@id/ll_normal"
@@ -521,10 +544,12 @@
                             tools:ignore="ContentDescription" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             style="@style/trend_text_TIR"
                             android:text="@string/hypo" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textSize="12sp"
@@ -545,7 +570,8 @@
                     </LinearLayout>
 
 
-                    <TextView style="@style/trend_desc_TIR"
+                    <TextView
+                app:emojiCompatEnabled="false" style="@style/trend_desc_TIR"
                         android:id="@+id/desc_low"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -556,6 +582,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:layout_marginTop="10dp"
                 android:textStyle="bold"
                 android:layout_marginStart="20dp"
@@ -605,6 +632,7 @@
                             android:background="?attr/colorTrendChartMain" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             style="@style/trend_text_AGP"
                             android:text="@string/trend_agp_1" />
                     </LinearLayout>
@@ -622,6 +650,7 @@
                             android:background="?attr/colorTrendChart75" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             style="@style/trend_text_AGP"
                             android:text="@string/trend_agp_2" />
                     </LinearLayout>
@@ -640,6 +669,7 @@
                             android:background="?attr/colorTrendChart90" />
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             style="@style/trend_text_AGP"
                             android:text="@string/trend_agp_3" />
                     </LinearLayout>
@@ -648,6 +678,7 @@
             </LinearLayout>
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:textStyle="bold"
@@ -683,6 +714,7 @@
             </LinearLayout>
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="20dp"
                 android:textStyle="bold"

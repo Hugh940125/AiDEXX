@@ -18,6 +18,7 @@
         app:rv_strokeWidth="1dp">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tvSpecification"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

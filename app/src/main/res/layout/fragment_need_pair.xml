@@ -19,7 +19,7 @@
         android:id="@+id/ll_panel"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="@drawable/bg_panel_blank"
+        android:background="@drawable/bg_panel_blank_light"
         android:layout_marginStart="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/guide_line"
@@ -31,6 +31,7 @@
         android:layout_marginBottom="20dp">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:textColor="@color/black_33"
             android:textStyle="bold"
             android:layout_width="wrap_content"
@@ -39,6 +40,7 @@
             android:textSize="35sp"/>
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_unit"
             android:textColor="@color/black_33"
             android:textSize="14sp"
@@ -60,6 +62,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:maxEms="10"
             android:textAlignment="viewEnd"
             android:id="@+id/txt_sn"
@@ -70,6 +73,7 @@
             android:text="@string/tap_to_pair" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:background="@drawable/bg_bt_pair"
             android:textColor="@color/green_65"
             android:gravity="center"

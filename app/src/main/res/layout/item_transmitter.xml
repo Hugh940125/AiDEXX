@@ -29,6 +29,7 @@
         android:paddingBottom="10dp">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_sn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -40,6 +41,7 @@
             tools:text="AF1122" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_trans_pair_state"
             android:visibility="visible"
             android:drawablePadding="10dp"

@@ -31,6 +31,7 @@
             android:layout_marginEnd="25dp">
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:textColor="?followListDialogTextColor"
                 android:id="@+id/my_count_title"
                 android:layout_width="wrap_content"
@@ -52,6 +53,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_my_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -92,6 +94,7 @@
             android:background="@color/gray_e6" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:textColor="?followListDialogTextColor"
             android:id="@+id/my_follow_title"
             android:layout_width="wrap_content"
@@ -159,6 +162,7 @@
                 android:id="@+id/cl_my_count_shadow">
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:visibility="invisible"
                     android:drawablePadding="9dp"
                     android:textStyle="bold"
@@ -173,6 +177,7 @@
                     android:drawableStart="@drawable/ic_count_left" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:visibility="invisible"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="20dp"
@@ -185,6 +190,7 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:visibility="invisible"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"
@@ -215,6 +221,7 @@
                 android:layout_height="0.5dp"/>
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:visibility="invisible"
                 android:textStyle="bold"
                 android:layout_marginStart="25dp"
@@ -259,6 +266,7 @@
             android:src="@drawable/ic_follow_tip" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
             android:textColor="@color/white"
@@ -281,6 +289,7 @@
             android:src="@drawable/ic_follow_tip" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:textColor="@color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

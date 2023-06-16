@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="40dp">
+    android:layout_height="40dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:id="@+id/load_more_loading_view"
@@ -13,19 +13,20 @@
 
         <ProgressBar
             android:id="@+id/loading_progress"
+            style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_marginEnd="4dp"/>
+            android:layout_marginEnd="4dp" />
 
         <TextView
             android:id="@+id/loading_text"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="4dp"
             android:text="@string/loading"
             android:textColor="@android:color/black"
-            android:textSize="14sp"/>
+            android:textSize="14sp" />
     </LinearLayout>
 
     <FrameLayout
@@ -37,10 +38,11 @@
 
         <TextView
             android:id="@+id/tv_prompt"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/failure"/>
+            android:text="@string/failure" />
 
     </FrameLayout>
 
@@ -51,11 +53,12 @@
         android:visibility="gone">
 
         <TextView
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/refresh_complete"
-            android:textColor="@android:color/darker_gray"/>
+            android:textColor="@android:color/darker_gray" />
     </FrameLayout>
 
     <FrameLayout
@@ -65,10 +68,11 @@
         android:visibility="gone">
 
         <TextView
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/no_record"
-            android:textColor="@android:color/darker_gray"/>
+            android:textColor="@android:color/darker_gray" />
     </FrameLayout>
 </FrameLayout>

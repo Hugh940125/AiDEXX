@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.*
 import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import android.view.View
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.lifecycle.lifecycleScope
@@ -72,6 +73,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
+
                         REQUEST_BLUETOOTH_PERMISSION -> {
                             EnquireManager.instance()
                                 .showEnquireOrNot(
@@ -86,12 +88,15 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
+
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             it.enableLocation()
                         }
+
                         REQUEST_ENABLE_BLUETOOTH -> {
                             activity.enableBluetooth()
                         }
+
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored =
@@ -273,6 +278,12 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                 }
             })
         }
+        binding.viewpager.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                binding.mainTabView.check(binding.viewpager.currentItem)
+                binding.viewpager.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
         binding.mainTabView.onTabChange = {
             binding.viewpager.setCurrentItem(it, false)
             true

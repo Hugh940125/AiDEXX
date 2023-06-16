@@ -3,39 +3,43 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?bgMainTab"
     android:orientation="vertical">
 
     <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="?bgMainTab"
         android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:paddingBottom="10dp">
 
         <TextView
-            android:textSize="16sp"
             android:id="@+id/tv_option_cancel"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="17dp"
             android:padding="8dp"
-            android:text="@string/btn_cancel" />
+            android:text="@string/btn_cancel"
+            android:textSize="16sp" />
 
         <TextView
-            android:visibility="invisible"
             android:id="@+id/iv_title"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:padding="5dp"
             android:text="@string/time_chose"
             android:textColor="@color/black_33"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/tv_option_confirm"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
@@ -53,8 +57,8 @@
         android:id="@+id/optionspicker"
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        android:minHeight="220dp"
         android:gravity="center"
+        android:minHeight="220dp"
         android:orientation="horizontal">
 
         <com.contrarywind.view.WheelView

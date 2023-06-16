@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/actionbar_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/bgNav"
-    android:orientation="horizontal"
-    android:id="@+id/actionbar_root">
+    android:orientation="horizontal">
 
     <ImageView
-        android:layout_marginStart="15dp"
         android:id="@+id/iv_left"
         android:layout_width="?attr/actionBarIconSize"
         android:layout_height="?attr/actionBarIconSize"
+        android:layout_marginStart="15dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:gravity="center"
         android:maxEms="8"
-        android:textStyle="bold"
         android:singleLine="true"
         android:textColor="?attr/actionBarTitleTextColor"
-        android:textSize="?attr/actionBarTitleTextSize" />
+        android:textSize="?attr/actionBarTitleTextSize"
+        android:textStyle="bold"
+        app:emojiCompatEnabled="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/iv_title_right"
@@ -48,11 +48,11 @@
 
     <ImageView
         android:id="@+id/iv_right"
+        android:layout_width="?attr/actionBarIconSize"
+        android:layout_height="?attr/actionBarIconSize"
         android:layout_marginEnd="15dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_width="?attr/actionBarIconSize"
-        android:layout_height="?attr/actionBarIconSize"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 

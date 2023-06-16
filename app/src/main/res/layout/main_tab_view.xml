@@ -75,6 +75,7 @@
     </RelativeLayout>
 
     <TextView
+                app:emojiCompatEnabled="false"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="55dp"
         android:textSize="12sp"

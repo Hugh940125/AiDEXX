@@ -15,6 +15,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:lines="1"
             android:maxEms="10"
             android:ellipsize="end"
@@ -26,6 +27,7 @@
             android:textSize="14sp" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/bt_select_all"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

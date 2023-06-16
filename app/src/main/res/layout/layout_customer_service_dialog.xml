@@ -27,6 +27,7 @@
             tools:ignore="ContentDescription" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/service_chose"
@@ -49,6 +50,7 @@
         android:paddingBottom="5dp">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/my_online_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,6 +64,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_dialog_message_unread"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -117,6 +120,7 @@
         android:paddingBottom="5dp">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tel_service_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -130,6 +134,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_switch_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

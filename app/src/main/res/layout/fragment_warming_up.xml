@@ -28,7 +28,7 @@
         android:layout_height="match_parent">
 
         <View
-            android:background="@drawable/bg_panel_blank"
+            android:background="@drawable/bg_panel_blank_light"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/bg_panel_blank"/>
@@ -40,6 +40,7 @@
             android:id="@+id/bg_panel"/>
 
         <TextView
+                app:emojiCompatEnabled="false"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintBottom_toTopOf="@id/tv_unit"
             app:layout_constraintTop_toTopOf="parent"
@@ -55,6 +56,7 @@
             android:textSize="35sp"/>
 
         <TextView
+                app:emojiCompatEnabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_remain"
             app:layout_constraintStart_toStartOf="parent"
@@ -71,6 +73,7 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
+                app:emojiCompatEnabled="false"
         android:maxEms="8"
         android:ellipsize="end"
         android:textColor="?snTextColor"
@@ -87,6 +90,7 @@
         android:textSize="18sp" />
 
     <TextView
+                app:emojiCompatEnabled="false"
         android:visibility="gone"
         android:text="@string/insert_sensor_error"
         android:maxEms="10"

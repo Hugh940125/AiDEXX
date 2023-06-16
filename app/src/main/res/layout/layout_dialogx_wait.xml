@@ -41,6 +41,7 @@
                 android:visibility="gone" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/txt_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

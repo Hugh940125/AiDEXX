@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <TextView
+                app:emojiCompatEnabled="false"
         android:gravity="center"
         android:layout_marginTop="10dp"
         android:lines="1"

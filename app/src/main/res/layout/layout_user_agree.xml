@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/grayc"
     android:gravity="center"
     android:orientation="vertical">
@@ -14,6 +15,7 @@
 
         <TextView
             android:id="@+id/tv_title"
+            app:emojiCompatEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
@@ -25,6 +27,7 @@
 
         <TextView
             android:id="@+id/tv_content"
+            app:emojiCompatEnabled="false"
             android:layout_width="match_parent"
             android:layout_height="240dp"
             android:lineSpacingExtra="2dp"
@@ -42,6 +45,7 @@
             <TextView
                 android:id="@+id/bt_cancel"
                 style="@style/btnDialog"
+                app:emojiCompatEnabled="false"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
@@ -55,6 +59,7 @@
             <TextView
                 android:id="@+id/bt_ok"
                 style="@style/btnDialog"
+                app:emojiCompatEnabled="false"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"

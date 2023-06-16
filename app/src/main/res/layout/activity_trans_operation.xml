@@ -27,6 +27,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_pair"
             android:textColor="@color/green_65"
             android:background="@drawable/shape_rounded_setting"
@@ -41,6 +42,7 @@
             app:drawableEndCompat="@drawable/ic_arrow_right" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:layout_marginTop="10dp"
             android:textColor="?colorHint"
             android:paddingStart="10dp"
@@ -62,6 +64,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_unpair"
             android:textColor="@color/green_65"
             android:background="@drawable/shape_rounded_setting"
@@ -76,6 +79,7 @@
             app:drawableEndCompat="@drawable/ic_arrow_right" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:layout_marginTop="10dp"
             android:textColor="?colorHint"
             android:paddingStart="10dp"
@@ -97,6 +101,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:id="@+id/tv_force_delete"
             android:textColor="@color/red"
             android:background="@drawable/shape_rounded_setting"
@@ -111,6 +116,7 @@
             app:drawableEndCompat="@drawable/ic_arrow_right" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:layout_marginTop="10dp"
             android:textColor="?colorHint"
             android:paddingStart="10dp"

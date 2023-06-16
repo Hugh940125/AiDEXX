@@ -29,6 +29,7 @@
             tools:ignore="ContentDescription" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             android:textAlignment="center"
             android:lines="1"
             android:ellipsize="end"

@@ -48,6 +48,7 @@
                 android:background="#FF70BD65" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tvCategoryName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -92,6 +93,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -144,6 +146,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -175,6 +178,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -190,6 +194,7 @@
                         android:orientation="horizontal">
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:id="@+id/tv_carbohydrate"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -227,6 +232,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -242,6 +248,7 @@
                         android:orientation="horizontal">
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:id="@+id/tv_protein"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -278,6 +285,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -293,6 +301,7 @@
                         android:orientation="horizontal">
 
                         <TextView
+                app:emojiCompatEnabled="false"
                             android:id="@+id/tv_fat"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -324,6 +333,7 @@
                 </LinearLayout>
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:id="@+id/tvCustom"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -3,24 +3,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:orientation="vertical">
 
     <LinearLayout
-        android:gravity="center"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:background="@drawable/top_round"
+        android:gravity="center"
         android:orientation="vertical"
         android:paddingTop="30dp">
 
         <TextView
+            android:id="@+id/title"
+            app:emojiCompatEnabled="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:gravity="center"
             android:textSize="16sp"
@@ -29,17 +31,18 @@
             tools:text="这是标题" />
 
         <TextView
-            android:maxLines="3"
-            android:ellipsize="end"
-            tools:text="这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容"
-            android:textAlignment="viewStart"
             android:id="@+id/content"
+            app:emojiCompatEnabled="false"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
             android:layout_marginBottom="20dp"
-            android:textSize="16sp" />
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:textAlignment="viewStart"
+            android:textSize="16sp"
+            tools:text="这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容这个是内容" />
 
     </LinearLayout>
 
@@ -56,6 +59,7 @@
 
         <TextView
             android:id="@+id/button_cancel"
+            app:emojiCompatEnabled="false"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_marginStart="0.5dp"
@@ -73,6 +77,7 @@
 
         <TextView
             android:id="@+id/button_confirm"
+            app:emojiCompatEnabled="false"
             android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_marginStart="0.5dp"

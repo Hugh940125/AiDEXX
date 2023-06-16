@@ -28,12 +28,13 @@
         app:layout_constraintVertical_weight="1">
 
         <View
-            android:background="@drawable/bg_panel_blank"
+            android:background="@drawable/bg_panel_blank_light"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/bg_panel"/>
 
         <TextView
+                app:emojiCompatEnabled="false"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintBottom_toTopOf="@id/tv_unit"
             app:layout_constraintTop_toTopOf="parent"
@@ -49,6 +50,7 @@
             android:textSize="35sp"/>
 
         <TextView
+                app:emojiCompatEnabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_glucose_value"
             app:layout_constraintStart_toStartOf="parent"
@@ -73,6 +75,7 @@
         android:layout_height="wrap_content">
 
         <TextView
+                app:emojiCompatEnabled="false"
             tools:text="1分钟前"
             android:lines="1"
             android:ellipsize="end"
@@ -86,6 +89,7 @@
             android:textSize="18sp" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             tools:text="传感器异常\n请等待恢复"
             android:maxLines="2"
             android:visibility="visible"
@@ -100,6 +104,7 @@
             android:textSize="16sp" />
 
         <TextView
+                app:emojiCompatEnabled="false"
             tools:text="剩余11天"
             android:lines="1"
             android:visibility="visible"

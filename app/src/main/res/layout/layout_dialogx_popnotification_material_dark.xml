@@ -38,6 +38,7 @@
             android:paddingBottom="15dp">
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/txt_dialogx_pop_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -50,6 +51,7 @@
                 android:textStyle="bold" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/txt_dialogx_pop_message"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,6 +72,7 @@
                 android:visibility="gone" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/txt_dialogx_button"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"

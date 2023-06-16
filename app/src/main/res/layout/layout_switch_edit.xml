@@ -8,6 +8,7 @@
     android:id="@+id/cl_edit_item">
 
     <TextView
+                app:emojiCompatEnabled="false"
         app:layout_constraintEnd_toStartOf="@id/edit_item_switch"
         android:layout_marginTop="10dp"
         android:id="@+id/switch_edit_title"
@@ -35,6 +36,7 @@
         app:track="@drawable/switch_track" />
 
     <TextView
+                app:emojiCompatEnabled="false"
         android:id="@+id/edit_item_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

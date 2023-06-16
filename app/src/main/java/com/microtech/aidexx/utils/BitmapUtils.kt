@@ -7,6 +7,7 @@ import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import androidx.core.content.res.ResourcesCompat
 import com.microtech.aidexx.common.getContext
 import kotlin.math.roundToInt
 
@@ -37,7 +38,7 @@ object BitmapUtils {
 
     fun getBitmapFromResource(id: Int): Bitmap {
         return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            val vectorDrawable = getContext().resources.getDrawable(id, null)
+            val vectorDrawable = ResourcesCompat.getDrawable(getContext().resources, id, null)
             val bitmap = Bitmap.createBitmap(
                 vectorDrawable!!.intrinsicWidth,
                 vectorDrawable.intrinsicHeight,

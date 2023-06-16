@@ -23,6 +23,7 @@
             >
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_medicine_type_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -35,6 +36,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
                 android:id="@+id/tv_medicine_type"
@@ -62,6 +64,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_medicine_type" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_medicine_time_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -74,6 +77,7 @@
                 app:layout_constraintTop_toBottomOf="@id/medicine_divider1" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp"
                 android:layout_marginEnd="15dp"
@@ -101,6 +105,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_medicine_time" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_medicine_name_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -151,6 +156,7 @@
                 app:layout_constraintTop_toBottomOf="@id/rv_medicine_foods" />
 
             <TextView
+                app:emojiCompatEnabled="false"
                 android:id="@+id/tv_medicine_history_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -181,6 +187,7 @@
                     app:layout_constraintTop_toBottomOf="@id/tv_medicine_history_title" />
 
                 <TextView
+                app:emojiCompatEnabled="false"
                     android:layout_gravity="center_horizontal"
                     android:id="@+id/tv_medicine_no_record"
                     android:textColor="@color/event_switch_content"
