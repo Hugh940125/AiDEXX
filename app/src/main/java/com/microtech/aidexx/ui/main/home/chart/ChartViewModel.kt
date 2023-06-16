@@ -7,8 +7,6 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.ScatterData
-import com.github.mikephil.charting.formatter.IFillFormatter
-import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -330,10 +328,14 @@ class ChartViewModel: ViewModel() {
                     }
                 }
                 DataChangedType.DELETE -> {
-                    bgData.forEach {
-                        bgSet.removeEntry(it.toChartEntry())
+                    val needRefresh = bgData.fold(false) { needRefresh, it ->
+                        needRefresh || if (it.timestamp >= curXMinTimeMillis()){
+                            bgSet.removeEntry(it.toChartEntry())
+                        } else false
                     }
-                    mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    if (needRefresh) {
+                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    }
                 }
                 else -> {}
             }
@@ -627,61 +629,20 @@ class ChartViewModel: ViewModel() {
                     }
                 }
                 DataChangedType.DELETE -> {
-                    changedInfo.second.forEach {
-                        eventSet.removeEntry(it.toChartEntry())
+                    val needRefresh = changedInfo.second.fold(false) { needRefresh, it ->
+                        needRefresh || if (it.timestamp >= curXMinTimeMillis()){
+                            eventSet.removeEntry(it.toChartEntry())
+                        } else false
                     }
-                    mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    if (needRefresh) {
+                        mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                    }
                 }
                 else -> {}
             }
         }
     }
     //endregion
-
-    private fun formatGlucoseSet(): List<LineDataSet> {
-        for (glucoseSet in glucoseSets) {
-            glucoseSet.gradientPositions = listOf(
-                upperLimit,
-                upperLimit,
-                lowerLimit,
-                lowerLimit
-            )
-
-            glucoseSet.fillFormatter = object : IFillFormatter {
-                override fun getFillLinePosition(
-                    dataSet: ILineDataSet?,
-                    dataProvider: LineDataProvider?,
-                ): Float {
-                    return (upperLimit + lowerLimit) / 2
-                }
-
-                override fun getFillLine(
-                    dataSet: ILineDataSet?,
-                    dataProvider: LineDataProvider?,
-                ): ILineDataSet? {
-                    return null
-                }
-            }
-
-            glucoseSet.fillGradientPositions = listOf(
-                upperLimit + 10f.toGlucoseValue(),
-                upperLimit,
-                upperLimit,
-                lowerLimit,
-                lowerLimit,
-                lowerLimit - 1f.toGlucoseValue()
-            )
-
-            glucoseSet.setCircleColorRanges(
-                listOf(
-                    upperLimit,
-                    lowerLimit - 0.1f.toGlucoseValue(),
-                    0f
-                )
-            )
-        }
-        return glucoseSets
-    }
 
     private fun xMaxMin(dateTime: Float) {
         if (timeMin == null || timeMin!! > dateTime) {

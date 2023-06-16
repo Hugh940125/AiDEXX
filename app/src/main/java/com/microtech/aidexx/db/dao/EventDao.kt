@@ -227,13 +227,27 @@ object EventDao {
         }
     }
 
+    fun <T> getDeleteStatusProperty(clazz: Class<T>): Property<T>? {
+        return when (clazz) {
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.deleteStatus as Property<T>
+            DietEntity::class.java -> DietEntity_.deleteStatus as Property<T>
+            ExerciseEntity::class.java -> ExerciseEntity_.deleteStatus as Property<T>
+            MedicationEntity::class.java -> MedicationEntity_.deleteStatus as Property<T>
+            InsulinEntity::class.java -> InsulinEntity_.deleteStatus as Property<T>
+            OthersEntity::class.java -> OthersEntity_.deleteStatus as Property<T>
+            else -> null
+        }
+    }
     suspend inline fun <reified T> queryLatestHistory(timestampProperty: Property<T>, limit: Long = 15): MutableList<T>? =
         awaitCallInTx {
-            ObjectBox.store.boxFor(T::class.java).query {
-                orderDesc(timestampProperty)
-            }.find(0, limit)
-        }
+            getDeleteStatusProperty(T::class.java)?.let {
+                ObjectBox.store.boxFor(T::class.java).query {
+                    equal(it, 0)
+                    orderDesc(timestampProperty)
+                }.find(0, limit)
+            }
 
+        }
 
     suspend fun queryDietSysPresetByName(
         name: String,

@@ -20,6 +20,11 @@ import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.db.entity.event.BaseEventDetail
+import com.microtech.aidexx.db.entity.event.DietEntity
+import com.microtech.aidexx.db.entity.event.ExerciseEntity
+import com.microtech.aidexx.db.entity.event.InsulinEntity
+import com.microtech.aidexx.db.entity.event.MedicationEntity
+import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.entity.event.preset.BasePresetEntity
 import com.microtech.aidexx.db.entity.event.preset.DietPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.InsulinPresetEntity
@@ -33,6 +38,10 @@ import com.microtech.aidexx.ui.main.event.adapter.EventInputAdapter
 import com.microtech.aidexx.ui.main.event.adapter.EventPresetAdapter
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtech.aidexx.widget.selector.time.TimePicker
 import kotlinx.coroutines.launch
@@ -56,18 +65,25 @@ abstract class BaseEventFragment<VM:BaseViewModel, VB: ViewBinding>: BaseFragmen
     }
 
     fun initEventMsg() {
-//        LiveEventBus
-//            .get(EventKey.EVENT_KEY, String::class.java)
-//            .observe(this) {
-//                LogUtils.d("历史页面刷新UI")
-//                rxLifeScope.launch {
-//                    withContext(Dispatchers.Main) {
-//                        vb.apply {
-//                            updateHistoryUi()
-//                        }
-//                    }
-//                }
-//            }
+
+        EventBusManager.onReceive<EventDataChangedInfo>(EventBusKey.EVENT_DATA_CHANGED,this) {
+            if (it.first == DataChangedType.DELETE) {
+                lifecycleScope.launch {
+                    it.second.firstOrNull()?.let { clazz ->
+                        if (
+                            (this@BaseEventFragment is EventDietFragment && clazz is DietEntity) ||
+                            (this@BaseEventFragment is EventSportFragment && clazz is ExerciseEntity) ||
+                            (this@BaseEventFragment is EventMedicineFragment && clazz is MedicationEntity) ||
+                            (this@BaseEventFragment is EventInsulinFragment && clazz is InsulinEntity) ||
+                            (this@BaseEventFragment is EventOthersFragment && clazz is OthersEntity)) {
+
+                            updateHistoryUi()
+                        }
+
+                    }
+                }
+            }
+        }
     }
 
 
