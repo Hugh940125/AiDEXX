@@ -65,7 +65,15 @@ class BloodGlucoseEntity : BaseEventEntity {
     override fun toString(): String {
         return "BloodGlucoseEntity(userId=$userId, idx=$idx, state=$state, recordIndex=$recordIndex, recordId=$recordId, deleteStatus=$deleteStatus, bloodGlucoseId=$bloodGlucoseId, id=$id, testTag=$testTag, bloodGlucoseMg=$bloodGlucoseMg, bloodGlucoseMg=$bloodGlucoseMg, createTime=$createTime, calibration=$calibration, language='$language', uploadState=$uploadState)"
     }
+    override fun hashCode(): Int {
+        return bloodGlucoseId.hashCode()
+    }
 
+    override fun equals(other: Any?): Boolean {
+        return other?.let {
+            it is BloodGlucoseEntity && it.bloodGlucoseId == this.bloodGlucoseId
+        } ?: false
+    }
     fun getGlucoseValue(): Float {
         if (bloodGlucoseMg < 2 * 18) {
             return (2f * 18).toGlucoseValue()

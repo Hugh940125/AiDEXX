@@ -16,6 +16,7 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudHistorySync
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.repository.AccountDbRepository
+import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.LogUtil
@@ -111,6 +112,10 @@ class AccountViewModel : BaseViewModel() {
     }
 
     private suspend fun downloadData(userId: String): Boolean = CloudHistorySync.downloadRecentData(userId)
+//    private suspend fun downloadData(userId: String): Boolean {
+//        testData(userId)
+//        return true
+//    }
 
     suspend fun sendRegisterPhoneVerificationCode(phone: String): Boolean =
         when (AccountRepository.sendRegisterPhoneVerificationCode(phone)) {
@@ -177,7 +182,7 @@ class AccountViewModel : BaseViewModel() {
         countDownTimer.cancel()
     }
 
-    private fun testData(userId: String, c: Int = 15 * 15 * 24 * 60 ): List<RealCgmHistoryEntity> {
+    private suspend fun testData(userId: String, c: Int = 6 * 24 * 60 ): List<RealCgmHistoryEntity> {
         val cur = Date().time / 1000
 
         LogUtil.d("开始生成插入 ${Date().time}", TAG)
@@ -212,9 +217,13 @@ class AccountViewModel : BaseViewModel() {
                 it.userId = userId
                 it.timeOffset = c - t
                 it.frontRecordId = it.updateRecordUUID()
+                it.eventWarning = if (it.glucose!! > 250f) 1 else (if (it.glucose!! < 150) 2 else 0 )
 
             })
         }
+
+        CgmCalibBgRepository.insertCgm(data)
+
         return data
     }
 

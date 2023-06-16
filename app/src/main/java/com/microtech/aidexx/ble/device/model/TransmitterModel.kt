@@ -564,8 +564,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             nextCalIndex = entity.calIndex + 1
             transmitterBox!!.put(entity)
             EventBusManager.send(
-                EventBusKey.EVENT_CAL_DATA_CHANGED,
-                CalDataChangedInfo(DataChangedType.ADD, mutableListOf<CalibrateEntity>().also {
+                EventBusKey.EVENT_DATA_CHANGED,
+                EventDataChangedInfo(DataChangedType.ADD, mutableListOf<CalibrateEntity>().also {
                     it.addAll(tempCalList)
                 })
             )
@@ -716,8 +716,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             transmitterBox!!.put(entity)
 //                updateGlucoseTrend(tempBriefList.last().deviceTime)
             EventBusManager.send(
-                EventBusKey.EVENT_CGM_DATA_CHANGED,
-                CgmDataChangedInfo(DataChangedType.ADD, mutableListOf<RealCgmHistoryEntity>().also {
+                EventBusKey.EVENT_DATA_CHANGED,
+                EventDataChangedInfo(DataChangedType.ADD, mutableListOf<RealCgmHistoryEntity>().also {
                     it.addAll(tempBriefList)
                 })
             )

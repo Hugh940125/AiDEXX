@@ -164,4 +164,6 @@ object EventDbRepository {
     suspend fun getMedicineNeedUploadPreset() = EventDao.getMedicineNeedUploadPreset()
     suspend fun getInsulinNeedUploadPreset() = EventDao.getInsulinNeedUploadPreset()
 
+    suspend fun <T: BaseEventEntity> removeEventById(id: Long, clazz: Class<T>) =
+        EventDao.removeEventById(id, clazz)
 }

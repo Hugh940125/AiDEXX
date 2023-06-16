@@ -1,9 +1,7 @@
 package com.microtech.aidexx.ui.main.home.chart
 
-import android.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -18,11 +16,6 @@ import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.entity.event.DietEntity
-import com.microtech.aidexx.db.entity.event.ExerciseEntity
-import com.microtech.aidexx.db.entity.event.InsulinEntity
-import com.microtech.aidexx.db.entity.event.MedicationEntity
-import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.CalibrateManager
@@ -30,13 +23,11 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.utils.eventbus.BgDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.CalDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
+import com.microtech.aidexx.widget.chart.GlucoseChart
 import com.microtech.aidexx.widget.chart.GlucoseChart.Companion.CHART_LABEL_COUNT
 import com.microtech.aidexx.widget.chart.MyChart.ChartGranularityPerScreen
 import com.microtech.aidexx.widget.chart.MyChart.Companion.G_SIX_HOURS
@@ -44,6 +35,7 @@ import com.microtech.aidexx.widget.chart.dataset.BgDataSet
 import com.microtech.aidexx.widget.chart.dataset.CalDataSet
 import com.microtech.aidexx.widget.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.widget.chart.dataset.IconDataSet
+import com.microtech.aidexx.widget.chart.dataset.toChartEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -225,9 +217,11 @@ class ChartViewModel: ViewModel() {
         loadNextPageData(minDate, Date())
 
         val lineDataSets: ArrayList<ILineDataSet> = ArrayList()
-        lineDataSets.addAll(generateLimitLines())
+        lineDataSets.addAll(GlucoseChart.generateLimitLines(xMin(), xMax(), lowerLimit, upperLimit))
 
-        val glucoseSets: List<LineDataSet> = getGlucoseSets()
+//        val glucoseSets: List<LineDataSet> = formatGlucoseSet()
+        GlucoseChart.formatGlucoseSetAfterInitData(glucoseSets, lowerLimit, upperLimit)
+
         LogUtils.data("Glucose Set Size ${glucoseSets.size}")
         lineDataSets.addAll(glucoseSets)
 
@@ -300,13 +294,14 @@ class ChartViewModel: ViewModel() {
     /**
      * 外部有数据变动通知过来后进行清洗合并
      */
-    suspend fun onCgmDataChanged(data: CgmDataChangedInfo) {
+    suspend fun onCgmDataChanged(data: EventDataChangedInfo) {
         withContext(Dispatchers.IO) {
             when (data.first) {
                 DataChangedType.ADD -> {
-                    val rets = data.second.filter {
+                    val cgmData = data.second as List<RealCgmHistoryEntity>
+                    val rets = cgmData.filter {
                         checkCgmHistory(it)
-                                && it.deviceTime.time > curXMinTimeMillis()
+                                && it.timestamp > curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
                         addCgmData(rets)
@@ -321,11 +316,12 @@ class ChartViewModel: ViewModel() {
     /**
      * 外部有数据变动通知过来后进行清洗合并
      */
-    suspend fun onBgDataChanged(data: BgDataChangedInfo) {
+    suspend fun onBgDataChanged(data: EventDataChangedInfo) {
         withContext(Dispatchers.IO) {
+            val bgData = data.second as List<BloodGlucoseEntity>
             when (data.first) {
                 DataChangedType.ADD -> {
-                    val rets = data.second.filter {
+                    val rets = bgData.filter {
                         it.timestamp >= curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
@@ -333,16 +329,23 @@ class ChartViewModel: ViewModel() {
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
+                DataChangedType.DELETE -> {
+                    bgData.forEach {
+                        bgSet.removeEntry(it.toChartEntry())
+                    }
+                    mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                }
                 else -> {}
             }
         }
     }
 
-    suspend fun onCalDataChanged(data: CalDataChangedInfo) {
+    suspend fun onCalDataChanged(data: EventDataChangedInfo) {
         withContext(Dispatchers.IO) {
             when (data.first) {
                 DataChangedType.ADD -> {
-                    val rets = data.second.filter {
+                    val calData = data.second as List<CalibrateEntity>
+                    val rets = calData.filter {
                         it.timestamp >= curXMinTimeMillis()
                     }
                     if (rets.isNotEmpty()) {
@@ -485,38 +488,6 @@ class ChartViewModel: ViewModel() {
     private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis()): Date =
         Date(curTime - TimeUtils.oneDayMillis * 7)
 
-    private fun generateLimitLines(): List<LineDataSet> {
-        val l1 = LineDataSet(
-            listOf(
-                Entry(xMin(), upperLimit),
-                Entry(xMax(), upperLimit)
-            ),
-            ""
-        )
-        l1.axisDependency = YAxis.AxisDependency.RIGHT
-        l1.setDrawValues(false)
-        l1.setDrawCircles(false)
-        l1.color = Color.TRANSPARENT
-        l1.lineWidth = 0f
-        l1.isHighlightEnabled = false
-
-        val l2 = LineDataSet(
-            listOf(
-                Entry(xMin(), lowerLimit),
-                Entry(xMax(), lowerLimit)
-            ),
-            ""
-        )
-        l2.setDrawValues(false)
-        l2.setDrawCircles(false)
-        l2.color = Color.TRANSPARENT
-        l2.lineWidth = 0f
-        l2.isHighlightEnabled = false
-        l1.setDrawFilled(false)
-
-        return listOf(l1, l2)
-    }
-
     //todo 用户退出时调用
     fun clearEventSets() {
         bgSet.clear()
@@ -563,14 +534,10 @@ class ChartViewModel: ViewModel() {
         cgmHistories.forEach {history ->
             if (history.isGlucoseIsValid()) {
                 if (history.glucose != null && history.eventWarning != -1) {
-                    val xValue = ChartUtil.millSecondToX(history.timestamp)
-                    val entry = Entry(xValue, history.glucose!!.toFloat().toGlucoseValue())
-                    if (entry.y < 2f.toGlucoseValue()) {
-                        entry.y = 2f.toGlucoseValue()
-                    }// 小于2的数值 都当2处理
+                    val entry = history.toChartEntry()
                     if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
                     glucoseSets.last().addEntryOrdered(entry)
-                    xMaxMin(xValue)
+                    xMaxMin(entry.x)
                     calDateMaxMin(Date(history.timestamp))
                 }
             }
@@ -599,12 +566,9 @@ class ChartViewModel: ViewModel() {
      */
     private fun addBgData(bgs: List<BloodGlucoseEntity>) {
         for (bg in bgs) {
-            val xValue = ChartUtil.millSecondToX(bg.timestamp)
-            val entry = Entry(xValue, bg.getGlucoseValue())
-            entry.data = bg
-            entry.icon = BgDataSet.icon
+            val entry = bg.toChartEntry()
             bgSet.addEntryOrdered(entry)
-            xMaxMin(xValue)
+            xMaxMin(entry.x)
             calDateMaxMin(Date(bg.timestamp))
         }
     }
@@ -615,14 +579,9 @@ class ChartViewModel: ViewModel() {
     private fun addCalData(calEntityList: List<CalibrateEntity>) {
 
         calEntityList.forEach { calEntity ->
-            val xValue = ChartUtil.millSecondToX(calEntity.timestamp)
-            val bg = BloodGlucoseEntity(calEntity.calTime, calEntity.referenceGlucose)
-            bg.calibration = true
-            val entry = Entry(xValue, bg.bloodGlucoseMg.toGlucoseValue())
-            entry.data = bg
-            entry.icon = CalDataSet.icon
+            val entry = calEntity.toChartEntry()
             calSet.addEntryOrdered(entry)
-            xMaxMin(xValue)
+            xMaxMin(entry.x)
             calDateMaxMin(Date(calEntity.timestamp))
         }
     }
@@ -647,15 +606,8 @@ class ChartViewModel: ViewModel() {
     private fun <T : BaseEventEntity> addEvent(es: List<T>) {
         LogUtils.error("initIconSet")
         for (e in es) {
-            val entry = Entry(ChartUtil.millSecondToX(e.timestamp), (5f * 18).toGlucoseValue())
-            entry.data = e
-            entry.icon = when (e.javaClass) {
-                InsulinEntity::class.java -> IconDataSet.insulinIcon
-                DietEntity::class.java -> IconDataSet.dietIcon
-                MedicationEntity::class.java -> IconDataSet.medicineIcon
-                ExerciseEntity::class.java -> IconDataSet.exerciseIcon
-                OthersEntity::class.java -> IconDataSet.otherMarkIcon
-                else -> null
+            val entry = e.toChartEntry {
+                (5f * 18).toGlucoseValue()
             }
             eventSet.addEntryOrdered(entry)
         }
@@ -674,13 +626,19 @@ class ChartViewModel: ViewModel() {
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
+                DataChangedType.DELETE -> {
+                    changedInfo.second.forEach {
+                        eventSet.removeEntry(it.toChartEntry())
+                    }
+                    mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                }
                 else -> {}
             }
         }
     }
     //endregion
 
-    private fun getGlucoseSets(): List<LineDataSet> {
+    private fun formatGlucoseSet(): List<LineDataSet> {
         for (glucoseSet in glucoseSets) {
             glucoseSet.gradientPositions = listOf(
                 upperLimit,

@@ -1,4 +1,4 @@
-package com.microtech.aidexx.utils
+package com.microtech.aidexx.utils.blankj
 
 import android.os.Build
 import android.text.TextUtils

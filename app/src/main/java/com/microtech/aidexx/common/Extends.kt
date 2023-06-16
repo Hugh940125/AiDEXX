@@ -1,7 +1,9 @@
 package com.microtech.aidexx.common
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.os.Looper
 import android.os.SystemClock
 import android.view.View
 import androidx.core.content.ContextCompat
@@ -17,7 +19,9 @@ import io.objectbox.Property
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.ByteBuffer
@@ -91,6 +95,10 @@ fun Date.date2ymdhm(pattern: String = DATE_FORMAT_YMDHM): String? =
 fun Date.dateAndTimeHour(pattern: String = DATE_FORMAT_HM): String? =
     SimpleDateFormat(pattern, Locale.ENGLISH).format(this)
 
+fun Long.hourMinute(pattern: String = "HH:mm"): String? =
+    SimpleDateFormat(pattern, Locale.getDefault()).format(this)
+
+
 fun Date.getStartOfTheDay(): Date {
     val calendar = Calendar.getInstance()
     calendar.time = this
@@ -99,6 +107,22 @@ fun Date.getStartOfTheDay(): Date {
     calendar.set(Calendar.SECOND, 0)
     calendar.set(Calendar.MILLISECOND, 0)
     return calendar.time
+}
+
+fun Date.getEndOfTheDay(): Date {
+    val calendar = Calendar.getInstance()
+    calendar.time = this
+    calendar.set(Calendar.HOUR_OF_DAY, 23)
+    calendar.set(Calendar.MINUTE, 59)
+    calendar.set(Calendar.SECOND, 59)
+    calendar.set(Calendar.MILLISECOND, 999)
+    return calendar.time
+}
+
+fun Date.isSameDay(other: Date?): Boolean {
+    return other?.let {
+        getStartOfTheDay() == other.getStartOfTheDay()
+    } ?: false
 }
 
 fun Date.formatWithZone(): String =
@@ -136,8 +160,27 @@ fun String.isNumber(): Boolean = try {
     false
 }
 
-fun String.toast() = ToastUtil.showLong(this)
-fun String.toastShort() = ToastUtil.showShort(this)
+fun isMainThread(): Boolean {
+    return Looper.getMainLooper().thread === Thread.currentThread()
+}
+fun String.toast() {
+    if (isMainThread()) {
+        ToastUtil.showLong(this)
+    } else {
+        GlobalScope.launch(Dispatchers.Main) {
+            ToastUtil.showLong(this@toast)
+        }
+    }
+}
+fun String.toastShort()  {
+    if (isMainThread()) {
+        ToastUtil.showShort(this)
+    } else {
+        GlobalScope.launch(Dispatchers.Main) {
+            ToastUtil.showShort(this@toastShort)
+        }
+    }
+}
 
 fun String.convertAllPointer(): String {
     val POINTER =
@@ -145,9 +188,13 @@ fun String.convertAllPointer(): String {
     return replace(",", POINTER).replace(".", POINTER)
 }
 
+fun Number.setScale(scale: Int): String {
+    return BigDecimal(this.toString()).setScale(scale, RoundingMode.HALF_DOWN).toPlainString()
+}
+
 fun Number.stripTrailingZeros(scale: Int? = null): String {
     return (if (scale != null) {
-        BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros()
+        BigDecimal(this.toString()).setScale(scale, RoundingMode.HALF_DOWN).stripTrailingZeros()
             .toPlainString()
     } else {
         BigDecimal(this.toString()).stripTrailingZeros().toPlainString()
@@ -196,4 +243,14 @@ fun View.setDebounceClickListener(time: Long = 500L, listener: View.OnClickListe
             lastClick = elapsedRealtime
         }
     }
+}
+
+@SuppressLint("InternalInsetResource", "DiscouragedApi")
+fun getStatusBarHeight(): Int {
+    val resourceId: Int =
+        getContext().resources
+            .getIdentifier("status_bar_height", "dimen", "android")
+    return if (resourceId > 0) {
+        getContext().resources.getDimensionPixelSize(resourceId)
+    } else 36
 }

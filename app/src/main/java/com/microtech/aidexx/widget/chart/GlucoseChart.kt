@@ -18,8 +18,12 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.microtech.aidexx.R
 import com.microtech.aidexx.db.entity.BaseEventEntity
@@ -28,6 +32,7 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.toGlucoseValue
 import java.lang.ref.WeakReference
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
@@ -35,6 +40,7 @@ import java.util.Date
 
 /**
  * Home页中的图表
+ * History中的单天图表
  */
 class GlucoseChart : MyChart {
 
@@ -110,6 +116,12 @@ class GlucoseChart : MyChart {
          */
         fun upperLimit(): Float
 
+        /**
+         * 1-home页面
+         * 2-历史页面
+         */
+        fun getYAxisStyle(): Int
+
     }
 
     var extraParams: ExtraParams? = null
@@ -155,7 +167,6 @@ class GlucoseChart : MyChart {
         textColor = ThemeManager.getTypeValue(context, R.attr.colorChartText)
         initBackground()
         initChartAxisX()
-        initChartAxisY()
 
         needDrawLineDataSetValuesAndIcons = false
 
@@ -278,11 +289,12 @@ class GlucoseChart : MyChart {
 
     }
 
-
     /**
      * 初始化数据集
      */
     fun initData(combinedData: CombinedData) {
+        initChartAxisY()
+        updateListener()
         initBackground()
 
         data = combinedData
@@ -303,7 +315,8 @@ class GlucoseChart : MyChart {
             return
         }
         LogUtil.d("===CHART===  highestVisibleX=${highestVisibleX} max=${xAxis.axisMaximum} min=${xAxis.axisMinimum}")
-        updateYaxisMaxMin()
+        if (axisRight.isEnabled) updateYaxisMaxMin(axisRight)
+        if (axisLeft.isEnabled) updateYaxisMaxMin(axisLeft)
         updateGlucoseStartEndValue()
         data.notifyDataChanged()
         notifyDataSetChanged()
@@ -319,6 +332,14 @@ class GlucoseChart : MyChart {
      */
     fun updateGranularity(@ChartGranularityPerScreen granularity: Int) {
         xAxis.granularity = granularity.toFloat()
+    }
+
+    private fun updateListener() {
+        extraParams?.getYAxisStyle()?.let {
+            if (it == 2) { // 不支持触摸相关事件
+                setTouchEnabled(false)
+            }
+        }
     }
 
     private fun isAtLatestPosition(highestVisibleX: Float): Boolean {
@@ -380,15 +401,15 @@ class GlucoseChart : MyChart {
     /**
      * 更新y轴最大最小值
      */
-    private fun updateYaxisMaxMin() {
+    private fun updateYaxisMaxMin(yAxis: YAxis) {
         when (UnitManager.glucoseUnit) {
             UnitManager.GlucoseUnit.MMOL_PER_L -> {
-                axisRight.axisMinimum = 0f
-                axisRight.axisMaximum = 30f
+                yAxis.axisMinimum = 0f
+                yAxis.axisMaximum = 30f
             }
             UnitManager.GlucoseUnit.MG_PER_DL -> {
-                axisRight.axisMinimum = 0f
-                axisRight.axisMaximum = 600f
+                yAxis.axisMinimum = 0f
+                yAxis.axisMaximum = 600f
             }
         }
     }
@@ -438,24 +459,62 @@ class GlucoseChart : MyChart {
         }
     }
 
-    private fun initChartAxisY() {
-        majorAxis = YAxis.AxisDependency.RIGHT
-        val yAxis: YAxis = axisRight
+    private fun initChartAxisYStyle2() {
+
+        val yAxis = axisRight
         yAxis.setDrawAxisLine(false)
         yAxis.setDrawGridLines(true)
-        yAxis.setDrawLabels(true)
+        yAxis.setDrawLabels(false)
         val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
         yAxis.gridColor = color
-        yAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART)
-
-        updateYaxisMaxMin()
+        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        updateYaxisMaxMin(yAxis)
 
         yAxis.setLabelCount(6, true)
-//        yAxis.granularity = 5f
         yAxis.textSize = 14f
         yAxis.textColor = textColor!!
 
-        axisLeft.isEnabled = false
+        val yAxisLeft = axisLeft
+        yAxisLeft.setDrawAxisLine(false)
+        yAxisLeft.setDrawGridLines(true)
+        yAxisLeft.setDrawLabels(true)
+        yAxisLeft.gridColor = color
+        yAxisLeft.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        updateYaxisMaxMin(yAxisLeft)
+
+        yAxisLeft.setLabelCount(6, true)
+        yAxisLeft.textSize = 14f
+        yAxisLeft.textColor = textColor!!
+
+        axisRight.isEnabled = true
+        axisLeft.isEnabled = true
+    }
+
+    private fun initChartAxisY() {
+
+        val style = extraParams?.getYAxisStyle()
+
+        if (style == null || style == 1){
+            majorAxis = YAxis.AxisDependency.RIGHT
+            val yAxis: YAxis = axisRight
+            yAxis.setDrawAxisLine(false)
+            yAxis.setDrawGridLines(true)
+            yAxis.setDrawLabels(true)
+
+            val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
+            yAxis.gridColor = color
+            yAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART)
+
+            updateYaxisMaxMin(yAxis)
+
+            yAxis.setLabelCount(6, true)
+            yAxis.textSize = 14f
+            yAxis.textColor = textColor!!
+            axisLeft.isEnabled = false
+        } else {
+            initChartAxisYStyle2()
+        }
+
     }
 
     fun moveToDay(dayInSecond: Long) {
@@ -508,6 +567,83 @@ class GlucoseChart : MyChart {
         const val CHART_LABEL_COUNT: Int = 6
         private const val MSG_TIME_TO_REFRESH_CHART: Int = 0x01
         private const val INTERVAL_REFRESH_WHEN_NO_EVENT: Long = 5 * 60 * 1000
+
+        fun generateLimitLines(xMin: Float, xMax: Float, lowerLimit: Float, upperLimit: Float): List<LineDataSet> {
+            val l1 = LineDataSet(
+                listOf(
+                    Entry(xMin, upperLimit),
+                    Entry(xMax, upperLimit)
+                ),
+                ""
+            )
+            l1.axisDependency = YAxis.AxisDependency.LEFT
+            l1.setDrawValues(false)
+            l1.setDrawCircles(false)
+            l1.color = Color.TRANSPARENT
+            l1.lineWidth = 0f
+            l1.isHighlightEnabled = false
+
+            val l2 = LineDataSet(
+                listOf(
+                    Entry(xMin, lowerLimit),
+                    Entry(xMax, lowerLimit)
+                ),
+                ""
+            )
+            l2.setDrawValues(false)
+            l2.setDrawCircles(false)
+            l2.color = Color.TRANSPARENT
+            l2.lineWidth = 0f
+            l2.isHighlightEnabled = false
+            l1.setDrawFilled(false)
+
+            return listOf(l1, l2)
+        }
+
+        fun formatGlucoseSetAfterInitData(glucoseSets: List<LineDataSet>, lowerLimit: Float, upperLimit: Float) {
+            for (glucoseSet in glucoseSets) {
+                glucoseSet.gradientPositions = listOf(
+                    upperLimit,
+                    upperLimit,
+                    lowerLimit,
+                    lowerLimit
+                )
+
+                glucoseSet.fillFormatter = object : IFillFormatter {
+                    override fun getFillLinePosition(
+                        dataSet: ILineDataSet?,
+                        dataProvider: LineDataProvider?,
+                    ): Float {
+                        return (upperLimit + lowerLimit) / 2
+                    }
+
+                    override fun getFillLine(
+                        dataSet: ILineDataSet?,
+                        dataProvider: LineDataProvider?,
+                    ): ILineDataSet? {
+                        return null
+                    }
+                }
+
+                glucoseSet.fillGradientPositions = listOf(
+                    upperLimit + 10f.toGlucoseValue(),
+                    upperLimit,
+                    upperLimit,
+                    lowerLimit,
+                    lowerLimit,
+                    lowerLimit - 1f.toGlucoseValue()
+                )
+
+                glucoseSet.setCircleColorRanges(
+                    listOf(
+                        upperLimit,
+                        lowerLimit - 0.1f.toGlucoseValue(),
+                        0f
+                    )
+                )
+            }
+        }
+
     }
 
 }

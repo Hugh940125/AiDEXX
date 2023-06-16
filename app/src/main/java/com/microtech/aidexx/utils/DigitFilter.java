@@ -5,6 +5,8 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.microtech.aidexx.utils.blankj.RomUtils;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

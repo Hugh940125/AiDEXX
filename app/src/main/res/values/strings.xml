@@ -272,7 +272,6 @@
     <string name="denied">浏览分享数据时无法访问</string>
     <string name="title_update">版本更新</string>
     <string name="btn_update">更新</string>
-    <string name="history_alert">提醒</string>
     <string name="log_upload">反馈</string>
     <string name="str_succ">成功！</string>
     <string name="log_uploading">上传中...</string>
@@ -652,5 +651,21 @@
     <string name="unit_u">u</string>
     <string name="bluetooth">蓝牙</string>
     <!-- 单位 -->
+
+    <!-- 历史 -->
+    <string name="history_blood_glucose">血糖日志</string>
+    <string name="history_alert">提醒</string>
+    <string name="exercise_time">运动时长</string>
+    <string name="medication_times">用药次数</string>
+    <string name="total_insulin">胰岛素量</string>
+    <string name="maximum_fluctuation">最大波动</string>
+    <string name="TIR">血糖目标范围占比</string>
+    <string name="highest">最高</string>
+    <string name="lowest">最低</string>
+    <string name="high_range">偏高</string>
+    <string name="normal_range">正常</string>
+    <string name="low_range">偏低</string>
+    <string name="unit_times">次</string>
+    <!-- 历史 -->
 
 </resources>

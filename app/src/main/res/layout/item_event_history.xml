@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:orientation="horizontal">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/llTimeline"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginTop="2dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvTimeLine"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/history_time"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="17:35" />
+
+        <com.microtech.aidexx.widget.DashView
+            android:layout_width="2dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/history_time_line"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTimeLine" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.microtech.aidexx.widget.SwipeDeleteMenuLayout
+        android:id="@+id/sml_delete"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/llTimeline"
+        app:layout_constraintTop_toTopOf="parent"
+        app:leftSwipe="true"
+        app:swipeEnable="true">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.flyco.roundview.RoundLinearLayout
+                android:id="@+id/flItemHeightGuide"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:orientation="vertical"
+                app:rv_backgroundColor="@color/bg_item_color"
+                app:rv_cornerRadius="10dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="27dp"
+                    android:layout_marginBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/tvDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:textColor="@color/history_count_text"
+                        tools:text="晚餐：米饭100克+叉烧200克晚米饭100克+叉烧200克晚餐：米饭100克+叉烧200克晚餐：米饭100克+叉烧200克" />
+
+                    <FrameLayout
+                        android:id="@+id/flCollapse"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:paddingStart="30dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="8dp"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:id="@+id/ivCollapse"
+                            android:layout_width="13dp"
+                            android:layout_height="wrap_content"
+                            android:adjustViewBounds="true"
+                            android:src="@drawable/ic_collapse" />
+                    </FrameLayout>
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:includeFontPadding="false"
+                    android:lineSpacingExtra="10dp"
+                    android:textColor="@color/history_label"
+                    tools:text="脂肪\n蛋白质\n糖" />
+
+            </com.flyco.roundview.RoundLinearLayout>
+
+            <com.lihang.ShadowLayout
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginStart="5dp"
+                app:hl_cornerRadius="50dp"
+                app:hl_layoutBackground="@color/history_bg_icon"
+                app:hl_shadowColor="#FF555555"
+                app:hl_shadowLimit="5dp">
+
+                <ImageView
+                    android:id="@+id/ivHistory"
+                    android:layout_width="12dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true"
+                    tools:src="@drawable/ic_have_food" />
+
+            </com.lihang.ShadowLayout>
+
+        </FrameLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/flHistoryDelete"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:paddingTop="15dp"
+            >
+            <ImageButton
+                android:id="@+id/tvHistoryDelete"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:clickable="false"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:src="@drawable/ic_delete_swip"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.microtech.aidexx.widget.SwipeDeleteMenuLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

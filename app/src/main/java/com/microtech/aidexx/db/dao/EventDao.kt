@@ -444,5 +444,29 @@ object EventDao {
         }
     }
 
+    private fun <T> getIdProperty(clazz: Class<T>): Property<T>? {
+        return when (clazz) {
+            RealCgmHistoryEntity::class.java -> RealCgmHistoryEntity_.__ID_PROPERTY as Property<T>
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.__ID_PROPERTY as Property<T>
+            DietEntity::class.java -> DietEntity_.__ID_PROPERTY as Property<T>
+            ExerciseEntity::class.java -> ExerciseEntity_.__ID_PROPERTY as Property<T>
+            MedicationEntity::class.java -> MedicationEntity_.__ID_PROPERTY as Property<T>
+            InsulinEntity::class.java -> InsulinEntity_.__ID_PROPERTY as Property<T>
+            OthersEntity::class.java -> OthersEntity_.__ID_PROPERTY as Property<T>
+            else -> null
+        }
+    }
+    suspend fun <T: BaseEventEntity> removeEventById(id: Long, clazz: Class<T>) = awaitCallInTx {
+        val box = ObjectBox.store.boxFor(clazz)
+        getIdProperty(clazz)?.let {
+            val removed = box.query {
+                equal(getIdProperty(clazz), id)
+            }.findFirst()
+
+            removed?.let {
+                if (box.remove(it)) it else null
+            }
+        }
+    }
 
 }
