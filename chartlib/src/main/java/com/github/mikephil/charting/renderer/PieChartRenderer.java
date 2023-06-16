@@ -132,7 +132,7 @@ public class PieChartRenderer extends DataRenderer {
                 || (drawBitmap.getHeight() != height)) {
 
             if (width > 0 && height > 0) {
-                drawBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
+                drawBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
                 mDrawBitmap = new WeakReference<>(drawBitmap);
                 mBitmapCanvas = new Canvas(drawBitmap);
             } else
@@ -1047,9 +1047,6 @@ public class PieChartRenderer extends DataRenderer {
         MPPointF.recycleInstance(center);
     }
 
-    /**
-     * Releases the drawing bitmap. This should be called when {@link LineChart#onDetachedFromWindow()}.
-     */
     public void releaseBitmap() {
         if (mBitmapCanvas != null) {
             mBitmapCanvas.setBitmap(null);

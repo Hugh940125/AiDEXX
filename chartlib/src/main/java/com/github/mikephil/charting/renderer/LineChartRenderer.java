@@ -56,7 +56,7 @@ public class LineChartRenderer extends LineRadarRenderer {
     /**
      * the bitmap configuration to be used
      */
-    protected Bitmap.Config mBitmapConfig = Bitmap.Config.ARGB_8888;
+    protected Bitmap.Config mBitmapConfig = Bitmap.Config.RGB_565;
 
     protected Path cubicPath = new Path();
     protected Path cubicFillPath = new Path();
@@ -1024,9 +1024,7 @@ public class LineChartRenderer extends LineRadarRenderer {
                     // Fill in-between
                     canvas.drawPath(mCirclePathBuffer, mRenderPaint);
                 } else {
-
                     try {
-
                         if (circleRadius > 0 && mRenderPaint != null) {
                             canvas.drawCircle(
                                     circleRadius,
