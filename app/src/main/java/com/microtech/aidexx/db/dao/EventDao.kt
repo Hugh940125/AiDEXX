@@ -389,7 +389,8 @@ object EventDao {
     suspend fun getDietNeedUploadEvent(userId: String): MutableList<DietEntity>? {
         return awaitCallInTx {
             dietBox.query { 
-                equal(DietEntity_.uploadState, 1)
+                notEqual(DietEntity_.uploadState, 2)
+                equal(DietEntity_.deleteStatus, 0)
                 equal(DietEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(DietEntity_.idx)
             }.find()
@@ -398,7 +399,8 @@ object EventDao {
     suspend fun getExerciseNeedUploadEvent(userId: String): MutableList<ExerciseEntity>? {
         return awaitCallInTx {
             sportBox.query {
-                equal(ExerciseEntity_.uploadState, 1)
+                notEqual(ExerciseEntity_.uploadState, 2)
+                equal(ExerciseEntity_.deleteStatus, 0)
                 equal(ExerciseEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(ExerciseEntity_.idx)
             }.find()
@@ -407,7 +409,8 @@ object EventDao {
     suspend fun getMedicineNeedUploadEvent(userId: String): MutableList<MedicationEntity>? {
         return awaitCallInTx {
             medicineBox.query {
-                equal(MedicationEntity_.uploadState, 1)
+                notEqual(MedicationEntity_.uploadState, 2)
+                equal(MedicationEntity_.deleteStatus, 0)
                 equal(MedicationEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(MedicationEntity_.idx)
             }.find()
@@ -416,7 +419,8 @@ object EventDao {
     suspend fun getInsulinNeedUploadEvent(userId: String): MutableList<InsulinEntity>? {
         return awaitCallInTx {
             insulinBox.query {
-                equal(InsulinEntity_.uploadState, 1)
+                notEqual(InsulinEntity_.uploadState, 2)
+                equal(InsulinEntity_.deleteStatus, 0)
                 equal(InsulinEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(InsulinEntity_.idx)
             }.find()
@@ -425,7 +429,8 @@ object EventDao {
     suspend fun getOthersNeedUploadEvent(userId: String): MutableList<OthersEntity>? {
         return awaitCallInTx {
             otherBox.query {
-                equal(OthersEntity_.uploadState, 1)
+                notEqual(OthersEntity_.uploadState, 2)
+                equal(OthersEntity_.deleteStatus, 0)
                 equal(OthersEntity_.userId, userId, QueryBuilder.StringOrder.CASE_SENSITIVE)
                 order(OthersEntity_.idx)
             }.find()
