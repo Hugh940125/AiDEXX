@@ -25,6 +25,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.reflect.ParameterizedType
 
@@ -77,6 +78,10 @@ abstract class DataSyncController<T: BaseEventEntity> {
         LogUtil.xLogE( "$this 数据同步异常 \n ${throwable.stackTraceToString()}", TAG)
         stopDownloadData(true)
     }
+    private val syncDeletedDataExceptionHandler = CoroutineExceptionHandler { context, throwable ->
+        LogUtil.xLogE( "$this 同步删除数据异常 \n ${throwable.stackTraceToString()}", TAG)
+        stopSyncDeletedData(true)
+    }
     private val shareUserDataSyncExceptionHandler = CoroutineExceptionHandler { context, throwable ->
         LogUtil.xLogE( "$this share数据同步异常 \n ${throwable.stackTraceToString()}", TAG)
         stopDownloadShareUserData(true)
@@ -94,6 +99,11 @@ abstract class DataSyncController<T: BaseEventEntity> {
     private val downloadShareDataStateFlow = MutableStateFlow<String?>(null)
     private val downloadShareDataStatusStateFlow = MutableStateFlow<SyncStatus?>(null)
     val downloadShareDataStatus = downloadShareDataStatusStateFlow.asStateFlow()
+
+    /**
+     * 控制本用户同步删除事件
+     */
+    private val uploadDeletedDataStateFlow = MutableStateFlow(false)
 
     init {
         AidexxApp.instance.ioScope.launch {
@@ -117,23 +127,17 @@ abstract class DataSyncController<T: BaseEventEntity> {
                     }
                 }
             }
-        }
-    }
 
-    private suspend fun download(userId: String, statusFlow: MutableStateFlow<SyncStatus?>, stopDownloadFun: (Boolean)->Unit) {
-
-        if (!canSync()) {
-            downloadStatusStateFlow.emit(SyncStatus.Failure())
-            return
+            launch {
+                uploadDeletedDataStateFlow.collectLatest {
+                    if (it) {
+                        dataSyncScope.launch(syncDeletedDataExceptionHandler) {
+                            syncDeletedData(UserInfoManager.instance().userId(), ::stopSyncDeletedData)
+                        }
+                    }
+                }
+            }
         }
-
-        statusFlow.emit(SyncStatus.Loading())
-        if (downloadData(userId)) {
-            statusFlow.emit(SyncStatus.Success)
-        } else {
-            statusFlow.emit(SyncStatus.Failure())
-        }
-        stopDownloadFun.invoke(false)
     }
 
     /**
@@ -177,26 +181,66 @@ abstract class DataSyncController<T: BaseEventEntity> {
         return ret
     }
 
+    /**
+     * 启动删除数据同步任务
+     */
+    fun startUploadDeletedData() {
+        uploadDeletedDataStateFlow.compareAndSet(expect = false, true)
+    }
+
+    private suspend fun download(userId: String, statusFlow: MutableStateFlow<SyncStatus?>, stopDownloadFun: (Boolean)->Unit) {
+
+        if (!canSync()) {
+            downloadStatusStateFlow.emit(SyncStatus.Failure())
+            LogUtil.xLogI("download data stop no login ${tClazz.simpleName}", TAG)
+        } else {
+            statusFlow.emit(SyncStatus.Loading())
+            if (downloadData(userId)) {
+                statusFlow.emit(SyncStatus.Success)
+            } else {
+                statusFlow.emit(SyncStatus.Failure())
+            }
+        }
+        stopDownloadFun.invoke(false)
+    }
+
     private fun stopDownloadData(isFromException: Boolean = false){
         if(isFromException){
             AidexxApp.instance.ioScope.launch { downloadStatusStateFlow.emit(SyncStatus.Failure()) }
         }
         downloadStateFlow.compareAndSet(expect = true, false)
-        LogUtil.xLogI("download data curState=${downloadStateFlow.value}", TAG)
+        LogUtil.xLogI("download data ${tClazz.simpleName} curState=${downloadStateFlow.value}", TAG)
     }
-
     private fun stopDownloadShareUserData(isFromException: Boolean = false){
         if(isFromException){
             AidexxApp.instance.ioScope.launch { downloadShareDataStatusStateFlow.emit(SyncStatus.Failure()) }
         }
         downloadShareDataStateFlow.value = null
-        LogUtil.xLogI("download share user data curState=${downloadShareDataStateFlow.value}", TAG)
+        LogUtil.xLogI("download share user data ${tClazz.simpleName} curState=${downloadShareDataStateFlow.value}", TAG)
     }
+
+    private suspend fun syncDeletedData(userId: String, stopFun: (Boolean)->Unit) {
+
+        if (!canSync()) {
+            LogUtil.xLogI("sync deleted data stop no login ${tClazz.simpleName}", TAG)
+        } else {
+            if (!uploadDeletedData(userId)) {
+                LogUtil.xLogI("sync deleted data stop fail ${tClazz.simpleName}", TAG)
+            }
+        }
+        stopFun.invoke(false)
+    }
+    private fun stopSyncDeletedData(isFromException: Boolean = false){
+        uploadDeletedDataStateFlow.compareAndSet(expect = true, false)
+        LogUtil.xLogI("sync deleted data ${tClazz.simpleName} curState=${downloadStateFlow.value} $isFromException", TAG)
+    }
+
+
 
     fun canSync(): Boolean {
         val ret = UserInfoManager.instance().isLogin()
         if (!ret) {
-            LogUtil.xLogE("未登录，$this 停止下载")
+            LogUtil.xLogE("未登录，${tClazz.simpleName} 停止")
         }
         return ret
     }
@@ -206,6 +250,7 @@ abstract class DataSyncController<T: BaseEventEntity> {
     }
 
     protected abstract suspend fun downloadData(userId: String): Boolean
+    protected abstract suspend fun uploadDeletedData(userId: String): Boolean
 
 
     /**

@@ -1,16 +1,13 @@
 package com.microtech.aidexx.data
 
-import com.google.gson.GsonBuilder
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.entity.BG_RECENT_COUNT
-import com.microtech.aidexx.common.net.entity.BaseList
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.CAL_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.EVENT_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
-import com.microtech.aidexx.common.net.entity.RESULT_OK
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
@@ -23,11 +20,11 @@ import com.microtech.aidexx.db.entity.event.ExerciseEntity
 import com.microtech.aidexx.db.entity.event.InsulinEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
+import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.Box
 import io.objectbox.Property
 import io.objectbox.kotlin.awaitCallInTx
-import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -46,22 +43,6 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
     abstract suspend fun postLocalData(map: HashMap<String, MutableList<T>>): BaseResponse<List<T>>?
 
-    open suspend fun syncDeleteData(json: String): BaseResponse<BaseList<T>>? {
-        return null
-    }
-
-    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<Any>? =
-        when (val apiResult = EventRepository.getEventRecordsByPageInfo(
-            userId,
-            PAGE_SIZE,
-            startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
-            endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
-            tClazz)
-        ) {
-            is ApiResult.Success -> apiResult.result.data
-            is ApiResult.Failure -> null
-        }
-
     open suspend fun upload() {
         val needUploadData = getNeedUploadData()
         needUploadData?.let {
@@ -76,34 +57,19 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
         }
     }
 
-    suspend fun deleteData() {
-        val needDelete = getNeedDeleteList()
-        needDelete?.let {
-            withContext(Dispatchers.IO) {
-                if (needDelete.isNotEmpty()) {
-                    val list = mutableListOf<HashMap<String, String?>>()
-                    for (event in needDelete) {
-                        val hashMap = HashMap<String, String?>()
-                        hashMap["id"] = event.id
-                        hashMap["state"] = "1"
-                        list.add(hashMap)
-                    }
-                    val json = GsonBuilder().create().toJson(list)
-                    val syncDeleteData = syncDeleteData(json)
-                    syncDeleteData?.let {
-                        if (syncDeleteData.code == RESULT_OK) {
-                            for (item in needDelete) {
-                                item.deleteStatus = 2
-                                item.state = 1
-                            }
-                            entityBox.put(needDelete)
-                        }
-                    }
-                }
-            }
-        }
-    }
 
+    //region 下载数据
+    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<Any>? =
+        when (val apiResult = EventRepository.getEventRecordsByPageInfo(
+            userId,
+            PAGE_SIZE,
+            startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
+            endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
+            tClazz)
+        ) {
+            is ApiResult.Success -> apiResult.result.data
+            is ApiResult.Failure -> null
+        }
     override suspend fun downloadData(userId: String): Boolean {
         if (canSync()) {
 
@@ -134,16 +100,27 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
         return false
     }
 
-    private suspend fun getNeedDeleteList(): MutableList<T>? {
-        return ObjectBox.store.awaitCallInTx {
-            val find = entityBox.query().equal(deleteStatus, 1).notNull(id).equal(
-                userId,
-                UserInfoManager.instance().userId(),
-                QueryBuilder.StringOrder.CASE_INSENSITIVE
-            ).build().find()
-            find
+    //endregion
+
+    // region 同步删除
+    open suspend fun uploadDeletedData(data: List<String>): Boolean =
+        EventRepository.deleteEventByIds(data, tClazz)
+    override suspend fun uploadDeletedData(userId: String): Boolean {
+        if (canSync()) {
+            val data = EventDbRepository.queryDeletedData(tClazz)
+            return data?.ifEmpty {
+                LogUtil.d("DELETE $tClazz EMPTY", TAG)
+                null
+            }?.let {
+                if (uploadDeletedData(data)) {
+                    EventDbRepository.updateDeleteStatusByIds(data, tClazz)
+                } else false
+            } ?: true
         }
+        return false
     }
+
+    //endregion
 
     private suspend fun getNeedUploadData(): MutableList<T>? {
         val id = UserInfoManager.instance().userId()
@@ -261,5 +238,15 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                 tasks.awaitAll()
             }
         }
+
+         fun uploadDeletedData() {
+            CloudBgHistorySync.startUploadDeletedData()
+            CloudDietHistorySync.startUploadDeletedData()
+            CloudExerciseHistorySync.startUploadDeletedData()
+            CloudMedicineHistorySync.startUploadDeletedData()
+            CloudInsulinHistorySync.startUploadDeletedData()
+            CloudOthersHistorySync.startUploadDeletedData()
+        }
+
     }
 }

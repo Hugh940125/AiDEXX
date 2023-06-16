@@ -6,6 +6,7 @@ import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
 import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
+import com.microtech.aidexx.common.net.entity.ReqDeleteEventIds
 import com.microtech.aidexx.common.net.entity.ReqGetEventByPage
 import com.microtech.aidexx.common.net.entity.ReqSaveOrUpdateEventRecords
 import com.microtech.aidexx.common.net.entity.ReqSysPresetExercisePageInfo
@@ -557,9 +558,24 @@ object EventRepository {
 
     }
 
-    suspend fun getUnit() = withContext(dispatcher) {
-        ApiService.instance.getUnit()
+    suspend fun <T: BaseEventEntity> deleteEventByIds(ids: List<String>, clazz: Class<T>) = withContext(dispatcher) {
+        val api = ApiService.instance
+        val reqIds = ReqDeleteEventIds(ids)
+        val apiResult = when (clazz) {
+            BloodGlucoseEntity::class.java -> api.deleteFingerBloodGlucose(reqIds)
+            DietEntity::class.java -> api.deleteByIdsFood(reqIds)
+            ExerciseEntity::class.java -> api.deleteExerciseRecord(reqIds)
+            InsulinEntity::class.java -> api.deleteByIdsInsulin(reqIds)
+            MedicationEntity::class.java -> api.deleteByIdsMedication(reqIds)
+            OthersEntity::class.java -> api.deleteByIdsOthers(reqIds)
+            else -> null
+        }
+
+        apiResult?.let {
+            it is ApiResult.Success
+        } ?: true
     }
+
 
 
 }

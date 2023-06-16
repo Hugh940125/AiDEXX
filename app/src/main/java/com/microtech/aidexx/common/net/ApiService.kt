@@ -21,7 +21,6 @@ import com.microtech.aidexx.db.entity.event.ExerciseEntity
 import com.microtech.aidexx.db.entity.event.InsulinEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
-import com.microtech.aidexx.db.entity.event.UnitConfig
 import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.InsulinUsrPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.MedicineUsrPresetEntity
@@ -74,6 +73,7 @@ const val getCgmRecordsByPageInfo = "$CGM_URL/getCgmRecordsByPageInfo"
 
 const val BG_URL = "$middleUrl/bloodGlucoseRecord"
 const val getBloodGlucoseRecordsByPageInfo = "$BG_URL/getBloodGlucoseRecordsByPageInfo"
+const val deleteFingerBloodGlucose = "$BG_URL/deleteFingerBloodGlucose"
 
 const val CAL_URL = "$middleUrl/cgmCalibration"
 const val getCalibrationList = "$CAL_URL/getCalibrationList"
@@ -129,7 +129,6 @@ const val findOtherRecordList = "$OTHERS_URL/findOtherRecordList"
 const val deleteByIdsOthers = "$OTHERS_URL/deleteByIds"
 
 
-const val getUnit = ""
 //endregion
 
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -202,6 +201,8 @@ interface ApiService {
 
     @GET(getBloodGlucoseRecordsByPageInfo)
     suspend fun getBloodGlucoseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<BloodGlucoseEntity>>>
+    @POST(deleteFingerBloodGlucose)
+    suspend fun deleteFingerBloodGlucose(@Body req: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
     @GET(getCalibrationList)
     suspend fun getCalibrationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<CalibrateEntity>>>
@@ -274,13 +275,6 @@ interface ApiService {
     suspend fun saveOrUpdateOtherRecord(@Body data: ReqSaveOrUpdateEventRecords<OthersEntity>): ApiResult<BaseResponse<MutableList<OthersEntity>>>
     @POST(deleteByIdsOthers)
     suspend fun deleteByIdsOthers(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
-
-
-
-
-    @GET(getUnit)
-    suspend fun getUnit(): ApiResult<BaseResponse<UnitConfig>>
-
 
     //endregion
 

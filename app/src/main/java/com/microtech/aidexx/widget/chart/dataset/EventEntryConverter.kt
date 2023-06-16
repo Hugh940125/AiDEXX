@@ -13,14 +13,14 @@ import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.widget.chart.ChartUtil
 
-class ChartEntry(xValue: Float, yValue: Float, data: Any) : Entry(xValue, yValue, data) {
+class ChartEntry(xValue: Float, yValue: Float, data: Any?) : Entry(xValue, yValue, data) {
     override fun hashCode(): Int {
         return data.hashCode()
     }
 
     override fun equals(other: Any?): Boolean {
         return other?.let {
-            it is ChartEntry && it.data is String && data is String && data.equals(it.data)
+            it is ChartEntry && ((data != null && data.equals(it.data)) || this.equalTo(it)) // data不为null的对比有效 其他不保证
         } ?: false
     }
 }
@@ -29,7 +29,7 @@ fun BaseEventEntity.toChartEntry(getY: (()->Float)? = null): ChartEntry =
     when (this) {
         is RealCgmHistoryEntity -> {
             val xValue = ChartUtil.millSecondToX(timestamp)
-            val entry = ChartEntry(xValue, glucose!!.toFloat().toGlucoseValue(), "CGM-${idx}")
+            val entry = ChartEntry(xValue, glucose!!.toFloat().toGlucoseValue(), null)
             if (entry.y < 2f.toGlucoseValue()) {
                 entry.y = 2f.toGlucoseValue()
             }// 小于2的数值 都当2处理
@@ -37,8 +37,8 @@ fun BaseEventEntity.toChartEntry(getY: (()->Float)? = null): ChartEntry =
         }
         is BloodGlucoseEntity -> {
             val xValue = ChartUtil.millSecondToX(timestamp)
-            val entry = ChartEntry(xValue, getGlucoseValue(), "BG-${idx}")
-//            entry.data = this
+            val entry = ChartEntry(xValue, getGlucoseValue(), this)
+//            val entry = ChartEntry(xValue, getGlucoseValue(), "BG-${idx}")
             entry.icon = BgDataSet.icon
             entry
         }
@@ -46,7 +46,8 @@ fun BaseEventEntity.toChartEntry(getY: (()->Float)? = null): ChartEntry =
             val xValue = ChartUtil.millSecondToX(timestamp)
             val bg = BloodGlucoseEntity(calTime, referenceGlucose)
             bg.calibration = true
-            val entry = ChartEntry(xValue, bg.bloodGlucoseMg.toGlucoseValue(), "CAL-${idx}")
+            val entry = ChartEntry(xValue, bg.bloodGlucoseMg.toGlucoseValue(), bg)
+//            val entry = ChartEntry(xValue, bg.bloodGlucoseMg.toGlucoseValue(), "CAL-${idx}")
 //            entry.data = bg
             entry.icon = CalDataSet.icon
             entry
@@ -55,7 +56,8 @@ fun BaseEventEntity.toChartEntry(getY: (()->Float)? = null): ChartEntry =
             val entry = ChartEntry(
                 ChartUtil.millSecondToX(timestamp),
                 getY?.invoke() ?: (5f * 18).toGlucoseValue(),
-                "${this.javaClass.simpleName}-$idx"
+                this
+//                "${this.javaClass.simpleName}-$idx"
             )
 //            entry.data = this
             entry.icon = when (this.javaClass) {

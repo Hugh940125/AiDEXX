@@ -166,4 +166,14 @@ object EventDbRepository {
 
     suspend fun <T: BaseEventEntity> removeEventById(id: Long, clazz: Class<T>) =
         EventDao.removeEventById(id, clazz)
+
+    suspend fun <T: BaseEventEntity> queryDeletedData(
+        clazz: Class<T>,
+        userId: String = UserInfoManager.instance().userId()
+    ) = EventDao.queryDeletedData(userId, clazz)
+
+    suspend fun <T: BaseEventEntity> updateDeleteStatusByIds(
+        ids: List<String>,
+        clazz: Class<T>
+    ) = EventDao.updateDeleteStatusByIds(ids, clazz)
 }
