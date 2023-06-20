@@ -8,6 +8,7 @@ import com.microtech.aidexx.ble.device.model.X_NAME
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
+import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
@@ -16,7 +17,7 @@ import com.microtech.aidexx.db.entity.TransmitterEntity_
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.needPair
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.widget.dialog.Dialogs
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +39,11 @@ class TransmitterManager private constructor() {
         }
         if (transmitterEntity != null) {
             when (transmitterEntity.deviceType) {
-                2 -> set(TransmitterModel.instance(transmitterEntity))
+                2 -> {
+                    val instance = TransmitterModel.instance(transmitterEntity)
+                    instance.observerMessage(instance)
+                    set(instance)
+                }
             }
         } else {
             getCloudDevice { response ->
@@ -60,7 +65,11 @@ class TransmitterManager private constructor() {
                             transmitterBox!!.put(newEntity)
                         }, {
                             when (newEntity.deviceType) {
-                                2 -> set(TransmitterModel.instance(newEntity))
+                                2 -> {
+                                    val instance = TransmitterModel.instance(newEntity)
+                                    instance.observerMessage(instance)
+                                    set(instance)
+                                }
                             }
                         })
                     }
@@ -83,6 +92,7 @@ class TransmitterManager private constructor() {
                             }
                         }
                     }
+
                     is ApiResult.Failure -> {
                         withContext(Dispatchers.Main) {
                             LogUtil.eAiDEX("get device fail ----> ${apiResult.msg}")
@@ -99,18 +109,14 @@ class TransmitterManager private constructor() {
         }
     }
 
-    fun buildModel(sn: String, address: String): DeviceModel {
-        if (sn != default?.entity?.deviceSn) {
-            val entity = TransmitterEntity(sn)
-            entity.deviceMac = address
-            entity.hyperThreshold = ThresholdManager.hyper
-            entity.hypoThreshold = ThresholdManager.hypo
-            default = TransmitterModel.instance(entity)
+    fun buildModel(sn: String, address: String): DeviceModel? {
+        if (sn == default?.entity?.deviceSn) {
+            Dialogs.showError("不可重复配对")
+            return null
         }
-        default?.let {
-            notifyTransmitterChange(it)
-        }
-        return default!!
+        val entity = TransmitterEntity(sn)
+        entity.deviceMac = address
+        return TransmitterModel.instance(entity)
     }
 
     fun getDefault(): DeviceModel? {

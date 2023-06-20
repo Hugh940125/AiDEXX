@@ -72,18 +72,15 @@ const val TYPE_RAW = 2
 
 class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceModel(entity) {
     companion object {
-        private var instance: TransmitterModel? = null
 
         @Synchronized
         fun instance(entity: TransmitterEntity): TransmitterModel {
-            if (instance == null || instance?.entity?.deviceSn != entity.deviceSn) {
-                instance = TransmitterModel(entity)
-            }
-            instance?.nextEventIndex = entity.eventIndex + 1
-            instance?.nextFullEventIndex = entity.fullEventIndex + 1
-            instance?.nextCalIndex = entity.calIndex + 1
-            instance?.controller = AidexXController.getInstance()
-            instance?.controller?.let {
+            val instance = TransmitterModel(entity)
+            instance.nextEventIndex = entity.eventIndex + 1
+            instance.nextFullEventIndex = entity.fullEventIndex + 1
+            instance.nextCalIndex = entity.calIndex + 1
+            instance.controller = AidexXController.getInstance()
+            instance.controller?.let {
                 it.mac = entity.deviceMac
                 it.sn = entity.deviceSn
                 it.name = "$X_NAME-${entity.deviceSn}"
@@ -99,18 +96,21 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         result = ByteUtils.subByte(data, 1, data.size - 1)
                         resCode = data[0].toInt()
                     }
-                    val bleMessage = BleMessage(operation, success, result, resCode)
+                    val bleMessage = BleMessage(operation, success, result, resCode, entity.messageType)
                     MessageDistributor.instance().send(bleMessage)
                 }
             }
-            MessageDistributor.instance().clear()
-            MessageDistributor.instance().observer(object : MessageObserver {
-                override fun onMessage(message: BleMessage) {
-                    instance?.onMessage(message)
-                }
-            })
-            return instance!!
+            return instance
         }
+    }
+
+    fun observerMessage(model: DeviceModel) {
+        MessageDistributor.instance().clear()
+        MessageDistributor.instance().observer(object : MessageObserver {
+            override fun onMessage(message: BleMessage) {
+                model.onMessage(message)
+            }
+        })
     }
 
     var dataTypeNeedSync = 0
@@ -129,7 +129,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
     private val tempCalList = mutableListOf<CalibrateEntity>()
 
-    fun onMessage(message: BleMessage) {
+    override fun onMessage(message: BleMessage) {
         if (message.operation != CgmOperation.DISCOVER) {
             LogUtil.eAiDEX(
                 "operation:${message.operation}, success:${message.isSuccess}"

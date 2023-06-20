@@ -9,11 +9,8 @@ public class AidexXController extends BleControllerProxy {
         new Thread(() -> System.loadLibrary("blecomm-lib"));
     }
 
-    private static class SingletonHolder{
-        private static final AidexXController INSTANCE = new AidexXController();
-    }
-    public static AidexXController getInstance(){
-        return SingletonHolder.INSTANCE;
+    public static AidexXController getInstance() {
+        return new AidexXController();
     }
 
     private AidexXController() {

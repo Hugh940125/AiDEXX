@@ -8,7 +8,6 @@ import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
@@ -154,6 +153,7 @@ object PairUtil {
                         }
 
                         AidexXOperation.GET_START_TIME -> {
+                            LogUtil.eAiDEX("Pair ----> GET_START_TIME1:$success")
                             val data = message.data
                             val startTimePair = ByteUtils.checkToDate(data)
                             startTimePair?.let {
@@ -162,6 +162,7 @@ object PairUtil {
                             scope.launch {
                                 default.savePair()
                             }
+                            LogUtil.eAiDEX("Pair ----> GET_START_TIME2:$success")
                         }
 
                         AidexXOperation.GET_DEVICE_INFO -> {
@@ -170,7 +171,7 @@ object PairUtil {
                             val deviceType = ByteUtils.getDeviceType(data)
                             default.entity.version = deviceSoftVersion
                             default.entity.deviceModel = deviceType
-                            default.getController().startTime()
+                            LogUtil.eAiDEX("Pair ----> GET_DEVICE_INFO1:$success")
                         }
 
                         AidexXOperation.DISCONNECT -> {
@@ -210,8 +211,11 @@ object PairUtil {
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val buildModel =
             TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
-        buildModel.getController().pair()
-        buildModel.getController().getTransInfo()
+        buildModel?.let {
+            it.getController().pair()
+            it.getController().getTransInfo()
+            it.getController().startTime()
+        }
     }
 
     fun startUnpair(context: Context, isForce: Boolean) {
@@ -241,6 +245,4 @@ object PairUtil {
             isBondListenerRegister = false
         }
     }
-
-
 }

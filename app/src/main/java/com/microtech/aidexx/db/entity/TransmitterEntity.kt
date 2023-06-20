@@ -4,8 +4,13 @@ import com.microtech.aidexx.common.millisToIntSeconds
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.EncryptUtils
 import com.microtech.aidexx.utils.ThresholdManager
-import io.objectbox.annotation.*
-import java.util.*
+import com.microtechmd.blecomm.entity.BleMessage
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import io.objectbox.annotation.Unique
+import java.util.Date
 
 
 const val TYPE_G7 = 1
@@ -13,6 +18,8 @@ const val TYPE_X = 2
 
 @Entity
 class TransmitterEntity {
+    @Transient
+    var messageType = BleMessage.MessageType.NORMAL
     var calIndex: Int = 0
 
     @Id

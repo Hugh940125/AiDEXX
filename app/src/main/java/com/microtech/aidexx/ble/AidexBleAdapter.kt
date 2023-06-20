@@ -658,6 +658,9 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             status: Int
         ) {
             super.onCharacteristicRead(gatt, characteristic, status)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                return
+            }
             eAiDEX("onDescriptorRead -->" + "status:" + status + " uuid" + characteristic?.uuid)
             val message = Message.obtain()
             message.what = RECEIVER_DATA

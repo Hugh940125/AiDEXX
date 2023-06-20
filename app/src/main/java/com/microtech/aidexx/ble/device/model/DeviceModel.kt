@@ -14,6 +14,7 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtechmd.blecomm.controller.BleController
 import com.microtechmd.blecomm.controller.BleControllerProxy
+import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
 import java.util.Date
 
@@ -88,7 +89,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract suspend fun uploadPairInfo()
     abstract fun savePair()
-
+    abstract fun onMessage(message: BleMessage)
     abstract suspend fun deletePair()
 
     fun updateStart(sensorStartTime: Date) {
