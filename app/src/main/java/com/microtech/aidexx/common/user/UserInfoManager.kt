@@ -59,7 +59,7 @@ class UserInfoManager {
     }
 
     fun userId(): String {
-        return userEntity?.id ?: ""
+        return userEntity?.id ?: "unknown"
     }
 
     fun updateUserId(id: String) {

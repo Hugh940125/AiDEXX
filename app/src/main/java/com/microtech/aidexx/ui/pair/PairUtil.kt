@@ -55,9 +55,11 @@ object PairUtil {
                     BluetoothDevice.BOND_BONDING -> {
                         isBonding = true
                     }
+
                     BluetoothDevice.BOND_BONDED -> {
                         isBonding = false
                     }
+
                     BluetoothDevice.BOND_NONE -> {
                         if (isBonding) {
                             AidexBleAdapter.getInstance().executeDisconnect()
@@ -65,6 +67,7 @@ object PairUtil {
                             isBonding = false
                         }
                     }
+
                     else -> {
                     }
                 }
@@ -72,12 +75,13 @@ object PairUtil {
         }
     }
 
-    fun fail() {
+    fun pairFail() {
         handler.removeMessages(DISMISS_DIALOG)
         when (operation) {
             Operation.PAIR -> {
                 EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
             }
+
             else -> {}
         }
     }
@@ -91,33 +95,40 @@ object PairUtil {
                     when (message.operation) {
                         AidexXOperation.DISCOVER -> {
                             if (!success) {
-                                fail()
+                                pairFail()
                                 Dialogs.showError(context.getString(R.string.Search_Timeout))
                             }
                         }
+
                         AidexXOperation.CONNECT -> {
                             LogUtil.eAiDEX("Pair ----> connect:$success")
                             if (success) {
                                 Dialogs.showWait(context.getString(R.string.Connecting))
                             } else {
-                                fail()
-                                Dialogs.showError(context.getString(R.string.Connecting_Failed))
+                                pairFail()
+                                if (AidexBleAdapter.getInstance().connectStatus == 22) {
+                                    Dialogs.showError("请确认传感器是否被其他设备配对", 2500L)
+                                } else {
+                                    Dialogs.showError(context.getString(R.string.Connecting_Failed))
+                                }
                             }
                         }
+
                         CgmOperation.BOND -> {
                             LogUtil.eAiDEX("Pair ----> bond:$success")
                             if (!success) {
-                                fail()
+                                pairFail()
                                 Dialogs.showError(context.getString(R.string.failure))
                             }
                         }
+
                         CgmOperation.PAIR -> {
                             LogUtil.eAiDEX("Pair ----> pair:$success")
                             if (!success) {
-                                fail()
-                                pairFailedTips(context)
+                                pairFail()
                             }
                         }
+
                         AidexXOperation.DELETE_BOND -> {
                             LogUtil.eAiDEX("Pair ----> delete bond:$success")
                             if (!isForceUnpair) {
@@ -130,6 +141,7 @@ object PairUtil {
                                 }
                             }
                         }
+
                         CgmOperation.UNPAIR -> {
                             LogUtil.eAiDEX("Pair ----> unpair:$success")
                             if (success) {
@@ -140,14 +152,18 @@ object PairUtil {
                                 Dialogs.showError(context.getString(R.string.Unpair_fail))
                             }
                         }
+
                         AidexXOperation.GET_START_TIME -> {
                             val data = message.data
                             val startTimePair = ByteUtils.checkToDate(data)
-                            default.updateStart(startTimePair)
+                            startTimePair?.let {
+                                default.updateStart(startTimePair)
+                            }
                             scope.launch {
                                 default.savePair()
                             }
                         }
+
                         AidexXOperation.GET_DEVICE_INFO -> {
                             val data = message.data
                             val deviceSoftVersion = ByteUtils.getDeviceSoftVersion(data)
@@ -162,18 +178,21 @@ object PairUtil {
                             when (operation) {
                                 Operation.PAIR -> {
                                     if (!default.isPaired()) {
-                                        fail()
+                                        pairFail()
                                     }
                                 }
+
                                 Operation.UNPAIR -> {
                                     if (default.isPaired()) {
-                                        fail()
+                                        pairFail()
                                     }
                                 }
+
                                 else -> {}
                             }
                             Dialogs.dismissWait()
                         }
+
                         else -> {}
                     }
                 }
@@ -200,40 +219,28 @@ object PairUtil {
             context.getString(R.string.net_error).toastShort()
             return
         }
+        if (!isForce) {
+            Dialogs.showWait(context.getString(R.string.unpairing))
+        }
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
-        Dialogs.showWait(context.getString(R.string.unpairing))
         operation = Operation.UNPAIR
         isForceUnpair = isForce
         val model = TransmitterManager.instance().getDefault()
         model?.getController()?.clearPair()
     }
 
-    fun registerBondStateChangeReceiver() {
+    fun registerBondStateChangeReceiver(context: Context) {
         val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
-        AidexxApp.instance.registerReceiver(receiver, filter)
+        context.registerReceiver(receiver, filter)
         isBondListenerRegister = true
     }
 
-    fun unregisterBondStateChangeReceiver() {
+    fun unregisterBondStateChangeReceiver(context: Context) {
         if (isBondListenerRegister) {
-            AidexxApp.instance.unregisterReceiver(receiver)
+            context.unregisterReceiver(receiver)
             isBondListenerRegister = false
         }
     }
 
-    private fun pairFailedTips(context: Context) {
-//        Dialogs.showBottom(object : OnBindView<BottomDialog?>(R.layout.dialog_with_one_btn) {
-//            override fun onBind(dialog: BottomDialog?, v: View?) {
-//                v?.let {
-//                    val bind = DialogWithOneBtnBinding.bind(it)
-//                    bind.tvContent.text = context.getString(R.string.Pairing_Failed)
-//                    bind.tvDesc.text = context.getString(R.string.Bluetooth_Pair_Denied_Tip)
-//                    bind.btOk.text = context.getString(R.string.Button_Reset)
-//                    bind.btOk.setOnClickListener {
-//                        dialog?.dismiss()
-//                    }
-//                }
-//            }
-//        })
-    }
+
 }

@@ -38,11 +38,10 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
-import com.microtech.aidexx.utils.eventbus.CalDataChangedInfo
-import com.microtech.aidexx.utils.eventbus.CgmDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation

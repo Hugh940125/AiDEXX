@@ -274,7 +274,7 @@
     <string name="btn_update">更新</string>
     <string name="log_upload">反馈</string>
     <string name="str_succ">成功！</string>
-    <string name="log_uploading">上传中...</string>
+    <string name="log_uploading">上传中…</string>
     <string name="check_permission">检查权限</string>
     <string name="hight_glucose_alert">当您的传感器葡萄糖读数高于以下值时，您将收到提醒：</string>
     <string name="low_gluecose_alert_about">当您的传感器葡萄糖读数低于以下值时，您将收到提醒：</string>

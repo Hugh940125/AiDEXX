@@ -21,10 +21,8 @@ import com.tencent.mars.xlog.Xlog
 import com.tencent.mmkv.MMKV
 import io.objectbox.android.Admin
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -33,6 +31,7 @@ class AidexxApp : Application() {
     private var activityAliveCount: AtomicInteger = AtomicInteger(0)
 
     companion object {
+        var xlogPath: String? = null
         lateinit var instance: AidexxApp
         lateinit var mainScope: CoroutineScope
     }
@@ -59,23 +58,20 @@ class AidexxApp : Application() {
         Log.appenderClose()
         mainScope.cancel()
         unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
-
     }
 
     private fun initSdks() {
-        runBlocking(Dispatchers.IO) {
-            initXlog()
-            MMKV.initialize(this@AidexxApp)
-            ObjectBox.init(this@AidexxApp)
-            if (ProcessUtil.isMainProcess(this@AidexxApp)) {
-                if (BuildConfig.DEBUG) {
-                    Admin(ObjectBox.store).start(this@AidexxApp)
-                }
+        initXlog()
+        MMKV.initialize(this@AidexxApp)
+        ObjectBox.init(this@AidexxApp)
+        if (ProcessUtil.isMainProcess(this@AidexxApp)) {
+            if (BuildConfig.DEBUG) {
+                Admin(ObjectBox.store).start(this@AidexxApp)
             }
-            AidexBleAdapter.init(this@AidexxApp)
-            BleController.setBleAdapter(AidexBleAdapter.getInstance())
-            AidexBleAdapter.getInstance().setDiscoverCallback()
         }
+        AidexBleAdapter.init(this@AidexxApp)
+        BleController.setBleAdapter(AidexBleAdapter.getInstance())
+        AidexBleAdapter.getInstance().setDiscoverCallback()
         AlertUtil.init(this)
         ContextUtil.init(this)
         DialogX.init(this)
@@ -86,12 +82,11 @@ class AidexxApp : Application() {
         val namePrefix = "AiDEX"
         System.loadLibrary("c++_shared")
         System.loadLibrary("marsxlog")
-        val root = externalCacheDir?.absolutePath
-        val logPath = "$root/aidex/log"
-        val cachePath = "${this@AidexxApp.filesDir}/xlog"
+        xlogPath = "${getExternalFilesDir(null)?.absolutePath}/aidex/log"
+        val cachePath = "${externalCacheDir}/xlog"
         val logConfig = Xlog.XLogConfig()
         logConfig.mode = Xlog.AppednerModeAsync
-        logConfig.logdir = logPath
+        logConfig.logdir = xlogPath
         logConfig.nameprefix = namePrefix
         logConfig.pubkey = ""
         logConfig.compressmode = Xlog.ZLIB_MODE
@@ -107,7 +102,7 @@ class AidexxApp : Application() {
                     Xlog.LEVEL_DEBUG,
                     Xlog.AppednerModeAsync,
                     "",
-                    logPath,
+                    xlogPath,
                     namePrefix,
                     0
                 )
@@ -117,7 +112,7 @@ class AidexxApp : Application() {
                     Xlog.LEVEL_DEBUG,
                     Xlog.AppednerModeAsync,
                     "",
-                    logPath,
+                    xlogPath,
                     namePrefix,
                     cacheDays
                 )

@@ -2,6 +2,7 @@ package com.microtech.aidexx.ble
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.annotation.TargetApi
 import android.bluetooth.*
 import android.bluetooth.BluetoothGattCharacteristic.*
 import android.bluetooth.le.ScanCallback
@@ -23,6 +24,7 @@ import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
 import com.microtech.aidexx.common.toIntBigEndian
 import com.microtech.aidexx.common.toUuid
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LogUtil.Companion.eAiDEX
 import com.microtech.aidexx.utils.StringUtils.binaryToHexString
 import com.microtech.aidexx.utils.TimeUtils.currentTimeMillis
@@ -38,10 +40,13 @@ import java.util.concurrent.TimeUnit
 /**
  * APP-SRC-A-105
  */
+private const val DEFAULT_CONNECT_STATUS = -1
+
 class AidexBleAdapter private constructor() : BleAdapter() {
-    var retryNum = 0
-    var workHandler: Handler? = null
-    var lastDisConnectTime: Long = 0
+    var connectStatus = DEFAULT_CONNECT_STATUS
+    private var retryNum = 0
+    private var workHandler: Handler? = null
+    private var lastDisConnectTime: Long = 0
     var onDeviceDiscover: ((info: BleControllerInfo) -> Unit)? = null
     private var mCharacteristic: BluetoothGattCharacteristic? = null
     private lateinit var mContext: Context
@@ -115,12 +120,14 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     BLE_IDLE_DISCONNECT -> {
                         executeDisconnect()
                     }
+
                     BLE_CONNECT_TIME_OUT, CONNECT_FAILURE -> {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
                         refreshConnectState(false)
                         closeGatt()
                         onConnectFailure()
                     }
+
                     DISCONNECT_GATT -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             if (ActivityCompat.checkSelfPermission(
@@ -134,16 +141,20 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         }
                         mBluetoothGatt?.disconnect()
                     }
+
                     CONNECT_DISCONNECTED -> {
                         onDisconnected()
                     }
+
                     CONNECT_SUCCESS -> {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
                         onConnectSuccess()
                     }
+
                     START_SCAN -> {
                         startBtScan(true)
                     }
+
                     FOUND_SERVER -> {
                         //根据指定的服务uuid获取指定的服务
                         val gattService = mBluetoothGatt!!.getService(serviceUUID.toUuid())
@@ -175,6 +186,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                             }
                         }
                     }
+
                     CONNECT_GATT -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             if (ActivityCompat.checkSelfPermission(
@@ -200,17 +212,21 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                             BluetoothDevice.TRANSPORT_LE
                         )
                     }
+
                     DISCOVER_SERVICES -> if (mBluetoothGatt != null) {
                         mBluetoothGatt?.discoverServices()
                     }
+
                     CLOSE_GATT -> {
                         refreshConnectState(false)
                         closeGatt()
 //                        refreshDeviceCache()
                     }
+
                     SEND_DATA -> sendData(arg1, msg.obj as ByteArray)
                     RECEIVER_DATA -> if (arg1 == 0) onReceiveData(msg.obj as ByteArray)
                     else onReceiveData(arg1, msg.obj as ByteArray)
+
                     READ_CHARACTERISTIC ->
                         if (arg1 != 0 && characteristicsMap[arg1] != null)
                             mBluetoothGatt?.readCharacteristic(
@@ -228,7 +244,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         if (enable) {
             for (descriptor in characteristic.descriptors) {
                 if (characteristic.properties and PROPERTY_NOTIFY != 0) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !ActivityUtil.isOppo()) {
                         mBluetoothGatt!!.writeDescriptor(
                             descriptor,
                             BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
@@ -454,6 +470,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
 
     override fun executeConnect(mac: String) {
         refreshConnectState(true)
+        connectStatus = DEFAULT_CONNECT_STATUS
         eAiDEX("Connecting to $mac")
         WorkManager.getInstance(AidexxApp.instance).cancelAllWorkByTag(START_SCAN.toString())
         mBluetoothDevice = bluetoothDeviceStore.deviceMap[mac]
@@ -479,14 +496,14 @@ class AidexBleAdapter private constructor() : BleAdapter() {
     }
 
     override fun executeWrite(data: ByteArray) {
-        val message = Message.obtain()
-        message.what = SEND_DATA
-        message.obj = data
-        message.arg1 = characteristicUUID
-        workHandler?.sendMessage(message)
+        toWrite(data, characteristicUUID)
     }
 
     override fun executeWriteCharacteristic(uuid: Int, data: ByteArray) {
+        toWrite(data, uuid)
+    }
+
+    private fun toWrite(data: ByteArray, uuid: Int) {
         val message = Message.obtain()
         message.what = SEND_DATA
         message.obj = data
@@ -517,6 +534,8 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         //newState-->新的连接的状态。共四种：STATE_DISCONNECTED，STATE_CONNECTING，STATE_CONNECTED，STATE_DISCONNECTING
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
+            eAiDEX("Connection State Change ----> status:$status, newState:$newState")
+            connectStatus = status
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 retryNum = 0
                 when (newState) {
@@ -525,6 +544,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         lastDisConnectTime = currentTimeMillis / 1000
                         workHandler?.sendEmptyMessageDelayed(CONNECT_DISCONNECTED, 2000)
                     }
+
                     BluetoothProfile.STATE_CONNECTED -> {
                         workHandler?.sendEmptyMessage(
                             DISCOVER_SERVICES
@@ -572,7 +592,10 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             characteristic: BluetoothGattCharacteristic?
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
-            eAiDEX("onCharacteristicChanged --> " + binaryToHexString(characteristic?.value))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                return
+            }
+            eAiDEX("onCharacteristicChanged under api 33 --> " + binaryToHexString(characteristic?.value))
             val message = Message.obtain()
             message.what = RECEIVER_DATA
             message.obj = characteristic?.value
@@ -594,6 +617,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             }
         }
 
+        @TargetApi(Build.VERSION_CODES.TIRAMISU)
         override fun onCharacteristicChanged(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
@@ -661,7 +685,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             } else {
                 workHandler?.sendEmptyMessage(CLOSE_GATT)
                 workHandler?.sendEmptyMessage(CONNECT_FAILURE)
-                eAiDEX("onDescriptorWrite -->" + "Descriptor enable fail")
+                eAiDEX("onDescriptorWrite --> Descriptor enable fail,status:$status")
             }
         }
 

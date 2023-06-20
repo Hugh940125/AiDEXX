@@ -144,7 +144,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 Dialogs.showWait(getString(R.string.loading))
                 loadSavedTransmitter()
                 transmitterHandler.sendEmptyMessageDelayed(DISMISS_LOADING, 3 * 1000)
-                PairUtil.registerBondStateChangeReceiver()
+                PairUtil.registerBondStateChangeReceiver(this)
             }
         }
     }
@@ -163,6 +163,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                     TYPE_G7 -> {
                         ToastUtil.showLong("请先解配存在的设备")
                     }
+
                     TYPE_X -> {
                         PairUtil.startPair(this@TransmitterActivity, it)
                     }
@@ -178,7 +179,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     override fun onDestroy() {
         super.onDestroy()
         rotateAnimation?.cancel()
-        PairUtil.unregisterBondStateChangeReceiver()
+        PairUtil.unregisterBondStateChangeReceiver(this)
         MessageDistributor.instance().removeObserver()
         binding.ivRefreshScan.clearAnimation()
         if ((transmitter == null || transmitter?.accessId == null) && scanStarted) {

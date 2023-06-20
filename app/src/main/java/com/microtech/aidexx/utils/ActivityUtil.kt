@@ -46,6 +46,14 @@ object ActivityUtil {
         return false
     }
 
+    fun isOppo(): Boolean {
+        val manufacturer = Build.BRAND
+        if ("oppo".equals(manufacturer, true)) {
+            return true
+        }
+        return false
+    }
+
     fun isServiceRunning(context: Context?, serviceClass: Class<*>): Boolean {
         if (context == null) {
             return false

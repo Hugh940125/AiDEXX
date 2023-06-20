@@ -367,6 +367,7 @@ class MainService : Service(), LifecycleOwner {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceHandler.removeCallbacksAndMessages(null)
         serviceMainScope.cancel()
         mainServiceTask?.cancel()
         mainServiceTimer?.cancel()

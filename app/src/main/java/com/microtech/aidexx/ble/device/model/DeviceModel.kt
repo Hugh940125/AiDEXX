@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ble.device.model
 
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
+import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -90,7 +91,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
 
     abstract suspend fun deletePair()
 
-    fun updateStart(sensorStartTime: Date?) {
+    fun updateStart(sensorStartTime: Date) {
         val sensorId = EncryptUtils.md5(
             UserInfoManager.instance().userId()
                     + entity.deviceSn
@@ -122,7 +123,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
             nextCalIndex = entity.calIndex + 1
         }
         entity.sensorStartTime = sensorStartTime
-        LogUtil.eAiDEX("Init data start index, brief index:${entity.eventIndex},raw index:${entity.fullEventIndex},cal index:${entity.calIndex}")
+        LogUtil.eAiDEX("Init data index, Start time:${sensorStartTime.date2ymdhm()}, Brief index:${entity.eventIndex}, Raw index:${entity.fullEventIndex},cal index:${entity.calIndex}")
     }
 
     fun reset() {

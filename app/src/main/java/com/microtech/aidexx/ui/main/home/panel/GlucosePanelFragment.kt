@@ -126,7 +126,9 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             if (UserInfoManager.shareUserInfo == null) {
                 HomeBackGroundSelector.instance().getHomeBg(null)
             }
-            HomeBackGroundSelector.instance().getBgForTrend(null, null)
+            binding.bgPanel.setBackgroundResource(
+                HomeBackGroundSelector.instance().getBgForTrend(null, null)
+            )
         }
         binding.tvGlucoseState.visibility = View.GONE
         if (deviceModel.minutesAgo != null && deviceModel.glucose != null

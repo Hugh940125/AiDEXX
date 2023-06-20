@@ -17,7 +17,7 @@ import com.microtech.aidexx.widget.selector.option.OptionsPickerView
 const val DIALOGS_TYPE_STANDARD = 0
 const val DIALOGS_TYPE_VERTICAL = 1
 
-@IntDef(DIALOGS_TYPE_STANDARD,DIALOGS_TYPE_VERTICAL)
+@IntDef(DIALOGS_TYPE_STANDARD, DIALOGS_TYPE_VERTICAL)
 annotation class DialogBtnOrientation
 
 /**
@@ -143,8 +143,9 @@ object Dialogs {
 
     fun showError(
         content: String? = null,
+        duration: Long = 1500
     ) {
-        TipDialog.show(content, WaitDialog.TYPE.ERROR)
+        TipDialog.show(content, WaitDialog.TYPE.ERROR, duration)
     }
 
     fun dismissWait() {
