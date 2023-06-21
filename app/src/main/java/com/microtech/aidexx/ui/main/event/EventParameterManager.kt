@@ -34,10 +34,11 @@ class EventParameterManager private constructor(val ctx: Context = getContext())
     private val beforeSleep = ctx.resources.getString(R.string.before_sleep)
     private val makeup = ctx.resources.getString(R.string.makeup) // 胰岛素补打
     private val extraMeal = ctx.resources.getString(R.string.extra_meal) // 加餐
+    private val other = ctx.resources.getString(R.string.other) // 用药其他
 
     val slots = mutableListOf(breakfast, lunch, dinner)
     val slotsDiet = mutableListOf(extraMeal)
-    val slotsMedicine = mutableListOf(beforeSleep)
+    val slotsMedicine = mutableListOf(beforeSleep, other)
     val slotsInsulin = mutableListOf(beforeSleep, makeup)
 
 
@@ -94,10 +95,18 @@ class EventParameterManager private constructor(val ctx: Context = getContext())
 
         return when (type) {
             TYPE_SLOT_DIET -> extraMeal
-            TYPE_SLOT_MEDICINE -> if (isIn2024) beforeSleep else ""
+            TYPE_SLOT_MEDICINE -> if (isIn2024) beforeSleep else other
             TYPE_SLOT_INSULIN -> if (isIn2024) beforeSleep else makeup
             else -> slots[0]
         }
+    }
+
+    fun getEventSlotByIndex(@EventSlotType type: Int, index: Int): String {
+        val list = getTypes(type)
+        if (index in list.indices) {
+            return list[index]
+        }
+        return ""
     }
 
     fun getEventSlotIndex(@EventSlotType type: Int): Int {
@@ -115,10 +124,10 @@ class EventParameterManager private constructor(val ctx: Context = getContext())
 
         return slots.size + when (type) {
             TYPE_SLOT_DIET -> slotsDiet.indexOf(extraMeal)
-            TYPE_SLOT_MEDICINE -> if (isIn2024) slotsMedicine.indexOf(beforeSleep) else -slots.size
-            TYPE_SLOT_INSULIN -> if (isIn2024) slotsInsulin.indexOf(beforeSleep) else slotsInsulin.indexOf(
-                makeup
-            )
+            TYPE_SLOT_MEDICINE -> if (isIn2024) slotsMedicine.indexOf(beforeSleep)
+                                    else slotsMedicine.indexOf(other)
+            TYPE_SLOT_INSULIN -> if (isIn2024) slotsInsulin.indexOf(beforeSleep)
+                                    else slotsInsulin.indexOf(makeup)
             else -> 0
         }
     }

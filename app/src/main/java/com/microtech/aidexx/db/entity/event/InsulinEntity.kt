@@ -1,13 +1,13 @@
 package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
-import com.microtech.aidexx.R
 import com.microtech.aidexx.common.formatWithoutZone
-import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.ui.main.event.EventParameterManager
+import com.microtech.aidexx.ui.main.event.TYPE_SLOT_INSULIN
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -86,16 +86,8 @@ class InsulinEntity : BaseEventEntity {
         }, timestamp=$timestamp)"
     }
 
-    private fun getTypeText(): String {
-        return when (moment) {
-            1 -> return getContext().getString(R.string.breakfast)
-            2 -> return getContext().getString(R.string.lunch)
-            3 -> return getContext().getString(R.string.dinner)
-            4 -> return getContext().getString(R.string.before_sleep)
-            5 -> return getContext().getString(R.string.makeup)
-            else -> ""
-        }
-    }
+    private fun getTypeText(): String =
+        EventParameterManager.instance().getEventSlotByIndex(TYPE_SLOT_INSULIN, moment-1)
 
     override fun hashCode(): Int {
         return insulinId.hashCode()

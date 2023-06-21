@@ -1,13 +1,13 @@
 package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
-import com.microtech.aidexx.R
 import com.microtech.aidexx.common.formatWithoutZone
-import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.ui.main.event.EventParameterManager
+import com.microtech.aidexx.ui.main.event.TYPE_SLOT_MEDICINE
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -77,15 +77,8 @@ class MedicationEntity : BaseEventEntity {
     override fun getValueDescription(res: Resources): String = ""
 
     fun getEventValue(res: Resources): String = ""
-    private fun getTypeText(): String {
-        return when (moment) {
-            1 -> return getContext().getString(R.string.breakfast)
-            2 -> return getContext().getString(R.string.lunch)
-            3 -> return getContext().getString(R.string.dinner)
-            4 -> return getContext().getString(R.string.before_sleep)
-            else -> ""
-        }
-    }
+    private fun getTypeText(): String =
+        EventParameterManager.instance().getEventSlotByIndex(TYPE_SLOT_MEDICINE, moment-1)
 
     override fun hashCode(): Int {
         return medicationId.hashCode()
