@@ -8,7 +8,6 @@ import com.microtech.aidexx.ble.device.model.X_NAME
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.BaseResponse
-import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
@@ -25,7 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TransmitterManager private constructor() {
-    private var default: DeviceModel? = null
+    private var defaultModel: DeviceModel? = null
+    private var pairModel: DeviceModel? = null
 
     suspend fun loadTransmitter(sn: String? = null) {
         val transmitterEntity: TransmitterEntity? = ObjectBox.store.awaitCallInTx {
@@ -40,9 +40,7 @@ class TransmitterManager private constructor() {
         if (transmitterEntity != null) {
             when (transmitterEntity.deviceType) {
                 2 -> {
-                    val instance = TransmitterModel.instance(transmitterEntity)
-                    instance.observerMessage(instance)
-                    set(instance)
+                    set(TransmitterModel.instance(transmitterEntity))
                 }
             }
         } else {
@@ -51,10 +49,8 @@ class TransmitterManager private constructor() {
                 data?.let {
                     it.deviceInfo?.let { deviceIfo ->
                         val newEntity = TransmitterEntity()
+                        newEntity.idx = 1
                         newEntity.id = deviceIfo.deviceId
-//                        newEntity.sensorId = deviceIfo.sensorId
-//                        newEntity.sensorIndex = deviceIfo.sensorIndex
-//                        newEntity.sensorStartTime = deviceIfo.sensorStartUp
                         newEntity.deviceModel = deviceIfo.deviceModel
                         newEntity.deviceSn = deviceIfo.deviceSn
                         newEntity.deviceMac = deviceIfo.deviceMac
@@ -66,9 +62,7 @@ class TransmitterManager private constructor() {
                         }, {
                             when (newEntity.deviceType) {
                                 2 -> {
-                                    val instance = TransmitterModel.instance(newEntity)
-                                    instance.observerMessage(instance)
-                                    set(instance)
+                                    set(TransmitterModel.instance(newEntity))
                                 }
                             }
                         })
@@ -110,29 +104,41 @@ class TransmitterManager private constructor() {
     }
 
     fun buildModel(sn: String, address: String): DeviceModel? {
-        if (sn == default?.entity?.deviceSn) {
-            Dialogs.showError("不可重复配对")
+        if (sn == defaultModel?.entity?.deviceSn && defaultModel?.isPaired() == true) {
+            Dialogs.showError("已配对")
             return null
         }
         val entity = TransmitterEntity(sn)
+        entity.idx = 1
         entity.deviceMac = address
-        return TransmitterModel.instance(entity)
+        pairModel = TransmitterModel.instance(entity)
+        return pairModel
     }
 
     fun getDefault(): DeviceModel? {
-        return default
+        return defaultModel
+    }
+
+    fun getPair(): DeviceModel? {
+        return pairModel
     }
 
     fun removeDefault() {
-        if (default?.isPaired() == false) {
-            default = null
+        if (defaultModel?.isPaired() == false) {
+            defaultModel = null
             notifyTransmitterChange(null)
         }
     }
 
+    fun removePair() {
+        pairModel = null
+    }
+
     fun set(model: DeviceModel) {
-        default = model
-        if (default?.isPaired() == true) {
+        defaultModel?.controller?.unregister()
+        defaultModel = model
+        defaultModel?.observerMessage()
+        if (defaultModel?.isPaired() == true) {
             model.getController().register()
         }
         notifyTransmitterChange(model)

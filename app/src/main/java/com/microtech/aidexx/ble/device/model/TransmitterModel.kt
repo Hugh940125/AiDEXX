@@ -96,7 +96,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                         result = ByteUtils.subByte(data, 1, data.size - 1)
                         resCode = data[0].toInt()
                     }
-                    val bleMessage = BleMessage(operation, success, result, resCode, entity.messageType)
+                    val bleMessage =
+                        BleMessage(operation, success, result, resCode, entity.messageType)
                     MessageDistributor.instance().send(bleMessage)
                 }
             }
@@ -104,11 +105,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    fun observerMessage(model: DeviceModel) {
+    override fun observerMessage() {
         MessageDistributor.instance().clear()
         MessageDistributor.instance().observer(object : MessageObserver {
             override fun onMessage(message: BleMessage) {
-                model.onMessage(message)
+                this@TransmitterModel.onMessage(message)
             }
         })
     }
@@ -173,9 +174,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
             AidexXOperation.GET_HISTORY_RANGE -> {
                 message.data.let {
-                    briefRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
-                    rawRangeStartIndex = ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
-                    newestEventIndex = ((it[5].toInt() and 0xff) shl 8).plus((it[4].toInt() and 0xff))
+                    briefRangeStartIndex =
+                        ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
+                    rawRangeStartIndex =
+                        ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
+                    newestEventIndex =
+                        ((it[5].toInt() and 0xff) shl 8).plus((it[4].toInt() and 0xff))
                     LogUtil.eAiDEX("get history range ----> brief start:$briefRangeStartIndex, raw start:$rawRangeStartIndex, newest:$newestEventIndex")
                     when (dataTypeNeedSync) {
                         TYPE_BRIEF -> {
@@ -199,7 +203,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
             AidexXOperation.GET_CALIBRATION_RANGE -> {
                 message.data.let {
-                    calRangeStartIndex = ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
+                    calRangeStartIndex =
+                        ((it[1].toInt() and 0xff) shl 8).plus((it[0].toInt() and 0xff))
                     newestCalIndex = ((it[3].toInt() and 0xff) shl 8).plus((it[2].toInt() and 0xff))
                     LogUtil.eAiDEX("get calibration range --- cal start:$calRangeStartIndex, cal newest:$newestCalIndex")
                 }
@@ -288,20 +293,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
-    override fun savePair(
-    ) {
+    override fun savePair() {
         entity.encryptionKey = controller?.key
         entity.deviceMac = controller?.mac
         entity.accessId = controller?.id
         entity.deviceName = "$X_NAME-${entity.deviceSn}"
-        ObjectBox.runAsync({
-            transmitterBox!!.put(entity)
-        }, {
-            TransmitterManager.instance().set(this@TransmitterModel)
-            EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, true)
-        }, {
-            EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
-        })
+        transmitterBox!!.put(entity)
     }
 
     fun resetIndex() {
@@ -329,7 +326,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override suspend fun deletePair() {
         if (entity.id != null) {
-            when (val apiResult = ApiService.instance.deviceUnregister(hashMapOf("deviceId" to entity.id!!))) {
+            when (val apiResult =
+                ApiService.instance.deviceUnregister(hashMapOf("deviceId" to entity.id!!))) {
                 is ApiResult.Success -> {
                     Dialogs.dismissWait()
                     apiResult.result.run {
@@ -369,11 +367,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
-//        val elapsedRealtime = SystemClock.elapsedRealtime()
-//        if (elapsedRealtime - latestAdTime < 1000) {
-//            return
-//        }
-//        latestAdTime = elapsedRealtime
         val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
         LogUtil.eAiDEX("Advertising ----> $broadcast")
         val refreshSensorState = refreshSensorState(broadcast)
@@ -435,7 +428,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 AidexxApp.mainScope.launch {
                     val historiesFromBroadcast: MutableList<AidexXHistoryEntity>
                     withContext(Dispatchers.IO) {
-                        historiesFromBroadcast = getHistoriesFromBroadcast(nextEventIndex, adHistories)
+                        historiesFromBroadcast =
+                            getHistoriesFromBroadcast(nextEventIndex, adHistories)
                     }
                     if (historiesFromBroadcast.isNotEmpty()) {
                         alertSetting = AlertUtil.getAlertSettings()
@@ -675,13 +669,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                         if (AlertUtil.hyperSwitchEnable) {
                                             if (lastHyperAlertTime == 0L) {
                                                 lastHyperAlertTime =
-                                                    getLastAlertTime(sensorId, History.HISTORY_LOCAL_HYPER)
+                                                    getLastAlertTime(
+                                                        sensorId,
+                                                        History.HISTORY_LOCAL_HYPER
+                                                    )
                                             }
                                             if ((lastHyperAlertTime == 0L
                                                         || deviceTimeMillis - lastHyperAlertTime > alertFrequency)
                                                 && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency
                                             ) {
-                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPER
+                                                historyEntity.eventWarning =
+                                                    History.HISTORY_LOCAL_HYPER
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
                                                 )
@@ -701,7 +699,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                         || deviceTimeMillis - lastHypoAlertTime > alertFrequency)
                                                 && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency
                                             ) {
-                                                historyEntity.eventWarning = History.HISTORY_LOCAL_HYPO
+                                                historyEntity.eventWarning =
+                                                    History.HISTORY_LOCAL_HYPO
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
                                                 )
@@ -714,13 +713,17 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                         if (AlertUtil.urgentLowSwitchEnable) {
                                             if (lastUrgentAlertTime == 0L) {
                                                 lastUrgentAlertTime =
-                                                    getLastAlertTime(sensorId, History.HISTORY_LOCAL_URGENT_HYPO)
+                                                    getLastAlertTime(
+                                                        sensorId,
+                                                        History.HISTORY_LOCAL_URGENT_HYPO
+                                                    )
                                             }
                                             if ((lastUrgentAlertTime == 0L
                                                         || deviceTimeMillis - lastUrgentAlertTime > urgentFrequency)
                                                 && TimeUtils.currentTimeMillis - deviceTimeMillis <= urgentFrequency
                                             ) {
-                                                historyEntity.eventWarning = History.HISTORY_LOCAL_URGENT_HYPO
+                                                historyEntity.eventWarning =
+                                                    History.HISTORY_LOCAL_URGENT_HYPO
                                                 alert?.invoke(
                                                     "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
                                                 )
@@ -754,9 +757,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 //                updateGlucoseTrend(tempBriefList.last().deviceTime)
             EventBusManager.send(
                 EventBusKey.EVENT_DATA_CHANGED,
-                EventDataChangedInfo(DataChangedType.ADD, mutableListOf<RealCgmHistoryEntity>().also {
-                    it.addAll(tempBriefList)
-                })
+                EventDataChangedInfo(
+                    DataChangedType.ADD,
+                    mutableListOf<RealCgmHistoryEntity>().also {
+                        it.addAll(tempBriefList)
+                    })
             )
             tempBriefList.clear()
             if (goon) continueBriefFetch()

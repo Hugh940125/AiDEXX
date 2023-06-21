@@ -47,7 +47,7 @@ public class DeviceInfoHelper {
     }
 
     public static String deviceName() {
-        return Build.MODEL;
+        return Build.BRAND +" "+ Build.MODEL;
     }
 
     public static String installVersion(Context context) {

@@ -24,6 +24,18 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFu
     const AidexXFullBroadcastEntity *cbroadcast = aidexXFullBroadcastParser.getFullBroadcast();
 
     jobject listObj = newList(env);
+    if (cbroadcast == NULL) {
+        return env->NewObject(broad_cls, broadConstructMId,
+                              listObj,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0,
+                              0);
+    }
     for (int i = 0; i < cbroadcast->historyCount; i++) {
         AidexXHistoryEntity history = cbroadcast->history[i];
         jobject historyObject = env->NewObject(history_Class, historyConstructMId,

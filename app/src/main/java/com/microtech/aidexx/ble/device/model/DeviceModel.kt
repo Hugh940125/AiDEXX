@@ -90,6 +90,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     abstract suspend fun uploadPairInfo()
     abstract fun savePair()
     abstract fun onMessage(message: BleMessage)
+    abstract fun observerMessage()
     abstract suspend fun deletePair()
 
     fun updateStart(sensorStartTime: Date) {

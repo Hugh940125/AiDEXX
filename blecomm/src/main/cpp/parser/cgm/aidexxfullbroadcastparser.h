@@ -5,6 +5,7 @@
 #include "aidexxentities.h"
 #include <vector>
 
+
 class AidexXFullBroadcastParser
 {
 public:
@@ -12,12 +13,14 @@ public:
 
     AidexXFullBroadcastParser(const char *bytes, uint16 length);
     const AidexXFullBroadcastEntity *getFullBroadcast();
-    const AidexXBroadcastEntity *getBroadcast();
-    const AidexXScanResponseEntity *getScanResponse();
-    
+
 private:
     vector<uint8> bytes;
     AidexXFullBroadcastEntity fullBroadcast;
+
+    bool getBroadcast();
+    bool getScanResponse();
 };
 
-#endif // AIDEXXFULLBROADCASTPARSER_H
+#endif
+

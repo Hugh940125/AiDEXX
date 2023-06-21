@@ -11,11 +11,34 @@ AidexXFullBroadcastParser::AidexXFullBroadcastParser(const char *bytes, uint16 l
 }
 
 const AidexXFullBroadcastEntity *AidexXFullBroadcastParser::getFullBroadcast() {
-    const AidexXBroadcastEntity *broadcast = getBroadcast();
-    if (broadcast == NULL) {
+    if (!getBroadcast()) {
         return NULL;
     }
-    
+
+    if (!getScanResponse()) {
+        return NULL;
+    }
+
+    return &fullBroadcast;
+}
+
+bool AidexXFullBroadcastParser::getBroadcast() {
+    uint8 broadcastLength = bytes[bytes.size() - 2];
+
+    if (broadcastLength > bytes.size()) {
+        return false;
+    }
+
+    uint8 crc8 = LibChecksum_GetChecksum8Bit((const uint8 *)bytes.data(), broadcastLength);
+    if (crc8 != 0) {
+        return false;
+    }
+
+    const AidexXBroadcastEntity *broadcast = AidexXBroadcastParser((const char *)bytes.data(), broadcastLength - 1).getBroadcast();
+    if (broadcast == NULL) {
+        return false;
+    }
+
     fullBroadcast.historyTimeOffset = broadcast->timeOffset;
     fullBroadcast.historyCount = broadcast->historyCount;
     fullBroadcast.status = broadcast->status;
@@ -28,40 +51,26 @@ const AidexXFullBroadcastEntity *AidexXFullBroadcastParser::getFullBroadcast() {
         fullBroadcast.history[i].quality = broadcast->history[i].quality;
         fullBroadcast.history[i].isValid = broadcast->history[i].isValid;
     }
-    
-    const AidexXScanResponseEntity *scanResponse = getScanResponse();
-    if (scanResponse == NULL) {
-        return NULL;
+
+    return true;
+}
+
+bool AidexXFullBroadcastParser::getScanResponse() {
+    uint8 scanRspLength = bytes[bytes.size() - 1];
+
+    if (scanRspLength > bytes.size()) {
+        return false;
     }
-    
+
+    const AidexXScanResponseEntity *scanResponse = AidexXScanResponseParser((const char *)bytes.data() + bytes.size() - scanRspLength - 2, scanRspLength).getScanResponse();
+    if (scanResponse == NULL) {
+        return false;
+    }
+
     fullBroadcast.calTimeOffset = scanResponse->calTimeOffset;
     fullBroadcast.isPaired = scanResponse->isPaired;
     fullBroadcast.isInitialized = scanResponse->isInitialized;
 
-    return &fullBroadcast;
+    return true;
 }
 
-const AidexXBroadcastEntity *AidexXFullBroadcastParser::getBroadcast() {
-    uint8 broadcastLength = bytes[bytes.size() - 2];
-    
-    if (broadcastLength > bytes.size()) {
-        return NULL;
-    }
-    
-    uint8 crc8 = LibChecksum_GetChecksum8Bit((const uint8 *)bytes.data(), broadcastLength);
-    if (crc8 != 0) {
-        return NULL;
-    }
-    
-    return AidexXBroadcastParser((const char *)bytes.data(), broadcastLength - 1).getBroadcast();
-}
-
-const AidexXScanResponseEntity *AidexXFullBroadcastParser::getScanResponse() {
-    uint8 scanRspLength = bytes[bytes.size() - 1];
-    
-    if (scanRspLength > bytes.size()) {
-        return NULL;
-    }
-    
-    return AidexXScanResponseParser((const char *)bytes.data() + bytes.size() - scanRspLength - 2, scanRspLength).getScanResponse();
-}

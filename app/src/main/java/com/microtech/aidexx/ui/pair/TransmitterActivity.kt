@@ -98,12 +98,12 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                     }
                 }
             } else {
-                TransmitterManager.instance().removeDefault()
+                TransmitterManager.instance().removePair()
             }
         }
     }
 
-    private fun onDeviceDiscover() {
+    private fun deviceDiscover() {
         AidexBleAdapter.getInstance().onDeviceDiscover = {
             if (needSetMessageCallback) {
                 PairUtil.observeMessage(this, lifecycleScope)
@@ -223,7 +223,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 AidexBleAdapter.getInstance().startBtScan(true)
                 scanStarted = true
             }
-            onDeviceDiscover()
+            deviceDiscover()
         }
     }
 

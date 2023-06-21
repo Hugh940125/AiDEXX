@@ -22,7 +22,7 @@ class TransmitterEntity {
     var messageType = BleMessage.MessageType.NORMAL
     var calIndex: Int = 0
 
-    @Id
+    @Id(assignable = true)
     var idx: Long? = null
     var id: String? = null
 
@@ -38,7 +38,9 @@ class TransmitterEntity {
             if (value != null) {
                 val index = startTimeToIndex()
                 sensorIndex = index
-                sensorId = EncryptUtils.md5(UserInfoManager.instance().userId() + deviceSn + index + sensorIndex)
+                sensorId = EncryptUtils.md5(
+                    UserInfoManager.instance().userId() + deviceSn + index + sensorIndex
+                )
             }
         }
     var needReplace = false

@@ -14,6 +14,7 @@ import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.toastShort
+import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
@@ -41,6 +42,7 @@ object PairUtil {
     val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             Dialogs.dismissWait()
+            TransmitterManager.instance().removePair()
         }
     }
 
@@ -89,8 +91,8 @@ object PairUtil {
         MessageDistributor.instance().observerAndIntercept(object : MessageObserver {
             override fun onMessage(message: BleMessage) {
                 val success = message.isSuccess
-                val default = TransmitterManager.instance().getDefault()
-                if (default != null) {
+                val pair = TransmitterManager.instance().getPair()
+                if (pair != null) {
                     when (message.operation) {
                         AidexXOperation.DISCOVER -> {
                             if (!success) {
@@ -133,7 +135,7 @@ object PairUtil {
                             if (!isForceUnpair) {
                                 if (success) {
                                     scope.launch {
-                                        default.deletePair()
+                                        pair.deletePair()
                                     }
                                 } else {
                                     Dialogs.showError(context.getString(R.string.Unpair_fail))
@@ -145,7 +147,7 @@ object PairUtil {
                             LogUtil.eAiDEX("Pair ----> unpair:$success")
                             if (success) {
                                 scope.launch {
-                                    default.deletePair()
+                                    pair.deletePair()
                                 }
                             } else {
                                 Dialogs.showError(context.getString(R.string.Unpair_fail))
@@ -153,38 +155,44 @@ object PairUtil {
                         }
 
                         AidexXOperation.GET_START_TIME -> {
-                            LogUtil.eAiDEX("Pair ----> GET_START_TIME1:$success")
                             val data = message.data
-                            val startTimePair = ByteUtils.checkToDate(data)
-                            startTimePair?.let {
-                                default.updateStart(startTimePair)
-                            }
-                            scope.launch {
-                                default.savePair()
-                            }
-                            LogUtil.eAiDEX("Pair ----> GET_START_TIME2:$success")
+                            ObjectBox.runAsync({
+                                val startTimePair = ByteUtils.checkToDate(data)
+                                startTimePair?.let {
+                                    pair.updateStart(startTimePair)
+                                }
+                                pair.savePair()
+                            }, {
+                                scope.launch {
+                                    TransmitterManager.instance().set(pair)
+                                    EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, true)
+                                }
+                            }, {
+                                scope.launch {
+                                    EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, false)
+                                }
+                            })
                         }
 
                         AidexXOperation.GET_DEVICE_INFO -> {
                             val data = message.data
                             val deviceSoftVersion = ByteUtils.getDeviceSoftVersion(data)
                             val deviceType = ByteUtils.getDeviceType(data)
-                            default.entity.version = deviceSoftVersion
-                            default.entity.deviceModel = deviceType
-                            LogUtil.eAiDEX("Pair ----> GET_DEVICE_INFO1:$success")
+                            pair.entity.version = deviceSoftVersion
+                            pair.entity.deviceModel = deviceType
                         }
 
                         AidexXOperation.DISCONNECT -> {
                             LogUtil.eAiDEX("Pair ----> disconnect:$success")
                             when (operation) {
                                 Operation.PAIR -> {
-                                    if (!default.isPaired()) {
+                                    if (!pair.isPaired()) {
                                         pairFail()
                                     }
                                 }
 
                                 Operation.UNPAIR -> {
-                                    if (default.isPaired()) {
+                                    if (pair.isPaired()) {
                                         pairFail()
                                     }
                                 }
@@ -209,9 +217,9 @@ object PairUtil {
         operation = Operation.PAIR
         Dialogs.showWait(context.getString(R.string.pairing))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
-        val buildModel =
+        val pairModel =
             TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
-        buildModel?.let {
+        pairModel?.let {
             it.getController().pair()
             it.getController().getTransInfo()
             it.getController().startTime()
