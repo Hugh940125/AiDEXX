@@ -37,6 +37,7 @@ import com.microtech.aidexx.widget.chart.dataset.toChartEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
@@ -48,6 +49,10 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.abs
 
 class ChartViewModel: ViewModel() {
+
+    companion object {
+        private const val TAG = "ChartViewModel"
+    }
 
     // 国际版代码先放这里 后面做打包渠道配置
     private val isGp = false
@@ -189,38 +194,48 @@ class ChartViewModel: ViewModel() {
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        LogUtil.d("onCleared ${this@ChartViewModel}", TAG)
+    }
+
     /**
      * 首次 加载第一页数据
      */
     fun initData(needReloadData: Boolean = false) = flow {
-
+        LogUtil.d("initData ${this@ChartViewModel}", TAG)
         if (::combinedData.isInitialized && !needReloadData) {
+            LogUtil.d("${::combinedData.isInitialized}  $needReloadData ${this@ChartViewModel}", TAG)
             emit(combinedData)
             return@flow
         }
         if (!::combinedData.isInitialized) {
             combinedData = CombinedData()
         }
+        delay(1000) // vivo 2048A 不延迟有可能查询不到数据 怀疑于objectBox初始化有关系
         val latestOne = CgmCalibBgRepository.queryNextByTargetDate(
             UserInfoManager.getCurShowUserId(),
             Date()
         ) //"f03550ef07a7b2164f06deaef597ce37"
+
+        LogUtil.d("查询第一条 $latestOne ${this@ChartViewModel}", TAG)
+
         val cgmMaxDate = latestOne?.let {
             it.deviceTime
         } ?: Date()
-
+        LogUtil.d("查询第一条 日期 ${cgmMaxDate} ${this@ChartViewModel}", TAG)
         val minDate = getCurPageStartDate(cgmMaxDate.time)
-
+        LogUtil.d("查询第一条 最小日期 ${minDate} ${this@ChartViewModel}", TAG)
         // 加载所有该日期区间的数据
         loadNextPageData(minDate, Date())
-
+        LogUtil.d("查询区间数据 结束 ${this@ChartViewModel}", TAG)
         val lineDataSets: ArrayList<ILineDataSet> = ArrayList()
         lineDataSets.addAll(GlucoseChart.generateLimitLines(xMin(), xMax(), lowerLimit, upperLimit))
 
 //        val glucoseSets: List<LineDataSet> = formatGlucoseSet()
         GlucoseChart.formatGlucoseSetAfterInitData(glucoseSets, lowerLimit, upperLimit)
 
-        LogUtils.data("Glucose Set Size ${glucoseSets.size}")
+        LogUtil.d("数据加载完毕 ${this@ChartViewModel}", TAG)
         lineDataSets.addAll(glucoseSets)
 
         val scatterDataSets: ArrayList<IScatterDataSet> = ArrayList()
@@ -414,9 +429,12 @@ class ChartViewModel: ViewModel() {
                         getCgmPageData(startDate, endDate)?.let { d ->
                             if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
+                                LogUtil.d("cgm 加载成功 size=${d.size} 或用户不对", TAG)
                             } else {
                                 if (needApply) {
+                                    LogUtil.d("cgm 加载成功 size=${d.size} 开始添加内存", TAG)
                                     addCgmData(d)
+                                    LogUtil.d("cgm 加载成功 size=${d.size} 添加内存成功", TAG)
                                 } else {
                                     LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
                                     if (d.size > 2) {

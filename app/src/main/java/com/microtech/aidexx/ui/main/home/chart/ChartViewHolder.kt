@@ -13,6 +13,7 @@ import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -31,9 +32,10 @@ class ChartViewHolder(
     private val toHistory: ()->Unit
     ) {
 
-    private val chartViewModel: ChartViewModel by fragment.viewModels(ownerProducer = { fragment.requireActivity() })
+    private val chartViewModel: ChartViewModel by fragment.viewModels()
 
     init {
+        LogUtil.d("ChartViewModel holder init", TAG)
         vb.run {
             touchView.setOnTouchListener { _, event ->
                 touchView.performClick()
@@ -119,6 +121,7 @@ class ChartViewHolder(
                     }
                 }
                 launch {
+                    LogUtil.d("ChartViewModel initData ", TAG)
                     chartViewModel.initData().collectLatest {
                         chart.initData(it)
                     }

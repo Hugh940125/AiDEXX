@@ -60,13 +60,23 @@ object LocalResourceManager {
     private const val FILE_FOOD_SYS = "food_sys.json"
     private const val FILE_INSULIN_SYS = "insulin_sys.json"
     private const val FILE_OTHER_SYS = "other_sys.json"
+    private var upgrading: Boolean = false
 
     private val syncExceptionHandler = CoroutineExceptionHandler { context, throwable ->
         LogUtil.xLogE( "resource升级异常 \n ${throwable.stackTraceToString()}", TAG)
+        upgrading = false
     }
 
+    /**
+     * 由[AppUpgradeManager]控制一天最多执行一次
+     */
     fun startUpgrade(upInfo: UpgradeInfo.VersionInfo) {
-
+        if (upgrading) {
+            LogUtil.xLogE( "启动资源升级-false", TAG)
+            return
+        }
+        upgrading = true
+        LogUtil.xLogE( "启动资源升级", TAG)
         resourceUpgradeScope.launch(syncExceptionHandler) {
 
             if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
@@ -86,8 +96,10 @@ object LocalResourceManager {
                         delay(500)
                         // 下载成功 密码解压
                         processByVersionFile(ret.result, upInfo.info.version)
+                        upgrading = false
                     }
                     is ApiRepository.NetResult.Failure -> {
+                        upgrading = false
                         LogUtil.xLogE( "download fail ${ret.code}-${ret.msg}", TAG)
                     }
                 }
@@ -99,7 +111,7 @@ object LocalResourceManager {
         val unzipPath = FileUtils.getDownloadDir("$UNZIP_RESOURCE_DIR_PREFIX$version")
 
         runCatching {
-            net.lingala.zip4j.ZipFile(zipFilePath, ZIP_PASSWORD.toCharArray()).use {
+            net.lingala.zip4j.ZipFile(zipFilePath /*, ZIP_PASSWORD.toCharArray()*/).use {
                 it.extractAll(unzipPath)
             }
             true
