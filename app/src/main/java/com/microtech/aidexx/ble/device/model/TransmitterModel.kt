@@ -98,11 +98,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                     val bleMessage =
                         BleMessage(operation, success, result, resCode, entity.messageType)
-                    if (bleMessage.operation != CgmOperation.DISCOVER) {
-                        LogUtil.eAiDEX(
-                            "Operation:${bleMessage.operation}, Success:${bleMessage.isSuccess}"
-                        )
-                    }
                     MessageDistributor.instance().send(bleMessage)
                 }
             }

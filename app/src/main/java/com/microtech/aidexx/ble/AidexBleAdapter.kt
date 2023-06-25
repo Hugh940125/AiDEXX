@@ -143,12 +143,13 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     }
 
                     CONNECT_DISCONNECTED -> {
+                        refreshConnectState(false)
                         onDisconnected()
                     }
 
                     CONNECT_SUCCESS -> {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
-                        if (isOnConnectState){
+                        if (isOnConnectState) {
                             onConnectSuccess()
                         }
                     }
@@ -226,8 +227,11 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     }
 
                     SEND_DATA -> sendData(arg1, msg.obj as ByteArray)
-                    RECEIVER_DATA -> if (arg1 == 0) onReceiveData(msg.obj as ByteArray)
-                    else onReceiveData(arg1, msg.obj as ByteArray)
+                    RECEIVER_DATA -> if (arg1 == 0) {
+                        onReceiveData(msg.obj as ByteArray)
+                    } else {
+                        onReceiveData(arg1, msg.obj as ByteArray)
+                    }
 
                     READ_CHARACTERISTIC ->
                         if (arg1 != 0 && characteristicsMap[arg1] != null)
@@ -493,6 +497,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             workHandler?.sendEmptyMessage(DISCONNECT_GATT)
         } else {
             eAiDEX("Gatt is null,call onDisconnected directly")
+            refreshConnectState(false)
             onDisconnected()
         }
     }
@@ -592,7 +597,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             characteristic: BluetoothGattCharacteristic?
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 return
             }
             eAiDEX("onCharacteristicChanged under api 33 --> " + binaryToHexString(characteristic?.value))
@@ -658,7 +663,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
             status: Int
         ) {
             super.onCharacteristicRead(gatt, characteristic, status)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 return
             }
             eAiDEX("onDescriptorRead -->" + "status:" + status + " uuid" + characteristic?.uuid)

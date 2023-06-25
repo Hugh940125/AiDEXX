@@ -398,7 +398,7 @@ void Ble::onDisconnected() {
     pDisconTimer->Cancel();
 
     commandList.clear();
-    if (controller != NULL) {
+    if (controller != nullptr) {
         controller->onReceive(BleOperation::DISCONNECT, true);
         controller = NULL;
     }

@@ -7,6 +7,10 @@ plugins {
     id 'com.microtech.plugins.resourcesId' version("1.0.0")
 }
 
+static def releaseTime() {
+    return new Date().format("yyyyMMddHHmmss", TimeZone.getTimeZone("GMT+8"))
+}
+
 android {
     compileSdk 33
 
@@ -133,10 +137,10 @@ android {
     }
 
     applicationVariants.all { variant ->
-        variant.outouts.all { output ->
+        variant.outputs.all { output ->
             def outputFile = output.outputFile
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                def fileName = "AiDEX-X_${variant.versionName}_${variant.flavorName}_${variant.buildType.name}_${new Date().toString()}.apk"
+                def fileName = "AiDEX-X_${variant.versionName}_${variant.flavorName}_${variant.buildType.name}_${releaseTime()}.apk"
                 outputFileName = fileName
             }
         }
