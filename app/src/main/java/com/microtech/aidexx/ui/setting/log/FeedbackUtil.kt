@@ -1,10 +1,19 @@
 package com.microtech.aidexx.ui.setting.log
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import com.microtech.aidexx.BuildConfig
+import com.microtech.aidexx.R
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -19,6 +28,8 @@ object FeedbackUtil {
     ) {
         val files = logFile.listFiles()
         if (files.isNullOrEmpty()) {
+            LogUtil.eAiDEX("Log file is null or empty")
+            Dialogs.showSuccess(context.resources?.getString(R.string.str_succ))
             return
         }
         val fileList = files.filter { file -> file.name.endsWith("xlog", true) }.toMutableList()
@@ -27,55 +38,51 @@ object FeedbackUtil {
         if (dbFile.exists()) {
             fileList.add(dbFile)
         }
-        zipFolder(logPath, zipFileName, fileList)
-//        if (File(pathZip).exists()) {
-//            val okHttpClient = OkHttpClient()
-//            val file = File(pathZip)
-//            val requestBody = MultipartBody.Builder()
-//                .setType(MultipartBody.ALTERNATIVE)
-//                .addFormDataPart("appName", "cgms")  // 上传参数
-//                .addFormDataPart(
-//                    "file",
-//                    "AiDEX_A_${AppUtils.getAppVersionName()}_${
-//                        TransmitterManager.instance().getDefaultModel()?.entity?.deviceSn
-//                    }_${getSimplePhoneOrEmail()}_${getCurrentFormattedTime()}.zip",
-//                    file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
-//                )   // 上传文件
-//                .build()
-//            val request = Request.Builder()
-//                .url(Url.UPLOAD_LOG)
-//                .post(requestBody)//默认就是GET请求，可以不写
-//                .build()
-//
-//            val call = okHttpClient.newCall(request)
-//            call.enqueue(object : Callback {
-//                override fun onFailure(call: Call, e: IOException) {
-//                    WaitDialog.dismiss()
-//                    LogUtils.error("日志上传失败-$e")
-//                }
-//
-//                override fun onResponse(call: Call, response: Response) {
-//                    LogUtils.error("日志上传成功")
-//                    if (!mute) {
-//                        Handler(Looper.getMainLooper()).post {
-//                            TipDialog.show(
-//                                context,
-//                                context?.resources?.getString(R.string.str_succ),
-//                                TipDialog.TYPE.SUCCESS
-//                            ).onDismissListener =
-//                                OnDismissListener { }
-//                        }
-//                    }
-//                }
-//            })
-//        } else {
-//            WaitDialog.dismiss()
-//        }
+        val zipFile = zipFolder(logPath, zipFileName, fileList)
+        if (zipFile?.exists() == true) {
+            val okHttpClient = OkHttpClient()
+            val requestBody = MultipartBody.Builder()
+                .setType(MultipartBody.ALTERNATIVE)
+                .addFormDataPart("appName", "cgms")  // 上传参数
+                .addFormDataPart(
+                    "file",
+                    zipFileName,
+                    zipFile.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                )   // 上传文件
+                .build()
+            val request = Request.Builder()
+                .url(BuildConfig.logUploadUrl)
+                .post(requestBody)//默认就是GET请求，可以不写
+                .build()
+
+            val call = okHttpClient.newCall(request)
+            call.enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    LogUtil.eAiDEX("Log upload fail:${e.printStackTrace()}")
+                    Dialogs.dismissWait()
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (!mute) {
+                        Handler(Looper.getMainLooper()).post {
+                            Dialogs.showSuccess(
+                                context.resources?.getString(R.string.str_succ),
+                            )
+                        }
+                    }
+                }
+            })
+        } else {
+            Dialogs.dismissWait()
+            LogUtil.eAiDEX("Log file not exist")
+        }
     }
 
-    private fun zipFolder(pathZip: String, zipFileName: String, files: MutableList<File>): String {
+    private fun zipFolder(pathZip: String, zipFileName: String, files: MutableList<File>): File? {
+        var zipFile: File? = null
         try {
-            val outZip = ZipOutputStream(FileOutputStream(File("${pathZip}/${zipFileName}")))
+            zipFile = File("${pathZip}/${zipFileName}")
+            val outZip = ZipOutputStream(FileOutputStream(zipFile))
             for (file in files) {
                 zipFiles("${file.parent}${File.separator}", file.name, outZip)
             }
@@ -85,7 +92,7 @@ object FeedbackUtil {
             e.printStackTrace()
             Dialogs.dismissWait()
         }
-        return pathZip
+        return zipFile
     }
 
     private fun zipFiles(
@@ -128,6 +135,7 @@ object FeedbackUtil {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            Dialogs.dismissWait()
         }
     }
 }

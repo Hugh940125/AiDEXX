@@ -59,7 +59,7 @@ class OtherSettingActivity : BaseActivity<BaseViewModel, ActivityOtherSettingBin
             }
 
             settingUploadLog.setDebounceClickListener {
-//                Dialogs.showWait(getString(R.string.log_uploading))
+                Dialogs.showWait(getString(R.string.log_uploading))
                 Log.appenderFlushSync(true)
                 val externalFile = getExternalFilesDir(null)?.absolutePath
                 val logPath = "$externalFile${File.separator}aidex"

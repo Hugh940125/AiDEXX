@@ -19,6 +19,8 @@ import com.microtech.aidexx.databinding.FragmentGlucosePanelBinding
 import com.microtech.aidexx.ui.main.home.HomeBackGroundSelector
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.entity.BleMessage
@@ -58,6 +60,13 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             handler.removeMessages(REFRESH_PANEL)
             handler.sendEmptyMessage(REFRESH_PANEL)
         }
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT,this) {
+            if (it) resetState()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
         MessageDistributor.instance().observer(mObserver)
     }
 
@@ -72,11 +81,17 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         fun newInstance() = GlucosePanelFragment()
     }
 
-    fun resetState() {
-        binding.tvValueTime.text = ""
-        binding.tvSensorRemainTime.text = ""
-        binding.tvGlucoseState.text = ""
-        binding.bgPanel.setBackgroundResource(R.drawable.bg_panel_blank_light)
+    private fun resetState() {
+        binding.tvValueTime.visibility = View.GONE
+        binding.tvGlucoseValue.text = "--"
+        binding.tvSensorRemainTime.visibility = View.GONE
+        binding.tvGlucoseState.visibility = View.GONE
+        if (UserInfoManager.shareUserInfo == null) {
+            HomeBackGroundSelector.instance().getHomeBg(null)
+        }
+        binding.bgPanel.setBackgroundResource(
+            HomeBackGroundSelector.instance().getBgForTrend(null, null)
+        )
     }
 
     private fun update() {
@@ -121,18 +136,12 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 HomeBackGroundSelector.instance().getHomeBg(deviceModel.glucoseLevel)
             }
         } else {
-            binding.tvValueTime.text = ""
-            binding.tvGlucoseValue.text = "--"
-            if (UserInfoManager.shareUserInfo == null) {
-                HomeBackGroundSelector.instance().getHomeBg(null)
-            }
-            binding.bgPanel.setBackgroundResource(
-                HomeBackGroundSelector.instance().getBgForTrend(null, null)
-            )
+            resetState()
         }
         binding.tvGlucoseState.visibility = View.GONE
         if (deviceModel.minutesAgo != null && deviceModel.glucose != null
-            && deviceModel.minutesAgo!! in 0..15) {
+            && deviceModel.minutesAgo!! in 0..15
+        ) {
             binding.tvGlucoseState.visibility = View.GONE
             binding.tvGlucoseState.text = ""
             if (deviceModel.isMalfunction) {
@@ -174,7 +183,8 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                 binding.tvSensorRemainTime.visibility = View.VISIBLE
             } else if (remainingTime < TimeUtils.oneDayHour) {
                 if (remainingTime <= 1) {
-                    binding.tvSensorRemainTime.text = String.format(resources.getString(R.string.expiring_in_hour), 1)
+                    binding.tvSensorRemainTime.text =
+                        String.format(resources.getString(R.string.expiring_in_hour), 1)
                 } else {
                     binding.tvSensorRemainTime.text =
                         String.format(resources.getString(R.string.expiring_in_hour), remainingTime)
@@ -185,7 +195,8 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
                     BigDecimal(TimeUtils.oneDayHour),
                     RoundingMode.HALF_UP
                 ).toInt()
-                binding.tvSensorRemainTime.text = String.format(resources.getString(R.string.expiring_in_days), days)
+                binding.tvSensorRemainTime.text =
+                    String.format(resources.getString(R.string.expiring_in_days), days)
                 binding.tvSensorRemainTime.visibility = View.VISIBLE
             } else {
                 binding.tvSensorRemainTime.visibility = View.GONE

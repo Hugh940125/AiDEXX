@@ -148,7 +148,9 @@ class AidexBleAdapter private constructor() : BleAdapter() {
 
                     CONNECT_SUCCESS -> {
                         workHandler!!.removeMessages(BLE_CONNECT_TIME_OUT)
-                        onConnectSuccess()
+                        if (isOnConnectState){
+                            onConnectSuccess()
+                        }
                     }
 
                     START_SCAN -> {
@@ -564,12 +566,10 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     retry()
                 } else {
                     retryNum = 0
-                    workHandler?.sendEmptyMessage(CLOSE_GATT)
                     workHandler?.sendEmptyMessage(CONNECT_FAILURE)
                 }
                 return
             }
-            workHandler?.sendEmptyMessage(CLOSE_GATT)
             workHandler?.sendEmptyMessage(CONNECT_FAILURE)
         }
 

@@ -233,7 +233,7 @@
     <string name="Falling_Fast">快速下降</string>
     <string name="min_ago">&#160;分钟前</string>
     <string name="expiring_in">过期&#160;</string>
-    <string name="expiring_in_hour">%s小时过期</string>
+    <string name="expiring_in_hour">剩余%s小时</string>
     <string name="expiring_in_days">剩余%s天</string>
     <string name="hour">&#160;小时后</string>
     <string name="days">&#160;天后</string>
@@ -272,8 +272,8 @@
     <string name="denied">浏览分享数据时无法访问</string>
     <string name="title_update">版本更新</string>
     <string name="btn_update">更新</string>
-    <string name="log_upload">反馈</string>
-    <string name="str_succ">成功！</string>
+    <string name="log_upload">本地日志</string>
+    <string name="str_succ">成功</string>
     <string name="log_uploading">上传中…</string>
     <string name="check_permission">检查权限</string>
     <string name="hight_glucose_alert">当您的传感器葡萄糖读数高于以下值时，您将收到提醒：</string>

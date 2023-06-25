@@ -420,7 +420,7 @@ void Ble::onReceiveData(const char *data, uint16 length) {
 }
 
 void Ble::onReceiveData(uint16 uuid, const char *data, uint16 length) {
-    if (controller == NULL) return;
+    if (controller == nullptr) return;
 
     if (uuid == controller->getCharacteristicUUID()) {
 

@@ -21,13 +21,8 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        PairUtil.observeMessage(this, lifecycleScope)
         initView()
         initEvents()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
     private fun initEvents() {
@@ -49,7 +44,7 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
                     finish()
                 }
             } else {
-                if (key == EventBusKey.EVENT_PAIR_RESULT) {
+                if (key == EventBusKey.EVENT_UNPAIR_RESULT) {
                     ToastUtil.showShort(getString(R.string.pair_fail))
                 } else {
                     ToastUtil.showShort(getString(R.string.unpair_fail))

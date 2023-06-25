@@ -98,6 +98,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     }
                     val bleMessage =
                         BleMessage(operation, success, result, resCode, entity.messageType)
+                    if (bleMessage.operation != CgmOperation.DISCOVER) {
+                        LogUtil.eAiDEX(
+                            "Operation:${bleMessage.operation}, Success:${bleMessage.isSuccess}"
+                        )
+                    }
                     MessageDistributor.instance().send(bleMessage)
                 }
             }
@@ -131,11 +136,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private val tempCalList = mutableListOf<CalibrateEntity>()
 
     override fun onMessage(message: BleMessage) {
-        if (message.operation != CgmOperation.DISCOVER) {
-            LogUtil.eAiDEX(
-                "operation:${message.operation}, success:${message.isSuccess}"
-            )
-        }
         val data = message.data
         when (message.operation) {
             CgmOperation.DISCOVER -> {
@@ -338,7 +338,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 is ApiResult.Failure -> {
                     apiResult.msg.run {
                         Dialogs.showError(this)
-                        EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, false)
+                        clearPairInfo()
                     }
                 }
             }

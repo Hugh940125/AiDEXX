@@ -41,7 +41,9 @@ class MessageDistributor {
     }
 
     fun observer(observer: MessageObserver) {
-        observerList.add(observer)
+        if (!observerList.contains(observer)){
+            observerList.add(observer)
+        }
     }
 
     fun removeObserver(observer: MessageObserver) {

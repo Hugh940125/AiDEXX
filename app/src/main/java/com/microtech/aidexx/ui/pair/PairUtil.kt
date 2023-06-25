@@ -31,7 +31,6 @@ import kotlinx.coroutines.launch
 
 object PairUtil {
     private var isBonding = false
-    private var isBondListenerRegister = false
 
     enum class Operation { PAIR, UNPAIR }
 
@@ -45,10 +44,10 @@ object PairUtil {
             TransmitterManager.instance().removePair()
         }
     }
-
     private var isForceUnpair: Boolean = false
+    private var receiver: BroadcastReceiver? = null
 
-    private val receiver = object : BroadcastReceiver() {
+    class BondStateReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
             if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
@@ -91,8 +90,10 @@ object PairUtil {
         MessageDistributor.instance().observerAndIntercept(object : MessageObserver {
             override fun onMessage(message: BleMessage) {
                 val success = message.isSuccess
-                val pair = TransmitterManager.instance().getPair()
-                if (pair != null) {
+                val instance = TransmitterManager.instance()
+                val model = if (operation == Operation.PAIR) instance.getPair()
+                else instance.getDefault()
+                if (model != null) {
                     when (message.operation) {
                         AidexXOperation.DISCOVER -> {
                             if (!success) {
@@ -135,7 +136,7 @@ object PairUtil {
                             if (!isForceUnpair) {
                                 if (success) {
                                     scope.launch {
-                                        pair.deletePair()
+                                        model.deletePair()
                                     }
                                 } else {
                                     Dialogs.showError(context.getString(R.string.Unpair_fail))
@@ -147,7 +148,7 @@ object PairUtil {
                             LogUtil.eAiDEX("Pair ----> unpair:$success")
                             if (success) {
                                 scope.launch {
-                                    pair.deletePair()
+                                    model.deletePair()
                                 }
                             } else {
                                 Dialogs.showError(context.getString(R.string.Unpair_fail))
@@ -159,12 +160,12 @@ object PairUtil {
                             ObjectBox.runAsync({
                                 val startTimePair = ByteUtils.checkToDate(data)
                                 startTimePair?.let {
-                                    pair.updateStart(startTimePair)
+                                    model.updateStart(startTimePair)
                                 }
-                                pair.savePair()
+                                model.savePair()
                             }, {
                                 scope.launch {
-                                    TransmitterManager.instance().set(pair)
+                                    instance.set(model)
                                     EventBusManager.send(EventBusKey.EVENT_PAIR_RESULT, true)
                                 }
                             }, {
@@ -178,21 +179,21 @@ object PairUtil {
                             val data = message.data
                             val deviceSoftVersion = ByteUtils.getDeviceSoftVersion(data)
                             val deviceType = ByteUtils.getDeviceType(data)
-                            pair.entity.version = deviceSoftVersion
-                            pair.entity.deviceModel = deviceType
+                            model.entity.version = deviceSoftVersion
+                            model.entity.deviceModel = deviceType
                         }
 
                         AidexXOperation.DISCONNECT -> {
                             LogUtil.eAiDEX("Pair ----> disconnect:$success")
                             when (operation) {
                                 Operation.PAIR -> {
-                                    if (!pair.isPaired()) {
+                                    if (!model.isPaired()) {
                                         pairFail()
                                     }
                                 }
 
                                 Operation.UNPAIR -> {
-                                    if (pair.isPaired()) {
+                                    if (model.isPaired()) {
                                         pairFail()
                                     }
                                 }
@@ -242,15 +243,14 @@ object PairUtil {
     }
 
     fun registerBondStateChangeReceiver(context: Context) {
+        receiver = BondStateReceiver()
         val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         context.registerReceiver(receiver, filter)
-        isBondListenerRegister = true
     }
 
     fun unregisterBondStateChangeReceiver(context: Context) {
-        if (isBondListenerRegister) {
-            context.unregisterReceiver(receiver)
-            isBondListenerRegister = false
+        receiver?.let {
+            context.unregisterReceiver(it)
         }
     }
 }

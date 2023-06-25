@@ -12,6 +12,7 @@ import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -49,7 +50,6 @@ const val BLE_INFO = "info"
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(),
     OnClickListener {
     private var checkPass: Boolean = false
-    private var needSetMessageCallback = true
     private var scanStarted = false
     private var rotateAnimation: RotateAnimation? = null
     private var subscription: DataSubscription? = null
@@ -79,6 +79,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         setContentView(binding.root)
         transmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
+        PairUtil.observeMessage(this, AidexxApp.mainScope)
         initView()
         initEvent()
     }
@@ -91,8 +92,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             transmitterHandler.removeMessages(DISMISS_LOADING)
             if (it) {
                 if (window.decorView.visibility == View.VISIBLE) {
-                    Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
                     lifecycleScope.launch {
+                        Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
                         delay(2500)
                         ActivityUtil.finishToMain()
                     }
@@ -105,10 +106,6 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
 
     private fun deviceDiscover() {
         AidexBleAdapter.getInstance().onDeviceDiscover = {
-            if (needSetMessageCallback) {
-                PairUtil.observeMessage(this, lifecycleScope)
-                needSetMessageCallback = false
-            }
             if (it.name.contains(X_NAME)) {
                 val address = it.address
                 if ((transmitter == null || address != transmitter?.deviceMac)
@@ -227,17 +224,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 1) {
-            PairUtil.observeMessage(this, lifecycleScope)
-        }
-    }
-
     override fun onClick(v: View?) {
         when (v) {
             binding.layoutMyTrans.transItem -> {
-                MessageDistributor.instance().removeObserver()
                 val intent = Intent(this, TransOperationActivity::class.java)
                 intent.putExtra(
                     BLE_INFO,
@@ -253,7 +242,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 } else {
                     intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
                 }
-                startActivityForResult(intent, 1)
+                startActivity(intent)
             }
         }
     }
