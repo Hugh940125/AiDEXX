@@ -2,7 +2,7 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LocalManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.roundOffDecimal
 import com.microtech.aidexx.utils.toGlucoseValue

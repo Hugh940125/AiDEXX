@@ -16,7 +16,7 @@ import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.base.PageActions
 import com.microtech.aidexx.common.net.repository.EventRepository
-import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.databinding.FragmentEventBinding
 import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.InsulinUsrPresetEntity

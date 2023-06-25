@@ -252,12 +252,14 @@ object EventDao {
     suspend fun queryDietSysPresetByName(
         name: String,
         language: String,
+        sysPresetVersion: String
     ): MutableList<DietSysPresetEntity>? =
         awaitCallInTx {
             dietSysPresetBox.query {
                 contains(DietSysPresetEntity_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 equal(DietSysPresetEntity_.deleteFlag, 0)
                 equal(DietSysPresetEntity_.language, language, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                equal(DietSysPresetEntity_.version, sysPresetVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 order(DietSysPresetEntity_.name)
             }.find()
         }
@@ -278,12 +280,14 @@ object EventDao {
     suspend fun queryMedicineSysPresetByName(
         name: String,
         language: String,
+        sysPresetVersion: String
     ): MutableList<MedicineSysPresetEntity>? =
         awaitCallInTx {
             medicineSysPresetBox.query {
                 contains(MedicineSysPresetEntity_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 equal(MedicineSysPresetEntity_.deleteFlag, 0)
                 equal(MedicineSysPresetEntity_.language, language, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                equal(MedicineSysPresetEntity_.version, sysPresetVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 order(MedicineSysPresetEntity_.name)
             }.find()
         }
@@ -304,12 +308,14 @@ object EventDao {
     suspend fun queryInsulinSysPresetByName(
         name: String,
         language: String,
+        sysPresetVersion: String
     ): MutableList<InsulinSysPresetEntity>? =
         awaitCallInTx {
             insulinSysPresetBox.query {
                 contains(InsulinSysPresetEntity_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 equal(InsulinSysPresetEntity_.deleteFlag, 0)
                 equal(InsulinSysPresetEntity_.language, language, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                equal(InsulinSysPresetEntity_.version, sysPresetVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 order(InsulinSysPresetEntity_.name)
             }.find()
         }
@@ -330,12 +336,14 @@ object EventDao {
     suspend fun querySportSysPresetByName(
         name: String,
         language: String,
+        sysPresetVersion: String
     ): MutableList<SportSysPresetEntity>? =
         awaitCallInTx {
             sportSysPresetBox.query {
                 contains(SportSysPresetEntity_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 equal(SportSysPresetEntity_.deleteFlag, 0)
                 equal(SportSysPresetEntity_.language, language, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                equal(SportSysPresetEntity_.version, sysPresetVersion, QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 order(SportSysPresetEntity_.name)
             }.find()
         }

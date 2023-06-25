@@ -1,4 +1,4 @@
-package com.microtech.aidexx.data
+package com.microtech.aidexx.data.resource
 
 import android.R
 import android.annotation.SuppressLint
@@ -65,7 +65,7 @@ object LocalManager {
     }
 
     fun getAidexResourceInspector(resources: Resources): Resources {
-        if (!::mResourcesInspector.isInitialized) {
+        if (!LocalManager::mResourcesInspector.isInitialized) {
             mResourcesInspector = object: Resources(
                 resources.assets,
                 resources.displayMetrics,

@@ -6,7 +6,7 @@ import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LocalManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity

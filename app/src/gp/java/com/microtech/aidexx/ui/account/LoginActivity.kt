@@ -26,7 +26,7 @@ import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
 import kotlinx.coroutines.launch
-import com.microtech.aidexx.data.AppUpgradeManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>() {

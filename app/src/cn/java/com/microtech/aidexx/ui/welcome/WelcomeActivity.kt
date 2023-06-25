@@ -7,7 +7,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityWelcomeBinding
 import com.microtech.aidexx.ui.account.LoginActivity
-import com.microtech.aidexx.ui.main.MainActivity
+import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -51,7 +51,8 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 
     private fun greenLight() {
         if (UserInfoManager.instance().isLogin()) {
-            ActivityUtil.toActivity(this, MainActivity::class.java)
+            // 冷启动时先去加载动态资源 如语言资源需要堵界面
+            ActivityUtil.toActivity(this, LoadResourceActivity::class.java)
             finish()
         } else {
             ActivityUtil.toActivity(this, LoginActivity::class.java)

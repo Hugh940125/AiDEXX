@@ -16,8 +16,8 @@ import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.EventUnitManager
-import com.microtech.aidexx.data.SpecificationModel
+import com.microtech.aidexx.data.resource.EventUnitManager
+import com.microtech.aidexx.data.resource.SpecificationModel
 import com.microtech.aidexx.databinding.DialogSportPresetBinding
 import com.microtech.aidexx.db.entity.event.ExerciseDetail
 import com.microtech.aidexx.db.entity.event.preset.SportUsrPresetEntity

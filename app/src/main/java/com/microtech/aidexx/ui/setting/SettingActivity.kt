@@ -12,7 +12,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.toast
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LocalManager
 import com.microtech.aidexx.databinding.ActivitySettingBinding
 import com.microtech.aidexx.ui.pair.TransmitterActivity
 import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity

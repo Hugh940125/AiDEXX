@@ -1,6 +1,5 @@
-package com.microtech.aidexx.data
+package com.microtech.aidexx.data.resource
 
-import android.R
 import android.os.Environment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -185,8 +184,7 @@ object LocalResourceManager {
                         }
                         if (list.isNotEmpty()) {
                             EventDbRepository.insertSysPresetData(list as List<BaseSysPreset>)
-                            EventDbRepository.removeSysPresetOfOtherVersion(it, clazz)
-                            MmkvManager.setEventSysPresetVersion(it, clazz)
+                            MmkvManager.setEventSysPresetNewVersion(it, clazz)
                             true
                         } else {
                             LogUtil.xLogE("updateEventSysPreset 资源文件转 entity 为空 ${clazz.simpleName}", TAG)
@@ -205,8 +203,7 @@ object LocalResourceManager {
                 true
             }
         } ?:let {
-            EventDbRepository.removeSysPresetData(clazz)
-            MmkvManager.setEventSysPresetVersion("", clazz)
+            MmkvManager.setEventSysPresetNewVersion("0", clazz)
             LogUtil.xLogE("清空预设 ${clazz.simpleName}", TAG)
             true
         }
@@ -228,8 +225,7 @@ object LocalResourceManager {
                         }
                         if (list.isNotEmpty()) {
                             EventDbRepository.insertUnit(list)
-                            EventDbRepository.removeUnitOfOtherVersion(it)
-                            MmkvManager.setUnitVersion(it)
+                            MmkvManager.setUnitNewVersion(it)
                             result = true
                         } else {
                             LogUtil.xLogE("updateUnit 资源文件转 entity 为空", TAG)
@@ -247,8 +243,7 @@ object LocalResourceManager {
             }
         } ?:let {
             // 删除单位文件
-            EventDbRepository.removeAllUnit()
-            MmkvManager.setUnitVersion("")
+            MmkvManager.setUnitNewVersion("0")
             LogUtil.xLogE("清空单位", TAG)
             result = true
         }
@@ -274,10 +269,8 @@ object LocalResourceManager {
                         }
 
                         if (list.isNotEmpty()) {
-                            val languageRepo = LanguageDbRepository()
-                            languageRepo.insert(list)
-                            languageRepo.removeLanguageOfOtherVersion(it)
-                            MmkvManager.setLanguageVersion(it)
+                            LanguageDbRepository().insert(list)
+                            MmkvManager.setLanguageNewVersion(it)
                             result = true
                         } else {
                             LogUtil.xLogE("updateLanguage 资源文件转 entity 为空", TAG)
@@ -295,8 +288,7 @@ object LocalResourceManager {
 
         } ?:let {
             // 删除语言文件
-            LanguageDbRepository().removeAll()
-            MmkvManager.setLanguageVersion("")
+            MmkvManager.setLanguageNewVersion("0")
             result = true
         }
         return result

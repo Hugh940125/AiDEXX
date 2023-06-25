@@ -1,4 +1,4 @@
-package com.microtech.aidexx.data
+package com.microtech.aidexx.data.resource
 
 import com.google.gson.Gson
 import com.microtech.aidexx.BuildConfig

@@ -2,7 +2,7 @@ package com.microtech.aidexx.ui.main.event.viewmodels
 
 import com.microtech.aidexx.common.stripTrailingZerosWithoutPointer
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.db.entity.event.DietDetail
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.DietEntity_

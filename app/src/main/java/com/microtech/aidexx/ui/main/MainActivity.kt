@@ -18,18 +18,20 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
-import com.microtech.aidexx.data.AppUpgradeManager
-import com.microtech.aidexx.data.EventUnitManager
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
+import com.microtech.aidexx.data.resource.EventUnitManager
+import com.microtech.aidexx.data.resource.LocalManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
+import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
@@ -140,6 +142,9 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        checkAndUpdateResourceIfNeeded()
+
         setContentView(binding.root)
         mHandler = MainHandler(this)
         initSDKs()
@@ -185,6 +190,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     override fun onResume() {
         super.onResume()
+        checkAndUpdateResourceIfNeeded()
         checkPermission()
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo()?.let {
@@ -364,4 +370,14 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onBackPressed() {
         ActivityUtil.toSystemHome(this)
     }
+
+
+    private fun checkAndUpdateResourceIfNeeded() {
+        if (MmkvManager.isNeedToUpgradeResource()) {
+            startActivity(Intent(this, LoadResourceActivity::class.java))
+            finish()
+        }
+    }
+
+
 }

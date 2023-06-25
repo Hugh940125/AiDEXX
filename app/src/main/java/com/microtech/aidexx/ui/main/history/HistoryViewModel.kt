@@ -16,7 +16,7 @@ import com.microtech.aidexx.common.hourMinute
 import com.microtech.aidexx.common.setScale
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity

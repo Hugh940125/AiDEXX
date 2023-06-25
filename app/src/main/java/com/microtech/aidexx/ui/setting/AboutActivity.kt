@@ -8,7 +8,7 @@ import com.microtech.aidexx.IntentKey
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.data.AppUpgradeManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityAboutBinding
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.ui.web.WebActivity

@@ -53,18 +53,39 @@ object MmkvManager {
     private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
     private const val RESOURCE_VERSION = "RESOURCE_VERSION"
     private const val VERSION_UNIT = "VERSION_UNIT"
+    private const val FLAG_NEW_VERSION_UNIT = "FLAG_NEW_VERSION_UNIT"
     private const val VERSION_LANGUAGE = "VERSION_LANGUAGE"
+    private const val FLAG_NEW_VERSION_LANGUAGE = "FLAG_NEW_VERSION_LANGUAGE"
     private const val VERSION_FOOD_SYS_PRESET = "VERSION_FOOD_SYS_PRESET"
     private const val VERSION_EXERCISE_SYS_PRESET = "VERSION_EXERCISE_SYS_PRESET"
     private const val VERSION_MEDICINE_SYS_PRESET = "VERSION_MEDICINE_SYS_PRESET"
     private const val VERSION_INSULIN_SYS_PRESET = "VERSION_INSULIN_SYS_PRESET"
+    private const val FLAG_NEW_VERSION_FOOD_SYS_PRESET = "FLAG_NEW_VERSION_FOOD_SYS_PRESET"
+    private const val FLAG_NEW_VERSION_EXERCISE_SYS_PRESET = "FLAG_NEW_VERSION_EXERCISE_SYS_PRESET"
+    private const val FLAG_NEW_VERSION_MEDICINE_SYS_PRESET = "FLAG_NEW_VERSION_MEDICINE_SYS_PRESET"
+    private const val FLAG_NEW_VERSION_INSULIN_SYS_PRESET = "FLAG_NEW_VERSION_INSULIN_SYS_PRESET"
     private const val CURRENT_LANGUAGE_TAG = "CURRENT_LANGUAGE_TAG"
+    private const val IS_NEED_TO_UPGRADE_RESOURCE = "IS_NEED_TO_UPGRADE_RESOURCE"
 
+
+    fun setNeedToUpgradeResource(isNeed: Boolean) =
+        MmkvUtil.encodeBoolean(IS_NEED_TO_UPGRADE_RESOURCE, isNeed)
+
+    fun isNeedToUpgradeResource(): Boolean =
+        MmkvUtil.decodeBoolean(IS_NEED_TO_UPGRADE_RESOURCE, false)
 
     fun setCurrentLanguageTag(tag: String) = MmkvUtil.encodeString(CURRENT_LANGUAGE_TAG, tag)
     fun getCurrentLanguageTag() =
         MmkvUtil.decodeString(CURRENT_LANGUAGE_TAG, Locale.getDefault().toLanguageTag())
 
+
+    private fun <T: BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) = when(clazz) {
+        DietSysPresetEntity::class.java -> FLAG_NEW_VERSION_FOOD_SYS_PRESET
+        SportSysPresetEntity::class.java -> FLAG_NEW_VERSION_EXERCISE_SYS_PRESET
+        MedicineSysPresetEntity::class.java -> FLAG_NEW_VERSION_MEDICINE_SYS_PRESET
+        InsulinSysPresetEntity::class.java -> FLAG_NEW_VERSION_INSULIN_SYS_PRESET
+        else -> null
+    }
 
     private fun <T: BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when(clazz) {
         DietSysPresetEntity::class.java -> VERSION_FOOD_SYS_PRESET
@@ -73,18 +94,42 @@ object MmkvManager {
         InsulinSysPresetEntity::class.java -> VERSION_INSULIN_SYS_PRESET
         else -> null
     }
+
     fun <T: BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
         return getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
     }
     fun <T: BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
         getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, version) }
     }
+    fun <T: BaseSysPreset> getEventSysPresetNewVersion(clazz: Class<T>): String {
+        return getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
+    }
+    fun <T: BaseSysPreset> setEventSysPresetNewVersion(newVersion: String, clazz: Class<T>) {
+        if (newVersion.isNotEmpty()) {
+            setNeedToUpgradeResource(true)
+        }
+        getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.decodeString(it, newVersion) }
+    }
 
 
     fun setLanguageVersion(version: String) = MmkvUtil.encodeString(VERSION_LANGUAGE, version)
     fun getLanguageVersion():String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
+    fun setLanguageNewVersion(version: String) {
+        if (version.isNotEmpty()) {
+            setNeedToUpgradeResource(true)
+        }
+        MmkvUtil.encodeString(FLAG_NEW_VERSION_LANGUAGE, version)
+    }
+    fun getLanguageNewVersion():String = MmkvUtil.decodeString(FLAG_NEW_VERSION_LANGUAGE, "")
     fun setUnitVersion(version: String) = MmkvUtil.encodeString(VERSION_UNIT, version)
     fun getUnitVersion():String = MmkvUtil.decodeString(VERSION_UNIT, "")
+    fun setUnitNewVersion(version: String) {
+        if (version.isNotEmpty()) {
+            setNeedToUpgradeResource(true)
+        }
+        MmkvUtil.encodeString(FLAG_NEW_VERSION_UNIT, version)
+    }
+    fun getUnitNewVersion():String = MmkvUtil.decodeString(FLAG_NEW_VERSION_UNIT, "")
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
