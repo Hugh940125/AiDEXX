@@ -564,7 +564,7 @@ object EventRepository {
         val apiResult = when (clazz) {
             BloodGlucoseEntity::class.java -> api.deleteFingerBloodGlucose(reqIds)
             DietEntity::class.java -> api.deleteByIdsFood(reqIds)
-            ExerciseEntity::class.java -> api.deleteExerciseRecord(reqIds)
+            ExerciseEntity::class.java -> api.deleteByIdsExercise(reqIds)
             InsulinEntity::class.java -> api.deleteByIdsInsulin(reqIds)
             MedicationEntity::class.java -> api.deleteByIdsMedication(reqIds)
             OthersEntity::class.java -> api.deleteByIdsOthers(reqIds)

@@ -3,16 +3,23 @@ package com.microtech.aidexx.ui.setting
 import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.ioScope
+import com.microtech.aidexx.common.net.repository.AccountRepository
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityOtherSettingBinding
 import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.setting.log.FeedbackUtil
 import com.microtech.aidexx.utils.DeviceInfoHelper
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.DIALOGS_TYPE_VERTICAL
 import com.microtech.aidexx.widget.dialog.Dialogs
@@ -39,6 +46,12 @@ class OtherSettingActivity : BaseActivity<BaseViewModel, ActivityOtherSettingBin
                     confirmBtnText = getString(R.string.logout),
                     btnOrientation = DIALOGS_TYPE_VERTICAL,
                     confirm = {
+
+                        AidexxApp.instance.ioScope.launch {
+                            val apiRet = AccountRepository.logout()
+                            LogUtil.d("$apiRet")
+                        }
+
                         lifecycleScope.launch(Dispatchers.IO) {
                             MmkvManager.saveCustomerServiceIconTop(0)
                             MmkvManager.saveCustomerServiceIconRight(0)

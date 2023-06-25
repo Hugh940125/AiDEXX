@@ -86,9 +86,17 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        LogUtil.d("ChartViewModel homefragment onCreateView", TAG)
         binding = FragmentHomeBinding.inflate(layoutInflater)
         initView()
+        initEvent()
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         initData()
+        LogUtil.d("ChartViewModel homefragment onViewCreated", TAG)
         chartViewHolder = ChartViewHolder(binding, this) {
             if (switchOrientation == 2) {
                 orientation(initOrientation)
@@ -97,8 +105,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY, true)
             }
         }
-        initEvent()
-        return binding.root
     }
 
     private fun initView() {

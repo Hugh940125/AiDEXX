@@ -26,7 +26,6 @@ import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.main.event.EventParameterManager
 import com.microtech.aidexx.ui.main.event.EventSlotType
-import com.microtech.aidexx.ui.main.event.TYPE_SLOT_MEDICINE
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.PinyinUtils
 import com.microtech.aidexx.utils.eventbus.DataChangedType
@@ -243,11 +242,7 @@ abstract class BaseEventViewModel<T: BaseEventEntity, D: BaseEventDetail, P: Bas
         val type = getEventSlotType()
         type ?: return ""
         val idx = getEventSlotIndex(type)
-        eventMomentTypeIndex = if (type == TYPE_SLOT_MEDICINE) {
-            if (0 != idx) { idx + 1 } else { 0 }
-        } else {
-            idx + 1
-        }
+        eventMomentTypeIndex = idx + 1 // 接口定义需要从1开始
 
         return periodMgr.getEventSlot(type)
     }

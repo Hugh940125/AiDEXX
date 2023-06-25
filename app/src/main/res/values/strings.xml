@@ -549,6 +549,7 @@
     <string name="dinner">晚餐</string>
     <string name="extra_meal">加餐</string>
     <string name="makeup">补打</string>
+    <string name="other">其他</string>
 
     <string name="diet_input_tip">请输入饮食名称</string>
     <string name="sport_input_tip">请输入运动名称</string>

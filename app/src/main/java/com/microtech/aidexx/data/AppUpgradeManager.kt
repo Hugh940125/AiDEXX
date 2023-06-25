@@ -109,25 +109,19 @@ object AppUpgradeManager {
                     MmkvManager.updateAppCheckVersionTime()
                     val info = apiResult.result
 
-
-//                    LocalResourceManager.startUpgrade(UpgradeInfo.VersionInfo(
-//                        isForce = false,
-//                        info = UpgradeInfo.VersionData(
-//                            version = "0.0.2",
-//                            downloadpath = "https://static.pancares.com/vcs/resource/63.zip"
-//                        )
-//                    ))
-
-                    // 资源包分析升级
-                    val versionInfo =  info.data?.resourceUpdateInfo
-                    versionInfo?.info?.let {
-                        LocalResourceManager.startUpgrade(versionInfo)
-                    }
-
                     if (StringUtils.versionCompare(BuildConfig.VERSION_NAME,
                             info.data?.appUpdateInfo?.info?.version ?: "")) {
                         info.data
-                    } else null
+                    } else {
+
+                        // 资源包升级
+                        val versionInfo =  info.data?.resourceUpdateInfo
+                        versionInfo?.info?.let {
+                            LocalResourceManager.startUpgrade(versionInfo)
+                        }
+
+                        null
+                    }
                 }
                 is ApiResult.Failure -> null
             }

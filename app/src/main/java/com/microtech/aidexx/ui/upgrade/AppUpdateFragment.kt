@@ -13,6 +13,7 @@ import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.data.AppUpgradeManager.DOWNLOAD_STATUS_DONE
 import com.microtech.aidexx.data.AppUpgradeManager.DOWNLOAD_STATUS_ERROR
+import com.microtech.aidexx.data.LocalResourceManager
 import com.microtech.aidexx.databinding.DialogAppUpdateBinding
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ToastUtil
@@ -89,6 +90,12 @@ class AppUpdateFragment(private val updateInfo: UpgradeInfo): DialogFragment() {
             btCancel.setOnClickListener {
                 dismissAllowingStateLoss()
                 LogUtil.xLogE("暂不更新", TAG)
+
+                // 资源包分析升级
+                updateInfo.resourceUpdateInfo?.info?.let {
+                    LocalResourceManager.startUpgrade(updateInfo.resourceUpdateInfo)
+                }
+
             }
         }
 

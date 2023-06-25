@@ -55,6 +55,7 @@ const val getUserInfo = "$USER_URL/getUserInfo"
 const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordPhoneVerificationCode"
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
+const val logout = "$USER_URL/logout"
 const val getFollowers = "http://192.168.222.26:5555/backend/aidex/follows"
 
 //gp
@@ -116,7 +117,7 @@ const val deleteByIdsInsulin = "$INSULIN_URL/deleteByIds"
 const val EXERCISE_URL = "$EVENT_URL/exercise"
 const val saveOrUpdateExerciseRecord = "$EXERCISE_URL/saveOrUpdateExerciseRecord"
 const val getExerciseList = "$EXERCISE_URL/getExerciseList"
-const val deleteExerciseRecord = "$EXERCISE_URL/deleteExerciseRecord"
+const val deleteByIdsExercise = "$EXERCISE_URL/deleteByIds"
 
 const val MEDICATION_URL = "$EVENT_URL/medicationRecord"
 const val saveOrUpdateMedicationRecord = "$MEDICATION_URL/saveOrUpdateMedicationRecord"
@@ -148,6 +149,8 @@ interface ApiService {
 
 
     //region 账户相关
+    @GET(logout)
+    suspend fun logout(): ApiResult<BaseResponse<String?>>
     @POST(sendRegisterPhoneVerificationCode)
     suspend fun sendRegisterPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<Nothing>>
 
@@ -257,8 +260,8 @@ interface ApiService {
     suspend fun getExerciseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ExerciseEntity>>>
     @POST(saveOrUpdateExerciseRecord)
     suspend fun saveOrUpdateExerciseRecord(@Body data: ReqSaveOrUpdateEventRecords<ExerciseEntity>): ApiResult<BaseResponse<MutableList<ExerciseEntity>>>
-    @POST(deleteExerciseRecord)
-    suspend fun deleteExerciseRecord(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
+    @POST(deleteByIdsExercise)
+    suspend fun deleteByIdsExercise(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
 

@@ -53,4 +53,8 @@ object AccountRepository {
     suspend fun getFollowers() = withContext(dispatcher) {
         ApiService.instance.getFollowers()
     }
+
+    suspend fun logout() = withContext(dispatcher) {
+        ApiService.instance.logout()
+    }
 }

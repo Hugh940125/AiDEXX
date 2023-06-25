@@ -1,5 +1,6 @@
 package com.microtech.aidexx.utils.mmkv
 
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.DataSyncController
@@ -212,10 +213,10 @@ object MmkvManager {
         MmkvUtil.decodeInt(CUSTOMER_SERVICE_ICON_BOTTOM, 0)
 
     fun updateAppCheckVersionTime(date: Long = Date().getStartOfTheDay().time) =
-        MmkvUtil.encodeLong(APP_CHECK_UPDATE_DATE, date)
+        MmkvUtil.encodeLong("$APP_CHECK_UPDATE_DATE-${BuildConfig.VERSION_NAME}", date)
 
     fun getAppCheckVersionTime(): Long =
-        MmkvUtil.decodeLong(APP_CHECK_UPDATE_DATE, 0)
+        MmkvUtil.decodeLong("$APP_CHECK_UPDATE_DATE-${BuildConfig.VERSION_NAME}", 0)
 
     fun signalLossAlertMethod(): Int = MmkvUtil.decodeInt(SIGNAL_NOTICE_METHOD, 2)
 
