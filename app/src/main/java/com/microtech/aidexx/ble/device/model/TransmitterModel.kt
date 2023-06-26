@@ -21,7 +21,7 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.AlertSettingsEntity
+import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
@@ -30,9 +30,9 @@ import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.ui.main.home.newOrUsedSensor
 import com.microtech.aidexx.ui.main.home.warmingUp
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.AlertType
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
-import com.microtech.aidexx.ui.setting.alert.AlertUtil.calculateFrequency
 import com.microtech.aidexx.utils.ByteUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
@@ -42,7 +42,6 @@ import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
@@ -60,9 +59,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 import java.util.Date
-import kotlin.math.abs
-import kotlin.math.exp
-import kotlin.math.roundToInt
 
 /**
  * APP-SRC-A-2-7-2
@@ -124,7 +120,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private var lastHyperAlertTime: Long = 0
     private var lastHypoAlertTime: Long = 0
     private var lastUrgentAlertTime: Long = 0
-    private var alertSetting: AlertSettingsEntity? = null
+    private var alertSetting: SettingsEntity? = null
     private val cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
@@ -427,7 +423,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             getHistoriesFromBroadcast(nextEventIndex, adHistories)
                     }
                     if (historiesFromBroadcast.isNotEmpty()) {
-                        alertSetting = AlertUtil.getAlertSettings()
+                        alertSetting = SettingsManager.getSettings()
                         saveBriefHistory(historiesFromBroadcast.asReversed(), false)
                     }
                 }
@@ -535,7 +531,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
             if (histories.isNullOrEmpty()) return@launch
-            alertSetting = AlertUtil.getAlertSettings()
+            alertSetting = SettingsManager.getSettings()
             if (histories.first().timeOffset == nextEventIndex) {
                 saveBriefHistory(histories)
             }
@@ -851,103 +847,5 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             glucose < ThresholdManager.hypo -> GlucoseLevel.LOW
             else -> GlucoseLevel.NORMAL
         }
-    }
-
-    /**
-     * @param needAlert (是否需要弹框提示，再切换语言重新加载历史数据的时候不需要)
-     * */
-    fun updateGlucoseTrend(dateTime: Date, needAlert: Boolean = true) {
-        ObjectBox.runAsync({
-            val size = 5
-            val glucoseArray = FloatArray(size)
-            var isEventCalibration = false //是否最近有校准事件
-            loop@ for (index in cgmHistories.size - 1 downTo 0 step 4) {
-                val history = cgmHistories[index]
-                if (history.eventWarning == -1) {
-                    continue@loop
-                }
-                val i =
-                    ((dateTime.time - history.deviceTime.time).toDouble() / 1000 / 300f).roundToInt()
-                val glu = history.glucose ?: 0f
-                if (i < 0) {
-                    continue@loop
-                } else if (i >= size) {
-                    break@loop
-                } else {
-                    if (history.eventType == History.HISTORY_GLUCOSE) {
-                        glucoseArray[i] = glu
-                    } else {
-                        isEventCalibration = true
-                        break@loop
-                    }
-                }
-            }
-            val roc = if (isEventCalibration) null else {
-                if (glucoseArray.any { it < ThresholdManager.hypo || it > ThresholdManager.hyper }) null else {
-                    val fn = (1 - exp(
-                        (abs(glucoseArray[0] + glucoseArray[2] - 2 * glucoseArray[1]) + abs(
-                            glucoseArray[1] + glucoseArray[3] - 2 * glucoseArray[2]
-                        ) + abs(glucoseArray[2] + glucoseArray[4] - 2 * glucoseArray[3])) / 5 - 1
-                    )) * 1.5
-                    if (fn > 0) {
-                        val trend =
-                            (fn * (glucoseArray[0] - glucoseArray[1]) / 5 + fn * (glucoseArray[0] - glucoseArray[2]) / 10 + (glucoseArray[0] - glucoseArray[3]) / 15) / (1 + 2 * fn);
-                        if ((trend > 0.06 && (glucoseArray[0] - glucoseArray[1]) / 5 <= 0) || (trend < -0.06 && (glucoseArray[0] - glucoseArray[1]) / 5 >= 0)) {
-                            null
-                        } else trend
-                    } else null
-                }
-            }
-            when {
-                roc == null -> null
-                roc > ThresholdManager.SUPER_FAST_UP -> GlucoseTrend.SUPER_FAST_UP
-                ThresholdManager.FAST_UP < roc && roc <= ThresholdManager.SUPER_FAST_UP -> GlucoseTrend.FAST_UP
-                ThresholdManager.SLOW_UP < roc && roc <= ThresholdManager.FAST_UP -> GlucoseTrend.UP
-                roc in ThresholdManager.SLOW_DOWN..ThresholdManager.SLOW_UP -> GlucoseTrend.STEADY
-                roc >= ThresholdManager.FAST_DOWN && roc < ThresholdManager.SLOW_DOWN -> GlucoseTrend.DOWN
-                roc >= ThresholdManager.SUPER_FAST_DOWN && roc < ThresholdManager.FAST_DOWN -> GlucoseTrend.FAST_DOWN
-                roc < ThresholdManager.SUPER_FAST_DOWN -> GlucoseTrend.SUPER_FAST_DOWN
-                else -> GlucoseTrend.STEADY
-            }.also { glucoseTrend = it }
-        }, onSuccess = {
-            val time = dateTime.dateHourMinute()
-            if (needAlert) {
-                if (TimeUtils.currentTimeMillis.millisToSeconds() - dateTime.time.millisToSeconds() > 60 * 30) {
-                    return@runAsync
-                }
-                val frequency = calculateFrequency(MmkvManager.getAlertFrequency())
-                when (glucoseTrend) {
-                    GlucoseTrend.SUPER_FAST_DOWN -> {
-                        if (MmkvManager.isFastDownAlertEnable()) {
-                            val lastFastDown: Long = MmkvManager.getLastFastDownAlertTime()
-                            if (lastFastDown != 0L
-                                && (dateTime.time - lastFastDown).millisToSeconds() < frequency
-                            ) {
-                                return@runAsync
-                            }
-                            alert?.invoke("$time", AlertType.MESSAGE_TYPE_GLUCOSEDOWN)
-                            MmkvManager.saveFastDownAlertTime(dateTime.time)
-                        }
-                    }
-
-                    GlucoseTrend.SUPER_FAST_UP -> {
-                        if (MmkvManager.isFastUpAlertEnable()) {
-                            val lastFastUp: Long = MmkvManager.getLastFastUpAlertTime()
-                            if (lastFastUp != 0L
-                                && (dateTime.time - lastFastUp).millisToSeconds() < frequency
-                            ) {
-                                return@runAsync
-                            }
-                            alert?.invoke("$time", AlertType.MESSAGE_TYPE_GLUCOSEUP)
-                            MmkvManager.saveFastUpAlertTime(dateTime.time)
-                        }
-                    }
-
-                    else -> {
-                    }
-                }
-            }
-        }
-        )
     }
 }

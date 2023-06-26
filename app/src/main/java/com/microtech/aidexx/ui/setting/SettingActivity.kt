@@ -57,7 +57,7 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
             }
             clSettingHeader.background =
                 ContextCompat.getDrawable(
-                    this@SettingActivity, if (ThemeManager.theme.index == 0)
+                    this@SettingActivity, if (ThemeManager.themeCurrent.index == 0)
                         R.drawable.bg_setting_header_light else R.drawable.bg_setting_header_dark
                 )
             ivSettingBack.setOnClickListener { finish() }
@@ -76,11 +76,11 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 }
             }
             val themes = listOf(getString(R.string.theme_light), getString(R.string.theme_dark))
-            settingTheme.setValue(themes[ThemeManager.theme.index])
+            settingTheme.setValue(themes[ThemeManager.themeCurrent.index])
             settingTheme.setOnClickListener {
-                Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.theme.index) {
+                Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.themeCurrent.index) {
                     settingTheme.setValue(themes[it])
-                    ThemeManager.theme = ThemeManager.themeByIndex(it)
+                    ThemeManager.themeCurrent = ThemeManager.themeByIndex(it)
                     AppCompatDelegate.setDefaultNightMode(
                         if (it == 1) AppCompatDelegate.MODE_NIGHT_YES
                         else AppCompatDelegate.MODE_NIGHT_NO

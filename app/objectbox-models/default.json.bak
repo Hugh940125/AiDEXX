@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:6735353478136323403",
-      "lastPropertyId": "17:8582927268139804576",
+      "lastPropertyId": "33:3018644047362016659",
       "name": "AlertSettingsEntity",
       "properties": [
         {
@@ -20,79 +20,94 @@
           "type": 9
         },
         {
-          "id": "3:6548365589714700259",
-          "name": "alertMethod",
-          "type": 5
-        },
-        {
-          "id": "4:1053129008174177755",
-          "name": "alertFrequency",
-          "type": 5
-        },
-        {
-          "id": "5:2248968116693420725",
-          "name": "isHypoEnable",
-          "type": 1
-        },
-        {
-          "id": "6:8499081291323287145",
-          "name": "hypoThreshold",
-          "type": 7
-        },
-        {
-          "id": "7:6088205889250546166",
-          "name": "isHyperEnable",
-          "type": 1
-        },
-        {
-          "id": "8:5201663158567596340",
-          "name": "hyperThreshold",
-          "type": 7
-        },
-        {
-          "id": "9:6583906525618754177",
-          "name": "isFastUpEnable",
-          "type": 1
-        },
-        {
           "id": "10:3990318631887575481",
           "name": "isFastDownEnable",
-          "type": 1
-        },
-        {
-          "id": "11:4388120522940662085",
-          "name": "isUrgentLowEnable",
-          "type": 1
-        },
-        {
-          "id": "12:5371452867474308012",
-          "name": "urgentAlertMethod",
-          "type": 5
-        },
-        {
-          "id": "13:8206825100156264803",
-          "name": "urgentAlertFrequency",
-          "type": 5
-        },
-        {
-          "id": "14:9198614654450364605",
-          "name": "isSignalLossEnable",
-          "type": 1
-        },
-        {
-          "id": "15:5817411282228747668",
-          "name": "signalLossMethod",
-          "type": 5
-        },
-        {
-          "id": "16:3994850861848092211",
-          "name": "signalLossFrequency",
           "type": 5
         },
         {
           "id": "17:8582927268139804576",
           "name": "needSync",
           "type": 1
+        },
+        {
+          "id": "18:3783182749130768921",
+          "name": "userSettingId",
+          "type": 9
+        },
+        {
+          "id": "19:1146255744467516523",
+          "name": "alertType",
+          "type": 5
+        },
+        {
+          "id": "20:359576904888624465",
+          "name": "alertRate",
+          "type": 5
+        },
+        {
+          "id": "21:8025502585184600544",
+          "name": "lowAlertSwitch",
+          "type": 5
+        },
+        {
+          "id": "22:519328295446031943",
+          "name": "lowLimitMg",
+          "type": 7
+        },
+        {
+          "id": "23:2524879038010485112",
+          "name": "highAlertSwitch",
+          "type": 5
+        },
+        {
+          "id": "24:4226781383828229760",
+          "name": "highLimitMg",
+          "type": 7
+        },
+        {
+          "id": "25:4040939563618917430",
+          "name": "fastUpSwitch",
+          "type": 1
+        },
+        {
+          "id": "26:2945057801091978304",
+          "name": "fastDownSwitch",
+          "type": 5
+        },
+        {
+          "id": "27:8169504328512332470",
+          "name": "urgentLowAlertSwitch",
+          "type": 5
+        },
+        {
+          "id": "28:6413965267786757212",
+          "name": "urgentLowMg",
+          "type": 7
+        },
+        {
+          "id": "29:5951332326436706396",
+          "name": "urgentAlertType",
+          "type": 5
+        },
+        {
+          "id": "30:1003834785185347176",
+          "name": "urgentAlertRate",
+          "type": 5
+        },
+        {
+          "id": "31:6457788562734610888",
+          "name": "signalMissingSwitch",
+          "type": 5
+        },
+        {
+          "id": "32:7596278955157483950",
+          "name": "signalMissingAlertType",
+          "type": 5
+        },
+        {
+          "id": "33:3018644047362016659",
+          "name": "signalMissingAlertRate",
+          "type": 5
         }
       ],
       "relations": []
@@ -2311,7 +2326,20 @@
     7857898267835803511,
     3081048383945580299,
     4725065813190156940,
-    1840523892494260173
+    1840523892494260173,
+    6548365589714700259,
+    1053129008174177755,
+    2248968116693420725,
+    8499081291323287145,
+    6088205889250546166,
+    5201663158567596340,
+    6583906525618754177,
+    4388120522940662085,
+    5371452867474308012,
+    8206825100156264803,
+    9198614654450364605,
+    5817411282228747668,
+    3994850861848092211
   ],
   "retiredRelationUids": [],
   "version": 1

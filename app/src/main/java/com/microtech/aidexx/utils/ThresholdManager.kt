@@ -1,7 +1,8 @@
 package com.microtech.aidexx.utils
 
 import com.microtech.aidexx.AidexxApp
-import com.microtech.aidexx.db.entity.AlertSettingsEntity
+import com.microtech.aidexx.db.entity.SettingsEntity
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -22,12 +23,12 @@ object ThresholdManager {
     const val FAST_UP = 0.11
     const val SUPER_FAST_UP = 0.17
 
-    lateinit var alertSetting: AlertSettingsEntity
+    lateinit var alertSetting: SettingsEntity
 
     init {
         AidexxApp.mainScope.launch {
-            alertSetting = AlertUtil.getAlertSettings()
-            if (alertSetting.hyperThreshold != DEFAULT_HYPER || alertSetting.hypoThreshold != DEFAULT_HYPO) {
+            alertSetting = SettingsManager.getSettings()
+            if (alertSetting.highLimitMg != DEFAULT_HYPER || alertSetting.lowLimitMg != DEFAULT_HYPO) {
                 EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
             }
         }
@@ -38,12 +39,12 @@ object ThresholdManager {
             if (value == field) {
                 return
             }
-            alertSetting.hyperThreshold = value
+            alertSetting.highLimitMg = value
             AlertUtil.setHyperThreshold(value)
         }
         get() {
             if (this::alertSetting.isInitialized) {
-                field = alertSetting.hyperThreshold
+                field = alertSetting.highLimitMg
             }
             return field
         }
@@ -53,12 +54,12 @@ object ThresholdManager {
             if (value == field) {
                 return
             }
-            alertSetting.hypoThreshold = value
+            alertSetting.lowLimitMg = value
             AlertUtil.setHypoThreshold(value)
         }
         get() {
             if (this::alertSetting.isInitialized) {
-                field = alertSetting.hypoThreshold
+                field = alertSetting.lowLimitMg
             }
             return field
         }

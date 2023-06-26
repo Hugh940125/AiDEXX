@@ -87,6 +87,8 @@ fun UUID.toIntBigEndian(): Int = Integer.parseInt(this.toString().substring(4, 8
 fun Long.millisToMinutes(): Int =
     BigDecimal(this).divide(BigDecimal(60 * 1000), RoundingMode.HALF_UP).toInt()
 
+fun Int.minutesToMillis(): Long = this * 60 * 1000L
+
 fun Long.millisToSeconds(): Long =
     BigDecimal(this).divide(BigDecimal(1000), RoundingMode.HALF_UP).toLong()
 

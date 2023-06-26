@@ -49,7 +49,7 @@
         <item name="actionBarIconSize">40dp</item>
         <item name="actionBarTitleTextSize">20sp</item>
         <item name="settingItemHeight">46dp</item>
-        <item name="settingItemIconSize">25dp</item>
+        <item name="settingItemIconSize">30dp</item>
         <item name="settingItemTitleTextSize">16sp</item>
         <item name="settingItemValueTextSize">16sp</item>
         <item name="btnItemMarginRight">20dp</item>

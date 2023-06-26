@@ -9,15 +9,9 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
-import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.db.ObjectBox
-import com.microtech.aidexx.db.entity.AlertSettingsEntity
-import com.microtech.aidexx.db.entity.AlertSettingsEntity_
-import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
-import com.microtechmd.blecomm.constant.History
-import io.objectbox.kotlin.awaitCallInTx
-import io.objectbox.kotlin.equal
+import com.microtech.aidexx.common.minutesToMillis
+import com.microtech.aidexx.ui.setting.SettingsManager.getSettings
+import com.microtech.aidexx.ui.setting.SettingsManager.saveSetting
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -38,17 +32,15 @@ const val METHOD_DIALOG = 0
 const val METHOD_NOTIFICATION = 1
 
 object AlertUtil {
-    private var alertSettingEntity: AlertSettingsEntity? = null
     private lateinit var soundMap: HashMap<Int, Int>
     private lateinit var mSoundPool: SoundPool
     private var playingSound: Int = -1
     private var vibrator: Vibrator? = null
-    var alertFrequency: Long = calculateFrequency(2)
-    var urgentFrequency: Long = calculateFrequency(0)
+    var alertFrequency: Long = 30.minutesToMillis()
+    var urgentFrequency: Long = 5.minutesToMillis()
     var hyperSwitchEnable: Boolean = true
     var hypoSwitchEnable: Boolean = true
     var urgentLowSwitchEnable: Boolean = true
-
 
     fun init(context: Context) {
         soundMap = hashMapOf()
@@ -111,165 +103,93 @@ object AlertUtil {
         }
     }
 
-    fun calculateFrequency(index: Int): Long {
-        //"5分钟", "15分钟", "30分钟", "45分钟", "60分钟"
-        return when (index) {
-            0 -> 5 * 60 * 1000
-            1 -> 15 * 60 * 1000
-            2 -> 30 * 60 * 1000
-            3 -> 45 * 60 * 1000
-            4 -> 60 * 60 * 1000
-            else -> 30 * 60 * 1000
-        }
+    fun setAlertMethod(index: Int) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.alertType = index
+        saveSetting(alertSettings)
     }
 
-    suspend fun loadSettingsFromDb(): AlertSettingsEntity? {
-        return ObjectBox.store.awaitCallInTx {
-            val findFirst = ObjectBox.AlertSettingsBox!!.query()
-                .equal(
-                    AlertSettingsEntity_.authorizationId,
-                    UserInfoManager.instance().userId()
-                )
-                .orderDesc(AlertSettingsEntity_.idx)
-                .build()
-                .findFirst()
-            findFirst?.let {
-                alertFrequency = calculateFrequency(it.alertFrequency)
-                urgentFrequency = calculateFrequency(it.urgentAlertFrequency)
-                hyperSwitchEnable = it.isHyperEnable
-                hypoSwitchEnable = it.isHypoEnable
-                urgentLowSwitchEnable = it.isUrgentLowEnable
-            }
-            findFirst
-        }
+    fun setAlertFrequency(index: Int) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.alertRate = index
+        alertFrequency = index.minutesToMillis()
+        saveSetting(alertSettings)
     }
 
-    suspend fun getAlertSettings(): AlertSettingsEntity {
-        if (alertSettingEntity == null) {
-            alertSettingEntity = loadSettingsFromDb() ?: AlertSettingsEntity(UserInfoManager.instance().userId())
-        }
-        return alertSettingEntity ?: AlertSettingsEntity(UserInfoManager.instance().userId())
+    fun setHypoEnable(enable: Boolean) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.lowAlertSwitch = if (enable) 0 else 1
+        hypoSwitchEnable = enable
+        saveSetting(alertSettings)
     }
 
-    private fun save(alertSettings: AlertSettingsEntity) {
-        alertSettings.needSync = true
-        ObjectBox.AlertSettingsBox!!.put(alertSettings)
+    fun setHypoThreshold(value: Float) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.lowLimitMg = value
+        saveSetting(alertSettings)
     }
 
-    fun setAlertMethod(index: Int) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.alertMethod = index
-            save(alertSettings)
-        }
+    fun setHyperEnable(value: Boolean) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.highAlertSwitch = if (value) 0 else 1
+        hyperSwitchEnable = value
+        saveSetting(alertSettings)
     }
 
-    fun setAlertFrequency(index: Int) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.alertFrequency = index
-            alertFrequency = calculateFrequency(index)
-            save(alertSettings)
-        }
+    fun setHyperThreshold(value: Float) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.highLimitMg = value
+        saveSetting(alertSettings)
     }
 
-    fun setHypoEnable(enable: Boolean) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.isHypoEnable = enable
-            hypoSwitchEnable = enable
-            save(alertSettings)
-        }
+    fun setFastUpEnable(enable: Boolean) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.fastUpSwitch = enable
+        saveSetting(alertSettings)
     }
 
-    fun setHypoThreshold(value: Float) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.hypoThreshold = value
-            save(alertSettings)
-        }
+    fun setFastDownEnable(enable: Boolean) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.isFastDownEnable = if (enable) 0 else 1
+        saveSetting(alertSettings)
     }
 
-    fun setHyperEnable(value: Boolean) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.isHyperEnable = value
-            hyperSwitchEnable = value
-            save(alertSettings)
-        }
+    fun setUrgentEnable(enable: Boolean) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.fastDownSwitch = if (enable) 0 else 1
+        urgentLowSwitchEnable = enable
+        saveSetting(alertSettings)
     }
 
-    fun setHyperThreshold(value: Float) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.hyperThreshold = value
-            save(alertSettings)
-        }
+    fun setUrgentAlertMethod(index: Int) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.urgentAlertType = index
+        saveSetting(alertSettings)
     }
 
-    fun setFastUpEnable(enable: Boolean) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.isFastUpEnable = enable
-            save(alertSettings)
-        }
+    fun setUrgentFrequency(minutes: Int) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.urgentAlertRate = minutes
+        urgentFrequency = minutes.minutesToMillis()
+        saveSetting(alertSettings)
     }
 
-    fun setFastDownEnable(enable: Boolean) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.isFastDownEnable = enable
-            save(alertSettings)
-        }
+    fun setSignalLossEnable(enable: Boolean) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.signalMissingSwitch = if (enable) 0 else 1
+        saveSetting(alertSettings)
     }
 
-    fun setUrgentEnable(enable: Boolean) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.isUrgentLowEnable = enable
-            urgentLowSwitchEnable = enable
-            save(alertSettings)
-        }
+    fun setSignalLossMethod(index: Int) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.signalMissingAlertType = index
+        saveSetting(alertSettings)
     }
 
-    fun setUrgentAlertMethod(index: Int) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.urgentAlertMethod = index
-            save(alertSettings)
-        }
+    fun setSignalLossFrequency(index: Int) = AidexxApp.mainScope.launch(Dispatchers.IO) {
+        val alertSettings = getSettings()
+        alertSettings.signalMissingAlertRate = index
+        saveSetting(alertSettings)
     }
 
-    fun setUrgentFrequency(index: Int) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.urgentAlertFrequency = index
-            urgentFrequency = calculateFrequency(index)
-            save(alertSettings)
-        }
-    }
-
-    fun setSignalLossEnable(enable: Boolean) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.isSignalLossEnable = enable
-            save(alertSettings)
-        }
-    }
-
-    fun setSignalLossMethod(index: Int) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.signalLossMethod = index
-            save(alertSettings)
-        }
-    }
-
-    fun setSignalLossFrequency(index: Int) {
-        AidexxApp.mainScope.launch(Dispatchers.IO) {
-            val alertSettings = getAlertSettings()
-            alertSettings.signalLossFrequency = index
-            save(alertSettings)
-        }
-    }
 }

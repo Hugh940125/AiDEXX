@@ -54,10 +54,10 @@ object ObjectBox {
             return field
         }
 
-    var AlertSettingsBox: Box<AlertSettingsEntity>? = null
+    var AlertSettingsBox: Box<SettingsEntity>? = null
         get() {
             if (field == null) {
-                field = store.boxFor(AlertSettingsEntity::class.java)
+                field = store.boxFor(SettingsEntity::class.java)
                 return field
             }
             return field

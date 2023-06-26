@@ -25,6 +25,7 @@ import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
@@ -177,9 +178,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
-            AlertUtil.loadSettingsFromDb()
-        }
         EventUnitManager.loadUnit(LocalManager.getCurLanguageTag())
     }
 
