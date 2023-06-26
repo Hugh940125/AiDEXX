@@ -48,21 +48,20 @@ class EventMedicineFragment: BaseEventFragment<BaseViewModel, FragmentEventMedic
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.apply {
-            tvMedicineTime.text = vm.updateEventTime()
-            tvMedicineType.text = vm.refreshEventPeriod()
-        }
-
-        lifecycleScope.launch {
-            EventRepository.syncEventPreset<MedicineUsrPresetEntity>().collect {
-                LogUtil.d("down medicine preset isDone=${it.first} page=${it.second}",
-                    EventFragment.TAG
-                )
+    override fun onRealResume(isFromSelfOnResume: Boolean) {
+        if (isBindingInit()) {
+            binding.apply {
+                tvMedicineTime.text = vm.updateEventTime()
+                tvMedicineType.text = vm.refreshEventPeriod()
+            }
+            lifecycleScope.launch {
+                EventRepository.syncEventPreset<MedicineUsrPresetEntity>().collect {
+                    LogUtil.d("down medicine preset isDone=${it.first} page=${it.second}",
+                        EventFragment.TAG
+                    )
+                }
             }
         }
-
     }
 
     @SuppressLint("NotifyDataSetChanged")

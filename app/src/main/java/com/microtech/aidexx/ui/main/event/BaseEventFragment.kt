@@ -54,6 +54,12 @@ abstract class BaseEventFragment<VM:BaseViewModel, VB: ViewBinding>: BaseFragmen
 
     abstract fun getViewModel():BaseEventViewModel<*,*,*>
     abstract fun getNoRecordView(): View
+    abstract fun onRealResume(isFromSelfOnResume: Boolean)
+
+    override fun onResume() {
+        super.onResume()
+        onRealResume(true)
+    }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun canLeave(): AfterLeaveCallback? {

@@ -8,25 +8,17 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.AfterLeaveCallback
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.base.PageActions
-import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.databinding.FragmentEventBinding
-import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
-import com.microtech.aidexx.db.entity.event.preset.InsulinUsrPresetEntity
-import com.microtech.aidexx.db.entity.event.preset.MedicineUsrPresetEntity
-import com.microtech.aidexx.db.entity.event.preset.SportUsrPresetEntity
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
-import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.widget.ScrollTab.OnTabListener
 import com.microtech.aidexx.widget.dialog.Dialogs
-import kotlinx.coroutines.launch
 
 
 class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {
@@ -83,25 +75,8 @@ class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {
         super.onResume()
         EventUnitManager.update()
 
-        lifecycleScope.launch {
-            when (binding.vpEventContent.currentItem) {
-                0 -> EventRepository.syncEventPreset<DietUsrPresetEntity>().collect {
-                    LogUtil.d("down diet preset isDone=${it.first} page=${it.second}", TAG)
-                }
-                1 -> EventRepository.syncEventPreset<SportUsrPresetEntity>().collect {
-                    LogUtil.d("down sport preset isDone=${it.first} page=${it.second}", TAG)
-                }
-                2 -> EventRepository.syncEventPreset<MedicineUsrPresetEntity>().collect {
-                    LogUtil.d("down medicine preset isDone=${it.first} page=${it.second}", TAG)
-                }
-                3 -> EventRepository.syncEventPreset<InsulinUsrPresetEntity>().collect {
-                    LogUtil.d("down insulin preset isDone=${it.first} page=${it.second}", TAG)
-                }
-            }
-        }
-
         binding.vpEventContent.run {
-            (adapter as EventPageAdapter?)?.getFragmentByPosition(currentItem)?.onResume()
+            (adapter as EventPageAdapter?)?.getFragmentByPosition(currentItem)?.onRealResume(false)
         }
 
     }
@@ -141,7 +116,7 @@ class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {
     }
 
     class EventPageAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapter(fragmentActivity) {
-        private val mFragments = listOf<Fragment>(
+        private val mFragments = listOf<BaseEventFragment<*, *>>(
             EventDietFragment(),
             EventSportFragment(),
             EventMedicineFragment(),
@@ -155,7 +130,7 @@ class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {
             return mFragments[position]
         }
 
-        fun getFragmentByPosition(position: Int): Fragment? {
+        fun getFragmentByPosition(position: Int): BaseEventFragment<*, *>? {
             if (position in mFragments.indices) {
                 return mFragments[position]
             }

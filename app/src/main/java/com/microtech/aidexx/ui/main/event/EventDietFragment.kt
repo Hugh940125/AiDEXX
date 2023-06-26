@@ -5,20 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.databinding.FragmentEventDietBinding
 import com.microtech.aidexx.db.entity.event.BaseEventDetail
 import com.microtech.aidexx.db.entity.event.DietDetail
+import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
 import com.microtech.aidexx.ui.main.event.dialog.DietNewPresetDialog
 import com.microtech.aidexx.ui.main.event.dialog.DietPresetDialog
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
 import com.microtech.aidexx.ui.main.event.viewmodels.DietViewModel
+import com.microtech.aidexx.utils.LogUtil
+import kotlinx.coroutines.launch
 
 
 class EventDietFragment : BaseEventFragment<BaseViewModel, FragmentEventDietBinding>() {
 
     private val vm: DietViewModel by viewModels()
+    private var isFirstIn = true
 
     override fun getViewModel(): BaseEventViewModel<*, *, *> = vm
 
@@ -41,11 +47,25 @@ class EventDietFragment : BaseEventFragment<BaseViewModel, FragmentEventDietBind
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.apply {
-            tvDietTime.text = vm.updateEventTime()
-            tvDietType.text = vm.refreshEventPeriod()
+    override fun onRealResume(isFromSelfOnResume: Boolean) {
+        if (isBindingInit()) {
+            binding.apply {
+                tvDietTime.text = vm.updateEventTime()
+                tvDietType.text = vm.refreshEventPeriod()
+            }
+            if (!isFirstIn) {
+                lifecycleScope.launch {
+                    EventRepository.syncEventPreset<DietUsrPresetEntity>().collect {
+                        LogUtil.d("down diet preset isDone=${it.first} page=${it.second}",
+                            EventFragment.TAG
+                        )
+                    }
+                }
+            } else {
+                isFirstIn = false
+            }
+
+
         }
     }
 
