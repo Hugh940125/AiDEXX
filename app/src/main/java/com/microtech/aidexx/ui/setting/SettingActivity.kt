@@ -57,7 +57,7 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
             }
             clSettingHeader.background =
                 ContextCompat.getDrawable(
-                    this@SettingActivity, if (ThemeManager.themeCurrent.index == 0)
+                    this@SettingActivity, if (ThemeManager.isLight())
                         R.drawable.bg_setting_header_light else R.drawable.bg_setting_header_dark
                 )
             ivSettingBack.setOnClickListener { finish() }
@@ -75,14 +75,17 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                     EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
                 }
             }
-            val themes = listOf(getString(R.string.theme_light), getString(R.string.theme_dark))
-            settingTheme.setValue(themes[ThemeManager.themeCurrent.index])
+            val themes = listOf(getString(R.string.theme_dark), getString(R.string.theme_light))
+            settingTheme.setValue(themes[ThemeManager.theme.index])
             settingTheme.setOnClickListener {
-                Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.themeCurrent.index) {
+                Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.theme.index) {
+                    if (it == ThemeManager.theme.index){
+                        return@singlePick
+                    }
                     settingTheme.setValue(themes[it])
-                    ThemeManager.themeCurrent = ThemeManager.themeByIndex(it)
+                    ThemeManager.theme = ThemeManager.themeByIndex(it)
                     AppCompatDelegate.setDefaultNightMode(
-                        if (it == 1) AppCompatDelegate.MODE_NIGHT_YES
+                        if (it == 0) AppCompatDelegate.MODE_NIGHT_YES
                         else AppCompatDelegate.MODE_NIGHT_NO
                     )
                     for (activity in AidexxApp.instance.activityStack) {
@@ -98,8 +101,9 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                     }?.let { supportLanguages ->
 
                         Dialogs.Picker(this@SettingActivity).singlePick(
-                                supportLanguages,
-                                supportLanguages.indexOf(LocalManager.getCurLanguageTag()) ) {
+                            supportLanguages,
+                            supportLanguages.indexOf(LocalManager.getCurLanguageTag())
+                        ) {
 
                             "选中了第 $it 个，切换暂未实现".toast()
                             return@singlePick

@@ -227,22 +227,24 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     override fun onClick(v: View?) {
         when (v) {
             binding.layoutMyTrans.transItem -> {
-                val intent = Intent(this, TransOperationActivity::class.java)
-                intent.putExtra(
-                    BLE_INFO,
-                    BleControllerInfo(
-                        transmitter?.deviceMac,
-                        transmitter?.deviceName,
-                        transmitter?.deviceSn,
-                        130
+                transmitter?.let {
+                    val intent = Intent(this, TransOperationActivity::class.java)
+                    intent.putExtra(
+                        BLE_INFO,
+                        BleControllerInfo(
+                            transmitter?.deviceMac,
+                            transmitter?.deviceName,
+                            transmitter?.deviceSn,
+                            130
+                        )
                     )
-                )
-                if (transmitter!!.accessId == null) {
-                    intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_PAIR)
-                } else {
-                    intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
+                    if (transmitter?.accessId == null) {
+                        intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_PAIR)
+                    } else {
+                        intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
             }
         }
     }

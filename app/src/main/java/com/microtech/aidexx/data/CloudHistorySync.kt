@@ -21,6 +21,7 @@ import com.microtech.aidexx.db.entity.event.InsulinEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.Box
 import io.objectbox.Property
@@ -65,15 +66,17 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             PAGE_SIZE,
             startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
             endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
-            tClazz)
+            tClazz
+        )
         ) {
             is ApiResult.Success -> apiResult.result.data
             is ApiResult.Failure -> null
         }
+
     override suspend fun downloadData(userId: String): Boolean {
         if (canSync()) {
 
-            val syncTaskItem = getFirstTaskItem(userId) ?:let {
+            val syncTaskItem = getFirstTaskItem(userId) ?: let {
                 LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}", TAG)
                 return true
             }
@@ -105,6 +108,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     // region 同步删除
     open suspend fun uploadDeletedData(data: List<String>): Boolean =
         EventRepository.deleteEventByIds(data, tClazz)
+
     override suspend fun uploadDeletedData(userId: String): Boolean {
         if (canSync()) {
             val data = EventDbRepository.queryDeletedData(tClazz)
@@ -155,6 +159,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             }
 
             val tasks = listOf(
+                async { SettingsManager.downloadSettings(userId) },
                 async { updateStatus(EventRepository.getRecentData<RealCgmHistoryEntity>(userId, CGM_RECENT_COUNT)) },
                 async { updateStatus(EventRepository.getRecentData<BloodGlucoseEntity>(userId, BG_RECENT_COUNT)) },
                 async { updateStatus(EventRepository.getRecentData<CalibrateEntity>(userId, CAL_RECENT_COUNT)) },
@@ -180,10 +185,12 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                         taskLatch?.countDown()
                         false
                     }
+
                     is SyncStatus.Success -> {
                         taskLatch?.countDown()
                         isSuccess
                     }
+
                     else -> isSuccess
                 }
             }
@@ -239,7 +246,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             }
         }
 
-         fun uploadDeletedData() {
+        fun uploadDeletedData() {
             CloudBgHistorySync.startUploadDeletedData()
             CloudDietHistorySync.startUploadDeletedData()
             CloudExerciseHistorySync.startUploadDeletedData()

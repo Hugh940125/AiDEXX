@@ -23,13 +23,13 @@ import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudHistorySync
 import com.microtech.aidexx.data.EventPresetSync
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.*
 import java.util.*
 
@@ -156,6 +156,7 @@ class MainService : Service(), LifecycleOwner {
                         CloudHistorySync.uploadDeletedData()
                         CloudHistorySync.uploadHistoryData()
                         EventPresetSync.uploadPreset()
+                        SettingsManager.uploadSettings()
                     }
                 }
                 if (count == 9) {
@@ -350,16 +351,16 @@ class MainService : Service(), LifecycleOwner {
 
     private fun process(type: Int, isUrgent: Boolean) {
         if (type == MESSAGE_TYPE_SIGNAL_LOST) {
-            val signalLossAlertMethod = MmkvManager.signalLossAlertMethod()
+            val signalLossAlertMethod = SettingsManager.settingEntity!!.signalMissingAlertType - 1
             AlertUtil.alert(this, signalLossAlertMethod, isUrgent)
             return
         }
         if (type != MESSAGE_TYPE_REPLACE_SENSOR && type != MESSAGE_TYPE_NEW_SENSOR) {
             if (isUrgent) {
-                val urgentAlertMethod = MmkvManager.getUrgentAlertMethod()
+                val urgentAlertMethod = SettingsManager.settingEntity!!.urgentAlertType - 1
                 AlertUtil.alert(this, urgentAlertMethod, true)
             } else {
-                val alertMethod = MmkvManager.getAlertMethod()
+                val alertMethod = SettingsManager.settingEntity!!.alertType - 1
                 AlertUtil.alert(this, alertMethod, false)
             }
         }

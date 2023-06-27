@@ -20,12 +20,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.account.LoginActivity
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
@@ -110,16 +110,16 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
 
     private fun process(type: Int, isUrgent: Boolean) {
         if (type == MESSAGE_TYPE_SIGNAL_LOST) {
-            val signalLossAlertMethod = MmkvManager.signalLossAlertMethod()
+            val signalLossAlertMethod = SettingsManager.settingEntity!!.signalMissingAlertType - 1
             AlertUtil.alert(this, signalLossAlertMethod, isUrgent)
             return
         }
         if (type != MESSAGE_TYPE_REPLACE_SENSOR && type != MESSAGE_TYPE_NEW_SENSOR) {
             if (isUrgent) {
-                val urgentAlertMethod = MmkvManager.getUrgentAlertMethod()
+                val urgentAlertMethod = SettingsManager.settingEntity!!.urgentAlertType - 1
                 AlertUtil.alert(this, urgentAlertMethod, true)
             } else {
-                val alertMethod = MmkvManager.getAlertMethod()
+                val alertMethod = SettingsManager.settingEntity!!.alertType - 1
                 AlertUtil.alert(this, alertMethod, false)
             }
         }

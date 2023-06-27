@@ -27,7 +27,7 @@ object ThresholdManager {
 
     init {
         AidexxApp.mainScope.launch {
-            alertSetting = SettingsManager.getSettings()
+            alertSetting = SettingsManager.settingEntity!!
             if (alertSetting.highLimitMg != DEFAULT_HYPER || alertSetting.lowLimitMg != DEFAULT_HYPO) {
                 EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
             }

@@ -1,9 +1,11 @@
 package com.microtech.aidexx.utils.mmkv
 
+import android.os.Parcelable
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.getStartOfTheDay
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.DataSyncController
+import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
 import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity
@@ -15,12 +17,8 @@ import java.util.Date
 import java.util.Locale
 
 object MmkvManager {
-
-    private const val SIGNAL_NOTICE_FREQUENCY = "SIGNAL_NOTICE_FREQUENCY"
-    private const val SIGNAL_NOTICE_METHOD = "SIGNAL_NOTICE_METHOD"
-    private const val NOTICE_METHOD = "NOTICE_METHOD"
-    private const val URGENT_NOTICE_METHOD = "URGENT_NOTICE_METHOD"
-    private const val PHONE_NUMBER = "mobile_num"
+    private const val SETTINGS = "SETTINGS"
+    private const val PHONE_NUMBER = "PHONE_NUMBER"
     private const val GET_USER_ID = "GET_USER_ID"
     private const val THEME = "THEME"
     private const val GLUCOSE_UNIT = "GLUCOSE_UNIT"
@@ -32,22 +30,13 @@ object MmkvManager {
     private const val HYPER = "HYPER"
     private const val HYPO = "HYPO"
     private const val TOKEN = "TOKEN"
-    private const val NOTICE_FREQUENCY = "NOTICE_FREQUENCY"
-    private const val URGENT_NOTICE_FREQUENCY = "NOTICE_FREQUENCY"
-    private const val HIGH_NOTICE_ENABLE = "HIGH_NOTICE_ENABLE"
-    private const val LOW_NOTICE_ENABLE = "LOW_NOTICE_ENABLE"
-    private const val URGENT_NOTICE_ENABLE = "URGENT_NOTICE_ENABLE"
-    private const val FAST_DOWN_ALERT_ENABLE = "FALL_ALERT"
-    private const val FAST_UP_ALERT_ENABLE = "RAISE_ALERT"
-    private const val LAST_FAST_UP_ALERT_TIME = "LAST_FAST_UP_ALERT_TIME"
-    private const val LAST_FAST_DOWN_ALERT_TIME = "LAST_FAST_DOWN_ALERT_TIME"
     private const val FLAG_LOGIN = "FLAG_LOGIN"
     private const val USER_AVATAR = "USER_AVATAR"
     private const val APP_CHECK_UPDATE_DATE = "APP_CHECK_UPDATE_DATE"
-    private const val NickName = "NickName"
-    private const val SurName = "SurName"
-    private const val GivenName = "GivenName"
-    private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "already_show_dialog_guide"
+    private const val NICK_NAME = "NICK_NAME"
+    private const val SUR_NAME = "SUR_NAME"
+    private const val GIVEN_NAME = "GIVEN_NAME"
+    private const val ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE = "ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE"
     private const val PRESET_VERSION_ = "PRESET_VERSION_"
     private const val UNIT_LATEST_UPDATE_TIME = "UNIT_LATEST_UPDATE_TIME"
     private const val UNIT_LOADED_APK_VERSION = "UNIT_LOADED_APK_VERSION"
@@ -66,25 +55,26 @@ object MmkvManager {
         MmkvUtil.decodeString(CURRENT_LANGUAGE_TAG, Locale.getDefault().toLanguageTag())
 
 
-    private fun <T: BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when(clazz) {
+    private fun <T : BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when (clazz) {
         DietSysPresetEntity::class.java -> VERSION_FOOD_SYS_PRESET
         SportSysPresetEntity::class.java -> VERSION_EXERCISE_SYS_PRESET
         MedicineSysPresetEntity::class.java -> VERSION_MEDICINE_SYS_PRESET
         InsulinSysPresetEntity::class.java -> VERSION_INSULIN_SYS_PRESET
         else -> null
     }
-    fun <T: BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
+
+    fun <T : BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
         return getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
     }
-    fun <T: BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
+
+    fun <T : BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
         getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, version) }
     }
 
-
     fun setLanguageVersion(version: String) = MmkvUtil.encodeString(VERSION_LANGUAGE, version)
-    fun getLanguageVersion():String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
+    fun getLanguageVersion(): String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
     fun setUnitVersion(version: String) = MmkvUtil.encodeString(VERSION_UNIT, version)
-    fun getUnitVersion():String = MmkvUtil.decodeString(VERSION_UNIT, "")
+    fun getUnitVersion(): String = MmkvUtil.decodeString(VERSION_UNIT, "")
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
@@ -92,15 +82,18 @@ object MmkvManager {
     fun isLastLoginEventDownloadSuccess(key: String): Boolean = MmkvUtil.decodeBoolean(key, true)
 
     fun setEventSyncTask(key: String, tasks: DataSyncController.SyncTaskItemList?) {
-        MmkvUtil.encodeString(key, tasks?.toString()?:"")
+        MmkvUtil.encodeString(key, tasks?.toString() ?: "")
     }
+
     fun getEventSyncTask(key: String): DataSyncController.SyncTaskItemList? =
         DataSyncController.SyncTaskItemList.fromString(
             MmkvUtil.decodeString(key, "")
         )
+
     fun setEventDataId(key: String, eventId: Long?) {
         MmkvUtil.encodeLong(key, eventId ?: -1L)
     }
+
     fun getEventDataId(key: String): Long? {
         val id = MmkvUtil.decodeLong(key, -1L)
         return if (id == -1L) null else id
@@ -115,6 +108,7 @@ object MmkvManager {
     fun setPresetVersion(@EventType type: Int, version: String, isSys: Boolean) {
         return MmkvUtil.encodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", version)
     }
+
     fun getPresetVersion(@EventType type: Int, isSys: Boolean): String {
         return MmkvUtil.decodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", "")
     }
@@ -122,41 +116,15 @@ object MmkvManager {
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
     fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)
 
-    fun saveNickName(name: String) = MmkvUtil.encodeString(NickName, name)
-    fun getNickName(default: String = "") = MmkvUtil.decodeString(NickName, default)
-    fun saveSurName(name: String) = MmkvUtil.encodeString(SurName, name)
-    fun getSurName(default: String = "") = MmkvUtil.decodeString(SurName, default)
-    fun saveGivenName(name: String) = MmkvUtil.encodeString(GivenName, name)
-    fun getGivenName(default: String = "") = MmkvUtil.decodeString(GivenName, default)
+    fun saveNickName(name: String) = MmkvUtil.encodeString(NICK_NAME, name)
+    fun getNickName(default: String = "") = MmkvUtil.decodeString(NICK_NAME, default)
+    fun saveSurName(name: String) = MmkvUtil.encodeString(SUR_NAME, name)
+    fun getSurName(default: String = "") = MmkvUtil.decodeString(SUR_NAME, default)
+    fun saveGivenName(name: String) = MmkvUtil.encodeString(GIVEN_NAME, name)
+    fun getGivenName(default: String = "") = MmkvUtil.decodeString(GIVEN_NAME, default)
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
     fun isLogin(): Boolean = MmkvUtil.decodeBoolean(FLAG_LOGIN, false)
-    fun saveFastUpAlertTime(time: Long) = MmkvUtil.encodeLong(LAST_FAST_UP_ALERT_TIME, time)
-    fun saveFastDownAlertTime(time: Long) = MmkvUtil.encodeLong(LAST_FAST_DOWN_ALERT_TIME, time)
-    fun getLastFastDownAlertTime() = MmkvUtil.decodeLong(LAST_FAST_DOWN_ALERT_TIME, 0)
-    fun getLastFastUpAlertTime() = MmkvUtil.decodeLong(LAST_FAST_UP_ALERT_TIME, 0)
-    fun isFastUpAlertEnable() = MmkvUtil.decodeBoolean(FAST_UP_ALERT_ENABLE, true)
-    fun setFastUpAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(FAST_UP_ALERT_ENABLE, enable)
-    fun isFastDownAlertEnable() = MmkvUtil.decodeBoolean(FAST_DOWN_ALERT_ENABLE, true)
-    fun setFastDownAlertEnable(enable: Boolean) =
-        MmkvUtil.encodeBoolean(FAST_DOWN_ALERT_ENABLE, enable)
-
-    fun isUrgentAlertEnable() = MmkvUtil.decodeBoolean(URGENT_NOTICE_ENABLE, true)
-    fun setUrgentAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(URGENT_NOTICE_ENABLE, enable)
-    fun isHypoAlertEnable() = MmkvUtil.decodeBoolean(LOW_NOTICE_ENABLE, true)
-    fun setHypoAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(LOW_NOTICE_ENABLE, enable)
-    fun isHyperAlertEnable() = MmkvUtil.decodeBoolean(HIGH_NOTICE_ENABLE, true)
-    fun setHyperAlertEnable(enable: Boolean) = MmkvUtil.encodeBoolean(HIGH_NOTICE_ENABLE, enable)
-    fun getUrgentAlertMethod() = MmkvUtil.decodeInt(URGENT_NOTICE_METHOD, 2)
-    fun getAlertMethod() = MmkvUtil.decodeInt(NOTICE_METHOD, 2)
-    fun saveUrgentAlertMethod(method: Int) = MmkvUtil.encodeInt(URGENT_NOTICE_METHOD, method)
-    fun saveAlertMethod(method: Int) = MmkvUtil.encodeInt(NOTICE_METHOD, method)
-    fun getUrgentAlertFrequency() = MmkvUtil.decodeInt(URGENT_NOTICE_FREQUENCY, 0)
-    fun getAlertFrequency() = MmkvUtil.decodeInt(NOTICE_FREQUENCY, 2)
-    fun saveUrgentAlertFrequency(frequency: Int) =
-        MmkvUtil.encodeInt(URGENT_NOTICE_FREQUENCY, frequency)
-
-    fun saveAlertFrequency(frequency: Int) = MmkvUtil.encodeInt(NOTICE_FREQUENCY, frequency)
     fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
     fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)
@@ -218,9 +186,6 @@ object MmkvManager {
     fun getAppCheckVersionTime(): Long =
         MmkvUtil.decodeLong("$APP_CHECK_UPDATE_DATE-${BuildConfig.VERSION_NAME}", 0)
 
-    fun signalLossAlertMethod(): Int = MmkvUtil.decodeInt(SIGNAL_NOTICE_METHOD, 2)
-
-    fun setSignalLossMethod(index: Int) = MmkvUtil.encodeInt(SIGNAL_NOTICE_METHOD, index)
-    fun signalLossAlertFrequency(): Int = MmkvUtil.decodeInt(SIGNAL_NOTICE_FREQUENCY, 0)
-    fun setSignalLossAlertFrequency(index: Int) = MmkvUtil.encodeInt(SIGNAL_NOTICE_FREQUENCY, index)
+    fun getSettings() = MmkvUtil.decodeParcelable(SETTINGS, SettingsEntity::class.java)
+    fun saveSettings(parcelable: Parcelable) = MmkvUtil.encodeParcelable(SETTINGS, parcelable)
 }

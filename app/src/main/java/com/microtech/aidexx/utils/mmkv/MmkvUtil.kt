@@ -1,5 +1,6 @@
 package com.microtech.aidexx.utils.mmkv
 
+import android.os.Parcelable
 import com.tencent.mmkv.MMKV
 
 class MmkvUtil {
@@ -44,6 +45,14 @@ class MmkvUtil {
 
         fun encodeFloat(key: String, value: Float) {
             INSTANCE.encode(key, value)
+        }
+
+        fun <T : Parcelable> decodeParcelable(key: String, clazz: Class<T>): T? {
+            return INSTANCE.decodeParcelable(key, clazz)
+        }
+
+        fun encodeParcelable(key: String, parcelable: Parcelable) {
+            INSTANCE.encode(key, parcelable)
         }
     }
 }

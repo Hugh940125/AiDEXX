@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.R
@@ -140,6 +141,10 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(
+            if (ThemeManager.isLight()) AppCompatDelegate.MODE_NIGHT_NO
+            else AppCompatDelegate.MODE_NIGHT_YES
+        )
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         mHandler = MainHandler(this)

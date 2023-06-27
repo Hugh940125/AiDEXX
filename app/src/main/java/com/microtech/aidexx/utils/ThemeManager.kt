@@ -2,35 +2,28 @@ package com.microtech.aidexx.utils
 
 import android.content.Context
 import android.util.TypedValue
-import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import kotlinx.coroutines.launch
 
 object ThemeManager {
-    lateinit var themeCurrent: Theme
 
     enum class Theme(val index: Int, val id: Int) {
         DARK(0, R.style.AppThemeDark),
         LIGHT(1, R.style.AppThemeLight)
     }
 
-    suspend fun getCurrentTheme(): Theme {
-        if (!::themeCurrent.isInitialized){
-            themeCurrent = themeByIndex(SettingsManager.getSettings().theme)
+    var theme: Theme = themeByIndex(SettingsManager.settingEntity!!.theme)
+        set(theme) {
+            field = theme
+            SettingsManager.setTheme(theme.index)
         }
-        return themeCurrent
-    }
-
-
-//        set(theme) {
-//            field = theme
-//            SettingsManager.setTheme(theme.index)
-//        }
+        get() {
+            return themeByIndex(SettingsManager.settingEntity!!.theme)
+        }
 
     fun isLight(): Boolean {
-        return themeCurrent.index == 0
+        return SettingsManager.settingEntity!!.theme == 1
     }
 
     fun themeByIndex(index: Int): Theme {

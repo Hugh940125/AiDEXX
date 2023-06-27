@@ -45,10 +45,6 @@ class AidexxApp : Application() {
         initSdks()
         registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
         MmkvManager.setCurrentLanguageTag(Locale.getDefault().toLanguageTag())
-        AppCompatDelegate.setDefaultNightMode(
-            if (ThemeManager.isLight()) AppCompatDelegate.MODE_NIGHT_NO
-            else AppCompatDelegate.MODE_NIGHT_YES
-        )
     }
 
     override fun onTerminate() {

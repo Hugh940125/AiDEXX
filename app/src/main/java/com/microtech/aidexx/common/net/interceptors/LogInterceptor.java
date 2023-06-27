@@ -11,9 +11,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import okhttp3.FormBody;
-import okhttp3.Headers;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -42,38 +41,27 @@ public class LogInterceptor implements Interceptor {
 
         String content = "不显示内容：content-type非application/json";
         boolean needInterceptor = needInterceptor(response);
-        if(needInterceptor) {
+        if (needInterceptor) {
             mediaType = Objects.requireNonNull(response.body()).contentType();
             content = response.body().string();
         }
 
         LogUtil.eAiDEX("\n");
-        LogUtil.eAiDEX("----------------Start----------------");
+        LogUtil.eAiDEX("---------- Start ----------");
         LogUtil.eAiDEX("| " + request);
         String method = request.method();
-        Headers headers = request.headers();
-        for (int i = 0, count = headers.size(); i < count; i++) {
-            String name = headers.name(i);
-            // Skip headers from the request body as they are explicitly logged above.
-            if (!"Content-Type".equalsIgnoreCase(name) && !"Content-Length".equalsIgnoreCase(name)) {
-                LogUtil.eAiDEX(name + ": " + headers.value(i));
-            }
-        }
         if (method.equalsIgnoreCase("POST")) {
-            StringBuilder sb = new StringBuilder();
-            if (request.body() instanceof FormBody) {
-                FormBody body = (FormBody) request.body();
-                for (int i = 0; i < body.size(); i++) {
-                    sb.append(body.encodedName(i)).append("=").append(body.encodedValue(i)).append(",");
+            RequestBody requestBody = request.body();
+            if (requestBody != null) {
+                if (mediaType != null && isText(mediaType)) {
+                    LogUtil.eAiDEX("| " + "Request Params:" + bodyToString(request));
                 }
-                sb.delete(sb.length() - 1, sb.length());
-                LogUtil.eAiDEX("| RequestParams:{" + sb + "}");
             }
         }
         LogUtil.eAiDEX("| Response:" + content);
-        LogUtil.eAiDEX("----------End:" + duration + "millis----------");
+        LogUtil.eAiDEX("---------- End:" + duration + "millis ----------");
 
-        if(needInterceptor) {
+        if (needInterceptor) {
             response.close();
             return response.newBuilder()
                     .body(okhttp3.ResponseBody.create(mediaType, content))
@@ -81,6 +69,29 @@ public class LogInterceptor implements Interceptor {
         } else {
             return response;
         }
+    }
+
+    private String bodyToString(final Request request) {
+        final Request copy = request.newBuilder().build();
+        final Buffer buffer = new Buffer();
+        try {
+            if (copy.body() != null) {
+                copy.body().writeTo(buffer);
+            }
+        } catch (IOException e) {
+            return "something error,when show requestBody";
+        }
+        return buffer.readUtf8();
+    }
+
+    private boolean isText(MediaType mediaType) {
+        if (mediaType.type().equals("text")) {
+            return true;
+        }
+        return mediaType.subtype().equals("json") ||
+                mediaType.subtype().equals("xml") ||
+                mediaType.subtype().equals("html") ||
+                mediaType.subtype().equals("webviewhtml");
     }
 
     private boolean needInterceptor(@NonNull Response response) {

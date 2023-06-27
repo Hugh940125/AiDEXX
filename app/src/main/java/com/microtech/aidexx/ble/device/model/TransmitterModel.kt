@@ -423,7 +423,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             getHistoriesFromBroadcast(nextEventIndex, adHistories)
                     }
                     if (historiesFromBroadcast.isNotEmpty()) {
-                        alertSetting = SettingsManager.getSettings()
+                        alertSetting = SettingsManager.settingEntity
                         saveBriefHistory(historiesFromBroadcast.asReversed(), false)
                     }
                 }
@@ -531,7 +531,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         AidexxApp.mainScope.launch(Dispatchers.IO) {
             val histories = AidexXParser.getHistories<AidexXHistoryEntity>(data)
             if (histories.isNullOrEmpty()) return@launch
-            alertSetting = SettingsManager.getSettings()
+            alertSetting = SettingsManager.settingEntity
             if (histories.first().timeOffset == nextEventIndex) {
                 saveBriefHistory(histories)
             }

@@ -1,5 +1,6 @@
 package com.microtech.aidexx.utils
 
+import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import java.text.DecimalFormat
 
@@ -16,13 +17,16 @@ object UnitManager {
     }
 
 
-    var glucoseUnit = glucoseUnitByIndex(MmkvManager.getGlucoseUnit())
+    var glucoseUnit = glucoseUnitByIndex(SettingsManager.settingEntity!!.unit)
         set(glucoseUnit) {
             field = glucoseUnit
-            MmkvManager.saveGlucoseUnit(glucoseUnit.index)
+            SettingsManager.setUnit(glucoseUnit.index)
+        }
+        get() {
+            return glucoseUnitByIndex(SettingsManager.settingEntity!!.unit)
         }
 
-    fun glucoseUnitByIndex(index: Int): GlucoseUnit {
+    private fun glucoseUnitByIndex(index: Int): GlucoseUnit {
         return when (index) {
             GlucoseUnit.MMOL_PER_L.index -> GlucoseUnit.MMOL_PER_L
             GlucoseUnit.MG_PER_DL.index -> GlucoseUnit.MG_PER_DL
