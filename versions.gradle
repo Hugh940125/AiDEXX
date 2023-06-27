@@ -1,0 +1,8 @@
+ext {
+    compileSdkVersion = 33
+    targetSdk = 33
+    minSdk = 24
+    appVersionCode = 3
+    appVersionName = "1.0.1"
+    resourceVersion = "1.0.0"
+}

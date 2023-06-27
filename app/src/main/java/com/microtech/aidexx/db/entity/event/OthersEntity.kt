@@ -1,7 +1,7 @@
 package com.microtech.aidexx.db.entity.event
 
 import android.content.res.Resources
-import com.microtech.aidexx.data.resource.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Index
@@ -26,7 +26,7 @@ class OthersEntity : BaseEventEntity, EventActions {
         }
 
     constructor() {
-        this.language = LocalManager.getCurLanguageTag()
+        this.language = LanguageResourceManager.getCurLanguageTag()
     }
 
     override fun getEventDescription(res: Resources): String {

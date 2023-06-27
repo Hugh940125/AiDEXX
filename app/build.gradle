@@ -8,16 +8,18 @@ plugins {
 }
 
 android {
-    compileSdk 33
+    compileSdk rootProject.compileSdkVersion.toInteger()
 
     defaultConfig {
         applicationId "com.microtech.aidexx"
-        minSdk 24
-        targetSdk 33
-        versionCode 2
-        versionName "1.0.1"
+        minSdk rootProject.minSdk.toInteger()
+        targetSdk rootProject.targetSdk.toInteger()
+        versionCode rootProject.appVersionCode as int
+        versionName rootProject.appVersionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField "String", "resourceVersion", "\"" + rootProject.resourceVersion + "\""
 
         ndk {
             // 设置支持的SO库架构

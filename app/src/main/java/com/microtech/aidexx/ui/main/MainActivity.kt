@@ -20,7 +20,7 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.data.resource.EventUnitManager
-import com.microtech.aidexx.data.resource.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
@@ -185,7 +185,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         lifecycleScope.launch {
             AlertUtil.loadSettingsFromDb()
         }
-        EventUnitManager.loadUnit(LocalManager.getCurLanguageTag())
+        EventUnitManager.loadUnit(LanguageResourceManager.getCurLanguageTag())
     }
 
     override fun onResume() {
@@ -373,7 +373,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
 
     private fun checkAndUpdateResourceIfNeeded() {
-        if (MmkvManager.isNeedToUpgradeResource()) {
+        MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
             startActivity(Intent(this, LoadResourceActivity::class.java))
             finish()
         }

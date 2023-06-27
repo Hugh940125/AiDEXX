@@ -1,6 +1,8 @@
 
 package com.github.mikephil.charting.data;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -302,7 +304,9 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
     public T getEntryForXValue(float xValue, float closestToY, Rounding rounding) {
 
         try {
+            long start = System.currentTimeMillis();
             int index = getEntryIndex(xValue, closestToY, rounding);
+            Log.d("getEntryForXValue", "mEntries.size=" + mEntries.size() + " cost=" + (System.currentTimeMillis() - start));
             if (index > -1)
                 return mEntries.get(index);
         } catch (Exception e) {

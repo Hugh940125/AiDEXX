@@ -1,7 +1,7 @@
 package com.microtech.aidexx.db.repository
 
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.resource.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.db.dao.EventDao
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.event.UnitEntity
@@ -73,7 +73,7 @@ object EventDbRepository {
     suspend fun queryDietPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag(),
+        language: String = LanguageResourceManager.getCurLanguageTag(),
         sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(DietSysPresetEntity::class.java)
     ): List<DietPresetEntity> = withContext(Dispatchers.IO) {
 
@@ -91,7 +91,7 @@ object EventDbRepository {
     suspend fun queryMedicinePresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag(),
+        language: String = LanguageResourceManager.getCurLanguageTag(),
         sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(MedicineSysPresetEntity::class.java)
     ): List<MedicinePresetEntity> = withContext(Dispatchers.IO) {
 
@@ -109,7 +109,7 @@ object EventDbRepository {
     suspend fun queryInsulinPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag(),
+        language: String = LanguageResourceManager.getCurLanguageTag(),
         sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(InsulinSysPresetEntity::class.java)
     ): List<InsulinPresetEntity> = withContext(Dispatchers.IO) {
 
@@ -127,7 +127,7 @@ object EventDbRepository {
     suspend fun querySportPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag(),
+        language: String = LanguageResourceManager.getCurLanguageTag(),
         sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(SportSysPresetEntity::class.java)
     ): List<SportPresetEntity> = withContext(Dispatchers.IO) {
 

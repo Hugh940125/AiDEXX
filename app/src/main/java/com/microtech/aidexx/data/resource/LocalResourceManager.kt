@@ -3,6 +3,7 @@ package com.microtech.aidexx.data.resource
 import android.os.Environment
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.common.net.repository.ApiRepository
 import com.microtech.aidexx.db.entity.LanguageEntity
@@ -16,6 +17,8 @@ import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.db.repository.LanguageDbRepository
 import com.microtech.aidexx.utils.FileUtils
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.blankj.EncryptUtils
+import com.microtech.aidexx.utils.blankj.ResourceUtils
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -59,6 +62,7 @@ object LocalResourceManager {
     private const val FILE_FOOD_SYS = "food_sys.json"
     private const val FILE_INSULIN_SYS = "insulin_sys.json"
     private const val FILE_OTHER_SYS = "other_sys.json"
+    private const val ASSETS_RESOURCE_FILE = "resource_${BuildConfig.resourceVersion}.zip"
     private var upgrading: Boolean = false
 
     private val syncExceptionHandler = CoroutineExceptionHandler { context, throwable ->
@@ -93,8 +97,24 @@ object LocalResourceManager {
                     }
                     is ApiRepository.NetResult.Success -> {
                         delay(500)
-                        // 下载成功 密码解压
-                        processByVersionFile(ret.result, upInfo.info.version)
+
+                        if (upInfo.info.sha256.isNotEmpty()) {
+                            val file = File(ret.result)
+                            if (FileUtils.isFileExists(file)) {
+                                //sha256校验
+                                val realSha256Str = EncryptUtils.encryptSHA256ToString(file.readBytes())
+                                LogUtil.d("ZIP SHA256=$realSha256Str", TAG)
+                                if (upInfo.info.sha256 == realSha256Str) {
+                                    downloadSuccess(upInfo, ret.result)
+                                } else {
+                                    LogUtil.xLogE("资源下载成功后文件指纹不对", TAG)
+                                }
+                            } else {
+                                LogUtil.xLogE("资源下载成功后文件丢了？", TAG)
+                            }
+                        } else {
+                            downloadSuccess(upInfo, ret.result)
+                        }
                         upgrading = false
                     }
                     is ApiRepository.NetResult.Failure -> {
@@ -106,8 +126,41 @@ object LocalResourceManager {
         }
     }
 
-    private suspend fun processByVersionFile(zipFilePath: String, version: String) {
+    private fun downloadSuccess(upInfo: UpgradeInfo.VersionInfo, zipFilePath: String) {
+        val info = upInfo.copy(info = upInfo.info.copy(downloadpath = zipFilePath))
+        val infoStr = Gson().toJson(info)
+        LogUtil.d("upgradeInfo=$infoStr", TAG)
+        MmkvManager.setUpgradeResourceZipFileInfo(infoStr)
+    }
+
+    suspend fun upgradeFromAssets() {
+        if (Environment.getExternalStorageState() != Environment.MEDIA_MOUNTED) {
+            LogUtil.xLogE("resource upgrade fail no sdcard", TAG)
+            return
+        }
+
+        var fileName = "resource_${BuildConfig.resourceVersion}.zip"
+        val downloadPath = FileUtils.getDownloadDir(UNZIP_DIR_NAME)
+        if (!FileUtils.delete("$downloadPath$fileName")) {
+            fileName = "resource_${BuildConfig.resourceVersion}_${System.currentTimeMillis()}.zip"
+        }
+        val zipFilePath = "$downloadPath$fileName"
+        if (ResourceUtils.copyFileFromAssets(ASSETS_RESOURCE_FILE, zipFilePath)) {
+            startUpgrade(zipFilePath, BuildConfig.resourceVersion)
+        } else {
+            LogUtil.xLogE("内置资源包释放失败", TAG)
+        }
+    }
+
+    suspend fun startUpgrade(zipFilePath: String, version: String) {
         val unzipPath = FileUtils.getDownloadDir("$UNZIP_RESOURCE_DIR_PREFIX$version")
+
+        fun upgradeFinish(isSuccess: Boolean = false) {
+            MmkvManager.setUpgradeResourceZipFileInfo("")
+            val unzipFileDeleteRet = FileUtils.delete(unzipPath)
+            val zipFileDeleteRet = FileUtils.delete(zipFilePath)
+            LogUtil.xLogI("unzipFileDeleteRet=$unzipFileDeleteRet, zipFileDeleteRet=$zipFileDeleteRet", TAG)
+        }
 
         runCatching {
             net.lingala.zip4j.ZipFile(zipFilePath /*, ZIP_PASSWORD.toCharArray()*/).use {
@@ -116,6 +169,7 @@ object LocalResourceManager {
             true
         }.exceptionOrNull()?.let {
             LogUtil.xLogE("资源文件解压失败 v=$version e=${it.message}")
+            upgradeFinish()
         } ?:let {
 
             val versionMenu = readJsonFileToObj("$unzipPath$FILE_VERSION_MENU", clazz = VersionMenu::class.java)
@@ -130,11 +184,13 @@ object LocalResourceManager {
                     if (result) {
                         MmkvManager.setResourceVersion(version)
                     }
+                    upgradeFinish(result)
                     LogUtil.d("升级完成 result=$result")
                 }
 
             } ?:let {
                 LogUtil.xLogE("版本文件解析失败")
+                upgradeFinish()
             }
         }
     }
@@ -184,7 +240,8 @@ object LocalResourceManager {
                         }
                         if (list.isNotEmpty()) {
                             EventDbRepository.insertSysPresetData(list as List<BaseSysPreset>)
-                            MmkvManager.setEventSysPresetNewVersion(it, clazz)
+                            MmkvManager.setEventSysPresetVersion(it, clazz)
+                            EventDbRepository.removeSysPresetOfOtherVersion(it, clazz)
                             true
                         } else {
                             LogUtil.xLogE("updateEventSysPreset 资源文件转 entity 为空 ${clazz.simpleName}", TAG)
@@ -203,7 +260,8 @@ object LocalResourceManager {
                 true
             }
         } ?:let {
-            MmkvManager.setEventSysPresetNewVersion("0", clazz)
+            EventDbRepository.removeSysPresetData(clazz)
+            MmkvManager.setEventSysPresetVersion("", clazz)
             LogUtil.xLogE("清空预设 ${clazz.simpleName}", TAG)
             true
         }
@@ -225,7 +283,8 @@ object LocalResourceManager {
                         }
                         if (list.isNotEmpty()) {
                             EventDbRepository.insertUnit(list)
-                            MmkvManager.setUnitNewVersion(it)
+                            MmkvManager.setUnitVersion(it)
+                            EventDbRepository.removeUnitOfOtherVersion(it)
                             result = true
                         } else {
                             LogUtil.xLogE("updateUnit 资源文件转 entity 为空", TAG)
@@ -243,7 +302,8 @@ object LocalResourceManager {
             }
         } ?:let {
             // 删除单位文件
-            MmkvManager.setUnitNewVersion("0")
+            EventDbRepository.removeAllUnit()
+            MmkvManager.setUnitVersion("")
             LogUtil.xLogE("清空单位", TAG)
             result = true
         }
@@ -269,8 +329,11 @@ object LocalResourceManager {
                         }
 
                         if (list.isNotEmpty()) {
-                            LanguageDbRepository().insert(list)
-                            MmkvManager.setLanguageNewVersion(it)
+
+                            val languageRepo = LanguageDbRepository()
+                            languageRepo.insert(list)
+                            MmkvManager.setLanguageVersion(it)
+                            languageRepo.removeLanguageOfOtherVersion(it)
                             result = true
                         } else {
                             LogUtil.xLogE("updateLanguage 资源文件转 entity 为空", TAG)
@@ -288,7 +351,8 @@ object LocalResourceManager {
 
         } ?:let {
             // 删除语言文件
-            MmkvManager.setLanguageNewVersion("0")
+            LanguageDbRepository().removeAll()
+            MmkvManager.setLanguageVersion("")
             result = true
         }
         return result

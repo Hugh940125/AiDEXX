@@ -1,11 +1,15 @@
 package com.microtech.aidexx.ui.setting
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.net.entity.UpgradeInfo
+import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
+import com.microtech.aidexx.data.resource.LocalResourceManager
 import com.microtech.aidexx.databinding.ActivityLoadResourceBinding
 import com.microtech.aidexx.db.entity.event.preset.BaseSysPreset
 import com.microtech.aidexx.db.entity.event.preset.DietSysPresetEntity
@@ -14,7 +18,9 @@ import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.db.repository.LanguageDbRepository
+import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.main.MainActivity
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.Dispatchers
@@ -57,29 +63,19 @@ class LoadResourceActivity : BaseActivity<BaseViewModel, ActivityLoadResourceBin
 
             lifecycleScope.launch {
 
-                listOf(
-                    async {
+                if (UserInfoManager.instance().isLogin()) {
+                    MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
                         runCatching {
-                            updateAndLoadLanguage()
-                        }.exceptionOrNull()?.let {
-                            LogUtil.xLogE("语言升级异常 $it", TAG)
+                            Gson().fromJson(it, UpgradeInfo.VersionInfo::class.java)
+                        }.getOrNull()?.let { upInfo ->
+                            LocalResourceManager.startUpgrade(upInfo.info.downloadpath, upInfo.info.version)
                         }
-                    },
-                    async {
-                        runCatching {
-                            updateSysPreset()
-                        }.exceptionOrNull()?.let {
-                            LogUtil.xLogE("系统预设升级异常 $it", TAG)
-                        }
-                    },
-                    async {
-                        runCatching {
-                            updateUnit()
-                        }.exceptionOrNull()?.let {
-                            LogUtil.xLogE("单位升级异常 $it", TAG)
-                        }
-                    },
-                ).awaitAll()
+                    }
+                } else {
+                    LocalResourceManager.upgradeFromAssets()
+                }
+
+                LanguageResourceManager.loadLanguageInfo()
 
                 isTaskFinish = true
                 over()
@@ -89,7 +85,11 @@ class LoadResourceActivity : BaseActivity<BaseViewModel, ActivityLoadResourceBin
 
     private fun over() {
         if (isTimerFinish && isTaskFinish) {
-            startActivity(Intent(this, MainActivity::class.java))
+            if (UserInfoManager.instance().isLogin()) {
+                ActivityUtil.toActivity(this, MainActivity::class.java)
+            } else {
+                ActivityUtil.toActivity(this, LoginActivity::class.java)
+            }
             finish()
         }
     }
