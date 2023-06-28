@@ -22,10 +22,6 @@ class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        when (ThemeManager.theme.index) {
-            0 -> DialogX.globalTheme = DialogX.THEME.LIGHT
-            1 -> DialogX.globalTheme = DialogX.THEME.DARK
-        }
         initView()
     }
 

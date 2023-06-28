@@ -84,10 +84,7 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                     }
                     settingTheme.setValue(themes[it])
                     ThemeManager.theme = ThemeManager.themeByIndex(it)
-                    AppCompatDelegate.setDefaultNightMode(
-                        if (it == 0) AppCompatDelegate.MODE_NIGHT_YES
-                        else AppCompatDelegate.MODE_NIGHT_NO
-                    )
+                    ThemeManager.themeConfig()
                     for (activity in AidexxApp.instance.activityStack) {
                         activity?.recreate()
                     }

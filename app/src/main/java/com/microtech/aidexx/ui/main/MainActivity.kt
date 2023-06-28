@@ -26,15 +26,15 @@ import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
-import com.microtech.aidexx.ui.setting.SettingsManager
-import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.ThemeManager.themeConfig
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -77,6 +77,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
+
                         REQUEST_BLUETOOTH_PERMISSION -> {
                             EnquireManager.instance()
                                 .showEnquireOrNot(
@@ -91,12 +92,15 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
+
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             it.enableLocation()
                         }
+
                         REQUEST_ENABLE_BLUETOOTH -> {
                             activity.enableBluetooth()
                         }
+
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored =
@@ -141,10 +145,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(
-            if (ThemeManager.isLight()) AppCompatDelegate.MODE_NIGHT_NO
-            else AppCompatDelegate.MODE_NIGHT_YES
-        )
+        themeConfig()
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         mHandler = MainHandler(this)
