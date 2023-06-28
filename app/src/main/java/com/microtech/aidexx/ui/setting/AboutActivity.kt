@@ -11,7 +11,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.AppUpgradeManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityAboutBinding
 import com.microtech.aidexx.ui.setting.log.FeedbackUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
