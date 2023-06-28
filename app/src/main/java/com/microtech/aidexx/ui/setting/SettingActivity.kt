@@ -2,25 +2,28 @@ package com.microtech.aidexx.ui.setting
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.toast
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.databinding.ActivitySettingBinding
 import com.microtech.aidexx.ui.pair.TransmitterActivity
 import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
 import com.microtech.aidexx.ui.setting.share.ShareFollowActivity
+import com.microtech.aidexx.ui.web.WebActivity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.widget.dialog.Dialogs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +37,12 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
         initView()
     }
 
+    private fun getWelfareCenterUrl(): String {
+        val token = MmkvManager.getToken()
+        val userId = UserInfoManager.instance().userId()
+        return "${BuildConfig.welfareCenterUrl}?token=${token}&userId=${userId}"
+    }
+
     override fun onResume() {
         super.onResume()
         val default = TransmitterManager.instance().getDefault()
@@ -42,17 +51,31 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
 
     private fun initView() {
         binding.apply {
-            ivSettingBack.setOnClickListener { finish() }
-            settingTrans.setOnClickListener {
+            ivSettingBack.setDebounceClickListener { finish() }
+            tvWelfare.setDebounceClickListener {
+                WebActivity.loadWeb(
+                    context = this@SettingActivity,
+                    url = getWelfareCenterUrl(),
+                    fullScreen = true,
+                    from = "welfare_center"
+                )
+            }
+            tvHelp.setDebounceClickListener {
+                WebActivity.loadWeb(
+                    this@SettingActivity,
+                    getString(R.string.help_center), "https://aidexhelp.pancares.com/h5", true, "help_center"
+                )
+            }
+            settingTrans.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
             }
-            settingAbout.setOnClickListener {
+            settingAbout.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
             }
-            settingAlert.setOnClickListener {
+            settingAlert.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, AlertSettingsActivity::class.java))
             }
-            tvShare.setOnClickListener {
+            tvShare.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, ShareFollowActivity::class.java))
             }
             clSettingHeader.background =
@@ -60,15 +83,14 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                     this@SettingActivity, if (ThemeManager.isLight())
                         R.drawable.bg_setting_header_light else R.drawable.bg_setting_header_dark
                 )
-            ivSettingBack.setOnClickListener { finish() }
-            settingTrans.setOnClickListener {
+            settingTrans.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, TransmitterActivity::class.java))
             }
-            settingAlert.setOnClickListener {
+            settingAlert.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, AlertSettingsActivity::class.java))
             }
             settingUnit.setValue(UnitManager.glucoseUnit.text)
-            settingUnit.setOnClickListener {
+            settingUnit.setDebounceClickListener {
                 Dialogs.Picker(this@SettingActivity).singlePick(units, UnitManager.glucoseUnit.index) {
                     settingUnit.setValue(units[it])
                     UnitManager.glucoseUnit = UnitManager.getUnitByIndex(it)
@@ -77,9 +99,9 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
             }
             val themes = listOf(getString(R.string.theme_dark), getString(R.string.theme_light))
             settingTheme.setValue(themes[ThemeManager.theme.index])
-            settingTheme.setOnClickListener {
+            settingTheme.setDebounceClickListener {
                 Dialogs.Picker(this@SettingActivity).singlePick(themes, ThemeManager.theme.index) {
-                    if (it == ThemeManager.theme.index){
+                    if (it == ThemeManager.theme.index) {
                         return@singlePick
                     }
                     settingTheme.setValue(themes[it])
@@ -120,10 +142,10 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 }
             }
 
-            settingOther.setOnClickListener {
+            settingOther.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
             }
-            settingAbout.setOnClickListener {
+            settingAbout.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
             }
         }

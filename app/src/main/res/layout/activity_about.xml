@@ -40,15 +40,6 @@
 
 
             <com.microtech.aidexx.widget.SettingItemWidget
-                android:id="@+id/setting_help"
-                android:layout_marginTop="35dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:has_next="true"
-                app:title="@string/txt_help_about" />
-
-            <com.microtech.aidexx.widget.SettingItemWidget
                 android:id="@+id/setting_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -60,7 +51,7 @@
                 android:id="@+id/setting_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="5dp"
                 app:has_next="false"
                 app:title="@string/setting_open_type" />
 
@@ -68,7 +59,7 @@
                 android:id="@+id/setting_openVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="5dp"
                 app:has_next="false"
                 app:title="@string/setting_open_version" />
 
@@ -76,7 +67,7 @@
                 android:id="@+id/setting_softVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="5dp"
                 app:has_next="false"
                 app:title="@string/setting_soft_version" />
 
@@ -84,7 +75,7 @@
                 android:id="@+id/setting_checkVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="5dp"
                 app:has_next="true"
                 app:title="@string/setting_check_version" />
 
@@ -92,7 +83,7 @@
                 android:id="@+id/setting_service"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="5dp"
                 app:has_next="true"
                 app:title="@string/Terms_of_Service" />
 
@@ -100,10 +91,19 @@
                 android:id="@+id/setting_protocal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="5dp"
                 app:has_next="true"
-                app:has_line="false"
+                app:has_line="true"
                 app:title="@string/Privacy_Policy" />
+
+            <com.microtech.aidexx.widget.SettingItemWidget
+                android:id="@+id/setting_upload_log"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:has_line="false"
+                app:has_next="true"
+                app:layout_constraintTop_toTopOf="parent"
+                app:title="@string/log_upload" />
 
         </LinearLayout>
 

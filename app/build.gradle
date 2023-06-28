@@ -38,6 +38,7 @@ android {
             buildConfigField("String", "baseUrl", "\"https://china.pancares.com\"")
             buildConfigField("String", "updateUrl", "\"https://china.pancares.com/\"")
             buildConfigField("String", "logUploadUrl", "\"https://china.pancares.com/backend/vcs/log/uploadLog/\"")
+            buildConfigField("String", "welfareCenterUrl", "\"https://aidexh5-test.microtechmd.com/#/\"")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
 
@@ -48,6 +49,7 @@ android {
             buildConfigField("String", "baseUrl", "\"http://192.168.222.26:5555/\"")
             buildConfigField("String", "updateUrl", "\"http://192.168.222.26:5555/\"")
             buildConfigField("String", "logUploadUrl", "\"https://china.pancares.com/backend/vcs/log/uploadLog/\"")
+            buildConfigField("String", "welfareCenterUrl", "\"http://192.168.222.26:8000/#/\"")
         }
     }
 

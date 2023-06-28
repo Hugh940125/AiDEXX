@@ -236,7 +236,7 @@
         <item name="actionBarTitleTextColor">@color/light_actionbar_title</item>
         <item name="settingItemBackground">?containerBackgroundLight</item>
         <item name="settingItemTitleTextColor">@color/gray5</item>
-        <item name="settingItemValueTextColor">@color/gray5</item>
+        <item name="settingItemValueTextColor">@color/gray1</item>
         <item name="colorIconArrowNext">@color/black</item>
         <item name="settingItemIconColor">@color/light_colorIconArrowNext</item>
         <item name="bgRectFunc">@drawable/shape_rounded_rectangle_gray</item>

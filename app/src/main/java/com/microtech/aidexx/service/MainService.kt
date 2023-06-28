@@ -20,6 +20,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.common.minutesToMillis
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.CloudHistorySync
 import com.microtech.aidexx.data.EventPresetSync
@@ -27,6 +28,7 @@ import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.*
 import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.eventbus.AlertInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -140,6 +142,7 @@ class MainService : Service(), LifecycleOwner {
                 if (!UserInfoManager.instance().isLogin()) {
                     return
                 }
+                if (count == 10) count = 0
                 val model = TransmitterManager.instance().getDefault()
                 if (model != null) {
                     if (model.isGettingTransmitterData) {
@@ -147,7 +150,6 @@ class MainService : Service(), LifecycleOwner {
                         return
                     }
                 }
-                count++
                 serviceMainScope.launch {
                     CloudHistorySync.downloadAllData()
                 }
@@ -159,14 +161,21 @@ class MainService : Service(), LifecycleOwner {
                         SettingsManager.uploadSettings()
                     }
                 }
-                if (count == 9) {
+                if (count % 6 == 0) {
                     if (model?.entity?.sensorStartTime != null && model.entity.id == null) {
                         AidexxApp.mainScope.launch {
                             model.uploadPairInfo()
                         }
                     }
-                    count = 0
+                    if (model != null && model.isPaired()) {
+                        if (model.latestAdTime != 0L) {
+                            if (SystemClock.elapsedRealtime() - model.latestAdTime > 15.minutesToMillis()) {
+                                model.alert?.invoke(Date().dateHourMinute(), MESSAGE_TYPE_SIGNAL_LOST)
+                            }
+                        }
+                    }
                 }
+                count++
             }
         }
         mainServiceTimer = Timer()

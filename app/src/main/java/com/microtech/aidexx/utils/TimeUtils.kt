@@ -31,7 +31,7 @@ object TimeUtils {
         return TimeZone.getDefault().rawOffset / 1000L
     }
 
-    fun Date.dateHourMinute(pattern: String = "MM-dd HH:mm"): String? =
+    fun Date.dateHourMinute(pattern: String = "MM-dd HH:mm"): String =
         SimpleDateFormat(pattern, Locale.getDefault()).format(this)
 
     fun getTimeZoneId(): String? {

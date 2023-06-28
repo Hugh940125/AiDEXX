@@ -28,14 +28,6 @@
         app:layout_constraintTop_toBottomOf="@id/action_bar_other_setting">
 
         <com.microtech.aidexx.widget.SettingItemWidget
-            android:id="@+id/setting_upload_log"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:has_line="true"
-            app:layout_constraintTop_toTopOf="parent"
-            app:title="@string/log_upload" />
-
-        <com.microtech.aidexx.widget.SettingItemWidget
             android:id="@+id/setting_logout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

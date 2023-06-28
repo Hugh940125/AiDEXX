@@ -236,7 +236,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 portrait()
             }
         }
-        mainActivity?.fitOrientation()
+        mainActivity?.fitHomeOrientation()
     }
 
     private fun landSpace() {

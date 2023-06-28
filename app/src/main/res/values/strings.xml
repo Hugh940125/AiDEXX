@@ -272,7 +272,7 @@
     <string name="denied">浏览分享数据时无法访问</string>
     <string name="title_update">版本更新</string>
     <string name="btn_update">更新</string>
-    <string name="log_upload">本地日志</string>
+    <string name="log_upload">使用日志反馈</string>
     <string name="str_succ">成功</string>
     <string name="log_uploading">上传中…</string>
     <string name="check_permission">检查权限</string>
@@ -668,6 +668,7 @@
     <string name="normal_range">正常</string>
     <string name="low_range">偏低</string>
     <string name="unit_times">次</string>
+    <string name="help_center">帮助中心</string>
     <!-- 历史 -->
 
 </resources>

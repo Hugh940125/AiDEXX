@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowInsets
 import android.view.WindowInsetsController
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.R
@@ -34,7 +33,6 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.DialogX
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
@@ -150,7 +148,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         setContentView(binding.root)
         mHandler = MainHandler(this)
         initSDKs()
-        fitOrientation()
+        fitHomeOrientation()
         initView()
         loadData()
         initEvent()
@@ -312,7 +310,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 //        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
     }
 
-    fun fitOrientation() {
+    fun fitHomeOrientation() {
         val window = this.window
         val decorView = window.decorView
         if (mCurrentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -325,7 +323,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                     controller.systemBarsBehavior =
                         WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
-            } else if (mCurrentOrientation == Configuration.ORIENTATION_PORTRAIT) {
+            } else {
                 decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION

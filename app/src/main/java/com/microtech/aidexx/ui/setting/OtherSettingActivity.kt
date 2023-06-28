@@ -70,27 +70,6 @@ class OtherSettingActivity : BaseActivity<BaseViewModel, ActivityOtherSettingBin
                     }
                 )
             }
-
-            settingUploadLog.setDebounceClickListener {
-                Dialogs.showWait(getString(R.string.log_uploading))
-                Log.appenderFlushSync(true)
-                val externalFile = getExternalFilesDir(null)?.absolutePath
-                val logPath = "$externalFile${File.separator}aidex"
-                val logFile = File("${logPath}${File.separator}log")
-                val userId = UserInfoManager.instance().userId()
-                val deviceName = DeviceInfoHelper.deviceName()
-                val installVersion = DeviceInfoHelper.installVersion(this@OtherSettingActivity)
-                val osVersion = DeviceInfoHelper.osVersion()
-                val sn = TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: "unknown"
-                val zipFileName = "AiDEX${installVersion}_${deviceName}_${osVersion}_${sn}_${userId}.zip"
-                if (logFile.isDirectory) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        FeedbackUtil.zipAndUpload(this@OtherSettingActivity, logFile, logPath, zipFileName, false)
-                    }
-                } else {
-                    Dialogs.showSuccess(getString(R.string.str_succ))
-                }
-            }
         }
     }
 

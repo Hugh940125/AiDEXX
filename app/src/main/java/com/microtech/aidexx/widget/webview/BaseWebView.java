@@ -2,37 +2,33 @@ package com.microtech.aidexx.widget.webview;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.net.http.SslError;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.microtech.aidexx.R;
+import com.microtech.aidexx.ui.web.WebActivity;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Pattern;
-
 
 public class BaseWebView extends LinearLayout {
     private static final String TAG = "BaseWebView";
@@ -42,21 +38,39 @@ public class BaseWebView extends LinearLayout {
     Timer timer; // 定时器
     int progress = 0;
     int timeProgress = 0;
-    public OnReceivedError onReceivedError;
-
+    private WebActivity mContext;
+    private TextView mToolbarTitle;
+    private boolean isSet = true;
     private OnLoadingUrlListener onLoadingUrlListener;
 
-    public ValueCallback<Uri[]> valueCallback;
-    private final static int FILE_CHOOSER_RESULT_CODE = 10000;
-    private TextView titleView;
-    private Activity mActivity;
+    public FrameLayout getmFullscreenContainer() {
+        return mFullscreenContainer;
+    }
 
-    public void setTitleView(TextView titleView) {
-        this.titleView = titleView;
+    public void setFullscreenContainer(FrameLayout mFullscreenContainer) {
+        this.mFullscreenContainer = mFullscreenContainer;
+        mWebView.setWebChromeClient(new VideoEnabledWebChromeClient(mFullscreenContainer));
+
+    }
+
+    public FrameLayout mFullscreenContainer;
+
+
+    public ValueCallback<Uri[]> uploadMessageAboveL;
+    private final static int FILE_CHOOSER_RESULT_CODE = 10000;
+
+
+    public void setSet(boolean set) {
+        isSet = set;
+    }
+
+    public void setmToolbarTitle(TextView mToolbarTitle) {
+        this.mToolbarTitle = mToolbarTitle;
     }
 
     public BaseWebView(Context context) {
-        this(context, null);
+        super(context);
+        init();
     }
 
     public void setOnLoadingUrlListener(OnLoadingUrlListener onLoadingUrlListener) {
@@ -64,18 +78,19 @@ public class BaseWebView extends LinearLayout {
     }
 
     public BaseWebView(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init();
     }
 
     public BaseWebView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init(context);
+        init();
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void init(Context context) {
-        mActivity = (Activity) context;
-        View.inflate(context, R.layout.view_web_progress, this);
+    private void init() {
+        mContext = (WebActivity) getContext();
+        View.inflate(mContext, R.layout.view_web_progress, this);
         mWebView = findViewById(R.id.web_view);
         mProgressBar = findViewById(R.id.progress_bar);
 
@@ -84,9 +99,15 @@ public class BaseWebView extends LinearLayout {
         settings.setDomStorageEnabled(true);
         settings.setSavePassword(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        mWebView.setWebChromeClient(new MyWebChromeClient());
-        mWebView.addJavascriptInterface(new MJavascriptInterface(context), "imagelistener");
+        if (mFullscreenContainer != null) {
+            mWebView.setWebChromeClient(new VideoEnabledWebChromeClient(mFullscreenContainer));
+        } else {
+            mWebView.setWebChromeClient(new MyWebChromeClient());
+        }
+
+        mWebView.addJavascriptInterface(new MJavascriptInterface(mContext), "imagelistener");
         mWebView.setWebViewClient(new WebViewClient() {
+
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
@@ -94,15 +115,15 @@ public class BaseWebView extends LinearLayout {
                 if (onPageListener != null) {
                     onPageListener.onPageStarted(view, url);
                 }
+
             }
 
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, final WebResourceRequest request) {
-                String url = request.getUrl().toString();
+            public boolean shouldOverrideUrlLoading(WebView view, final String url) {
                 if (onLoadingUrlListener != null) {
                     return onLoadingUrlListener.onLoadingUrl(url);
                 }
-                return super.shouldOverrideUrlLoading(view, request);
+                return super.shouldOverrideUrlLoading(view, url);
             }
 
             @Override
@@ -110,34 +131,22 @@ public class BaseWebView extends LinearLayout {
                 if (onPageListener != null) {
                     onPageListener.onPageFinished(view, url);
                 }
+
                 super.onPageFinished(view, url);
             }
 
             @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
+            public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                super.onReceivedError(view, errorCode, description, failingUrl);
                 if (onReceivedError != null) {
                     onReceivedError.onReceivedError();
                 }
             }
 
-            @Override
-            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
-                super.onReceivedHttpError(view, request, errorResponse);
-                if (onReceivedError != null) {
-                    onReceivedError.onReceivedError();
-                }
-            }
-
-            @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                super.onReceivedSslError(view, handler, error);
-                if (onReceivedError != null) {
-                    onReceivedError.onReceivedError();
-                }
-            }
         });
     }
+
+    public OnReceivedError onReceivedError;
 
     public interface OnReceivedError {
         void onReceivedError();
@@ -147,79 +156,26 @@ public class BaseWebView extends LinearLayout {
         this.onReceivedError = onReceivedError;
     }
 
-    private boolean isUrl(String url) {
+    private boolean isURl(String url) {
         String regex = "(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]";
         Pattern pattern = Pattern.compile(regex);
         return pattern.matcher(url).matches();
     }
 
-    private class MyWebChromeClient extends WebChromeClient {
-        @Override
-        public void onReceivedTitle(WebView view, String _title) {
-            super.onReceivedTitle(view, _title);
-            if (titleView != null) {
-                titleView.setText(_title);
-            }
-        }
-
-
-        @Override
-        public void onProgressChanged(WebView view, int newProgress) {
-            progress = newProgress;
-            setProgressBar();
-            if (newProgress == 100) {
-                mProgressBar.setVisibility(View.INVISIBLE);
-                AlphaAnimation animation = new AlphaAnimation(1.0f, 0.0f);
-                animation.setDuration(500);
-                animation.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                    }
-                });
-                mProgressBar.startAnimation(animation);
-            } else {
-                mProgressBar.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-            valueCallback = filePathCallback;
-            if (fileChooserParams != null && fileChooserParams.getAcceptTypes().length > 0) {
-                if (1 == fileChooserParams.getAcceptTypes().length && "image/*".equals(fileChooserParams.getAcceptTypes()[0])) {
-                    openImageChooserActivity();
-                } else {
-                    openFileChooserActivity();
-                }
-            }
-            return true;
-        }
-    }
 
     private void openImageChooserActivity() {
         //调用自己的图库
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.setType("image/*");
-        mActivity.startActivityForResult(Intent.createChooser(i, "Image Chooser"), FILE_CHOOSER_RESULT_CODE);
+        mContext.startActivityForResult(Intent.createChooser(i, "Image Chooser"), FILE_CHOOSER_RESULT_CODE);
     }
 
     private void openFileChooserActivity() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("file/*");
-        mActivity.startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILE_CHOOSER_RESULT_CODE);
+        mContext.startActivityForResult(Intent.createChooser(intent, "File Chooser"), FILE_CHOOSER_RESULT_CODE);
     }
-
 
     // 停止
     public void stopTimer() {
@@ -267,6 +223,7 @@ public class BaseWebView extends LinearLayout {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_CALL);
         intent.setData(Uri.parse(str));
+        mContext.startActivity(intent);
     }
 
     public void loadData(String url, String type, String detail) {
@@ -293,7 +250,8 @@ public class BaseWebView extends LinearLayout {
         mWebView.loadUrl(url, extraHeaders);
     }
 
-    public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+    public void loadDataWithBaseURL(String baseUrl, String data,
+                                    String mimeType, String encoding, String historyUrl) {
         mWebView.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
     }
 
@@ -305,6 +263,7 @@ public class BaseWebView extends LinearLayout {
     }
 
     public interface OnPageListener {
+
         void onPageStarted(WebView view, String url);
 
         void onPageFinished(WebView view, String url);
@@ -316,12 +275,13 @@ public class BaseWebView extends LinearLayout {
         stopTimer();
     }
 
-    class MJavascriptInterface {
+    static class MJavascriptInterface {
         private final Context context;
-        private String[] imageUrls;
+        private String[] imageUrls, img;
 
         public MJavascriptInterface(Context context) {
             this.context = context;
+
         }
 
         @android.webkit.JavascriptInterface
@@ -334,4 +294,114 @@ public class BaseWebView extends LinearLayout {
             this.imageUrls = imageUrls;
         }
     }
+
+
+    private class MyWebChromeClient extends WebChromeClient {
+
+
+        @Override
+        public void onReceivedTitle(WebView view, String _title) {
+            super.onReceivedTitle(view, _title);
+            if (mToolbarTitle != null && isSet) {
+                mToolbarTitle.setText(_title);
+            }
+        }
+
+
+        @Override
+        public void onProgressChanged(WebView view, int newProgress) {
+
+            progress = newProgress;
+            setProgressBar();
+
+            if (newProgress == 100) {
+                mProgressBar.setVisibility(View.INVISIBLE);
+                AlphaAnimation animation = new AlphaAnimation(1.0f, 0.0f);
+                animation.setDuration(500);
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+                });
+                mProgressBar.startAnimation(animation);
+            } else {
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+            uploadMessageAboveL = filePathCallback;
+//            Log.d(TAG, "onShowFileChooser: fileChooserParams " + Arrays.toString(fileChooserParams.getAcceptTypes()));
+            if (fileChooserParams != null && fileChooserParams.getAcceptTypes().length > 0) {
+                if (1 == fileChooserParams.getAcceptTypes().length && "image/*".equals(fileChooserParams.getAcceptTypes()[0])) {
+                    openImageChooserActivity();
+                } else {
+                    openFileChooserActivity();
+                }
+            }
+            return true;
+        }
+
+    }
+
+    public class VideoEnabledWebChromeClient extends MyWebChromeClient {
+        private View mCustomView;
+        private CustomViewCallback mCustomViewCallback;
+        private final FrameLayout mFullscreenContainer;
+
+        // 在 Activity 中设置一个 FrameLayout 作为全屏容器
+        public VideoEnabledWebChromeClient(FrameLayout fullscreenContainer) {
+            mFullscreenContainer = fullscreenContainer;
+        }
+
+        @Override
+        public void onShowCustomView(View view, CustomViewCallback callback) {
+            if (mContext != null) {
+                mContext.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                mContext.fitWebOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
+            mWebView.setVisibility(View.GONE);
+            // 如果一个视图已经存在，那么立刻终止并新建一个
+            if (mCustomView != null) {
+                callback.onCustomViewHidden();
+                return;
+            }
+            mFullscreenContainer.addView(view);
+            mCustomView = view;
+            mCustomViewCallback = callback;
+            mFullscreenContainer.setVisibility(View.VISIBLE);
+        }
+
+        @SuppressLint("SourceLockedOrientationActivity")
+        @Override
+        public void onHideCustomView() {
+            // 不是全屏播放状态
+            if (mCustomView == null) {
+                return;
+            }
+            if (mContext != null) {
+                mContext.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                mContext.fitWebOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+            mCustomView.setVisibility(View.GONE);
+            mFullscreenContainer.removeView(mCustomView);
+            mCustomView = null;
+            mFullscreenContainer.setVisibility(View.GONE);
+            mCustomViewCallback.onCustomViewHidden();
+            mWebView.setVisibility(View.VISIBLE);
+        }
+    }
 }
+
+

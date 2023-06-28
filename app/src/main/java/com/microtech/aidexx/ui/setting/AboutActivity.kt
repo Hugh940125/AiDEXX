@@ -8,11 +8,20 @@ import com.microtech.aidexx.IntentKey
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.setDebounceClickListener
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityAboutBinding
+import com.microtech.aidexx.ui.setting.log.FeedbackUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.ui.web.WebActivity
+import com.microtech.aidexx.utils.DeviceInfoHelper
+import com.microtech.aidexx.widget.dialog.Dialogs
+import com.tencent.mars.xlog.Log
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 class AboutActivity : BaseActivity<BaseViewModel, ActivityAboutBinding>() {
@@ -84,6 +93,27 @@ class AboutActivity : BaseActivity<BaseViewModel, ActivityAboutBinding>() {
             )
             } ?:let {
                 binding.settingCheckVersion.setValue(getString(R.string.verson_last))
+            }
+        }
+
+        binding.settingUploadLog.setDebounceClickListener {
+            Dialogs.showWait(getString(R.string.log_uploading))
+            Log.appenderFlushSync(true)
+            val externalFile = getExternalFilesDir(null)?.absolutePath
+            val logPath = "$externalFile${File.separator}aidex"
+            val logFile = File("${logPath}${File.separator}log")
+            val userId = UserInfoManager.instance().userId()
+            val deviceName = DeviceInfoHelper.deviceName()
+            val installVersion = DeviceInfoHelper.installVersion(this@AboutActivity)
+            val osVersion = DeviceInfoHelper.osVersion()
+            val sn = TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: "unknown"
+            val zipFileName = "AiDEX${installVersion}_${deviceName}_${osVersion}_${sn}_${userId}.zip"
+            if (logFile.isDirectory) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    FeedbackUtil.zipAndUpload(this@AboutActivity, logFile, logPath, zipFileName, false)
+                }
+            } else {
+                Dialogs.showSuccess(getString(R.string.str_succ))
             }
         }
     }

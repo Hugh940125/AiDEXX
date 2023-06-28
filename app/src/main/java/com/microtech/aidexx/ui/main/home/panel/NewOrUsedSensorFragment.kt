@@ -25,7 +25,7 @@ import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.entity.NewSensorEntity
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 
 class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSensorBinding>() {
 
@@ -57,14 +57,17 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     AidexXOperation.DISCONNECT -> {
                         Dialogs.dismissWait()
                     }
+
                     AidexXOperation.CONNECT -> {
                         if (!success) {
                             Dialogs.dismissWait()
                         }
                     }
+
                     AidexXOperation.SET_NEW_SENSOR -> {
                         TransmitterManager.instance().getDefault()?.reset()
                     }
+
                     else -> {
 
                     }
@@ -98,7 +101,6 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                         model.getController().newSensor(
                             NewSensorEntity(false, TimeUtils.currentTimeMillis.millisToSeconds())
                         )
-//                    HomeStateManager.instance().setState(glucosePanel)
                     })
             }
         }
@@ -108,20 +110,10 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
         lifecycleScope.launch {
             binding.llAutoNew.visibility = View.VISIBLE
             binding.llNewOrUsed.visibility = View.GONE
-            model.getController().newSensor(
-                NewSensorEntity(AidexXDatetimeEntity(Calendar.getInstance()))
-            )
-            delay(2000)
+            model.getController().newSensor(NewSensorEntity(AidexXDatetimeEntity(Calendar.getInstance())))
+            delay(2500)
             HomeStateManager.instance().setState(glucosePanel)
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
     }
 
     companion object {
