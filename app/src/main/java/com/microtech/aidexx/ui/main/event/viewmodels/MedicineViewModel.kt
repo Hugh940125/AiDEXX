@@ -1,7 +1,7 @@
 package com.microtech.aidexx.ui.main.event.viewmodels
 
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.db.entity.event.MedicationDetail
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity_

@@ -3,7 +3,7 @@ package com.microtech.aidexx.ui.main.event.adapter
 import android.widget.TextView
 import com.flyco.roundview.RoundFrameLayout
 import com.microtech.aidexx.R
-import com.microtech.aidexx.data.SpecificationModel
+import com.microtech.aidexx.data.resource.SpecificationModel
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
 

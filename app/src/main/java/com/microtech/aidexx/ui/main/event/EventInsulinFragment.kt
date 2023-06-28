@@ -47,17 +47,18 @@ class EventInsulinFragment : BaseEventFragment<BaseViewModel, FragmentEventInsul
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.apply {
-            tvInjectionTime.text = vm.updateEventTime()
-            tvInjectionType.text = vm.refreshEventPeriod()
-        }
-        lifecycleScope.launch {
-            EventRepository.syncEventPreset<InsulinUsrPresetEntity>().collect {
-                LogUtil.d("down insulin preset isDone=${it.first} page=${it.second}",
-                    EventFragment.TAG
-                )
+    override fun onRealResume(isFromSelfOnResume: Boolean) {
+        if (isBindingInit()) {
+            binding.apply {
+                tvInjectionTime.text = vm.updateEventTime()
+                tvInjectionType.text = vm.refreshEventPeriod()
+            }
+            lifecycleScope.launch {
+                EventRepository.syncEventPreset<InsulinUsrPresetEntity>().collect {
+                    LogUtil.d("down insulin preset isDone=${it.first} page=${it.second}",
+                        EventFragment.TAG
+                    )
+                }
             }
         }
     }

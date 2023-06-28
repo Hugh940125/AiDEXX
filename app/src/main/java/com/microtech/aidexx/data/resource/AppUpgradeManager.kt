@@ -1,4 +1,4 @@
-package com.microtech.aidexx.data
+package com.microtech.aidexx.data.resource
 
 import android.content.Intent
 import android.net.Uri

@@ -4,7 +4,7 @@ import android.content.res.Resources
 import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.ui.main.event.EventParameterManager
 import com.microtech.aidexx.ui.main.event.TYPE_SLOT_MEDICINE
@@ -44,7 +44,7 @@ class MedicationEntity : BaseEventEntity {
     var expandList: MutableList<MedicationDetail> = ArrayList()
 
     constructor() {
-        this.language = LocalManager.getCurLanguageTag()
+        this.language = LanguageResourceManager.getCurLanguageTag()
     }
 
     constructor(medicineName: String? = null, medicineDosage: Float? = null) : this() {

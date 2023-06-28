@@ -16,8 +16,8 @@ import com.microtech.aidexx.common.format
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.EventUnitManager
-import com.microtech.aidexx.data.SpecificationModel
+import com.microtech.aidexx.data.resource.EventUnitManager
+import com.microtech.aidexx.data.resource.SpecificationModel
 import com.microtech.aidexx.databinding.DialogDietNewPresetBinding
 import com.microtech.aidexx.db.entity.event.DietDetail
 import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity

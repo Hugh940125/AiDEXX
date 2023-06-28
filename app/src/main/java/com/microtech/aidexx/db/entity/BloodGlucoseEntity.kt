@@ -2,7 +2,7 @@ package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
 import com.microtech.aidexx.R
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.roundOffDecimal
 import com.microtech.aidexx.utils.toGlucoseValue
@@ -25,7 +25,7 @@ class BloodGlucoseEntity : BaseEventEntity {
     constructor(testTime: Date, bloodGlucose: Float) {
         setTimeInfo(testTime)
         this.bloodGlucoseMg = roundOffDecimal(bloodGlucose)
-        this.language = LocalManager.getCurLanguageTag()
+        this.language = LanguageResourceManager.getCurLanguageTag()
     }
 
     override fun getEventDescription(res: Resources): String =

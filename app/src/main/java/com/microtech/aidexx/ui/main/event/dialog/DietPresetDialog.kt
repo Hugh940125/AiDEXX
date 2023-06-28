@@ -16,7 +16,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.stripTrailingZeros
 import com.microtech.aidexx.common.toast
-import com.microtech.aidexx.data.EventUnitManager
+import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.databinding.DialogDietPresetBinding
 import com.microtech.aidexx.db.entity.event.DietDetail
 import com.microtech.aidexx.db.repository.EventDbRepository

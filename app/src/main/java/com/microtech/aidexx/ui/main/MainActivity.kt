@@ -18,18 +18,21 @@ import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
-import com.microtech.aidexx.data.AppUpgradeManager
-import com.microtech.aidexx.data.EventUnitManager
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
+import com.microtech.aidexx.data.resource.EventUnitManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
+import com.microtech.aidexx.ui.setting.LoadResourceActivity
+import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.ThemeManager.themeConfig
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.widget.dialog.Dialogs
@@ -75,7 +78,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
-
                         REQUEST_BLUETOOTH_PERMISSION -> {
                             EnquireManager.instance()
                                 .showEnquireOrNot(
@@ -90,15 +92,12 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
-
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             it.enableLocation()
                         }
-
                         REQUEST_ENABLE_BLUETOOTH -> {
                             activity.enableBluetooth()
                         }
-
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored =
@@ -145,6 +144,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         themeConfig()
         super.onCreate(savedInstanceState)
+        checkAndUpdateResourceIfNeeded()
         setContentView(binding.root)
         mHandler = MainHandler(this)
         initSDKs()
@@ -182,11 +182,12 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     private fun loadData() {
-        EventUnitManager.loadUnit(LocalManager.getCurLanguageTag())
+        EventUnitManager.loadUnit(LanguageResourceManager.getCurLanguageTag())
     }
 
     override fun onResume() {
         super.onResume()
+        checkAndUpdateResourceIfNeeded()
         checkPermission()
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo()?.let {
@@ -366,4 +367,14 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onBackPressed() {
         ActivityUtil.toSystemHome(this)
     }
+
+
+    private fun checkAndUpdateResourceIfNeeded() {
+        MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
+            startActivity(Intent(this, LoadResourceActivity::class.java))
+            finish()
+        }
+    }
+
+
 }

@@ -1,7 +1,7 @@
 package com.microtech.aidexx.db.repository
 
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.db.dao.EventDao
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.event.UnitEntity
@@ -19,6 +19,7 @@ import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity_
 import com.microtech.aidexx.db.entity.event.preset.SportPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity_
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import io.objectbox.Property
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -72,12 +73,13 @@ object EventDbRepository {
     suspend fun queryDietPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag()
+        language: String = LanguageResourceManager.getCurLanguageTag(),
+        sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(DietSysPresetEntity::class.java)
     ): List<DietPresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
             async {
-                EventDao.queryDietSysPresetByName(name, language) ?: mutableListOf<DietPresetEntity>()
+                EventDao.queryDietSysPresetByName(name, language, sysPresetVersion) ?: mutableListOf<DietPresetEntity>()
             },
             async {
                 EventDao.queryDietUsrPresetByName(name, userId) ?: mutableListOf()
@@ -89,12 +91,13 @@ object EventDbRepository {
     suspend fun queryMedicinePresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag()
+        language: String = LanguageResourceManager.getCurLanguageTag(),
+        sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(MedicineSysPresetEntity::class.java)
     ): List<MedicinePresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
             async {
-                EventDao.queryMedicineSysPresetByName(name, language) ?: mutableListOf<MedicinePresetEntity>()
+                EventDao.queryMedicineSysPresetByName(name, language, sysPresetVersion) ?: mutableListOf<MedicinePresetEntity>()
             },
             async {
                 EventDao.queryMedicineUsrPresetByName(name, userId) ?: mutableListOf()
@@ -106,12 +109,13 @@ object EventDbRepository {
     suspend fun queryInsulinPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag()
+        language: String = LanguageResourceManager.getCurLanguageTag(),
+        sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(InsulinSysPresetEntity::class.java)
     ): List<InsulinPresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
             async {
-                EventDao.queryInsulinSysPresetByName(name, language) ?: mutableListOf<InsulinPresetEntity>()
+                EventDao.queryInsulinSysPresetByName(name, language, sysPresetVersion) ?: mutableListOf<InsulinPresetEntity>()
             },
             async {
                 EventDao.queryInsulinUsrPresetByName(name, userId) ?: mutableListOf()
@@ -123,12 +127,13 @@ object EventDbRepository {
     suspend fun querySportPresetByName(
         name: String,
         userId: String = UserInfoManager.instance().userId(),
-        language: String = LocalManager.getCurLanguageTag()
+        language: String = LanguageResourceManager.getCurLanguageTag(),
+        sysPresetVersion: String = MmkvManager.getEventSysPresetVersion(SportSysPresetEntity::class.java)
     ): List<SportPresetEntity> = withContext(Dispatchers.IO) {
 
         listOf(
             async {
-                EventDao.querySportSysPresetByName(name, language) ?: mutableListOf<SportPresetEntity>()
+                EventDao.querySportSysPresetByName(name, language, sysPresetVersion) ?: mutableListOf<SportPresetEntity>()
             },
             async {
                 EventDao.querySportUsrPresetByName(name, userId) ?: mutableListOf()

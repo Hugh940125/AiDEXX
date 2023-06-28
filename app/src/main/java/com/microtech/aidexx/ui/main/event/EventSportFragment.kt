@@ -40,9 +40,10 @@ class EventSportFragment : BaseEventFragment<BaseViewModel, FragmentEventSportBi
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.tvSportTime.text = vm.updateEventTime()
+    override fun onRealResume(isFromSelfOnResume: Boolean) {
+        if (isBindingInit()) {
+            binding.tvSportTime.text = vm.updateEventTime()
+        }
         lifecycleScope.launch {
             EventRepository.syncEventPreset<SportUsrPresetEntity>().collect {
                 LogUtil.d("down sport preset isDone=${it.first} page=${it.second}",

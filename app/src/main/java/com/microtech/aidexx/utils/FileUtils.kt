@@ -39,4 +39,33 @@ object FileUtils {
         return file.isFile && file.exists()
     }
 
+    fun delete(path: String): Boolean = delete(File(path))
+
+    fun delete(file: File?): Boolean {
+        if (file == null) return false
+        return if (file.isDirectory) {
+            deleteDir(file)
+        } else deleteFile(file)
+    }
+
+    private fun deleteFile(file: File?): Boolean {
+        return file != null && (file.exists() || file.isFile && file.delete())
+    }
+
+    private fun deleteDir(dir: File): Boolean {
+        if (!dir.exists()) return true
+        if (!dir.isDirectory) return false
+        val files = dir.listFiles()
+        if (files != null && files.isNotEmpty()) {
+            for (file in files) {
+                if (file.isFile) {
+                    if (!file.delete()) return false
+                } else if (file.isDirectory) {
+                    if (!deleteDir(file)) return false
+                }
+            }
+        }
+        return dir.delete()
+    }
+
 }

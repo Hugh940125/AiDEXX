@@ -1,4 +1,4 @@
-package com.microtech.aidexx.data
+package com.microtech.aidexx.data.resource
 
 import com.google.gson.Gson
 import com.microtech.aidexx.BuildConfig
@@ -188,7 +188,7 @@ object EventUnitManager {
     private fun updateMemo(list: List<UnitEntity>) {
         val newestMap = mutableMapOf<Int, MutableList<SpecificationModel>>()
         list.filter {
-            it.language == LocalManager.getCurLanguageTag() && it.version == MmkvManager.getUnitVersion()
+            it.language == LanguageResourceManager.getCurLanguageTag() && it.version == MmkvManager.getUnitVersion()
         }.forEach {
             val sm = SpecificationModel(it.name, it.ratio,  it.isDefault == 1, it.value)
             if (newestMap.containsKey(it.eventType)) {

@@ -63,9 +63,10 @@ class EventOthersFragment : BaseEventFragment<BaseViewModel, FragmentEventOthers
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.tvOthersTime.text = vm.updateEventTime()
+    override fun onRealResume(isFromSelfOnResume: Boolean) {
+        if (isBindingInit()) {
+            binding.tvOthersTime.text = vm.updateEventTime()
+        }
     }
 
     private fun initEventClick() {

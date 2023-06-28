@@ -47,10 +47,11 @@ data class UpgradeInfo(
     )
     data class VersionData(
         val version: String = "",
-        val downloadpath: String = "",
+        val downloadpath: String = "", // 接口返回时为下载地址 下载成功后保存本地地址
         val description: String = "",
         val force: Int = 0,
-        val configId: Int = 0
+        val configId: Int = 0,
+        val sha256: String = ""
     )
 }
 

@@ -12,6 +12,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.toast
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.LocalManager
 import com.microtech.aidexx.databinding.ActivitySettingBinding
@@ -116,20 +117,19 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 lifecycleScope.launch {
 
                     withContext(Dispatchers.IO) {
-                        LocalManager.getSupportLanguages()
+                        LanguageResourceManager.getSupportLanguages()
                     }?.let { supportLanguages ->
 
                         Dialogs.Picker(this@SettingActivity).singlePick(
-                            supportLanguages,
-                            supportLanguages.indexOf(LocalManager.getCurLanguageTag())
-                        ) {
+                                supportLanguages,
+                                supportLanguages.indexOf(LanguageResourceManager.getCurLanguageTag()) ) {
 
                             "选中了第 $it 个，切换暂未实现".toast()
                             return@singlePick
 
                             lifecycleScope.launch {
                                 withContext(Dispatchers.IO) {
-                                    LocalManager.onLanguageChanged(supportLanguages[it])
+                                    LanguageResourceManager.onLanguageChanged(supportLanguages[it])
                                 }
                                 settingLanguage.setValue(themes[it])
                                 for (activity in AidexxApp.instance.activityStack) {

@@ -13,7 +13,7 @@ import com.microtech.aidexx.common.LOGIN_TYPE_PWD
 import com.microtech.aidexx.common.LOGIN_TYPE_VER_CODE
 import com.microtech.aidexx.common.LoginType
 import com.microtech.aidexx.common.toastShort
-import com.microtech.aidexx.data.AppUpgradeManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment

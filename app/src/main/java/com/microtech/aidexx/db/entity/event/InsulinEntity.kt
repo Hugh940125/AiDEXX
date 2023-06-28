@@ -4,7 +4,7 @@ import android.content.res.Resources
 import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.getMutableListType
 import com.microtech.aidexx.common.stripTrailingZeros
-import com.microtech.aidexx.data.LocalManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.ui.main.event.EventParameterManager
 import com.microtech.aidexx.ui.main.event.TYPE_SLOT_INSULIN
@@ -40,7 +40,7 @@ class InsulinEntity : BaseEventEntity {
     var expandList: MutableList<InsulinDetail> = ArrayList()
 
     constructor() {
-        this.language = LocalManager.getCurLanguageTag()
+        this.language = LanguageResourceManager.getCurLanguageTag()
     }
 
     constructor(insulinName: String? = null, insulinDosage: Float? = null) : this() {

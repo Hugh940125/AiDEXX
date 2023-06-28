@@ -1,4 +1,4 @@
-package com.microtech.aidexx.data
+package com.microtech.aidexx.data.resource
 
 import android.R
 import android.annotation.SuppressLint
@@ -19,7 +19,7 @@ import com.microtech.aidexx.widget.SettingItemWidget
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-object LocalManager {
+object LanguageResourceManager {
 
     private const val TAG = "LocalManager"
 
@@ -35,7 +35,7 @@ object LocalManager {
     /**
      * 加载当前语言资源到内存
      */
-    suspend fun loadLanguage() {
+    suspend fun loadLanguageInfo() {
 
     }
 
@@ -65,7 +65,7 @@ object LocalManager {
     }
 
     fun getAidexResourceInspector(resources: Resources): Resources {
-        if (!::mResourcesInspector.isInitialized) {
+        if (!LanguageResourceManager::mResourcesInspector.isInitialized) {
             mResourcesInspector = object: Resources(
                 resources.assets,
                 resources.displayMetrics,

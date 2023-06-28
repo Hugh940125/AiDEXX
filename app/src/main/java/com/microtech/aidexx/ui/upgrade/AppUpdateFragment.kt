@@ -10,10 +10,10 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.dp2px
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
-import com.microtech.aidexx.data.AppUpgradeManager
-import com.microtech.aidexx.data.AppUpgradeManager.DOWNLOAD_STATUS_DONE
-import com.microtech.aidexx.data.AppUpgradeManager.DOWNLOAD_STATUS_ERROR
-import com.microtech.aidexx.data.LocalResourceManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager
+import com.microtech.aidexx.data.resource.AppUpgradeManager.DOWNLOAD_STATUS_DONE
+import com.microtech.aidexx.data.resource.AppUpgradeManager.DOWNLOAD_STATUS_ERROR
+import com.microtech.aidexx.data.resource.LocalResourceManager
 import com.microtech.aidexx.databinding.DialogAppUpdateBinding
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ToastUtil
