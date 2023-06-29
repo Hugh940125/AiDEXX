@@ -16,7 +16,7 @@ import com.microtech.aidexx.db.entity.TransmitterEntity_
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.needPair
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
@@ -98,9 +98,14 @@ class TransmitterManager private constructor() {
     }
 
     suspend fun removeDb() {
-        ObjectBox.awaitCallInTx {
-            transmitterBox!!.removeAll()
-        }
+        ObjectBox.awaitCallInTx { transmitterBox!!.removeAll() }
+    }
+
+    suspend fun clear(){
+        ObjectBox.awaitCallInTx { transmitterBox!!.removeAll() }
+        defaultModel?.getController()?.unregister()
+        defaultModel?.controller = null
+        defaultModel = null
     }
 
     fun buildModel(sn: String, address: String): DeviceModel? {

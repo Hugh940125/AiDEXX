@@ -211,7 +211,7 @@
                     android:paddingBottom="10dp"
                     android:textColor="@color/gray_d8" />
 
-                <com.microtech.aidexx.widget.chart.GlucoseChart
+                <com.microtech.aidexx.views.chart.GlucoseChart
                     android:id="@+id/chart"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
@@ -373,7 +373,7 @@
                     android:layout_marginBottom="10dp"
                     app:justifyContent="space_around">
 
-                    <com.microtech.aidexx.widget.HollowPieChartView
+                    <com.microtech.aidexx.views.HollowPieChartView
                         android:id="@+id/pvHigh"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
@@ -381,14 +381,14 @@
                         app:pieTextSize="12sp" />
 
 
-                    <com.microtech.aidexx.widget.HollowPieChartView
+                    <com.microtech.aidexx.views.HollowPieChartView
                         android:id="@+id/pvNormal"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         app:pieRadius="30dp"
                         app:pieTextSize="12sp" />
 
-                    <com.microtech.aidexx.widget.HollowPieChartView
+                    <com.microtech.aidexx.views.HollowPieChartView
                         android:id="@+id/pvLow"
                         android:layout_width="60dp"
                         android:layout_height="60dp"

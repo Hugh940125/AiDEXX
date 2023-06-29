@@ -11,8 +11,8 @@ import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.databinding.ActivityShareAndFollowEditBinding
 import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.utils.NetUtil
-import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.lib.WaitDialog
+import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.lib.WaitDialog
 import kotlinx.coroutines.launch
 
 const val EDIT_FROM_SHARE = 1

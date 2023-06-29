@@ -42,8 +42,8 @@ import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
-import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.selector.time.TimePicker
+import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.selector.time.TimePicker
 import kotlinx.coroutines.launch
 
 abstract class BaseEventFragment<VM:BaseViewModel, VB: ViewBinding>: BaseFragment<VM, VB>() {

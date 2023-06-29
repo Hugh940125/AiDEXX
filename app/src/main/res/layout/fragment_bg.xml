@@ -40,7 +40,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.microtech.aidexx.widget.NoHorizontallyScrollView
+    <com.microtech.aidexx.views.NoHorizontallyScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -263,7 +263,7 @@
                 android:layout_marginBottom="20dp"
                 android:orientation="horizontal">
 
-                <com.microtech.aidexx.widget.button.StateButton
+                <com.microtech.aidexx.views.button.StateButton
                     android:id="@+id/button_calibration"
                     style="@style/StateButtonRaised"
                     android:layout_width="0dp"
@@ -274,7 +274,7 @@
                     android:text="@string/bg_calibrate"
                     android:visibility="visible" />
 
-                <com.microtech.aidexx.widget.button.StateButton
+                <com.microtech.aidexx.views.button.StateButton
                     android:id="@+id/button_record"
                     style="@style/StateButtonRaised"
                     android:layout_width="0dp"
@@ -310,6 +310,6 @@
                 android:layout_height="25dp"/>
 
         </LinearLayout>
-    </com.microtech.aidexx.widget.NoHorizontallyScrollView>
+    </com.microtech.aidexx.views.NoHorizontallyScrollView>
 
 </LinearLayout>

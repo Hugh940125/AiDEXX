@@ -42,7 +42,7 @@ import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History

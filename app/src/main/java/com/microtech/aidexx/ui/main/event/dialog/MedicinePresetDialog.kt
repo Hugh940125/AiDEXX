@@ -24,8 +24,8 @@ import com.microtech.aidexx.db.entity.event.preset.MedicineUsrPresetEntity
 import com.microtech.aidexx.ui.main.event.adapter.SpecificationAdapter
 import com.microtech.aidexx.ui.main.event.viewmodels.MedicineViewModel
 import com.microtech.aidexx.utils.DecimalInputTextWatcher
-import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.bottom.BaseBottomDialog
+import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.bottom.BaseBottomDialog
 import kotlinx.coroutines.launch
 
 class MedicinePresetDialog(

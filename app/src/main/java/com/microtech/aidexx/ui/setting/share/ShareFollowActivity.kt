@@ -7,7 +7,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivityShareBinding
-import com.microtech.aidexx.widget.ScrollTab
+import com.microtech.aidexx.views.ScrollTab
 
 class ShareFollowActivity : BaseActivity<BaseViewModel, ActivityShareBinding>() {
 

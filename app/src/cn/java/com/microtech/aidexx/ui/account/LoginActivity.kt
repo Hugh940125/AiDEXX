@@ -25,7 +25,7 @@ import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ToastUtil
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.launch
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>(), View.OnClickListener {

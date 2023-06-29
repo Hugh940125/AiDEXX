@@ -53,7 +53,7 @@
         app:emojiCompatEnabled="false"
         tools:ignore="HardcodedText" />
 
-    <com.microtech.aidexx.widget.ruler.RulerView
+    <com.microtech.aidexx.views.ruler.RulerView
         android:id="@+id/rv_number"
         android:layout_width="match_parent"
         android:layout_height="80dp"

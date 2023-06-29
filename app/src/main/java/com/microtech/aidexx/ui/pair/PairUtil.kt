@@ -20,7 +20,7 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.controller.BleControllerInfo

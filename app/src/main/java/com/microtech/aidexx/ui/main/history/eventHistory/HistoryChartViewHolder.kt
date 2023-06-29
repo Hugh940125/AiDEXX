@@ -14,7 +14,7 @@ import com.microtech.aidexx.databinding.FragmentHistoryEventBinding
 import com.microtech.aidexx.ui.main.history.EventHistoryFragment
 import com.microtech.aidexx.ui.main.history.HistoryViewModel
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.widget.chart.GlucoseChart
+import com.microtech.aidexx.views.chart.GlucoseChart
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

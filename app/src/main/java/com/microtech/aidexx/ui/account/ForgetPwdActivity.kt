@@ -10,7 +10,7 @@ import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.databinding.ActivityForgetPwdBinding
 import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

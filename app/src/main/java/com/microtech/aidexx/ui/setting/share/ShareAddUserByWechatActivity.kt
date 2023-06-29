@@ -20,8 +20,7 @@ import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityShareAddUserByWechatBinding
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.LogUtils
-import com.microtech.aidexx.widget.dialog.lib.WaitDialog
+import com.microtech.aidexx.views.dialog.lib.WaitDialog
 import kotlinx.coroutines.launch
 import java.io.BufferedOutputStream
 import java.io.File

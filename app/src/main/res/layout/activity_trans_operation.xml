@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.pair.TransOperationActivity">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/actionbar_trans_operation"
         app:leftIcon="@drawable/ic_back"
         app:layout_constraintTop_toTopOf="parent"

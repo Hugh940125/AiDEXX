@@ -7,9 +7,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.ActivityWelcomeBinding
 import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.utils.ActivityUtil
-import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.dialog.lib.DialogX
 
 class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 

@@ -8,7 +8,7 @@
     android:background="@color/main_bg"
     android:orientation="vertical">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
 
     </LinearLayout>
 
-    <com.microtech.aidexx.widget.button.StateButton
+    <com.microtech.aidexx.views.button.StateButton
         android:id="@+id/button_login"
         style="@style/StateButtonRaised"
         android:layout_width="match_parent"

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.setting.OtherSettingActivity">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         app:leftIcon="@drawable/ic_back"
         app:titleText="@string/setting_other"
         android:id="@+id/action_bar_other_setting"
@@ -27,7 +27,7 @@
         android:background="@drawable/shape_rounded_setting"
         app:layout_constraintTop_toBottomOf="@id/action_bar_other_setting">
 
-        <com.microtech.aidexx.widget.SettingItemWidget
+        <com.microtech.aidexx.views.SettingItemWidget
             android:id="@+id/setting_logout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

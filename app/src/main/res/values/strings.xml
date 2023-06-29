@@ -513,6 +513,7 @@
     <string name="permission_setting_tips">请到 “应用信息 -> 权限” 中授予，不然无法使用%s功能</string>
     <string name="go_setting">去设置</string>
     <string name="finger_glucose_value">指血数值</string>
+    <string name="finger_glucose_history">指血历史</string>
     <string name="input_glucose_value">请输入指血值（%1$s-%2$s）</string>
     <string name="history_record">历史记录</string>
     <string name="no_record">暂无记录</string>

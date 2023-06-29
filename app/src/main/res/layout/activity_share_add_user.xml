@@ -7,7 +7,7 @@
     android:background="?bgNav"
     android:orientation="vertical">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

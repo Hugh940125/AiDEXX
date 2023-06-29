@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
                 android:src="@mipmap/ic_launcher_weitai2" />
 
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
                 app:has_next="false"
                 app:title="@string/setting_software_name" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -55,7 +55,7 @@
                 app:has_next="false"
                 app:title="@string/setting_open_type" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_openVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,7 +63,7 @@
                 app:has_next="false"
                 app:title="@string/setting_open_version" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_softVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
                 app:has_next="false"
                 app:title="@string/setting_soft_version" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_checkVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
                 app:has_next="true"
                 app:title="@string/setting_check_version" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_service"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
                 app:has_next="true"
                 app:title="@string/Terms_of_Service" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_protocal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -96,7 +96,7 @@
                 app:has_line="true"
                 app:title="@string/Privacy_Policy" />
 
-            <com.microtech.aidexx.widget.SettingItemWidget
+            <com.microtech.aidexx.views.SettingItemWidget
                 android:id="@+id/setting_upload_log"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

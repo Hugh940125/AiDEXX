@@ -29,8 +29,8 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.utils.statusbar.StatusBarHelper
-import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.customerservice.CustomerServiceDialog
+import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.customerservice.CustomerServiceDialog
 import kotlinx.coroutines.*
 import java.lang.reflect.ParameterizedType
 

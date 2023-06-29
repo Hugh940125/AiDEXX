@@ -88,7 +88,7 @@
         android:paddingRight="30dp">
 
 
-        <com.microtech.aidexx.widget.button.StateButton
+        <com.microtech.aidexx.views.button.StateButton
             android:id="@+id/bt_ok"
             style="@style/StateButtonRaised"
             android:layout_width="match_parent"

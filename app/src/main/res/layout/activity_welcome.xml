@@ -55,7 +55,7 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <com.microtech.aidexx.widget.button.StateButton
+    <com.microtech.aidexx.views.button.StateButton
         android:id="@+id/button_login"
         style="@style/StateButtonRaised"
         android:layout_width="match_parent"
@@ -67,7 +67,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/button_regist" />
 
-    <com.microtech.aidexx.widget.button.StateButton
+    <com.microtech.aidexx.views.button.StateButton
         android:id="@+id/button_regist"
         style="@style/StateButtonSink"
         android:layout_width="match_parent"

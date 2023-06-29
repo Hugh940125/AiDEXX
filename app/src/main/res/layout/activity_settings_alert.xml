@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".ui.setting.alert.AlertSettingsActivity">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -60,7 +60,7 @@
                     android:textSize="?attr/settingItemTitleTextSize"
                     android:textStyle="bold" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/notice_method"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -69,7 +69,7 @@
                     app:has_line="true"
                     app:title="@string/notice_method" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/notice_frequency"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
                     android:textSize="?attr/settingItemTitleTextSize"
                     android:textStyle="bold" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/hypo_alert_switch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -99,7 +99,7 @@
                     app:title="@string/Guide_Low_Alert_Title" />
 
 <!--                APP-SRC-A-2-7-->
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/hypo_threshold"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
                     app:has_next="true"
                     app:title="@string/low_threshold" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/hyper_alert_switch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -116,7 +116,7 @@
                     app:title="@string/Guide_High_Alert_Title" />
 
 <!--                APP-SRC-A-2-8-->
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/hyper_threshold"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -124,7 +124,7 @@
                     app:has_next="true"
                     app:title="@string/High_Glucose" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/switch_raise_alert"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -132,7 +132,7 @@
                     app:has_switch="true"
                     app:title="@string/Rise_Rate" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/switch_fall_alert"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -179,7 +179,7 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/switch_urgent_alert"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -187,14 +187,14 @@
                         app:has_switch="true"
                         app:title="@string/Urgent_Low_Alarm" />
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/low_urgent_value"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="1dp"
                         app:title="@string/low_urgent_value" />
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/notice_method_urgent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -203,7 +203,7 @@
                         app:has_line="true"
                         app:title="@string/notice_method" />
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/notice_frequency_urgent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -251,7 +251,7 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/switch_signal_loss"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -260,7 +260,7 @@
                         app:has_switch="true"
                         app:title="@string/Signal_Loss" />
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/notice_method_signal_loss"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -269,7 +269,7 @@
                         app:has_line="true"
                         app:title="@string/notice_method" />
 
-                    <com.microtech.aidexx.widget.SettingItemWidget
+                    <com.microtech.aidexx.views.SettingItemWidget
                         android:id="@+id/notice_frequency_signal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

@@ -5,19 +5,19 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:actionBarTitleTextColor="@color/colorPrimary"
         app:leftIcon="@drawable/ic_back" />
 
-    <com.microtech.aidexx.widget.webview.BaseWebView
+    <com.microtech.aidexx.views.webview.BaseWebView
         android:id="@+id/web_customer_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    </com.microtech.aidexx.widget.webview.BaseWebView>
+    </com.microtech.aidexx.views.webview.BaseWebView>
 
 
 </LinearLayout>

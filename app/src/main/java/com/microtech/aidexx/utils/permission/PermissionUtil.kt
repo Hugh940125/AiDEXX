@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.microtech.aidexx.R
-import com.microtech.aidexx.widget.dialog.standard.StandardDialog
+import com.microtech.aidexx.views.dialog.standard.StandardDialog
 import java.util.concurrent.atomic.AtomicInteger
 
 

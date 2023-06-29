@@ -17,8 +17,8 @@ import com.microtech.aidexx.base.PageActions
 import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.databinding.FragmentEventBinding
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
-import com.microtech.aidexx.widget.ScrollTab.OnTabListener
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.ScrollTab.OnTabListener
+import com.microtech.aidexx.views.dialog.Dialogs
 
 
 class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {

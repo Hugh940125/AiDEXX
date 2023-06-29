@@ -19,8 +19,8 @@ import com.microtech.aidexx.common.isSameDay
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.databinding.FragmentHistoryBinding
 import com.microtech.aidexx.utils.LanguageUnitManager
-import com.microtech.aidexx.widget.ScrollTab
-import com.microtech.aidexx.widget.calendar.CalendarSingleDialog
+import com.microtech.aidexx.views.ScrollTab
+import com.microtech.aidexx.views.calendar.CalendarSingleDialog
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

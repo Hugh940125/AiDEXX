@@ -15,7 +15,7 @@ import com.microtech.aidexx.ui.main.history.HistoryViewModel
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
-import com.microtech.aidexx.widget.HollowPieChartView
+import com.microtech.aidexx.views.HollowPieChartView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

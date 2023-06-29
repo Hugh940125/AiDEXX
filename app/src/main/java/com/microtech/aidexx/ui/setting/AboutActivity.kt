@@ -17,7 +17,7 @@ import com.microtech.aidexx.ui.setting.log.FeedbackUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.ui.web.WebActivity
 import com.microtech.aidexx.utils.DeviceInfoHelper
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

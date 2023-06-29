@@ -26,7 +26,6 @@ import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.setting.LoadResourceActivity
-import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.ThemeManager.themeConfig
@@ -35,7 +34,7 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference

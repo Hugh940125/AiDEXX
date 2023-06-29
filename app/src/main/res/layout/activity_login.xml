@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.account.LoginActivity">
 
-    <com.microtech.aidexx.widget.ActionBarWidget
+    <com.microtech.aidexx.views.ActionBarWidget
         android:id="@+id/login_action_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -85,7 +85,7 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.microtech.aidexx.widget.button.StateButton
+        <com.microtech.aidexx.views.button.StateButton
             android:id="@+id/btn_login"
             style="@style/StateButtonRaised"
             android:layout_width="match_parent"

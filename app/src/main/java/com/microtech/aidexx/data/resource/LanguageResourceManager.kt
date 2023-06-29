@@ -15,7 +15,7 @@ import com.microtech.aidexx.db.repository.LanguageDbRepository
 import com.microtech.aidexx.utils.LanguageUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.SettingItemWidget
+import com.microtech.aidexx.views.SettingItemWidget
 import java.text.SimpleDateFormat
 import java.util.Locale
 

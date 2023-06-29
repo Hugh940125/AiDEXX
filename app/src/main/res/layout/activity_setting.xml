@@ -83,7 +83,7 @@
 
             </LinearLayout>
 
-            <com.microtech.aidexx.widget.NiceImageView
+            <com.microtech.aidexx.views.NiceImageView
                 android:id="@+id/iv_setting_avatar"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
@@ -189,7 +189,7 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp">
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_trans"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -198,7 +198,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:title="@string/setting_transmitter" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_alert"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -207,7 +207,7 @@
                     app:layout_constraintTop_toBottomOf="@id/setting_trans"
                     app:title="@string/alert_setting" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_unit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -229,7 +229,7 @@
                 android:paddingTop="5dp"
                 android:paddingBottom="5dp">
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_language"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -238,7 +238,7 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:title="@string/setting_language" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_theme"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -247,7 +247,7 @@
                     app:layout_constraintTop_toBottomOf="@id/setting_language"
                     app:title="@string/setting_theme" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_other"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -256,7 +256,7 @@
                     app:layout_constraintTop_toBottomOf="@id/setting_theme"
                     app:title="@string/setting_other" />
 
-                <com.microtech.aidexx.widget.SettingItemWidget
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_about"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

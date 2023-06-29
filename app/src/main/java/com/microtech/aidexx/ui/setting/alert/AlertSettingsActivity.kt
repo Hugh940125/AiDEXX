@@ -11,10 +11,10 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.toGlucoseStringWithUnit
-import com.microtech.aidexx.widget.SettingItemWidget
-import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.bottom.ThresholdSelectView
-import com.microtech.aidexx.widget.ruler.RulerWidget
+import com.microtech.aidexx.views.SettingItemWidget
+import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.bottom.ThresholdSelectView
+import com.microtech.aidexx.views.ruler.RulerWidget
 
 /**
  * APP-SRC-A-2-7-1

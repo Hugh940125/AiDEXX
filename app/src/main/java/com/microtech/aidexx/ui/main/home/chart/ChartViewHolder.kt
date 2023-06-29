@@ -18,9 +18,9 @@ import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
-import com.microtech.aidexx.widget.chart.GlucoseChart
-import com.microtech.aidexx.widget.chart.MyAnimatedZoomJob
-import com.microtech.aidexx.widget.chart.MyChart
+import com.microtech.aidexx.views.chart.GlucoseChart
+import com.microtech.aidexx.views.chart.MyAnimatedZoomJob
+import com.microtech.aidexx.views.chart.MyChart
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch

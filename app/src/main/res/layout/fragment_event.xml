@@ -36,7 +36,8 @@
             tools:ignore="HardcodedText" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.microtech.aidexx.widget.ScrollTab
+    <com.microtech.aidexx.views.ScrollTab
+        android:layout_marginTop="5dp"
         android:id="@+id/stIndicator"
         android:layout_width="match_parent"
         android:layout_height="46dp"

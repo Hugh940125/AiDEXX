@@ -11,7 +11,8 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityBloodGlucoseHistoryBinding
 import com.microtech.aidexx.ui.main.bg.BgRepositoryApi
 import com.microtech.aidexx.utils.LanguageUnitManager
-import com.microtech.aidexx.widget.calendar.CalendarDialog
+import com.microtech.aidexx.views.calendar.CalendarDialog
+import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -23,11 +24,6 @@ class BloodGlucoseHistoryActivity : BaseActivity<BaseViewModel, ActivityBloodGlu
 
     lateinit var historyAdapter: BloodGlucoseHistoryAdapter
     lateinit var root: View
-
-    private lateinit var dateLastWeek: Date
-    private lateinit var dateLast14days: Date
-    private lateinit var dateLastMonth: Date
-    private lateinit var dateToday: Date
 
     override fun getViewBinding(): ActivityBloodGlucoseHistoryBinding {
         return ActivityBloodGlucoseHistoryBinding.inflate(LayoutInflater.from(this))
@@ -57,43 +53,27 @@ class BloodGlucoseHistoryActivity : BaseActivity<BaseViewModel, ActivityBloodGlu
             adapter = historyAdapter
             layoutManager = LinearLayoutManager(this@BloodGlucoseHistoryActivity)
         }
-        calculateDate()
-        update(dateLastWeek, dateToday)
-    }
-
-    private fun calculateDate() {
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DATE, 1)
-        calendar[Calendar.HOUR_OF_DAY] = 0
-        calendar[Calendar.MINUTE] = 0
-        calendar[Calendar.SECOND] = 0
-        calendar[Calendar.MILLISECOND] = 0
-        val timeNextZero = calendar.timeInMillis
-        dateToday = Date(timeNextZero)
-        dateLastWeek = Date(timeNextZero - 60 * 60 * 24 * 7 * 1000L)
-        dateLast14days = Date(timeNextZero - 60 * 60 * 24 * 14 * 1000L)
-        dateLastMonth = Date(timeNextZero - 60 * 60 * 24 * 30 * 1000L)
+        updateBgHistory(Dialogs.DateInfo.dateLastWeek, Dialogs.DateInfo.dateToday)
     }
 
     private fun openCalendar() {
         CalendarDialog(this, { position ->
+            var startDate: Date = Dialogs.DateInfo.dateLastWeek!!
             when (position) {
-                1 -> {
-                    update(dateLastWeek, dateToday)
-                }
-                2 -> {
-                    update(dateLast14days, dateToday)
-                }
-                3 -> {
-                    update(dateLastMonth, dateToday)
-                }
+                1 -> startDate = Dialogs.DateInfo.dateLastWeek!!
+                2 -> startDate = Dialogs.DateInfo.dateLast14days!!
+                3 -> startDate = Dialogs.DateInfo.dateLastMonth!!
             }
+            updateBgHistory(startDate, Dialogs.DateInfo.dateToday)
         }, { startDate, endDate ->
-            update(startDate, endDate)
+            updateBgHistory(startDate, endDate)
         }).show()
     }
 
-    private fun update(startDate: Date, endDate: Date) {
+    private fun updateBgHistory(startDate: Date?, endDate: Date?) {
+        if (startDate == null || endDate == null) {
+            return
+        }
         val formatter =
             LanguageUnitManager.getCurLanguageConf(this).dmyFormat
         binding.timeBegin.text = formatter.format(startDate)

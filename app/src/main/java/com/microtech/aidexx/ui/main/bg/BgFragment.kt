@@ -39,9 +39,9 @@ import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.fromGlucoseValue
-import com.microtech.aidexx.widget.dialog.Dialogs
-import com.microtech.aidexx.widget.dialog.standard.StandardDialog
-import com.microtech.aidexx.widget.selector.time.TimePicker
+import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.standard.StandardDialog
+import com.microtech.aidexx.views.selector.time.TimePicker
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.Dispatchers

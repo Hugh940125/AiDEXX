@@ -18,7 +18,7 @@ import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
 import com.microtech.aidexx.utils.TimeUtils
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.entity.AidexXDatetimeEntity
 import com.microtechmd.blecomm.entity.BleMessage

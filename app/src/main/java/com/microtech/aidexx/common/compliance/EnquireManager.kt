@@ -3,7 +3,7 @@ package com.microtech.aidexx.common.compliance
 import android.content.Context
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.dialog.standard.StandardDialog
+import com.microtech.aidexx.views.dialog.standard.StandardDialog
 
 class EnquireManager private constructor() {
 

@@ -5,7 +5,7 @@ import android.util.TypedValue
 import androidx.appcompat.app.AppCompatDelegate
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.setting.SettingsManager
-import com.microtech.aidexx.widget.dialog.lib.DialogX
+import com.microtech.aidexx.views.dialog.lib.DialogX
 
 object ThemeManager {
 

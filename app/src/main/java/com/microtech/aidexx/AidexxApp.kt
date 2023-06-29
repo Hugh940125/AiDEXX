@@ -5,16 +5,14 @@ import android.app.Application
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.view.Display
-import androidx.appcompat.app.AppCompatDelegate
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
 import com.microtech.aidexx.utils.ContextUtil
 import com.microtech.aidexx.utils.CrashHandler
 import com.microtech.aidexx.utils.ProcessUtil
-import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.dialog.lib.DialogX
+import com.microtech.aidexx.views.dialog.lib.DialogX
 import com.microtechmd.blecomm.controller.BleController
 import com.tencent.mars.xlog.Log
 import com.tencent.mars.xlog.Xlog
@@ -25,6 +23,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+
+const val APP_DEFAULT_PACKAGE_NAME = "com.microtech.aidexx"
 
 class AidexxApp : Application() {
     var activityStack = mutableListOf<Activity?>()

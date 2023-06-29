@@ -19,11 +19,12 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.DensityUtils
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.dialog.customerservice.MessageManager
+import com.microtech.aidexx.views.dialog.customerservice.MessageManager
 import java.util.*
 import kotlin.math.abs
 
 private const val MIN_DELAY_TIME = 1000
+
 class CustomerServiceView : LinearLayout {
     private lateinit var mFrameRect: Rect
     private var isMoving: Boolean = false
@@ -208,6 +209,7 @@ class CustomerServiceView : LinearLayout {
                     isConsume = false
                 }
             }
+
             MotionEvent.ACTION_MOVE -> {
                 moveX = event.x.toInt()
                 moveY = event.y.toInt()
@@ -250,6 +252,7 @@ class CustomerServiceView : LinearLayout {
                 lastX = rawX
                 lastY = rawY
             }
+
             MotionEvent.ACTION_UP -> {
                 val upX = event.x.toInt()
                 val upY = event.y.toInt()
@@ -336,10 +339,7 @@ class CustomerServiceView : LinearLayout {
     }
 
     fun savePosition(left: Int, top: Int, right: Int, bottom: Int) {
-        MmkvManager.saveCustomerServiceIconLeft(left)
-        MmkvManager.saveCustomerServiceIconTop(top)
-        MmkvManager.saveCustomerServiceIconRight(right)
-        MmkvManager.saveCustomerServiceIconBottom(bottom)
+        MmkvManager.saveCustomerIconPosition(left, top, right, bottom)
     }
 
     private fun getSavedLeft(): Int {

@@ -73,7 +73,7 @@
         android:padding="10dp"
         android:src="@drawable/ic_triangle_right" />
 
-    <com.microtech.aidexx.widget.ScrollTab
+    <com.microtech.aidexx.views.ScrollTab
         android:id="@+id/stIndicator"
         android:layout_width="match_parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTimeSelected"

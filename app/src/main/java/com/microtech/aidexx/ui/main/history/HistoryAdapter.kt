@@ -16,7 +16,7 @@ import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
-import com.microtech.aidexx.widget.SwipeDeleteMenuLayout
+import com.microtech.aidexx.views.SwipeDeleteMenuLayout
 
 
 data class HistoryDetailModel(
