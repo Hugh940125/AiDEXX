@@ -193,7 +193,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             } else if (remainingTime <= deviceModel.entity.expirationTime * TimeUtils.oneDayHour) {
                 val days = BigDecimal(remainingTime).divide(
                     BigDecimal(TimeUtils.oneDayHour),
-                    RoundingMode.HALF_UP
+                    RoundingMode.CEILING
                 ).toInt()
                 binding.tvSensorRemainTime.text =
                     String.format(resources.getString(R.string.expiring_in_days), days)

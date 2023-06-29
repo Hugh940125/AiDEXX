@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
 
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -20,32 +18,26 @@ import okio.Buffer;
 
 public class LogInterceptor implements Interceptor {
 
-    private List<String> canReadStringContentType = Arrays.asList(
-//            "application/vnd.android.package-archive",
-//            "application/zip",
-            "application/json"
-    );
-
     @NonNull
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         long startTime = System.currentTimeMillis();
-
         Response response = chain.proceed(chain.request());
-
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
-
-        okhttp3.MediaType mediaType = null;
-
-        String content = "不显示内容：content-type非application/json";
-        boolean needInterceptor = needInterceptor(response);
-        if (needInterceptor) {
-            mediaType = Objects.requireNonNull(response.body()).contentType();
-            content = response.body().string();
+        MediaType responseMediaType = null;
+        String content = "Unknown response type";
+        if (response.body() != null) {
+            responseMediaType = response.body().contentType();
+            if (canText(responseMediaType)) {
+                content = response.body().string();
+            } else {
+                if (responseMediaType != null) {
+                    content = responseMediaType.toString();
+                }
+            }
         }
-
         LogUtil.eAiDEX("\n");
         LogUtil.eAiDEX("---------- Start ----------");
         LogUtil.eAiDEX("| " + request);
@@ -53,7 +45,8 @@ public class LogInterceptor implements Interceptor {
         if (method.equalsIgnoreCase("POST")) {
             RequestBody requestBody = request.body();
             if (requestBody != null) {
-                if (mediaType != null && isText(mediaType)) {
+                MediaType requestMediaType = requestBody.contentType();
+                if (canText(requestMediaType)) {
                     LogUtil.eAiDEX("| " + "Request Params:" + bodyToString(request));
                 }
             }
@@ -61,10 +54,10 @@ public class LogInterceptor implements Interceptor {
         LogUtil.eAiDEX("| Response:" + content);
         LogUtil.eAiDEX("---------- End:" + duration + "millis ----------");
 
-        if (needInterceptor) {
+        if (canText(responseMediaType)) {
             response.close();
             return response.newBuilder()
-                    .body(okhttp3.ResponseBody.create(mediaType, content))
+                    .body(okhttp3.ResponseBody.create(responseMediaType, content))
                     .build();
         } else {
             return response;
@@ -84,24 +77,17 @@ public class LogInterceptor implements Interceptor {
         return buffer.readUtf8();
     }
 
-    private boolean isText(MediaType mediaType) {
-        if (mediaType.type().equals("text")) {
+    private boolean canText(MediaType mediaType) {
+        if (mediaType == null) {
+            return false;
+        }
+        if (mediaType.type().contains("text")) {
             return true;
         }
-        return mediaType.subtype().equals("json") ||
-                mediaType.subtype().equals("xml") ||
-                mediaType.subtype().equals("html") ||
-                mediaType.subtype().equals("webviewhtml");
-    }
-
-    private boolean needInterceptor(@NonNull Response response) {
-        String curType = response.header("Content-Type");
-        return canReadStringContentType.stream().anyMatch(new Predicate<String>() {
-            @Override
-            public boolean test(String s) {
-                return curType.contains(s);
-            }
-        });
+        return mediaType.subtype().contains("json") ||
+                mediaType.subtype().contains("xml") ||
+                mediaType.subtype().contains("html") ||
+                mediaType.subtype().contains("webviewhtml");
     }
 
     /**
