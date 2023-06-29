@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 
 /**
@@ -132,6 +133,14 @@ fun Date.isSameDay(other: Date?): Boolean {
     return other?.let {
         getStartOfTheDay() == other.getStartOfTheDay()
     } ?: false
+}
+
+fun String.parseToTimestamp(timeZoneId: String, pattern: String = DATE_FORMAT_YMDHMS): Long? {
+    return this.ifEmpty { null }?.let {
+        val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
+        sdf.timeZone = TimeZone.getTimeZone(timeZoneId)
+        sdf.parse(it)?.time
+    }
 }
 
 fun Date.formatWithZone(): String =

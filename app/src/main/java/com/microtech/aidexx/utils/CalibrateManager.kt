@@ -12,7 +12,7 @@ object CalibrateManager {
 
         val mutableListOf = mutableListOf<CalibrateEntity>()
 
-        val uid = UserInfoManager.shareUserInfo?.id ?: UserInfoManager.instance().userId()
+        val uid = UserInfoManager.shareUserInfo?.dataProviderId ?: UserInfoManager.instance().userId()
 
         val calListFromHistory = CgmCalibBgRepository.queryAllCgm(uid) ?: mutableListOf()
 

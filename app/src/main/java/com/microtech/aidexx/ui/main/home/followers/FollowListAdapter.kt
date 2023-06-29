@@ -4,46 +4,60 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.microtech.aidexx.R
+import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.parseToTimestamp
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.LayoutFollowListItemBinding
-import com.microtech.aidexx.db.entity.ShareUserEntity
-import com.microtech.aidexx.utils.ThemeManager
+import com.microtech.aidexx.ui.main.home.HomeBackGroundSelector
+import com.microtech.aidexx.ui.setting.share.ShareUserInfo
+import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.toGlucoseValue
+
 
 class FollowListAdapter(
     val context: Context,
 ) : RecyclerView.Adapter<FollowListAdapter.FollowListViewHolder>() {
 
-    private val followList: MutableList<ShareUserEntity> = mutableListOf()
-    var onSelectChange: ((pos: Int, entity: ShareUserEntity) -> Unit)? = null
+    private val followList: MutableList<ShareUserInfo> = mutableListOf()
+    var onSelectChange: ((pos: Int, entity: ShareUserInfo) -> Unit)? = null
 
     class FollowListViewHolder(private val vb: LayoutFollowListItemBinding) : RecyclerView.ViewHolder(vb.root) {
 
-        fun bindData(position: Int, user: ShareUserEntity, changeToThisCallback: ()->Unit) {
+        fun bindData(position: Int, user: ShareUserInfo, changeToThisCallback: ()->Unit) {
 
             vb.apply {
 
-                @SuppressLint("SetTextI18n")
-                accountPos.text = "${position + 1}"
+                val ctx = vb.root.context
+                userName.text = user.getDisplayName()
+                user.isLooking = user.dataProviderId == UserInfoManager.shareUserInfo?.dataProviderId
+                ivSelected.isVisible = user.isLooking
 
-                if (ThemeManager.isLight()) {
-                    tvAccountInfo.setTextColor(root.context.getColor(R.color.black_1d))
-                } else {
-                    tvAccountInfo.setTextColor(root.context.getColor(R.color.white))
+                val gValue = user.userTrend?.bloodGlucose?.toGlucoseValue()
+                    ?:ctx.getString(R.string.data_place_holder)
+                tvGlucoseValue.text = "$gValue"
+                tvUnit.text = UnitManager.glucoseUnit.text
+
+                lastTime.text = user.userTrend?.appTime?.let {
+                    val timestamp = it.parseToTimestamp(user.userTrend?.appTimeZone!!)
+                    getFriendlyTimeSpanByNow(timestamp)
+                } ?: ctx.getString(R.string.data_place_holder)
+
+                val leftDay = user.cgmDevice?.et ?: ctx.getString(R.string.data_place_holder)
+                leftTime.text = String.format(ctx.getString(R.string.left_day), "$leftDay")
+
+                user.userTrend?.let {
+                    bgPanel.rotation = -90f
                 }
-                tvAccountInfo.text = user.getDisplayName()
 
-                user.isLooking = user.id == UserInfoManager.shareUserInfo?.id
-                cbIsSelect.setImageDrawable(
-                    if (user.isLooking) ContextCompat.getDrawable(
-                        root.context,
-                        R.drawable.ic_is_looking
-                    ) else ContextCompat.getDrawable(
-                        root.context,
-                        R.drawable.ic_go_see_see
-                    )
+                bgPanel.setBackgroundResource(
+                    HomeBackGroundSelector.instance()
+                        .getBgForTrend(DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseLevel.LOW)
                 )
 
                 listFollowRoot.setOnClickListener {
@@ -54,6 +68,20 @@ class FollowListAdapter(
             }
         }
 
+        private fun getFriendlyTimeSpanByNow(timestamp: Long?): String {
+            return timestamp?.let {
+                val minutesAgo = (TimeUtils.currentTimeMillis - it).millisToMinutes()
+                return if (minutesAgo == 0) {
+                    getContext().getString(R.string.now)
+                } else {
+                    buildString {
+                        append(minutesAgo)
+                        append(getContext().getString(R.string.min_ago))
+                    }
+                }
+            } ?: getContext().getString(R.string.data_place_holder)
+        }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FollowListViewHolder {
@@ -62,8 +90,8 @@ class FollowListAdapter(
     }
 
     override fun onBindViewHolder(holder: FollowListViewHolder, position: Int) {
-        val shareUserEntity = followList[position]
-        holder.bindData(position, shareUserEntity) {
+        val shareUserInfo = followList[position]
+        holder.bindData(position, shareUserInfo) {
             onSelectChange?.invoke(position, followList[position])
             for (item in followList) {
                 item.isLooking = item == followList[position]
@@ -73,12 +101,10 @@ class FollowListAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun refreshData(list: List<ShareUserEntity>) {
-        if (list.isNotEmpty()) {
-            followList.clear()
-            followList.addAll(list)
-            notifyDataSetChanged()
-        }
+    fun refreshData(list: List<ShareUserInfo>) {
+        followList.clear()
+        followList.addAll(list)
+        notifyDataSetChanged()
     }
 
     fun unselectAll() {

@@ -156,12 +156,6 @@ object MmkvManager {
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
     fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)
 
-    fun saveNickName(name: String) = MmkvUtil.encodeString(NICK_NAME, name)
-    fun getNickName(default: String = "") = MmkvUtil.decodeString(NICK_NAME, default)
-    fun saveSurName(name: String) = MmkvUtil.encodeString(SUR_NAME, name)
-    fun getSurName(default: String = "") = MmkvUtil.decodeString(SUR_NAME, default)
-    fun saveGivenName(name: String) = MmkvUtil.encodeString(GIVEN_NAME, name)
-    fun getGivenName(default: String = "") = MmkvUtil.decodeString(GIVEN_NAME, default)
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
     fun isLogin(): Boolean = MmkvUtil.decodeBoolean(FLAG_LOGIN, false)
@@ -176,10 +170,7 @@ object MmkvManager {
 
     fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, false)
     fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, true)
-    fun getUserId() = MmkvUtil.decodeString(GET_USER_ID, "")
     fun saveUserId(id: String) = MmkvUtil.encodeString(GET_USER_ID, id)
-    fun getPhone() = MmkvUtil.decodeString(PHONE_NUMBER, "")
-    fun savePhone(phone: String) = MmkvUtil.encodeString(PHONE_NUMBER, phone)
     fun getOnlineServiceMsgCount() = MmkvUtil.decodeInt(UserInfoManager.instance().userId(), 0)
 
     fun setOnlineServiceMsgCount(count: Int) =

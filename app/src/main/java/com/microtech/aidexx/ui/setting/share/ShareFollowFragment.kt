@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.FragShareOrFollowBinding
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import kotlinx.coroutines.launch
 
 
@@ -65,23 +67,27 @@ class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewM
     private fun getData() {
         lifecycleScope.launch {
             timeHandler.sendEmptyMessageDelayed(messageWhat, 10 * 1000)
-            sfViewModel.loadData(isShare).collect {
+            sfViewModel.loadData(isShare).collect { dataList ->
                 binding.apply {
                     shareRefreshLayout.finishRefresh()
-
-                    listShare.isVisible = it.isNotEmpty()
-                    if (it.isNotEmpty()) {
-                        listShare.layoutManager = LinearLayoutManager(context)
-                        listAdapter = ShareFollowListAdapter()
-                        listAdapter!!.onItemClickListener = {
-                            val intent = Intent(context, ShareAndFollowEditActivity::class.java)
-                            intent.putExtra(EDIT_FROM, if (isShare) EDIT_FROM_SHARE else EDIT_FROM_FOLLOW)
-                            intent.putExtra(EDIT_DATA, it)
-                            startActivity(intent)
+                    listShare.isVisible = dataList?.isNotEmpty() ?: false
+                    dataList?.let {
+                        if (it.isNotEmpty()) {
+                            listShare.layoutManager = LinearLayoutManager(context)
+                            listAdapter = ShareFollowListAdapter()
+                            listAdapter!!.onItemClickListener = { item ->
+                                val intent = Intent(context, ShareAndFollowEditActivity::class.java)
+                                intent.putExtra(EDIT_FROM, if (isShare) EDIT_FROM_SHARE else EDIT_FROM_FOLLOW)
+                                intent.putExtra(EDIT_DATA, item)
+                                startActivity(intent)
+                            }
+                            listShare.adapter = listAdapter
+                            listAdapter!!.data = it
+                            listAdapter!!.notifyDataSetChanged()
                         }
-                        listShare.adapter = listAdapter
-                        listAdapter!!.data = it
-                        listAdapter!!.notifyDataSetChanged()
+                        if (!isShare) {
+                            EventBusManager.send(EventBusKey.EVENT_FOLLOWERS_UPDATED, it)
+                        }
                     }
                 }
             }

@@ -8,6 +8,8 @@ import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.databinding.ActivityShareAddUserBinding
+import com.microtech.aidexx.utils.NetUtil
+import com.microtech.aidexx.widget.dialog.lib.WaitDialog
 import kotlinx.coroutines.launch
 
 class ShareAddUserActivity : BaseActivity<BaseViewModel, ActivityShareAddUserBinding>() {
@@ -33,16 +35,20 @@ class ShareAddUserActivity : BaseActivity<BaseViewModel, ActivityShareAddUserBin
                     getString(R.string.hint_share_add_account).toast()
                     return@setOnClickListener
                 }
-                val map = mutableMapOf<String, String>()
-                map["phoneNumber"] = account
-                if (alias.isNotBlank()) {
-                    map["authorizedUserAlias"] = alias
-                }
-                // todo 接口实现
-                lifecycleScope.launch {
-                    sfViewModel.shareMyselfToOther().collect {
-                        "正在开发中".toast()
+                if (NetUtil.isNetAvailable(this@ShareAddUserActivity)) {
+                    WaitDialog.show(this@ShareAddUserActivity, getString(R.string.loading))
+                    lifecycleScope.launch {
+                        sfViewModel.shareMyselfToOther(account, alias).collect {
+                            WaitDialog.dismiss()
+                            if (it) {
+                                finish()
+                            } else {
+                                getString(R.string.failure).toast()
+                            }
+                        }
                     }
+                } else {
+                    resources.getString(R.string.net_error).toast()
                 }
             }
         }

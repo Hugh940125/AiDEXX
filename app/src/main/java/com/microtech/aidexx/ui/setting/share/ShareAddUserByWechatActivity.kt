@@ -17,7 +17,6 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.toast
-import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityShareAddUserByWechatBinding
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.views.dialog.lib.WaitDialog
@@ -81,7 +80,7 @@ class ShareAddUserByWechatActivity :
         }
         val hashMap = HashMap<String, Any>()
         hashMap["deviceType"] = "Android"
-        hashMap["deviceUid"] = UserInfoManager.instance().getPhone()
+//        hashMap["deviceUid"] = UserInfoManager.instance().getPhone()
         hashMap["systemVersion"] = "unknown"
 //        hashMap["timestamp"] = Date().dateToYmdhms()
         hashMap["operationType"] = 3

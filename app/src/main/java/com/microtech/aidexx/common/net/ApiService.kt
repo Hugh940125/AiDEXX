@@ -15,8 +15,8 @@ import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
+import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.SettingsEntity
-import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.ExerciseEntity
 import com.microtech.aidexx.db.entity.event.InsulinEntity
@@ -28,6 +28,7 @@ import com.microtech.aidexx.db.entity.event.preset.MedicineUsrPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportUsrPresetEntity
 import com.microtech.aidexx.ui.account.entity.UserPreferenceEntity
+import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -57,7 +58,6 @@ const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordP
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
 const val logout = "$USER_URL/logout"
-const val getFollowers = "http://192.168.222.26:5555/backend/aidex/follows"
 
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
@@ -132,6 +132,15 @@ const val deleteByIdsOthers = "$OTHERS_URL/deleteByIds"
 
 
 //endregion
+
+//region 分享关注
+const val SHARE_FOLLOW_URL = "$middleUrl/userAuthorization"
+const val saveOrUpdateUserAuthorization = "$SHARE_FOLLOW_URL/saveOrUpdateUserAuthorization"
+const val deleteByIdsShareFollow = "$SHARE_FOLLOW_URL/deleteByIds"
+const val findUserAuthorizationList = "$SHARE_FOLLOW_URL/findUserAuthorizationList"
+const val updateAuthorizationInfo = "$SHARE_FOLLOW_URL/updateAuthorizationInfo"
+//endregion
+
 const val API_DOWNLOAD_SETTING = "$middleUrl/userSetting/getUserSetting" //下载设置
 const val API_UPLOAD_SETTING = "$middleUrl/userSetting/updateUserSetting" //上传设置
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -166,16 +175,13 @@ interface ApiService {
     suspend fun loginByPassword(@Body body: ReqPwdLogin): ApiResult<BaseResponse<ResLogin>>
 
     @GET(getUserInfo)
-    suspend fun getUserInfo(): ApiResult<BaseResponse<ResUserInfo>>
+    suspend fun getUserInfo(): ApiResult<BaseResponse<UserEntity>>
 
     @POST(sendResetPasswordPhoneVerificationCode)
     suspend fun sendResetPasswordPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<String>>
 
     @POST(resetPasswordByVerificationCode)
     suspend fun resetPasswordByVerificationCode(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
-
-    @GET(getFollowers)
-    suspend fun getFollowers(): ApiResult<BaseResponse<BaseList<ShareUserEntity>>>
 
     //gp-start
     @GET(sendRegisterEmailVerificationCode)
@@ -218,87 +224,82 @@ interface ApiService {
     //region 事件
     @GET(getSysPresetVersion)
     suspend fun getPresetVersion(@Query("eventType") eventType: Int?): ApiResult<BaseResponse<List<ResEventPresetVersion>>>
-
     @GET(getExerciseSysPresetList)
     suspend fun getExerciseSysPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<SportSysPresetEntity>>>
-
     @GET(getExerciseUserPresetList)
     suspend fun getExerciseUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<SportUsrPresetEntity>>>
-
     @POST(saveOrUpdateExerciseUserPreset)
     suspend fun saveOrUpdateExerciseUserPreset(@Body data: ReqSaveOrUpdateEventRecords<SportUsrPresetEntity>): ApiResult<BaseResponse<List<SportUsrPresetEntity>>>
 
 
     @GET(findFoodUserPresetList)
     suspend fun getFoodUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<DietUsrPresetEntity>>>
-
     @POST(saveOrUpdateUserFoodPreset)
     suspend fun saveOrUpdateUserFoodPreset(@Body data: ReqSaveOrUpdateEventRecords<DietUsrPresetEntity>): ApiResult<BaseResponse<List<DietUsrPresetEntity>>>
 
 
     @GET(findInsulinUserPresetList)
     suspend fun getInsulinUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<InsulinUsrPresetEntity>>>
-
     @POST(saveOrUpdateUserInsulinPreset)
     suspend fun saveOrUpdateUserInsulinPreset(@Body data: ReqSaveOrUpdateEventRecords<InsulinUsrPresetEntity>): ApiResult<BaseResponse<List<InsulinUsrPresetEntity>>>
 
 
     @GET(findMedicationUsrPresetList)
     suspend fun getMedicineUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<MedicineUsrPresetEntity>>>
-
     @POST(saveOrUpdateMedicationUsrPreset)
     suspend fun saveOrUpdateMedicationUsrPreset(@Body data: ReqSaveOrUpdateEventRecords<MedicineUsrPresetEntity>): ApiResult<BaseResponse<List<MedicineUsrPresetEntity>>>
 
 
     @GET(findFoodRecordList)
     suspend fun getFoodRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<DietEntity>>>
-
     @POST(saveOrUpdateFoodRecord)
     suspend fun saveOrUpdateFoodRecord(@Body data: ReqSaveOrUpdateEventRecords<DietEntity>): ApiResult<BaseResponse<MutableList<DietEntity>>>
-
     @POST(deleteByIdsFood)
     suspend fun deleteByIdsFood(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
     @GET(findInsulinRecordList)
     suspend fun getInsulinRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<InsulinEntity>>>
-
     @POST(saveOrUpdateInsulinRecord)
     suspend fun saveOrUpdateInsulinRecord(@Body data: ReqSaveOrUpdateEventRecords<InsulinEntity>): ApiResult<BaseResponse<MutableList<InsulinEntity>>>
-
     @POST(deleteByIdsInsulin)
     suspend fun deleteByIdsInsulin(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
     @GET(getExerciseList)
     suspend fun getExerciseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ExerciseEntity>>>
-
     @POST(saveOrUpdateExerciseRecord)
     suspend fun saveOrUpdateExerciseRecord(@Body data: ReqSaveOrUpdateEventRecords<ExerciseEntity>): ApiResult<BaseResponse<MutableList<ExerciseEntity>>>
-
     @POST(deleteByIdsExercise)
     suspend fun deleteByIdsExercise(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
     @GET(findMedicationRecordList)
     suspend fun getMedicationRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<MedicationEntity>>>
-
     @POST(saveOrUpdateMedicationRecord)
     suspend fun saveOrUpdateMedicationRecord(@Body data: ReqSaveOrUpdateEventRecords<MedicationEntity>): ApiResult<BaseResponse<MutableList<MedicationEntity>>>
-
     @POST(deleteByIdsMedication)
     suspend fun deleteByIdsMedication(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
     @GET(findOtherRecordList)
     suspend fun getOthersRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<OthersEntity>>>
-
     @POST(saveOrUpdateOtherRecord)
     suspend fun saveOrUpdateOtherRecord(@Body data: ReqSaveOrUpdateEventRecords<OthersEntity>): ApiResult<BaseResponse<MutableList<OthersEntity>>>
-
     @POST(deleteByIdsOthers)
     suspend fun deleteByIdsOthers(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
     //endregion
 
+    //region 分享关注
+    @GET(findUserAuthorizationList)
+    suspend fun findUserAuthorizationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ShareUserInfo>>>
+    @POST(saveOrUpdateUserAuthorization)
+    suspend fun saveOrUpdateUserAuthorization(@Body body: ReqShareUserInfo): ApiResult<BaseResponse<ShareUserInfo>>
+    @POST(deleteByIdsShareFollow)
+    suspend fun deleteByIdsShareFollow(@Body body: ReqDeleteEventIds): ApiResult<BaseResponse<String>>
+    @POST(updateAuthorizationInfo)
+    suspend fun updateAuthorizationInfo(@Body body: ReqModifyShareUserInfo): ApiResult<BaseResponse<String>>
+
+    //endregion
 
     @GET("$CGM_LIST_RECENT?{params}")
     suspend fun getRecentHistories(@Path("params") params: String)

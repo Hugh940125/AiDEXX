@@ -86,5 +86,11 @@
         android:layout_centerInParent="true"
         android:visibility="gone" />
 
+    <include
+        android:id="@+id/loadResource"
+        layout="@layout/activity_load_resource"
+        android:visibility="gone"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 

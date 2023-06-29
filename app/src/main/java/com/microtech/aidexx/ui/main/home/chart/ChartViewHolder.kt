@@ -11,8 +11,8 @@ import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
+import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -152,7 +152,7 @@ class ChartViewHolder(
             }
         }
         /** 切换用户 */
-        EventBusManager.onReceive<ShareUserEntity>(EventBusKey.EVENT_SWITCH_USER, fragment) {
+        EventBusManager.onReceive<ShareUserInfo>(EventBusKey.EVENT_SWITCH_USER, fragment) {
             chartViewModel.reload()
         }
 
