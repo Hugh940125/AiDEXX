@@ -7,7 +7,7 @@ import com.microtech.aidexx.ui.main.bg.BgFragment
 import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.main.history.HistoryFragment
 import com.microtech.aidexx.ui.main.home.HomeFragment
-import com.microtech.aidexx.ui.main.trend.TrendFragment
+import com.microtech.aidexx.ui.main.trend.TrendsFragment
 
 /**
  *@date 2023/2/15
@@ -19,7 +19,7 @@ class MainViewPagerAdapter(fragmentActivity: FragmentActivity) :
 
 
     private val historyFragment by lazy { HistoryFragment.newInstance() }
-    private val trendFragment by lazy { TrendFragment.newInstance() }
+    private val trendFragment by lazy { TrendsFragment.newInstance() }
     private val homeFragment by lazy { HomeFragment.newInstance() }
     private val bgFragment by lazy { BgFragment.newInstance() }
     private val eventFragment by lazy { EventFragment.newInstance() }

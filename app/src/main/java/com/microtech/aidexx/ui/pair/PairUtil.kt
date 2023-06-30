@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 
 
 object PairUtil {
+    private var hasBondStateChangeReceiverRegister = false
     private var isBonding = false
 
     enum class Operation { PAIR, UNPAIR }
@@ -246,11 +247,15 @@ object PairUtil {
         receiver = BondStateReceiver()
         val filter = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         context.registerReceiver(receiver, filter)
+        hasBondStateChangeReceiverRegister = true
     }
 
     fun unregisterBondStateChangeReceiver(context: Context) {
         receiver?.let {
-            context.unregisterReceiver(it)
+            if (hasBondStateChangeReceiverRegister) {
+                context.unregisterReceiver(it)
+                hasBondStateChangeReceiverRegister = false
+            }
         }
     }
 }

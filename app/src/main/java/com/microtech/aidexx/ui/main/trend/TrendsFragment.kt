@@ -14,7 +14,7 @@ import com.microtech.aidexx.views.dialog.Dialogs
 import java.util.Calendar
 import java.util.Date
 
-class TrendFragment : BaseFragment<BaseViewModel, FragmentTrendBinding>() {
+class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,10 +61,11 @@ class TrendFragment : BaseFragment<BaseViewModel, FragmentTrendBinding>() {
         calendar.time = endDate
         calendar.add(Calendar.DATE, -1)
         binding.timeEnd.text = formatter.format(calendar.time)
+//        viewModel.funCgat()
     }
 
     companion object {
         @JvmStatic
-        fun newInstance() = TrendFragment()
+        fun newInstance() = TrendsFragment()
     }
 }

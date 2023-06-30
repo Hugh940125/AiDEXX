@@ -2,32 +2,22 @@ package com.microtech.aidexx.ui.account
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
-import android.text.SpannableStringBuilder
-import android.text.method.LinkMovementMethod
-import android.view.View
-import androidx.core.view.get
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.LOGIN_TYPE_PWD
-import com.microtech.aidexx.common.LOGIN_TYPE_VER_CODE
 import com.microtech.aidexx.common.LoginType
 import com.microtech.aidexx.common.toastShort
+import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.databinding.ActivityLoginBinding
 import com.microtech.aidexx.ui.main.MainActivity
-import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.EncryptUtils
-import com.microtech.aidexx.utils.LOGIN
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.NetUtil
-import com.microtech.aidexx.utils.StringUtils
-import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ToastUtil
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.launch
-import com.microtech.aidexx.data.resource.AppUpgradeManager
-import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 
 class LoginActivity : BaseActivity<AccountViewModel, ActivityLoginBinding>() {
 

@@ -3,7 +3,6 @@ package com.microtech.aidexx.ui.welcome
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.isVisible
-import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -14,7 +13,7 @@ import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.widget.dialog.lib.DialogX
+import com.microtech.aidexx.views.dialog.lib.DialogX
 
 class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
 

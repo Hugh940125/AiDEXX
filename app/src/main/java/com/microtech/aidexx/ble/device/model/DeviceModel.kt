@@ -25,6 +25,7 @@ import java.util.Date
  */
 
 const val X_NAME = "AiDEX X"
+const val GLUCOSE_NUM_ONE_DAY = 288
 
 abstract class DeviceModel(val entity: TransmitterEntity) {
     var faultType = 0 // 1.异常状态，可恢复 2.需要更换

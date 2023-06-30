@@ -40,11 +40,9 @@ object CgmHistoryDao {
                     endDate.time
                 )
                 .equal(RealCgmHistoryEntity_.deleteStatus, 0)
-
                 .equal(RealCgmHistoryEntity_.glucoseIsValid, 1)
-                .and()
                 .equal(RealCgmHistoryEntity_.status, 0)
-
+                .notEqual(RealCgmHistoryEntity_.eventWarning, -1)
                 .build().find()
         }
 
@@ -54,7 +52,7 @@ object CgmHistoryDao {
     suspend fun queryNextByTargetDate(authorId: String, targetDate: Date): RealCgmHistoryEntity? =
         awaitCallInTx {
             box.query()
-                .equal( RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE )
+                .equal(RealCgmHistoryEntity_.userId, authorId, StringOrder.CASE_SENSITIVE)
                 .equal(RealCgmHistoryEntity_.deleteStatus, 0)
                 .less(RealCgmHistoryEntity_.timestamp, targetDate.time)
 

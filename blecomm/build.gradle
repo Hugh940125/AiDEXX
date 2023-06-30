@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 
 android {
+    compileSdkVersion rootProject.targetSdk.toInteger()
+
     defaultConfig {
         minSdkVersion rootProject.minSdk.toInteger()
         targetSdkVersion rootProject.targetSdk.toInteger()
