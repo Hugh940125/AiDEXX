@@ -68,7 +68,7 @@ object MmkvManager {
         MmkvUtil.decodeString(CURRENT_LANGUAGE_TAG, Locale.getDefault().toLanguageTag())
 
 
-    private fun <T : BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) = when (clazz) {
+    private fun <T: BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) = when(clazz) {
         DietSysPresetEntity::class.java -> FLAG_NEW_VERSION_FOOD_SYS_PRESET
         SportSysPresetEntity::class.java -> FLAG_NEW_VERSION_EXERCISE_SYS_PRESET
         MedicineSysPresetEntity::class.java -> FLAG_NEW_VERSION_MEDICINE_SYS_PRESET
@@ -76,7 +76,7 @@ object MmkvManager {
         else -> null
     }
 
-    private fun <T : BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when (clazz) {
+    private fun <T: BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when(clazz) {
         DietSysPresetEntity::class.java -> VERSION_FOOD_SYS_PRESET
         SportSysPresetEntity::class.java -> VERSION_EXERCISE_SYS_PRESET
         MedicineSysPresetEntity::class.java -> VERSION_MEDICINE_SYS_PRESET
@@ -84,37 +84,32 @@ object MmkvManager {
         else -> null
     }
 
-    fun <T : BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
+    fun <T: BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
         return getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
     }
-
-    fun <T : BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
-        getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, version) }
+    fun <T: BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
+        getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.encodeString(it, version) }
     }
-
-    fun <T : BaseSysPreset> getEventSysPresetNewVersion(clazz: Class<T>): String {
+    fun <T: BaseSysPreset> getEventSysPresetNewVersion(clazz: Class<T>): String {
         return getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
     }
-
-    fun <T : BaseSysPreset> setEventSysPresetNewVersion(newVersion: String, clazz: Class<T>) {
-        getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.decodeString(it, newVersion) }
+    fun <T: BaseSysPreset> setEventSysPresetNewVersion(newVersion: String, clazz: Class<T>) {
+        getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.encodeString(it, newVersion) }
     }
 
 
     fun setLanguageVersion(version: String) = MmkvUtil.encodeString(VERSION_LANGUAGE, version)
-    fun getLanguageVersion(): String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
+    fun getLanguageVersion():String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
     fun setLanguageNewVersion(version: String) {
         MmkvUtil.encodeString(FLAG_NEW_VERSION_LANGUAGE, version)
     }
-
-    fun getLanguageNewVersion(): String = MmkvUtil.decodeString(FLAG_NEW_VERSION_LANGUAGE, "")
+    fun getLanguageNewVersion():String = MmkvUtil.decodeString(FLAG_NEW_VERSION_LANGUAGE, "")
     fun setUnitVersion(version: String) = MmkvUtil.encodeString(VERSION_UNIT, version)
-    fun getUnitVersion(): String = MmkvUtil.decodeString(VERSION_UNIT, "")
+    fun getUnitVersion():String = MmkvUtil.decodeString(VERSION_UNIT, "")
     fun setUnitNewVersion(version: String) {
         MmkvUtil.encodeString(FLAG_NEW_VERSION_UNIT, version)
     }
-
-    fun getUnitNewVersion(): String = MmkvUtil.decodeString(FLAG_NEW_VERSION_UNIT, "")
+    fun getUnitNewVersion():String = MmkvUtil.decodeString(FLAG_NEW_VERSION_UNIT, "")
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
@@ -122,7 +117,7 @@ object MmkvManager {
     fun isLastLoginEventDownloadSuccess(key: String): Boolean = MmkvUtil.decodeBoolean(key, true)
 
     fun setEventSyncTask(key: String, tasks: DataSyncController.SyncTaskItemList?) {
-        MmkvUtil.encodeString(key, tasks?.toString() ?: "")
+        MmkvUtil.encodeString(key, tasks?.toString()?:"")
     }
 
     fun getEventSyncTask(key: String): DataSyncController.SyncTaskItemList? =
