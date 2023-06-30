@@ -1,50 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/list_follow_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="100dp"
+    android:background="@drawable/bg_follow_list_item"
+    >
 
-    <TextView
-        android:id="@+id/account_pos"
-        app:emojiCompatEnabled="false"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/panel_glucose"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:padding="10dp"
+        >
+
+        <View
+            android:background="@drawable/bg_panel_blank_light"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/bg_panel"/>
+
+        <TextView
+            app:emojiCompatEnabled="false"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintBottom_toTopOf="@id/tv_unit"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:gravity="center_horizontal|bottom"
+            android:id="@+id/tv_glucose_value"
+            android:textColor="@color/black_33"
+            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:text="6.8"
+            android:textSize="20sp"/>
+
+        <TextView
+            app:emojiCompatEnabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_glucose_value"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:includeFontPadding="false"
+            android:gravity="center_horizontal|top"
+            android:id="@+id/tv_unit"
+            android:textColor="@color/black_33"
+            android:textSize="10sp"
+            android:text="mmol/L"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/timeLl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:textColor="@color/gray_b2"
-        android:textSize="26sp"
-        android:visibility="gone" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        >
+        <TextView
+            android:id="@+id/lastTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/data_place_holder"
+            android:textColor="#ff171a1d"
+            android:textSize="12sp"
+            android:layout_marginBottom="10dp"/>
+        <TextView
+            android:id="@+id/leftTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/left_day"
+            android:textColor="#ff171a1d"
+            android:textSize="12sp" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <TextView
-        android:id="@+id/tv_account_info"
-        app:emojiCompatEnabled="false"
+        android:id="@+id/userName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_toEndOf="@id/account_pos"
+        android:text="司徒李昂"
+        android:textColor="#ff171a1d"
+        android:textSize="16sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/timeLl"
+        android:maxLines="2"
         android:ellipsize="end"
-        android:lines="1"
-        android:maxEms="11"
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp"
-        android:textSize="18sp"
-        tools:ignore="RelativeOverlap" />
-
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="10dp"
+        />
     <ImageView
-        android:id="@+id/cb_is_select"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:padding="5dp"
-        android:src="@drawable/ic_go_see_see"
-        tools:ignore="ContentDescription" />
+        android:id="@+id/ivSelected"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:src="@drawable/ic_selected_user_label"
+        />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/gray_e6" />
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

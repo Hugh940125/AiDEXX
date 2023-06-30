@@ -5,108 +5,98 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <com.microtech.aidexx.widget.ActionBarWidget
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:leftIcon="@drawable/ic_back"
+        app:titleText="@string/follow" />
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/dialog_root"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/iv_close_dialog"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:layout_gravity="end"
-            android:layout_marginTop="11dp"
-            android:layout_marginEnd="11dp"
-            android:padding="5dp"
-            android:src="@drawable/ic_close_dialog"
-            tools:ignore="ContentDescription" />
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/action_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="10dp"
+        android:background="@color/bg_container_color"
+        >
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_my_count"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="25dp">
+            android:layout_marginTop="20dp">
 
             <TextView
+                android:id="@+id/my_count_title"
                 app:emojiCompatEnabled="false"
                 android:textColor="?followListDialogTextColor"
-                android:id="@+id/my_count_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_count_left"
                 android:drawablePadding="9dp"
                 android:text="@string/my_account"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintHorizontal_chainStyle="spread_inside"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:drawableStartCompat="@drawable/ic_count_left" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/cl_my"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_marginTop="20dp"
-                app:layout_constraintTop_toBottomOf="@id/my_count_title"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:layout_constraintTop_toBottomOf="@+id/my_count_title"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                >
+                <include
+                    android:id="@+id/my_count_info"
+                    layout="@layout/layout_follow_list_item" />
+            </FrameLayout>
 
-                <TextView
-                app:emojiCompatEnabled="false"
-                    android:id="@+id/tv_my_info"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <ImageView
-                    android:src="@drawable/ic_switch_back"
-                    android:id="@+id/tv_switch_back"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:checked="true"
-                    android:paddingStart="5dp"
-                    android:paddingTop="5dp"
-                    android:paddingEnd="5dp"
-                    android:paddingBottom="5dp"
-                    android:text="@string/switch_back"
-                    android:textColor="@color/green_65"
-                    android:textSize="18sp"
-                    app:layout_constraintBottom_toBottomOf="@id/tv_my_info"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/tv_my_info"
-                    tools:ignore="ContentDescription" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <View
-            android:id="@+id/view_line"
+        <RelativeLayout
+            android:id="@+id/followListTitle"
             android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginEnd="20dp"
-            android:background="@color/gray_e6" />
-
-        <TextView
-                app:emojiCompatEnabled="false"
-            android:textColor="?followListDialogTextColor"
-            android:id="@+id/my_follow_title"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
-            android:layout_marginTop="20dp"
-            android:drawableStart="@drawable/ic_count_left"
-            android:drawablePadding="9dp"
-            android:text="@string/share_follow"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_marginTop="12dp"
+            >
+            <TextView
+                app:emojiCompatEnabled="false"
+                android:textColor="?followListDialogTextColor"
+                android:id="@+id/my_follow_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:drawablePadding="9dp"
+                android:text="@string/share_follow"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:drawableStartCompat="@drawable/ic_count_left"
+                />
+
+            <ImageButton
+                android:id="@+id/ibToShareFollowPage"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/ic_setting"
+                android:layout_alignParentEnd="true"
+                android:padding="10dp"
+                android:layout_centerVertical="true"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                />
+        </RelativeLayout>
+
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -117,8 +107,6 @@
                 android:id="@+id/rv_follow_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="35dp"
-                android:layout_marginEnd="35dp"
                 android:overScrollMode="never" />
 
         </RelativeLayout>
@@ -190,7 +178,7 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
-                app:emojiCompatEnabled="false"
+                    app:emojiCompatEnabled="false"
                     android:visibility="invisible"
                     android:paddingStart="12dp"
                     android:paddingEnd="12dp"

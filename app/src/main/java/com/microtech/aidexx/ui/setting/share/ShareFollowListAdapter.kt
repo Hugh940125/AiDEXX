@@ -8,12 +8,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.databinding.ItemShareFollowListBinding
-import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.utils.LogUtil
 
 class ShareFollowListAdapter: RecyclerView.Adapter<ShareFollowListAdapter.ViewHolder>() {
 
-    var data: MutableList<ShareUserEntity>? = null
+    var data: MutableList<ShareUserInfo>? = null
         set(value) {
             value?.let {
                 if (field == null) {
@@ -25,18 +24,18 @@ class ShareFollowListAdapter: RecyclerView.Adapter<ShareFollowListAdapter.ViewHo
             }
         }
 
-    var onItemClickListener: ((item: ShareUserEntity)->Unit)? = null
+    var onItemClickListener: ((item: ShareUserInfo)->Unit)? = null
 
     class ViewHolder(private val vb: ItemShareFollowListBinding): RecyclerView.ViewHolder(vb.root) {
 
-        fun bind(item: ShareUserEntity, position: Int) {
+        fun bind(item: ShareUserInfo, position: Int) {
             vb.apply {
                 dividerTop.isVisible = position != 0
 
-                ivShareWechat.isVisible = item.source == 3
+                ivShareWechat.isVisible = false //item.source == 3
 
                 Glide.with(root.context)
-                    .load("${ BuildConfig.baseUrl }${item.user?.avatar}")
+                    .load("${ BuildConfig.baseUrl }${item.information?.avatar}")
                     .transform(CircleCrop())
                     .into(ivAvatar)
 

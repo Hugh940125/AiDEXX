@@ -67,10 +67,10 @@ open class ReqPageInfo(
 
 //region 数据事件
 
-data class ReqGetEventByPage(
-    val startAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号
-    val endAutoIncrementColumn: Long?,//	否 0 自增列(Long).序号  结束点。闭区间
-    val orderStrategy: String? //	否 ASC 枚举值.排序规则 默认DESC
+open class ReqGetEventByPage(
+    val startAutoIncrementColumn: Long? = null,//	否 0 自增列(Long).序号
+    val endAutoIncrementColumn: Long? = null,//	否 0 自增列(Long).序号  结束点。闭区间
+    val orderStrategy: String? = null //	否 ASC 枚举值.排序规则 默认DESC
 ): ReqPageInfo()
 
 data class ReqSysPresetFoodPageInfo(
@@ -94,4 +94,27 @@ data class ReqDeleteEventIds (
     val ids: List<String>
 ): ReqEntity()
 
+//endregion
+
+//region 分享关注
+data class ReqShareUserInfo (
+    val readerAlias: String? = null, // 非必须 string 分享人给查看者设置的昵称 mock: @string
+    val hideState: Int? = null, // 非必须 1 是否隐藏,隐藏同时关闭所有推送 mock: @integer
+    val emergePushState: Int? = null, // 非必须 1 紧急推送开关 mock: @integer
+    val readerUserName: String, // 必须 string 冗余得数据查看者用户名 mock: @string
+    val normalPushState: Int? = null, // 非必须 1 普通是否推送 mock: @integer
+): ReqEntity()
+
+data class ReqModifyShareUserInfo (
+    val providerAlias: String? = null, // 非必须 string 数据提供者的昵称
+    val readerAlias: String? = null, // 非必须 string 数据查看者的昵称。
+    val hideState: Int? = null, // 非必须 1 是否隐藏,隐藏同时关闭所有推送
+    val emergePushState: Int? = null, // 非必须 1 紧急推送开关
+    val normalPushState: Int? = null, // 非必须 1 普通是否推送
+    val userAuthorizationId: String, // 必须 string 主键
+): ReqEntity()
+
+data class ReqGetShareOrFollowUsers(
+    val type: String = "1"
+): ReqGetEventByPage()
 //endregion

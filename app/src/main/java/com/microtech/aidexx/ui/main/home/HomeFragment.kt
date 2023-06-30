@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,15 +21,16 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
-import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.ui.main.home.chart.ChartViewHolder
-import com.microtech.aidexx.ui.main.home.followers.FollowSwitchDialog
+import com.microtech.aidexx.ui.main.home.followers.FollowSwitchActivity
 import com.microtech.aidexx.ui.main.home.panel.GlucosePanelFragment
 import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
+import com.microtech.aidexx.ui.setting.share.ShareUserInfo
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -127,8 +129,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private fun initEvent() {
         binding.apply {
             switchUserData.setOnClickListener {
-                FollowSwitchDialog.Setter()
-                    .create(requireActivity(), homeViewModel.mFollowers)?.show()
+                ActivityUtil.toActivity(
+                    requireContext(),
+                    Bundle().also {
+                        it.putParcelableArrayList(FollowSwitchActivity.EXTRA_LIST_DATA, ArrayList<Parcelable?>().also { list ->
+                            list.addAll(homeViewModel.mFollowers)
+                        })
+                    },
+                    FollowSwitchActivity::class.java)
             }
         }
 
@@ -143,7 +151,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             }
         }
 
-        EventBusManager.onReceive<ShareUserEntity>(EventBusKey.EVENT_SWITCH_USER, this) {
+        EventBusManager.onReceive<ShareUserInfo>(EventBusKey.EVENT_SWITCH_USER, this) {
             binding.apply {
 
                 fun changeUi(isMyself: Boolean) {
@@ -154,7 +162,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                     fcvPanel.isInvisible = !isMyself
                 }
 
-                if (it.id == UserInfoManager.instance().userId()) { // 自己
+                if (it.dataProviderId == UserInfoManager.instance().userId()) { // 自己
                     changeUi(true)
                     tvSn.text =
                         TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: ""
@@ -163,11 +171,16 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 //                  todo 添加第一次查看分享人时的引导  GuideManager.instance().startHomeGuide(activity, this@HomeFragment, vb)
                     dataOwner.text = it.getDisplayName()
                     frgShare.tvUnitShare.text = UnitManager.glucoseUnit.text
-                    tvSn.text = it.sn ?: ""
+                    tvSn.text = it.cgmDevice?.deviceSn ?: ""
 
                 }
             }
 
+        }
+
+        EventBusManager.onReceive<MutableList<ShareUserInfo>>(EventBusKey.EVENT_FOLLOWERS_UPDATED, this) {
+            homeViewModel.updateFollowers(it)
+            binding.switchUserData.isVisible = homeViewModel.mFollowers.isNotEmpty()
         }
 
     }

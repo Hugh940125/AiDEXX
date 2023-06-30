@@ -632,7 +632,12 @@
 
     <!-- 关注分享 -->
     <string name="author_wechat_user">+ 微信授权</string>
+    <string name="follow">关注</string>
+    <string name="switch_user_fail">切换失败</string>
     <string name="title_share_file">分享文件</string>
+    <string name="left_day">剩余%1$s天</string>
+    <!-- 关注分享 -->
+
     <string name="pair_fail">配对失败</string>
     <string name="unpair_fail">解配失败</string>
     <string name="pairing">正在配对</string>
@@ -640,7 +645,7 @@
     <string name="cgm_cover_time">CGM覆盖时间</string>
     <string name="monitor_times">监测次数</string>
     <string name="unpairing">正在解配</string>
-    <!-- 关注分享 -->
+
 
     <!-- 单位 -->
     <string name="unit_g">克</string>

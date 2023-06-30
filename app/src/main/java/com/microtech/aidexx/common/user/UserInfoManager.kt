@@ -3,12 +3,11 @@ package com.microtech.aidexx.common.user
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.common.equal
 import com.microtech.aidexx.common.ioScope
-import com.microtech.aidexx.common.net.entity.ResUserInfo
 import com.microtech.aidexx.db.ObjectBox
-import com.microtech.aidexx.db.entity.ShareUserEntity
 import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.UserEntity_
 import com.microtech.aidexx.db.repository.AccountDbRepository
+import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -36,7 +35,7 @@ class UserInfoManager {
 
     companion object {
 
-        var shareUserInfo: ShareUserEntity? = null
+        var shareUserInfo: ShareUserInfo? = null
 
         private var INSTANCE: UserInfoManager? = null
 
@@ -51,7 +50,7 @@ class UserInfoManager {
         /**
          * 获取当前展示的用户id 自己的或者共享中的用户
          */
-        fun getCurShowUserId() = shareUserInfo?.id ?: instance().userId()
+        fun getCurShowUserId() = shareUserInfo?.dataProviderId ?: instance().userId()
     }
 
     suspend fun loadUserInfo() {
@@ -59,11 +58,7 @@ class UserInfoManager {
     }
 
     fun userId(): String {
-        return userEntity?.id ?: "unknown"
-    }
-
-    fun updateUserId(id: String) {
-        MmkvManager.saveUserId(id)
+        return userEntity?.userId ?: "unknown"
     }
 
     fun isLogin(): Boolean {
@@ -78,25 +73,11 @@ class UserInfoManager {
         MmkvManager.saveProfile(profile)
     }
 
-    fun getDisplayName() = getNickName().ifEmpty { null }
-        ?: "${getSurName()}${getGivenName()}".ifEmpty { null }
-        ?: getPhone()
-
-    fun getNickName(): String = MmkvManager.getNickName()
-
-    fun getSurName(): String = MmkvManager.getSurName()
-
-    fun getGivenName(): String = MmkvManager.getGivenName()
-
-    private fun setPhone(phone: String) {
-        MmkvManager.savePhone(phone)
-    }
-
-    fun getPhone(): String = MmkvManager.getPhone()
+    fun getDisplayName() = userEntity?.getDisplayName()
 
     private suspend fun getUserInfoById(userId: String): UserEntity {
         return ObjectBox.store.awaitCallInTx {
-            ObjectBox.userBox!!.query().equal(UserEntity_.id, userId).orderDesc(UserEntity_.idx)
+            ObjectBox.userBox!!.query().equal(UserEntity_.userId, userId).orderDesc(UserEntity_.idx)
                 .build().findFirst()
         } ?: UserEntity()
     }
@@ -108,28 +89,18 @@ class UserInfoManager {
         }
     }
 
-    suspend fun onUserLogin(content: ResUserInfo): Long = withContext(Dispatchers.IO) {
+    suspend fun onUserLogin(content: UserEntity): Long = withContext(Dispatchers.IO) {
         var entity = AccountDbRepository.getUserInfoByUid(content.userId!!)
         if (entity == null) {
-            entity = UserEntity()
+            entity = content
+        } else {
+            content.idx = entity.idx
+            entity = content
         }
-        entity.id = content.userId
-        entity.phoneNumber = content.phone
-        entity.emailAddress = content.email
-        entity.avatar = content.avatar
 
-        this@UserInfoManager.userEntity?.let {
-            it.id = entity.id
-            it.phoneNumber = entity.phoneNumber
-            it.emailAddress = entity.emailAddress
-            it.avatar = entity.emailAddress
-        } ?:let {
-            this@UserInfoManager.userEntity = entity
-        }
+        this@UserInfoManager.userEntity = entity
 
         AccountDbRepository.saveUser(entity)?.let {
-            updateUserId(content.userId)
-            setPhone(content.phone ?: "")
             it
         } ?: -1
     }

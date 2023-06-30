@@ -151,7 +151,7 @@ class MainService : Service(), LifecycleOwner {
                     }
                 }
                 serviceMainScope.launch {
-                    CloudHistorySync.downloadAllData()
+                    CloudHistorySync.downloadData(UserInfoManager.getCurShowUserId())
                 }
                 if (count % 2 == 0) {
                     serviceMainScope.launch {

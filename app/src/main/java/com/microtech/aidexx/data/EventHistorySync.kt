@@ -6,7 +6,6 @@ import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.LogUtil
-import kotlinx.coroutines.delay
 
 abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
@@ -61,10 +60,10 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                     // 数据量小于页大小 说明这个区间下载完毕 移除这条任务
                     removeFirstTaskItem(userId)
                 }
-
-                delay(DOWNLOAD_INTERVAL)
-                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
-                downloadData(userId)
+                true
+//                delay(DOWNLOAD_INTERVAL)
+//                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+//                downloadData(userId)
             } ?: false
         }
         return false

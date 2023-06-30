@@ -29,7 +29,6 @@ import io.objectbox.kotlin.awaitCallInTx
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CountDownLatch
 
@@ -95,9 +94,11 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                     // 数据量小于页大小 说明这个区间下载完毕 移除这条任务
                     removeFirstTaskItem(userId)
                 }
-                delay(DOWNLOAD_INTERVAL)
-                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
-                downloadData(userId)
+                true
+                //依赖定时任务分页下载
+//                delay(DOWNLOAD_INTERVAL)
+//                LogUtil.d("===DATASYNC=== 开始下一页数据下载")
+//                downloadData(userId)
             } ?: false
         }
         return false
@@ -174,7 +175,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             isSuccess
         }
 
-        suspend fun downloadAllData(userId: String? = null, needWait: Boolean = false): SyncStatus {
+        suspend fun downloadData(userId: String? = null, needWait: Boolean = false): SyncStatus {
 
             var isSuccess = true
             var taskLatch: CountDownLatch? = null
@@ -227,7 +228,6 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
                 if (needWait) SyncStatus.Success else SyncStatus.Loading()
             } else SyncStatus.Failure()
         }
-
 
         suspend fun uploadHistoryData() {
             withContext(scope.coroutineContext) {

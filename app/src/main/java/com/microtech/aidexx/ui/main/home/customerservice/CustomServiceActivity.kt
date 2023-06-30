@@ -7,10 +7,7 @@ import android.webkit.ValueCallback
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityCustomServiceBinding
-import com.microtech.aidexx.ui.main.MainActivity
-import com.microtech.aidexx.utils.StringUtils
 
 class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceBinding>() {
     private var uploadMessage: ValueCallback<Uri>? = null
@@ -30,7 +27,7 @@ class CustomServiceActivity : BaseActivity<BaseViewModel, ActivityCustomServiceB
 //            finish()
         }
        binding.actionBar.setTitle(getString(R.string.online_service))
-        val mobile = StringUtils.getPrivacyPhone(UserInfoManager.instance().getPhone())
+//        val mobile = StringUtils.getPrivacyPhone(UserInfoManager.instance().getPhone())
 //        val nickName = UserManager.instance().getNickName()
 //        val surName = UserManager.instance().getSurName()
 //        val givenName = UserManager.instance().getGivenName()

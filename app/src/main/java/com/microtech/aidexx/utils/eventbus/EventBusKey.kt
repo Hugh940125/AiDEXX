@@ -28,4 +28,7 @@ object EventBusKey {
 
     /** 退出登录 */
     const val EVENT_LOGOUT: String = "EVENT_LOGOUT"
+
+    /** 关注列表变动 */
+    const val EVENT_FOLLOWERS_UPDATED: String = "EVENT_FOLLOWERS_UPDATED"
 }

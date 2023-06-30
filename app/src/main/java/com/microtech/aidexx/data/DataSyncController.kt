@@ -4,6 +4,9 @@ import com.google.gson.Gson
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.common.ioScope
+import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.entity.PAGE_SIZE
+import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
@@ -17,10 +20,15 @@ import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -96,6 +104,7 @@ abstract class DataSyncController<T: BaseEventEntity> {
     /**
      * 控制本分享用户的数据下载 value 是分享用户的id
      */
+    private var downloadShareDataJob: Job? = null
     private val downloadShareDataStateFlow = MutableStateFlow<String?>(null)
     private val downloadShareDataStatusStateFlow = MutableStateFlow<SyncStatus?>(null)
     val downloadShareDataStatus = downloadShareDataStatusStateFlow.asStateFlow()
@@ -122,6 +131,8 @@ abstract class DataSyncController<T: BaseEventEntity> {
                 downloadShareDataStateFlow.collect {
                     it?.let { userId ->
                         dataSyncScope.launch(shareUserDataSyncExceptionHandler) {
+                            // 分享用户同步数据时需要下载最新数据
+                            downloadDataOfRealTime(userId)
                             download(userId, downloadShareDataStatusStateFlow, ::stopDownloadShareUserData)
                         }
                     }
@@ -153,9 +164,14 @@ abstract class DataSyncController<T: BaseEventEntity> {
 
         val ret: Boolean
         if (isShareData) {
+            // 切换了关注用户
+            if (downloadShareDataStateFlow.value != null && downloadShareDataStateFlow.value != userId) {
+                downloadShareDataJob?.cancel()
+                downloadShareDataStateFlow.value = null
+            }
             ret = downloadShareDataStateFlow.compareAndSet(null, userId)
             if (ret) {
-                scope.launch {
+                downloadShareDataJob = scope.launch {
                     downloadShareDataStatusStateFlow.collect {
                         cb?.invoke(it)
                         if (it is SyncStatus.Success || it is SyncStatus.Failure) {
@@ -188,7 +204,11 @@ abstract class DataSyncController<T: BaseEventEntity> {
         uploadDeletedDataStateFlow.compareAndSet(expect = false, true)
     }
 
-    private suspend fun download(userId: String, statusFlow: MutableStateFlow<SyncStatus?>, stopDownloadFun: (Boolean)->Unit) {
+    private suspend fun download(
+        userId: String,
+        statusFlow: MutableStateFlow<SyncStatus?>,
+        stopDownloadFun: (Boolean)->Unit
+    ) {
 
         if (!canSync()) {
             downloadStatusStateFlow.emit(SyncStatus.Failure())
@@ -315,6 +335,34 @@ abstract class DataSyncController<T: BaseEventEntity> {
             LogUtil.d("SyncTaskItemList removeFirst=$removed $key=$it", TAG)
         } ?:let {
             LogUtil.e("SyncTaskItemList removeFirst fail tasks=null", TAG)
+        }
+    }
+
+    /**
+     * 定时下载关注人的最新数据
+     */
+    private suspend fun downloadDataOfRealTime(userId: String): Boolean {
+        var startAutoIncrementColumn: Long? = EventDbRepository.findMaxEventId(tClazz) ?: 0L
+        startAutoIncrementColumn = if (startAutoIncrementColumn!! <= 0L) null else startAutoIncrementColumn
+
+        return when (val apiResult = EventRepository.getEventRecordsByPageInfo(
+            userId,
+            PAGE_SIZE,
+            startAutoIncrementColumn = startAutoIncrementColumn,
+            endAutoIncrementColumn = null,
+            tClazz)
+        ) {
+            is ApiResult.Success -> {
+                apiResult.result.data?.ifEmpty { null }?.let {
+                    applyData(userId, it as List<T>)
+                    EventBusManager.send(
+                        EventBusKey.EVENT_DATA_CHANGED,
+                        EventDataChangedInfo(DataChangedType.ADD, it)
+                    )
+                }
+                true
+            }
+            is ApiResult.Failure -> false
         }
     }
 
