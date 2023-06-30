@@ -26,16 +26,18 @@ public class ByteUtils {
         int day = Byte.toUnsignedInt(data[3]);
         int hour = Byte.toUnsignedInt(data[4]);
         int min = Byte.toUnsignedInt(data[5]);
-        int s = Byte.toUnsignedInt(data[6]);
-        if (year != 0 || month != 0 || day != 0 || hour != 0 || min != 0 || s != 0) {
+        int second = Byte.toUnsignedInt(data[6]);
+        int timeZone = Byte.toUnsignedInt(data[7]);
+        if (year != 0 || month != 0 || day != 0 || hour != 0 || min != 0 || second != 0) {
             Calendar ca = Calendar.getInstance(Locale.getDefault());
             ca.set(Calendar.YEAR, year);
             ca.set(Calendar.MONTH, month - 1);
             ca.set(Calendar.DAY_OF_MONTH, day);
             ca.set(Calendar.HOUR_OF_DAY, hour);
             ca.set(Calendar.MINUTE, min);
-            ca.set(Calendar.SECOND, s);
+            ca.set(Calendar.SECOND, second);
             ca.set(Calendar.MILLISECOND, 0);
+            ca.add(Calendar.MINUTE, timeZone * 15);
             return ca.getTime();
         }
         return null;
