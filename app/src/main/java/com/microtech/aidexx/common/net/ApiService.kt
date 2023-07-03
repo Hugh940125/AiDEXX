@@ -116,9 +116,9 @@ const val saveOrUpdateInsulinRecord = "$INSULIN_URL/saveOrUpdateInsulinRecord"
 const val findInsulinRecordList = "$INSULIN_URL/findInsulinRecordList"
 const val deleteByIdsInsulin = "$INSULIN_URL/deleteByIds"
 
-const val EXERCISE_URL = "$EVENT_URL/exercise"
+const val EXERCISE_URL = "$EVENT_URL/exerciseRecord"
 const val saveOrUpdateExerciseRecord = "$EXERCISE_URL/saveOrUpdateExerciseRecord"
-const val getExerciseList = "$EXERCISE_URL/getExerciseList"
+const val findExerciseRecordList = "$EXERCISE_URL/findExerciseRecordList"
 const val deleteByIdsExercise = "$EXERCISE_URL/deleteByIds"
 
 const val MEDICATION_URL = "$EVENT_URL/medicationRecord"
@@ -269,7 +269,7 @@ interface ApiService {
     suspend fun deleteByIdsInsulin(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
-    @GET(getExerciseList)
+    @GET(findExerciseRecordList)
     suspend fun getExerciseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ExerciseEntity>>>
     @POST(saveOrUpdateExerciseRecord)
     suspend fun saveOrUpdateExerciseRecord(@Body data: ReqSaveOrUpdateEventRecords<ExerciseEntity>): ApiResult<BaseResponse<MutableList<ExerciseEntity>>>

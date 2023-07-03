@@ -55,7 +55,7 @@ data class CgmDevice(
     val sensorIndex: Int?, // 非必 1
     val registerTime: String?, // 非必 2023-06-16 13:09:17 启用时间
     val startUpTimeZone: String?, // 必须 string
-    val deviceKey: Int?, // 必须 1 设备密钥文件
+    val deviceKey: String?, // 必须 1 设备密钥文件
     val sensorStartUp: String?, // 必须 2023-06-16 13:09:17
     val dstOffset: String?, // 非必须 string 夏令时偏移量
     val deviceId: String?, // 必须 string 主键
@@ -72,7 +72,7 @@ data class CgmDevice(
         parcel.readValue(Int::class.java.classLoader) as? Int,
         parcel.readString(),
         parcel.readString(),
-        parcel.readValue(Int::class.java.classLoader) as? Int,
+        parcel.readString(),
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
@@ -90,7 +90,7 @@ data class CgmDevice(
         parcel.writeValue(sensorIndex)
         parcel.writeString(registerTime)
         parcel.writeString(startUpTimeZone)
-        parcel.writeValue(deviceKey)
+        parcel.writeString(deviceKey)
         parcel.writeString(sensorStartUp)
         parcel.writeString(dstOffset)
         parcel.writeString(deviceId)

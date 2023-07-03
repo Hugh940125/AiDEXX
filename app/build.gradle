@@ -160,7 +160,7 @@ android {
 dependencies {
     implementation project(path: ':chartlib')
     implementation project(path: ':blecomm')
-//    implementation project(path: ':cgat')
+    implementation project(path: ':cgat')
     implementation "androidx.fragment:fragment-ktx:1.6.0"
     implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'

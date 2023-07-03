@@ -6,6 +6,8 @@ import com.igexin.sdk.GTIntentService
 import com.igexin.sdk.message.GTCmdMessage
 import com.igexin.sdk.message.GTNotificationMessage
 import com.igexin.sdk.message.GTTransmitMessage
+import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.common.ioScope
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.repository.AccountRepository
 import com.microtech.aidexx.utils.LogUtil
@@ -41,10 +43,13 @@ class GeTuiIntentService: GTIntentService() {
                 LogUtil.xLogE("推送消息异常：$e", tag)
                 null
             }?.getRealMsgByType()?.let {
-                if (it.applyMsg()) {
-                    LogUtil.d("")
-                } else {
-                    LogUtil.xLogE("推送消息处理失败", tag)
+
+                AidexxApp.instance.ioScope.launch {
+                    if (it.applyMsg()) {
+                        LogUtil.d("")
+                    } else {
+                        LogUtil.xLogE("推送消息处理失败", tag)
+                    }
                 }
             }
         } ?:let {
