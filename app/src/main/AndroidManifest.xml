@@ -26,6 +26,12 @@
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <queries>
+        <intent>
+            <action android:name="com.getui.sdk.action" />
+        </intent>
+    </queries>
+
     <application
         android:name=".AidexxApp"
         android:allowBackup="true"
@@ -157,6 +163,15 @@
             android:enabled="true"
             android:exported="true"
             android:permission="aidex-main-service" />
+
+        <service
+            android:name=".service.push.AidexPushService"
+            android:exported="false"
+            android:label="PushService"
+            android:process=":pushservice"/>
+
+        <service android:name=".service.push.GeTuiIntentService" />
+
 
         <provider
             android:name=".views.CgmFileProvider"

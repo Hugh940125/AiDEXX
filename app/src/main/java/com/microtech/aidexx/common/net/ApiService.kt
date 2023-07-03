@@ -15,8 +15,8 @@ import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.SettingsEntity
+import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.ExerciseEntity
 import com.microtech.aidexx.db.entity.event.InsulinEntity
@@ -58,6 +58,7 @@ const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordP
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
 const val logout = "$USER_URL/logout"
+const val getuiLogin = "$USER_URL/getuiLogin"
 
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
@@ -161,6 +162,9 @@ interface ApiService {
     //region 账户相关
     @GET(logout)
     suspend fun logout(): ApiResult<BaseResponse<String?>>
+
+    @POST(getuiLogin)
+    suspend fun getuiLogin(@Body body: ReqGetuiLogin): ApiResult<BaseResponse<String?>>
 
     @POST(sendRegisterPhoneVerificationCode)
     suspend fun sendRegisterPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<Nothing>>

@@ -15,6 +15,8 @@ import android.view.WindowInsets
 import android.view.WindowInsetsController
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
+import com.igexin.sdk.PushManager
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
@@ -308,6 +310,12 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     private fun initSDKs() {
         //Bugly初始化
 //        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
+        PushManager.getInstance().initialize(this)
+        if (BuildConfig.DEBUG) {
+            PushManager.getInstance().setDebugLogger(this) {
+                s -> Log.i("PUSH_LOG", s)
+            }
+        }
     }
 
     fun fitHomeOrientation() {
