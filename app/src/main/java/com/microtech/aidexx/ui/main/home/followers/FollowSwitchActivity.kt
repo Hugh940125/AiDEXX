@@ -33,7 +33,7 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
-import com.microtech.aidexx.widget.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

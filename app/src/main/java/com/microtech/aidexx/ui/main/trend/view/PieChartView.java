@@ -26,16 +26,16 @@ public class PieChartView extends View {
     private float mTextWidth;
     private float mTextHeight;
     //饼图半径
-    private float pieChartCircleRadius = 100;
+    private float pieChartCircleRadius = 110;
     private float textBottom;
     //记录文字大小
-    private float mTextSize = 14;
+    private float mTextSize = 12;
     //饼图所占矩形区域（不包括文字）
     private final RectF pieChartCircleRectF = new RectF();
     //饼状图信息列表
     private final List<PieceDataHolder> pieceDataHolders = new ArrayList<>();
     // 标记线长度
-    private float markerLineLength = 10f;
+    private float markerLineLength = 5f;
 
     public PieChartView(Context context) {
         super(context);

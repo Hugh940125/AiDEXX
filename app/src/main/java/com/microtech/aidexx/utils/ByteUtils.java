@@ -3,6 +3,7 @@ package com.microtech.aidexx.utils;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class ByteUtils {
 
@@ -27,7 +28,8 @@ public class ByteUtils {
         int hour = Byte.toUnsignedInt(data[4]);
         int min = Byte.toUnsignedInt(data[5]);
         int second = Byte.toUnsignedInt(data[6]);
-        int timeZone = Byte.toUnsignedInt(data[7]);
+        int timeZoneOffset = Byte.toUnsignedInt(data[7]);
+        LogUtils.eAiDex("timeZone " + timeZoneOffset);
         if (year != 0 || month != 0 || day != 0 || hour != 0 || min != 0 || second != 0) {
             Calendar ca = Calendar.getInstance(Locale.getDefault());
             ca.set(Calendar.YEAR, year);
@@ -37,10 +39,22 @@ public class ByteUtils {
             ca.set(Calendar.MINUTE, min);
             ca.set(Calendar.SECOND, second);
             ca.set(Calendar.MILLISECOND, 0);
-            ca.add(Calendar.MINUTE, timeZone * 15);
+            TimeZone timeZone = getTimeZone(timeZoneOffset * 15 * 60 * 1000);
+            ca.setTimeZone(timeZone);
             return ca.getTime();
         }
         return null;
+    }
+
+    public static TimeZone getTimeZone(int offset) {
+        final TimeZone UTC_TIME_ZONE = TimeZone.getTimeZone("UTC");
+        String[] ids = TimeZone.getAvailableIDs(offset);
+        if (ids == null || ids.length == 0) {
+            return UTC_TIME_ZONE;
+        }
+
+        String matchingZoneId = ids[0];
+        return TimeZone.getTimeZone(matchingZoneId);
     }
 
     public static Date toDate(byte[] data) {

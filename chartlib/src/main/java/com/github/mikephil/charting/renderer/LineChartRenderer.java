@@ -56,7 +56,7 @@ public class LineChartRenderer extends LineRadarRenderer {
     /**
      * the bitmap configuration to be used
      */
-    protected Bitmap.Config mBitmapConfig = Bitmap.Config.RGB_565;
+    protected Bitmap.Config mBitmapConfig = Bitmap.Config.ARGB_4444;
 
     protected Path cubicPath = new Path();
     protected Path cubicFillPath = new Path();

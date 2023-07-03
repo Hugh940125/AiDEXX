@@ -9,7 +9,7 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.databinding.ActivityShareAddUserBinding
 import com.microtech.aidexx.utils.NetUtil
-import com.microtech.aidexx.widget.dialog.lib.WaitDialog
+import com.microtech.aidexx.views.dialog.lib.WaitDialog
 import kotlinx.coroutines.launch
 
 class ShareAddUserActivity : BaseActivity<BaseViewModel, ActivityShareAddUserBinding>() {

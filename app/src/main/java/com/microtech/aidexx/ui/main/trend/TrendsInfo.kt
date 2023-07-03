@@ -11,6 +11,7 @@ import com.microtech.aidexx.utils.toGlucoseStringWithUnit
  *@desc
  */
 class TrendsInfo {
+    var glucoseSize = 0
     var pageTitle: String? = null
     var coverTime: String = "0"
     var monitorTimes: String = "0"
@@ -21,27 +22,52 @@ class TrendsInfo {
     var showMbgUnit = false
     var showMbgTrend = false
     var lowPercent = 0.0
-    var lowPercentDisplay = if (lowPercent == 0.0) "--%" else "$lowPercent%"
+        set(value) {
+            field = value
+            if (value >= 4) {
+                showLowPercentTrend = true
+            }
+            lowPercentDisplay = "$value%"
+        }
+    var lowPercentDisplay = "--%"
+
     var lowPercentDesc = buildString {
         append(" < ")
         append(ThresholdManager.hypo.toGlucoseStringWithUnit())
     }
     var showLowPercentTrend = false
     var normalPercent = 0.0
-    var normalPercentDisplay = if (normalPercent == 0.0) "--%" else "$normalPercent%"
+        set(value) {
+            field = value
+            normalPercentDisplay = "$value%"
+        }
+    var normalPercentDisplay = "--%"
     var normalPercentDesc = buildString {
         append(ThresholdManager.hypo.toGlucoseString())
         append(" - ")
         append(ThresholdManager.hyper.toGlucoseStringWithUnit())
     }
-    var showNormalPercentTrend = false
     var highPercent = 0.0
-    var highPercentDisplay = if (highPercent == 0.0) "--%" else "$highPercent%"
+        set(value) {
+            field = value
+            if (value >= 25) {
+                showHighPercentTrend = true
+            }
+            highPercentDisplay = "$value%"
+        }
+    var highPercentDisplay = "--%"
     var highPercentDesc = buildString {
         append(" > ")
         append(ThresholdManager.hyper.toGlucoseStringWithUnit())
     }
-    var showHightPercentTrend = false
+    var showHighPercentTrend = false
+    val showPieNoData: Boolean
+        get() {
+            if (lowPercent == 0.0 && normalPercent == 0.0 && highPercent == 0.0) {
+                return true
+            }
+            return false
+        }
     var dailyP10: DoubleArray? = DoubleArray(GLUCOSE_NUM_ONE_DAY)
     var dailyP25: DoubleArray? = DoubleArray(GLUCOSE_NUM_ONE_DAY)
     var dailyP50: DoubleArray? = DoubleArray(GLUCOSE_NUM_ONE_DAY)

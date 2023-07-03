@@ -190,7 +190,7 @@ object Dialogs {
                 return field
             }
 
-        fun initDateInfo() {
+        private fun initDateInfo() {
             val calendar = Calendar.getInstance()
             calendar.add(Calendar.DATE, 1)
             calendar[Calendar.HOUR_OF_DAY] = 0

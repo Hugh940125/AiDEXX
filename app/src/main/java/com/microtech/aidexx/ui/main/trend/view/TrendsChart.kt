@@ -72,7 +72,7 @@ open class TrendsChart : CombinedChart {
 
 
     override fun getChartBitmap(): Bitmap {
-        bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+        bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444)
 
         canvas = canvas ?: Canvas(bitmap!!)
 

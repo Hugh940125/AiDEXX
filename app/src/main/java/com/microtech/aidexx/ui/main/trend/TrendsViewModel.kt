@@ -4,14 +4,16 @@ import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.model.GLUCOSE_NUM_ONE_DAY
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtechmd.cgat.CGA
+import kotlinx.coroutines.flow.MutableStateFlow
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
 class TrendsViewModel : BaseViewModel() {
 
+    val cgatFlow = MutableStateFlow<TrendsInfo?>(null)
     private var oneDigitFormat: DecimalFormat = DecimalFormat("0.0")
 
-    private fun runCgat(glucoseArray: Array<DoubleArray>, dayCount: Int) {
+    suspend fun runCgat(glucoseCount: Int, glucoseArray: Array<DoubleArray>, dayCount: Int) {
         val trendsInfo = TrendsInfo()
         val cgat = CGA(glucoseArray)
         val dailyP10: DoubleArray? = getValidArray(cgat.getDailyTrendPrctile(10.0))
@@ -37,15 +39,18 @@ class TrendsViewModel : BaseViewModel() {
             val pt = cgat.getPeriodPT(
                 doubleArrayOf(0.0, ThresholdManager.hypo.toDouble(), ThresholdManager.hyper.toDouble(), 30.0)
             )
-            var lpt = pt[pt.size - 1][0]
-            var mpt = pt[pt.size - 1][1]
-            var hpt = pt[pt.size - 1][2]
-            trendsInfo.dailyP10 = dailyP10
-            trendsInfo.dailyP25 = dailyP25
-            trendsInfo.dailyP50 = dailyP50
-            trendsInfo.dailyP75 = dailyP75
-            trendsInfo.dailyP90 = dailyP90
+            trendsInfo.lowPercent = oneDigitFormat.format(pt[pt.size - 1][0]).toDouble()
+            trendsInfo.highPercent = oneDigitFormat.format(pt[pt.size - 1][2]).toDouble()
+            trendsInfo.normalPercent = 100.0 - trendsInfo.lowPercent - trendsInfo.highPercent
+            if (glucoseCount > 5 * GLUCOSE_NUM_ONE_DAY) {
+                trendsInfo.dailyP10 = dailyP10
+                trendsInfo.dailyP25 = dailyP25
+                trendsInfo.dailyP50 = dailyP50
+                trendsInfo.dailyP75 = dailyP75
+                trendsInfo.dailyP90 = dailyP90
+            }
         }
+        cgatFlow.emit(trendsInfo)
     }
 
     private fun getValidArray(array: DoubleArray, ratio: Float? = 0.75f): DoubleArray? {

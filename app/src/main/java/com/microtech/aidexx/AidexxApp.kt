@@ -71,6 +71,7 @@ class AidexxApp : Application() {
         AlertUtil.init(this)
         ContextUtil.init(this)
         DialogX.init(this)
+        System.loadLibrary("cgat-lib")
     }
 
     private fun initXlog() {

@@ -16,7 +16,7 @@ public class AidexXDatetimeEntity {
 
     public AidexXDatetimeEntity(Calendar calendar) {
         Date date = new Date();
-        timeZone = calendar.getTimeZone().getOffset(date.getTime()) / 1000 / 60 * 15;
+        timeZone = calendar.getTimeZone().getOffset(date.getTime()) / 1000 / 60 / 60 * 4;
         year = calendar.get(Calendar.YEAR);
         month = calendar.get(Calendar.MONTH) + 1;
         day = calendar.get(Calendar.DATE);
