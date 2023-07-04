@@ -49,7 +49,7 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
 
     override fun onResume() {
         super.onResume()
-        vm.refresh()
+        vm.updateDate(Date())
     }
 
     private fun initTitle() {

@@ -99,7 +99,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
                     }
                 }
             }
-        }m
+        }
     }
 
     private fun updateAgpChart(

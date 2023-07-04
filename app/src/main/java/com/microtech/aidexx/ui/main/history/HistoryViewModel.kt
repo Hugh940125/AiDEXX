@@ -111,8 +111,6 @@ class HistoryViewModel: BaseViewModel() {
 
                 val allData = loadCurDateAllData(curDate.getStartOfTheDay(), curDate.getEndOfTheDay())
 
-
-
                 val countDataModel = CountModel()
                 val proportionDataModel = ProportionModel()
 
@@ -473,11 +471,11 @@ class HistoryViewModel: BaseViewModel() {
         })
     }
 
-    fun refresh() {
-        viewModelScope.launch {
-            loadAndCalculateData()
-        }
-    }
+//    fun refresh() {
+//        viewModelScope.launch {
+//            loadAndCalculateData()
+//        }
+//    }
 
     init {
         glucoseSets.add(GlucoseDataSet())
