@@ -354,7 +354,6 @@
     <string name="input_password">输入密码</string>
     <string name="input_repassword">再次输入密码</string>
 
-    <string name="unit_min">min</string>
     <string name="theme_dark">深色</string>
     <string name="theme_light">浅色</string>
     <string name="setting_repsd">重置密码</string>
@@ -648,6 +647,7 @@
 
 
     <!-- 单位 -->
+    <string name="unit_min">分钟</string>
     <string name="unit_g">克</string>
     <string name="unit_kg">千克</string>
     <string name="unit_ml">毫升</string>

@@ -293,7 +293,8 @@ class GlucoseChart : MyChart {
      * 初始化数据集
      */
     fun initData(combinedData: CombinedData) {
-        initChartAxisY()
+        updateChartAxisY()
+        updateChartAxisX()
         updateListener()
         initBackground()
 
@@ -459,38 +460,14 @@ class GlucoseChart : MyChart {
         }
     }
 
-    private fun initChartAxisYStyle2() {
-
-        val yAxis = axisRight
-        yAxis.setDrawAxisLine(false)
-        yAxis.setDrawGridLines(true)
-        yAxis.setDrawLabels(false)
-        val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
-        yAxis.gridColor = color
-        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
-        updateYaxisMaxMin(yAxis)
-
-        yAxis.setLabelCount(6, true)
-        yAxis.textSize = 14f
-        yAxis.textColor = textColor!!
-
-        val yAxisLeft = axisLeft
-        yAxisLeft.setDrawAxisLine(false)
-        yAxisLeft.setDrawGridLines(true)
-        yAxisLeft.setDrawLabels(true)
-        yAxisLeft.gridColor = color
-        yAxisLeft.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
-        updateYaxisMaxMin(yAxisLeft)
-
-        yAxisLeft.setLabelCount(6, true)
-        yAxisLeft.textSize = 14f
-        yAxisLeft.textColor = textColor!!
-
-        axisRight.isEnabled = true
-        axisLeft.isEnabled = true
+    private fun updateChartAxisX() {
+        val style = extraParams?.getYAxisStyle()
+        if (style == 2) {
+            xAxis.granularity = G_ONE_DAY.toFloat()
+        }
     }
 
-    private fun initChartAxisY() {
+    private fun updateChartAxisY() {
 
         val style = extraParams?.getYAxisStyle()
 
@@ -512,9 +489,26 @@ class GlucoseChart : MyChart {
             yAxis.textColor = textColor!!
             axisLeft.isEnabled = false
         } else {
-            initChartAxisYStyle2()
+            updateChartAxisYStyle2()
         }
+    }
 
+    private fun updateChartAxisYStyle2() {
+
+        val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
+        val yAxisLeft = axisLeft
+        yAxisLeft.setDrawAxisLine(false)
+        yAxisLeft.setDrawGridLines(true)
+        yAxisLeft.setDrawLabels(true)
+        yAxisLeft.gridColor = color
+        yAxisLeft.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        updateYaxisMaxMin(yAxisLeft)
+
+        yAxisLeft.setLabelCount(6, true)
+        yAxisLeft.textSize = 14f
+        yAxisLeft.textColor = textColor!!
+
+        axisRight.isEnabled = false
     }
 
     fun moveToDay(dayInSecond: Long) {
