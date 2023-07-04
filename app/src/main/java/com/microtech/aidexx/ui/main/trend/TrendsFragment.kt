@@ -62,6 +62,11 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
         binding.rlDateSpace.setDebounceClickListener {
             openCalendar()
         }
+        initView()
+        return binding.root
+    }
+
+    private fun initView() {
         lifecycleScope.launch {
             viewModel.cgatFlow.debounce(3000).collectLatest { trendInfo ->
                 trendInfo?.let {
@@ -71,9 +76,12 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
                     binding.ivEhba1cTrends.isVisible = it.showEhbA1cTrend
                     binding.tvMbgValue.text = it.mbg
                     binding.ivMbgTrends.isVisible = it.showMbgTrend
-                    val normalHolder = buildDataHolder(it.normalPercent.toFloat(), R.color.colorGlucoseNormal)
-                    val highHolder = buildDataHolder(it.highPercent.toFloat(), R.color.colorGlucoseHigh)
-                    val lowHolder = buildDataHolder(it.lowPercent.toFloat(), R.color.colorGlucoseLow)
+                    val normalHolder =
+                        buildDataHolder(it.normalPercent.toFloat(), R.color.colorGlucoseNormal)
+                    val highHolder =
+                        buildDataHolder(it.highPercent.toFloat(), R.color.colorGlucoseHigh)
+                    val lowHolder =
+                        buildDataHolder(it.lowPercent.toFloat(), R.color.colorGlucoseLow)
                     binding.pieChart.setData(listOf(lowHolder, normalHolder, highHolder))
                     binding.highPercent.text = it.highPercentDisplay
                     binding.descHigh.text = it.highPercentDesc
@@ -85,10 +93,13 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
                     binding.ivLowTrends.isVisible = it.showLowPercentTrend
                     binding.txtEmptyPies.isVisible = it.showPieNoData
                     updateAgpChart(it.dailyP50, it.dailyP75, it.dailyP25, it.dailyP90, it.dailyP10)
+                    binding.cursorView.setValue(it.lbgi.toFloat())
+                    it.multiDayHistory?.let { histories ->
+                        binding.expandableGrid.refreshData(histories)
+                    }
                 }
             }
-        }
-        return binding.root
+        }m
     }
 
     private fun updateAgpChart(
@@ -340,40 +351,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
         calendar.add(Calendar.DATE, -1)
         binding.timeEnd.text = formatter.format(calendar.time)
         lifecycleScope.launch {
-            val beginTime = startDate.time
-            val cgmList =
-                CgmCalibBgRepository.queryCgmByPage(startDate, endDate, UserInfoManager.getCurShowUserId())
-            val dayCount = ceil((endDate.time - startDate.time) / 1000.0 / 86400.0).toInt()
-            val glucoseArray = Array(dayCount) { DoubleArray(GLUCOSE_NUM_ONE_DAY) }
-            cgmList?.let {
-                it.sortBy { cgm -> cgm.deviceTime }
-                var lastHistoryTime = 0L
-                var historyCount = 0
-                for (dbHistory in cgmList) {
-                    val time: Long = dbHistory.deviceTime.time
-                    if (abs(time - lastHistoryTime) < 5 * TimeUtils.oneMinuteMillis) {
-                        continue
-                    }
-                    lastHistoryTime = time
-                    historyCount++
-                    val x = ((time - beginTime) / TimeUtils.oneDayMillis).toInt()
-                    val y = ((time - beginTime) / (5 * TimeUtils.oneMinuteMillis)).toInt() - x * GLUCOSE_NUM_ONE_DAY
-                    if (x >= dayCount || y > GLUCOSE_NUM_ONE_DAY) {
-                        continue
-                    }
-                    dbHistory.glucose?.let { history ->
-                        val glucoseValue = history.toGlucoseValue()
-                        if (glucoseValue.toDouble() < 2) {
-                            glucoseArray[x][y] = 2.0
-                        } else if (glucoseValue.toDouble() > 25) {
-                            glucoseArray[x][y] = 25.0
-                        } else {
-                            glucoseArray[x][y] = glucoseValue.toDouble()
-                        }
-                    }
-                }
-                viewModel.runCgat(historyCount, glucoseArray, dayCount)
-            }
+            viewModel.runCgat(startDate, endDate)
         }
     }
 

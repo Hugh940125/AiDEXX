@@ -360,6 +360,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     fun handleAdvertisement(data: ByteArray) {
         val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
         LogUtil.eAiDEX("Advertising ----> $broadcast")
+        latestAdTime = SystemClock.elapsedRealtime()
         val refreshSensorState = refreshSensorState(broadcast)
         if (refreshSensorState) return
         if (broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
@@ -405,7 +406,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             getController().startTime
             return
         }
-        latestAdTime = SystemClock.elapsedRealtime()
         latestHistory?.let {
             val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
             if (glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
@@ -650,7 +650,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 when (historyEntity.eventType) {
                     History.HISTORY_GLUCOSE,
                     -> {
-                        if (isMalfunction || history.timeOffset < 60) {
+                        if (isMalfunction || history.timeOffset < 60 || !isHistoryValid) {
                             historyEntity.eventWarning = -1
                         } else {
                             val highOrLowGlucoseType = historyEntity.getHighOrLowGlucoseType()
@@ -672,7 +672,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 historyEntity.eventWarning =
                                                     History.HISTORY_LOCAL_HYPER
                                                 alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSEHIGH
+                                                    time, AlertType.MESSAGE_TYPE_GLUCOSEHIGH
                                                 )
                                                 lastHyperAlertTime = deviceTimeMillis
                                             }
@@ -693,7 +693,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 historyEntity.eventWarning =
                                                     History.HISTORY_LOCAL_HYPO
                                                 alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOW
+                                                    time, AlertType.MESSAGE_TYPE_GLUCOSELOW
                                                 )
                                                 lastHypoAlertTime = deviceTimeMillis
                                             }
@@ -716,7 +716,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 historyEntity.eventWarning =
                                                     History.HISTORY_LOCAL_URGENT_HYPO
                                                 alert?.invoke(
-                                                    "$time", AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
+                                                    time, AlertType.MESSAGE_TYPE_GLUCOSELOWALERT
                                                 )
                                                 lastUrgentAlertTime = deviceTimeMillis
                                             }
@@ -730,7 +730,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     History.HISTORY_SENSOR_ERROR -> {
                         if (entity.needReplace && now - deviceTimeMillis < TimeUtils.oneHourSeconds * 1000) {
                             alert?.invoke(
-                                "$time", AlertType.MESSAGE_TYPE_SENRORERROR
+                                time, AlertType.MESSAGE_TYPE_SENRORERROR
                             )
                         }
                     }

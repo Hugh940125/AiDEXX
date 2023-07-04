@@ -1,5 +1,6 @@
 package com.microtech.aidexx.service
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -47,6 +48,7 @@ private const val LOCK_TIME_INTERVAL = 5 * 60 * 1000L
 private const val LOCK_ACTION = "com.aidex.keep-alive"
 
 class MainService : Service(), LifecycleOwner {
+    private var nextSignalCheckTime: Long = 0L
     private var mainServiceTimer: Timer? = null
     private var mainServiceTask: TimerTask? = null
     private var timeChangeReceiver: TimeChangeReceiver? = null
@@ -58,6 +60,7 @@ class MainService : Service(), LifecycleOwner {
     private val foregroundChannelId = "com.microtech.aidexx.foreground"
     private val mLifecycleRegistry = LifecycleRegistry(this)
     private var smallIcon: IconCompat? = null
+        @SuppressLint("RestrictedApi")
         get() {
             if (field == null) {
                 field =
@@ -167,10 +170,17 @@ class MainService : Service(), LifecycleOwner {
                             model.uploadPairInfo()
                         }
                     }
-                    if (model != null && model.isPaired()) {
-                        if (model.latestAdTime != 0L) {
-                            if (SystemClock.elapsedRealtime() - model.latestAdTime > 15.minutesToMillis()) {
-                                model.alert?.invoke(Date().dateHourMinute(), MESSAGE_TYPE_SIGNAL_LOST)
+                    val settingEntity = SettingsManager.settingEntity!!
+                    if (model != null && model.isPaired() && settingEntity.signalMissingSwitch == 0) {
+                        val elapsedRealtime = SystemClock.elapsedRealtime()
+                        if (model.latestAdTime != 0L && settingEntity.signalMissingSwitch == 0 && elapsedRealtime > nextSignalCheckTime) {
+                            if (elapsedRealtime - model.latestAdTime > settingEntity.signalMissingAlertRate.minutesToMillis()) {
+                                model.alert?.invoke(
+                                    Date().dateHourMinute(),
+                                    MESSAGE_TYPE_SIGNAL_LOST
+                                )
+                                nextSignalCheckTime =
+                                    elapsedRealtime + settingEntity.signalMissingAlertRate.minutesToMillis()
                             }
                         }
                     }

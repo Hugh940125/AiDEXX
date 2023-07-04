@@ -6,10 +6,9 @@ import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
-import com.google.android.flexbox.*
 import com.microtech.aidexx.databinding.LayoutExpandableGridBinding
 import com.microtech.aidexx.ui.main.trend.MultiDateAdapter
-import com.microtech.aidexx.ui.main.trend.MultiDayBGItem
+import com.microtech.aidexx.ui.main.trend.MultiDayBgItem
 import com.microtech.aidexx.ui.main.trend.maxShowDefault
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.R
@@ -24,7 +23,7 @@ class ExpandableGrid : ConstraintLayout {
     private var currentState = STATE_CONTRACT
     private var currentDataState = NOT_SELECT_ALL
     private var multiDateAdapter: MultiDateAdapter? = null
-    var onDataChange: ((list: MutableList<MultiDayBGItem>) -> Unit)? = null
+    var onDataChange: ((list: MutableList<MultiDayBgItem>) -> Unit)? = null
     lateinit var vb: LayoutExpandableGridBinding
 
     constructor(context: Context) : this(context, null)
@@ -61,7 +60,7 @@ class ExpandableGrid : ConstraintLayout {
             }
         }
         multiDateAdapter?.onDataSetChange =
-            { mutableList: MutableList<MultiDayBGItem>, b: Boolean ->
+            { mutableList: MutableList<MultiDayBgItem>, b: Boolean ->
                 onDataChange?.invoke(mutableList)
                 if (b) {
                     switchOn(context)
@@ -106,11 +105,11 @@ class ExpandableGrid : ConstraintLayout {
         currentDataState = SELECT_ALL
     }
 
-    fun getDataSet(): MutableList<MultiDayBGItem> {
+    fun getDataSet(): MutableList<MultiDayBgItem> {
         return multiDateAdapter?.getDataSet() ?: mutableListOf()
     }
 
-    fun refreshData(list: MutableList<MultiDayBGItem>) {
+    fun refreshData(list: MutableList<MultiDayBgItem>) {
         val set = list.filter { !it.checked }
         if (set.isEmpty()) {
             switchOn(context)

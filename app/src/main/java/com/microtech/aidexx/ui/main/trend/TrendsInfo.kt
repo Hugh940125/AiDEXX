@@ -73,5 +73,6 @@ class TrendsInfo {
     var dailyP50: DoubleArray? = DoubleArray(GLUCOSE_NUM_ONE_DAY)
     var dailyP75: DoubleArray? = DoubleArray(GLUCOSE_NUM_ONE_DAY)
     var dailyP90: DoubleArray? = DoubleArray(GLUCOSE_NUM_ONE_DAY)
-    var lbgi = 0f
+    var lbgi = 0.0
+    var multiDayHistory: MutableList<MultiDayBgItem>? = null
 }

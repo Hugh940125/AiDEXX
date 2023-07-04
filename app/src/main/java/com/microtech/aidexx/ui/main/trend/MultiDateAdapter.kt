@@ -12,14 +12,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.main.trend.view.DotView
 import com.microtech.aidexx.utils.ThemeManager
+import java.util.*
 
 class MultiDateAdapter(
     val context: Context
 ) : RecyclerView.Adapter<MultiDateAdapter.MultiDateViewHolder>() {
 
-    val listOfAll: MutableList<MultiDayBGItem> = mutableListOf()
-    val listToShow: MutableList<MultiDayBGItem> = mutableListOf()
-    var onDataSetChange: ((list: MutableList<MultiDayBGItem>, isAllChecked: Boolean) -> Unit)? =
+    val listOfAll: MutableList<MultiDayBgItem> = mutableListOf()
+    val listToShow: MutableList<MultiDayBgItem> = mutableListOf()
+    var onDataSetChange: ((list: MutableList<MultiDayBgItem>, isAllChecked: Boolean) -> Unit)? =
         null
 
     @SuppressLint("InflateParams")
@@ -33,7 +34,22 @@ class MultiDateAdapter(
     @SuppressLint("NotifyDataSetChanged")
     override fun onBindViewHolder(holder: MultiDateViewHolder, position: Int) {
         val item = listToShow[position]
-        holder.dateItem.text = item.dateDesc
+        val dateDesc = item.dateDesc
+        holder.dateItem.text = String.format(
+            context.getString(
+                R.string.date_format,
+                if (dateDesc.get(Calendar.MONTH) + 1 > 9) dateDesc.get(
+                    Calendar.MONTH
+                ) + 1 else "0${
+                    dateDesc.get(Calendar.MONTH) + 1
+                }",
+                if (dateDesc.get(Calendar.DAY_OF_MONTH) > 9) dateDesc.get(
+                    Calendar.DAY_OF_MONTH
+                ).toString() else "0${
+                    dateDesc.get(Calendar.DAY_OF_MONTH)
+                }"
+            )
+        )
         if (item.checked) {
             holder.dateItem.setTextColor(
                 ContextCompat.getColor(
@@ -59,14 +75,14 @@ class MultiDateAdapter(
         holder.clItem.setOnClickListener {
             item.checked = !item.checked
             notifyItemChanged(position)
-            val predicate: (MultiDayBGItem) -> Boolean = { it.checked }
+            val predicate: (MultiDayBgItem) -> Boolean = { it.checked }
             val toMutableList = listOfAll.filter(predicate).toMutableList()
             onDataSetChange?.invoke(toMutableList, toMutableList.size == listOfAll.size)
         }
     }
 
-    fun getDataSet(): MutableList<MultiDayBGItem> {
-        val predicate: (MultiDayBGItem) -> Boolean = { it.checked }
+    fun getDataSet(): MutableList<MultiDayBgItem> {
+        val predicate: (MultiDayBgItem) -> Boolean = { it.checked }
         return listOfAll.filter(predicate).toMutableList()
     }
 
@@ -84,7 +100,7 @@ class MultiDateAdapter(
         val clItem: ConstraintLayout = itemView.findViewById(R.id.cl_item)
     }
 
-    fun refreshData(list: MutableList<MultiDayBGItem>) {
+    fun refreshData(list: MutableList<MultiDayBgItem>) {
         listOfAll.clear()
         listOfAll.addAll(list)
         contract()
