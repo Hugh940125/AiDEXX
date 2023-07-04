@@ -375,10 +375,10 @@ class HistoryViewModel: BaseViewModel() {
     private suspend fun loadCurDateAllData(startDate: Date, endDate: Date) =
         withContext(Dispatchers.IO) {
             listOf(
-                async { CgmCalibBgRepository.queryCgmByPage(startDate, endDate) },
-                async { CgmCalibBgRepository.queryBgByPage(startDate, endDate) },
-                async { CgmCalibBgRepository.queryCalByPage(startDate, endDate) },
-                async { EventDbRepository.queryEventByPage(startDate, endDate) }
+                async { CgmCalibBgRepository.queryCgmByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) },
+                async { CgmCalibBgRepository.queryBgByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) },
+                async { CgmCalibBgRepository.queryCalByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) },
+                async { EventDbRepository.queryEventByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) }
             ).awaitAll()
         }
 
