@@ -20,6 +20,8 @@ import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
+import com.microtech.aidexx.common.toast
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.data.resource.LanguageResourceManager
@@ -288,7 +290,10 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                 }
             })
             mainTabView.onTabChange = {
-                if (viewpager.currentItem == EVENT) {
+                if ((it == BG || it == EVENT) && UserInfoManager.shareUserInfo != null) {
+                    resources.getString(R.string.denied).toast()
+                    false
+                } else if (viewpager.currentItem == EVENT) {
                     val hasConfirm =
                         ((viewpager.adapter as MainViewPagerAdapter).getItem(EVENT) as EventFragment?)?.needConfirmLeave {
                             viewpager.setCurrentItem(it, false)

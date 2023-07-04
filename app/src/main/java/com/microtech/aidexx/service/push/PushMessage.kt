@@ -20,10 +20,10 @@ open class PushMessage {
     var taskId: String? = null
     var messageId: String? = null
 
-    //-1 cgm无效数据 1高血糖 2-低血糖，3-紧急低
+    //-1 cgm无效数据 0-cgm数据(暂不使用) 1高血糖 2-低血糖，3-紧急低
     // 4-饮食事件变更，5运动事件变更，6用药事件变更，7德岛素事件变更，8-其他事件变更，
     // 9-指血数据变更，10-日志上报
-    private val msgType: Int? = null
+    protected val msgType: Int? = null
     val detail: String? = null
     fun getRealMsgByType(): PushMessage? {
         val gson = Gson()
@@ -120,9 +120,12 @@ class PushLogMsg: PushMessage() {
 }
 class PushCgmMsg: PushMessage() {
     override suspend fun applyMsg(): Boolean {
-
-
-
-        return super.applyMsg()
+        //-1 cgm无效数据 0-cgm数据(暂不使用) 1高血糖 2-低血糖，3-紧急低
+        return when (msgType) {
+            1 -> false
+            2 -> false
+            3 -> false
+            else -> false
+        }
     }
 }
