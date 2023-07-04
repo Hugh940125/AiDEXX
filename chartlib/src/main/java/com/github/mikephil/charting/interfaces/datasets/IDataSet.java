@@ -87,6 +87,8 @@ public interface IDataSet<T extends Entry> {
      */
     T getEntryForXValue(float xValue, float closestToY, DataSet.Rounding rounding);
 
+    int getEntryIndexForXValue(float xValue, float closestToY, DataSet.Rounding rounding);
+
     /**
      * Returns the first Entry object found at the given x-value with binary
      * search.

@@ -71,7 +71,7 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
         for (int i = 0; i < max; i++) {
 
             Entry e = dataSet.getEntryForIndex(i);
-
+            if (e == null) continue;
             mPixelBuffer[0] = e.getX();
             mPixelBuffer[1] = e.getY() * phaseY;
 
@@ -136,7 +136,7 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
                         continue;
 
                     Entry entry = dataSet.getEntryForIndex(j / 2 + mXBounds.min);
-
+                    if (entry == null) continue;
                     if (dataSet.isDrawValuesEnabled()) {
                         drawValue(c, formatter.getPointLabel(entry), positions[j], positions[j + 1] - shapeSize, dataSet.getValueTextColor(j / 2 + mXBounds.min));
                     }
@@ -147,7 +147,9 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
 
                         if (attached) {
                             for (int k = 0; k < j; k += 2) {
-                                Drawable existingIcon = dataSet.getEntryForIndex(k / 2 + mXBounds.min).getIcon();
+                                Entry e = dataSet.getEntryForIndex(k / 2 + mXBounds.min);
+                                if (e == null) continue;
+                                Drawable existingIcon = e.getIcon();
                                 if (existingIcon == null) {
                                     continue;
                                 }
@@ -236,7 +238,7 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
                         continue;
 
                     Entry entry = dataSet.getEntryForIndex(j / 2 + mXBounds.min);
-
+                    if (entry == null) continue;
                     if (dataSet.isDrawValuesEnabled()) {
                         drawValue(c, formatter.getPointLabel(entry), positions[j], positions[j + 1] - shapeSize, dataSet.getValueTextColor(j / 2 + mXBounds.min));
                     }
@@ -247,7 +249,9 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
 
                         if (attached) {
                             for (int k = 0; k < j; k += 2) {
-                                Drawable existingIcon = dataSet.getEntryForIndex(k / 2 + mXBounds.min).getIcon();
+                                Entry e = dataSet.getEntryForIndex(k / 2 + mXBounds.min);
+                                if (e == null) continue;
+                                Drawable existingIcon = e.getIcon();
                                 if (existingIcon == null) {
                                     continue;
                                 }
@@ -261,7 +265,11 @@ public class ScatterChartRenderer extends LineScatterCandleRadarRenderer {
 
                         if (attached) {
                             for (int k = 0; k < j; k += 2) {
-                                Drawable existingIcon = dataSet.getEntryForIndex(k / 2 + mXBounds.min).getIcon();
+                                Entry e = dataSet.getEntryForIndex(k / 2 + mXBounds.min);
+                                if (e == null) {
+                                    continue;
+                                }
+                                Drawable existingIcon = e.getIcon();
                                 if (existingIcon == null) {
                                     continue;
                                 }

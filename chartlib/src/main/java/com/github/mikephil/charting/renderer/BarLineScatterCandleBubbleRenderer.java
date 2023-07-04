@@ -1,5 +1,7 @@
 package com.github.mikephil.charting.renderer;
 
+import android.util.Log;
+
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
@@ -81,12 +83,18 @@ public abstract class BarLineScatterCandleBubbleRenderer extends DataRenderer {
             float low = chart.getLowestVisibleX();
             float high = chart.getHighestVisibleX();
 
-            Entry entryFrom = dataSet.getEntryForXValue(low, Float.NaN, DataSet.Rounding.DOWN);
-            Entry entryTo = dataSet.getEntryForXValue(high, Float.NaN, DataSet.Rounding.UP);
+//            Entry entryFrom = dataSet.getEntryForXValue(low, Float.NaN, DataSet.Rounding.DOWN);
+//            Entry entryTo = dataSet.getEntryForXValue(high, Float.NaN, DataSet.Rounding.UP);
+//
+//            min = entryFrom == null ? 0 : dataSet.getEntryIndex(entryFrom);
+//            max = entryTo == null ? 0 : dataSet.getEntryIndex(entryTo);
 
-            min = entryFrom == null ? 0 : dataSet.getEntryIndex(entryFrom);
-            max = entryTo == null ? 0 : dataSet.getEntryIndex(entryTo);
+            min = dataSet.getEntryIndexForXValue(low, Float.NaN, DataSet.Rounding.DOWN);
+            max = dataSet.getEntryIndexForXValue(high, Float.NaN, DataSet.Rounding.UP);
+
             range = (int) ((max - min) * phaseX);
+            Log.d("chart bound set", "min="+min+ " max="+max);
+
         }
     }
 }

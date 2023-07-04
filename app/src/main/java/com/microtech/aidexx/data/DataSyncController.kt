@@ -343,7 +343,7 @@ abstract class DataSyncController<T: BaseEventEntity> {
      */
     private suspend fun downloadDataOfRealTime(userId: String): Boolean {
         var startAutoIncrementColumn: Long? = EventDbRepository.findMaxEventId(tClazz) ?: 0L
-        startAutoIncrementColumn = if (startAutoIncrementColumn!! <= 0L) null else startAutoIncrementColumn
+        startAutoIncrementColumn = if (startAutoIncrementColumn!! <= 0L) null else startAutoIncrementColumn + 1
 
         return when (val apiResult = EventRepository.getEventRecordsByPageInfo(
             userId,

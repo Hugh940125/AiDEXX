@@ -100,7 +100,9 @@ public class RadarChartRenderer extends LineRadarRenderer {
             mRenderPaint.setColor(dataSet.getColor(j));
 
             RadarEntry e = dataSet.getEntryForIndex(j);
-
+            if (e == null) {
+                continue;
+            }
             Utils.getPosition(
                     center,
                     (e.getY() - mChart.getYChartMin()) * factor * phaseY,
@@ -183,7 +185,9 @@ public class RadarChartRenderer extends LineRadarRenderer {
             for (int j = 0; j < dataSet.getEntryCount(); j++) {
 
                 RadarEntry entry = dataSet.getEntryForIndex(j);
-
+                if (entry == null) {
+                    continue;
+                }
                  Utils.getPosition(
                          center,
                          (entry.getY() - mChart.getYChartMin()) * factor * phaseY,

@@ -88,7 +88,8 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
         int indexTo = getEntryIndex(toX, Float.NaN, Rounding.UP);
 
         if (indexTo < indexFrom) return;
-        if (getEntryForIndex(indexTo) != null && getEntryForIndex(indexTo).getX() < fromX) return;
+        Entry entry = getEntryForIndex(indexTo);
+        if (entry != null && entry.getX() < fromX) return;
 
         for (int i = indexFrom; i <= indexTo; i++) {
 
@@ -306,12 +307,30 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
         try {
             long start = System.currentTimeMillis();
             int index = getEntryIndex(xValue, closestToY, rounding);
-            Log.d("getEntryForXValue", "mEntries.size=" + mEntries.size() + " cost=" + (System.currentTimeMillis() - start));
+
+            Log.d("chart getEntryForXValue", "mEntries.size=" + mEntries.size() + " cost=" + (System.currentTimeMillis() - start));
             if (index > -1)
                 return mEntries.get(index);
         } catch (Exception e) {
+            Log.e("getEntryForXValue",e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public int getEntryIndexForXValue(float xValue, float closestToY, Rounding rounding) {
+
+        try {
+            long start = System.currentTimeMillis();
+            int index = getEntryIndex(xValue, closestToY, rounding);
+
+            Log.d("chart getEntryIndexForXValue", "mEntries.size=" + mEntries.size() + " cost=" + (System.currentTimeMillis() - start));
+            if (index > -1)
+                return index;
+        } catch (Exception e) {
+            Log.e("getEntryIndexForXValue",e.getMessage());
+        }
+        return 0;
     }
 
     @Override
@@ -320,14 +339,23 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
     }
 
     @Override
-    public synchronized T getEntryForIndex(int index) {
-        if (index < 0) {
-            return mEntries.get(0);
+    public T getEntryForIndex(int index) {
+        try {
+            if (index < 0) {
+                return mEntries.get(0);
+            }
+            if (index > mEntries.size() - 1) {
+                int lastIndex = mEntries.size() - 1;
+                if (lastIndex < 0) {
+                    return null;
+                }
+                return mEntries.get(lastIndex);
+            }
+            return mEntries.get(index);
+        } catch (Exception e) {
+            Log.e("DataSet", e.getMessage());
         }
-        if (index > mEntries.size() - 1) {
-            return mEntries.get(mEntries.size() - 1);
-        }
-        return mEntries.get(index);
+        return null;
     }
 
     @Override

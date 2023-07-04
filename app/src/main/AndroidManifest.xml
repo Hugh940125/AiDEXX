@@ -103,7 +103,19 @@
             android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|uiMode|fontScale|fontWeightAdjustment|locale|keyboard|layoutDirection|density|navigation|smallestScreenSize|mcc|mnc|touchscreen"
             android:exported="true"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            tools:ignore="LockedOrientationActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="com.microtech.aidexx"
+                    android:path="/main"
+                    android:scheme="microtech" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.web.WebActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
