@@ -49,7 +49,7 @@ class BloodGlucoseEntity : BaseEventEntity {
                 6 -> res.getString(R.string.after_dinner)
                 7 -> res.getString(R.string.before_sleep)
                 8 -> res.getString(R.string.morning)
-                255 -> res.getString(R.string.random)
+                99 -> res.getString(R.string.random)
                 0 -> ""
                 else -> null
             }

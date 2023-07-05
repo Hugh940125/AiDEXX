@@ -34,10 +34,10 @@ import com.microtech.aidexx.ui.main.bg.history.BloodGlucoseHistoryActivity
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.fromGlucoseValue
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtech.aidexx.views.dialog.standard.StandardDialog
@@ -48,7 +48,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToInt
 
 private const val ANTI_FAST_RESUME = 1
@@ -70,25 +71,28 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 AidexXOperation.DISCONNECT -> {
                     Dialogs.dismissWait()
                 }
+
                 AidexXOperation.DISCOVER -> {
                     if (!message.isSuccess) {
                         Dialogs.showError(getString(R.string.Search_Timeout))
                         MessageDistributor.instance().removeObserver(this)
                     }
                 }
+
                 AidexXOperation.CONNECT -> {
                     if (!message.isSuccess) {
                         Dialogs.showError(getString(R.string.Connecting_Failed))
                         MessageDistributor.instance().removeObserver(this)
                     }
                 }
+
                 AidexXOperation.SET_CALIBRATION -> {
                     if (message.isSuccess) {
                         if (message.resCode == 1) {
                             Dialogs.showSuccess(getString(R.string.calibration_success))
                             binding.etGlucoseValue.setText("")
                         } else {
-                            Dialogs.showError(getString(R.string.calibration_fail))
+                            Dialogs.showError(getString(R.string.calibration_fail) + "(${message.resCode})")
                         }
                     }
                     MessageDistributor.instance().removeObserver(this)
@@ -313,6 +317,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                     Dialogs.showMessage(requireContext(), content = getString(R.string.bg_pair))
                 }
             }
+
             binding.buttonRecord -> {
                 val glucoseValue = binding.etGlucoseValue.text.toString().toFloatOrNull()
                 if (null == glucoseValue || glucoseValue > maxGlucose || glucoseValue < minGlucose) {

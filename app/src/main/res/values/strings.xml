@@ -360,6 +360,7 @@
     <string name="theme_light">浅色</string>
     <string name="setting_repsd">重置密码</string>
     <string name="trends_content1">预估糖化血红蛋白</string>
+    <string name="dialog_content_lgbi">低血糖风险，用于评估发生严重低血糖的风险程度。\n高风险 LBGI>5.0 \n中风险 2.5&lt;LBGI&lt;=5.0 \n低风险 1.1&lt;LBGI&lt;=2.5 \n极低风险 LBGI&lt;=1.1</string>
     <string name="content_about_glucose">预估糖化血红蛋白，根据 CGM 葡萄糖读数估算 HbA1c， 用于评价整体血糖水平，参考值<![CDATA[<7%。]]></string>
     <string name="trends_content2">eHbA1c</string>
     <string name="trends_content3">MBG</string>
@@ -676,5 +677,4 @@
     <string name="unit_times">次</string>
     <string name="help_center">帮助中心</string>
     <!-- 历史 -->
-
 </resources>

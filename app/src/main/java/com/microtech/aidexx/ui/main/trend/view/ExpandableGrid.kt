@@ -54,9 +54,9 @@ class ExpandableGrid : ConstraintLayout {
             if (currentState == STATE_CONTRACT) {
                 multiDateAdapter?.expand()
                 currentState = STATE_EXPAND
-                vb.stateSwitch.rotation = 0f
             } else {
                 executeContract(context)
+                vb.stateSwitch.rotation = 180f
             }
         }
         multiDateAdapter?.onDataSetChange =

@@ -5,6 +5,7 @@ import android.graphics.DashPathEffect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
@@ -22,29 +23,29 @@ import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
-import com.microtech.aidexx.ble.device.model.GLUCOSE_NUM_ONE_DAY
+import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentTrendBinding
-import com.microtech.aidexx.db.repository.CgmCalibBgRepository
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.ui.main.trend.view.PieChartView
 import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ThresholdManager
-import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.views.calendar.CalendarDialog
 import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
-import kotlin.math.ceil
+import kotlin.math.roundToInt
 
-class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
+class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), OnClickListener {
+    var rangeChanged = true
+    var userIdCurrentShow = UserInfoManager.instance().userId()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -52,6 +53,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
     override fun onResume() {
         super.onResume()
         updateTrends(Dialogs.DateInfo.dateLastWeek, Dialogs.DateInfo.dateToday)
+        rangeChanged = false
     }
 
     override fun onCreateView(
@@ -67,8 +69,16 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
     }
 
     private fun initView() {
+        binding.txtTitleGlucose.setOnClickListener(this)
+        binding.tvAverage.setOnClickListener(this)
+        binding.txtTitleTir.setOnClickListener(this)
+        binding.txtTitleAgp.setOnClickListener(this)
+        binding.txtTitleLBGI.setOnClickListener(this)
+        binding.expandableGrid.onDataChange = { mutableList: MutableList<MultiDayBgItem> ->
+            updateMultiChart(mutableList)
+        }
         lifecycleScope.launch {
-            viewModel.cgatFlow.debounce(3000).collectLatest { trendInfo ->
+            viewModel.cgatFlow.collectLatest { trendInfo ->
                 trendInfo?.let {
                     binding.tvCoverTimeValue.text = it.coverTime
                     binding.tvMonitorTimesValue.text = it.monitorTimes
@@ -97,10 +107,132 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
                     it.multiDayHistory?.let { histories ->
                         binding.expandableGrid.refreshData(histories)
                     }
+                    updateMultiChart(binding.expandableGrid.getDataSet())
                 }
             }
-        }m
+        }
     }
+
+    private fun updateMultiChart(mutableList: MutableList<MultiDayBgItem>) {
+        val textColor = ContextCompat.getColor(requireContext(), R.color.gray1)
+        binding.chartMulti.description.isEnabled = false
+        binding.chartMulti.legend.isEnabled = false
+        binding.chartMulti.setTouchEnabled(false)
+
+        binding.chartMulti.setBackgroundColor(Color.TRANSPARENT)
+        binding.chartMulti.setDrawGridBackground(true)
+        binding.chartMulti.setGridBackgroundColor(Color.parseColor("#194D913C"))
+        binding.chartMulti.gridBackgroundStart =
+            (ThresholdManager.hypo).toGlucoseValue()
+        binding.chartMulti.gridBackgroundEnd =
+            (ThresholdManager.hyper).toGlucoseValue()
+        val xAxis = binding.chartMulti.xAxis
+        xAxis.setDrawAxisLine(false)
+        xAxis.setDrawLabels(true)
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.axisMinimum = 0f
+        xAxis.axisMaximum = 2400f
+        xAxis.textSize = 12f
+        xAxis.textColor = textColor
+        xAxis.setDrawGridLines(true)
+        val lineColor = ThemeManager.getTypeValue(context, R.attr.colorTrendLine)
+        xAxis.gridColor = lineColor
+        xAxis.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                val fl = (value / 100).toInt()
+                return if (fl > 9) "$fl:00" else "0$fl:00"
+            }
+        }
+        val yAxis: YAxis = binding.chartMulti.axisLeft
+        yAxis.setDrawAxisLine(false)
+        yAxis.setDrawGridLines(true)
+        yAxis.setDrawLabels(true)
+        yAxis.gridColor = lineColor
+        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        when (UnitManager.glucoseUnit) {
+            UnitManager.GlucoseUnit.MMOL_PER_L -> {
+                yAxis.axisMinimum = 0f
+                yAxis.axisMaximum = 25f
+            }
+
+            UnitManager.GlucoseUnit.MG_PER_DL -> {
+                yAxis.axisMinimum = 0f
+                yAxis.axisMaximum = 450f
+            }
+        }
+        val lines = floatArrayOf(20f, 1000f)
+        xAxis.setGridDashedLine(DashPathEffect(lines, 0f));
+        xAxis.gridLineWidth = 1f
+        yAxis.setLabelCount(5, true)
+        yAxis.textSize = 12f
+        yAxis.textColor = textColor
+        binding.chartMulti.axisLeft.isEnabled = true
+        binding.chartMulti.axisRight.isEnabled = false
+        val lineData = LineData()
+        for (item in mutableList) {
+            if (item.histories.isNullOrEmpty()) {
+                continue
+            }
+            addLineData(item.histories, lineData, item.color)
+        }
+        val combinedData = CombinedData()
+        combinedData.setData(lineData)
+        binding.chartMulti.data = combinedData
+        binding.chartMulti.invalidate()
+    }
+
+    private fun addLineData(histories: List<RealCgmHistoryEntity>?, lineData: LineData, color: Int) {
+        val instance = Calendar.getInstance()
+        if (!histories.isNullOrEmpty()) {
+            var entries: MutableList<Entry> = mutableListOf()
+            var lastHistoryTime = 0L
+            instance.time = Date(histories[0].timestamp)
+            instance.set(
+                instance.get(Calendar.YEAR),
+                instance.get(Calendar.MONTH),
+                instance.get(Calendar.DAY_OF_MONTH),
+                0,
+                0,
+                0
+            )
+            for ((index, history) in histories.withIndex()) {
+                val gap = (history.timestamp - instance.time.time).millisToMinutes()
+                if (history.glucose == null) {
+                    continue
+                }
+                val entry = Entry(
+                    2400 * gap / 1440F,
+                    if (UnitManager.glucoseUnit.index == 1) history.glucose!! else history.glucose!!.toGlucoseValue()
+                )
+                if (abs(history.timestamp - lastHistoryTime).millisToMinutes() > 10 && index != 0) {
+                    val dataSet = LineDataSet(entries, "")
+                    dataSet.setDrawCircles(false)
+                    dataSet.axisDependency = YAxis.AxisDependency.LEFT
+                    dataSet.lineWidth = 1.6f
+                    dataSet.color = color
+                    dataSet.setDrawIcons(false)
+                    dataSet.setDrawValues(false)
+                    dataSet.isHighlightEnabled = false
+                    lineData.addDataSet(dataSet)
+                    entries = mutableListOf()
+                }
+                entries.add(entry)
+                lastHistoryTime = history.timestamp
+            }
+            if (entries.isNotEmpty()) {
+                val set = LineDataSet(entries, "")
+                set.setDrawCircles(false)
+                set.lineWidth = 1.6f
+                set.color = color
+                set.setDrawIcons(false)
+                set.setDrawValues(false)
+                set.isHighlightEnabled = false
+                set.axisDependency = YAxis.AxisDependency.LEFT
+                lineData.addDataSet(set)
+            }
+        }
+    }
+
 
     private fun updateAgpChart(
         dailyMean: DoubleArray?,
@@ -317,7 +449,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
         binding.agpChart.invalidate()
     }
 
-    fun buildDataHolder(value: Float, color: Int): PieChartView.PieceDataHolder {
+    private fun buildDataHolder(value: Float, color: Int): PieChartView.PieceDataHolder {
         return PieChartView.PieceDataHolder(
             value,
             ContextCompat.getColor(requireContext(), color),
@@ -330,8 +462,15 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
             var startDate: Date = Dialogs.DateInfo.dateLastWeek!!
             when (position) {
                 1 -> startDate = Dialogs.DateInfo.dateLastWeek!!
-                2 -> startDate = Dialogs.DateInfo.dateLast14days!!
-                3 -> startDate = Dialogs.DateInfo.dateLastMonth!!
+                2 -> {
+                    startDate = Dialogs.DateInfo.dateLast14days!!
+                    rangeChanged = true
+                }
+
+                3 -> {
+                    startDate = Dialogs.DateInfo.dateLastMonth!!
+                    rangeChanged = true
+                }
             }
             updateTrends(startDate, Dialogs.DateInfo.dateToday)
         }, { startDate, endDate ->
@@ -340,6 +479,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
     }
 
     private fun updateTrends(startDate: Date?, endDate: Date?) {
+        userIdCurrentShow = UserInfoManager.getCurShowUserId()
         if (startDate == null || endDate == null) {
             return
         }
@@ -358,5 +498,56 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>() {
     companion object {
         @JvmStatic
         fun newInstance() = TrendsFragment()
+    }
+
+    override fun onClick(v: View) {
+        when (v.id) {
+            R.id.txt_title_glucose -> {
+                Dialogs.showMessage(
+                    requireContext(),
+                    "eHbA1c",
+                    getString(R.string.content_about_glucose)
+                )
+            }
+
+            R.id.tv_average -> {
+                Dialogs.showMessage(
+                    requireContext(),
+                    "MBG",
+                    getString(
+                        R.string.content_about_average,
+                        if (UnitManager.glucoseUnit.index == 0) "4.3–6.6mmol/L" else "${(4.3 * 18).roundToInt()}–${(6.6 * 18).roundToInt()}mg/dL"
+                    )
+                )
+            }
+
+            R.id.txt_title_tir -> {
+                val range1 =
+                    if (UnitManager.glucoseUnit.index == 0) "3.9-10.0mmol/L" else "${(3.9 * 18).roundToInt()}-${(10.0 * 18).roundToInt()}mg/dL"
+                val range2 =
+                    if (UnitManager.glucoseUnit.index == 0) "3.9-7.8mmol/L" else "${(3.9 * 18).roundToInt()}-${(7.8 * 18).roundToInt()}mg/dL"
+                Dialogs.showMessage(
+                    requireContext(),
+                    "TIR",
+                    String.format(
+                        getString(R.string.dialog_content_tir), range1, range2
+                    )
+                )
+            }
+
+            R.id.txt_title_agp -> {
+                Dialogs.showMessage(
+                    requireContext(),
+                    "AGP", getString(R.string.dialog_content_agp)
+                )
+            }
+
+            R.id.txt_title_LBGI -> {
+                Dialogs.showMessage(
+                    requireContext(),
+                    "LBGI", getString(R.string.dialog_content_lgbi)
+                )
+            }
+        }
     }
 }

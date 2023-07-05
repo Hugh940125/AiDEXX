@@ -99,6 +99,9 @@ fun Long.millisToIntSeconds(): Int =
 fun Long.millisToHours(): Int =
     BigDecimal(this).divide(BigDecimal(60 * 60 * 1000), RoundingMode.HALF_UP).toInt()
 
+fun Long.millisToDays(): Int =
+    BigDecimal(this).divide(BigDecimal(24 * 60 * 60 * 1000), RoundingMode.CEILING).toInt()
+
 fun Date.date2ymdhm(pattern: String = DATE_FORMAT_YMDHM): String? =
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)
 
@@ -119,6 +122,16 @@ fun Date.getStartOfTheDay(): Date {
     return calendar.time
 }
 
+fun Date.getStart(): Calendar {
+    val calendar = Calendar.getInstance()
+    calendar.time = this
+    calendar.set(Calendar.HOUR_OF_DAY, 0)
+    calendar.set(Calendar.MINUTE, 0)
+    calendar.set(Calendar.SECOND, 0)
+    calendar.set(Calendar.MILLISECOND, 0)
+    return calendar
+}
+
 fun Date.getEndOfTheDay(): Date {
     val calendar = Calendar.getInstance()
     calendar.time = this
@@ -127,6 +140,16 @@ fun Date.getEndOfTheDay(): Date {
     calendar.set(Calendar.SECOND, 59)
     calendar.set(Calendar.MILLISECOND, 999)
     return calendar.time
+}
+
+fun Date.getEnd(): Calendar {
+    val calendar = Calendar.getInstance()
+    calendar.time = this
+    calendar.set(Calendar.HOUR_OF_DAY, 23)
+    calendar.set(Calendar.MINUTE, 59)
+    calendar.set(Calendar.SECOND, 59)
+    calendar.set(Calendar.MILLISECOND, 999)
+    return calendar
 }
 
 fun Date.isSameDay(other: Date?): Boolean {
@@ -181,6 +204,7 @@ fun String.isNumber(): Boolean = try {
 fun isMainThread(): Boolean {
     return Looper.getMainLooper().thread === Thread.currentThread()
 }
+
 fun String.toast() {
     if (isMainThread()) {
         ToastUtil.showLong(this)
@@ -190,7 +214,8 @@ fun String.toast() {
         }
     }
 }
-fun String.toastShort()  {
+
+fun String.toastShort() {
     if (isMainThread()) {
         ToastUtil.showShort(this)
     } else {
@@ -227,7 +252,6 @@ fun Number.stripTrailingZerosWithoutPointer(scale: Int? = null): String {
 
 fun Double.format(scale: Int = 3): Double =
     BigDecimal(this.toString()).setScale(scale, BigDecimal.ROUND_HALF_DOWN).stripTrailingZeros().toDouble()
-
 
 
 inline fun <reified T> getMutableListType() = object : TypeToken<MutableList<T>>() {}.type

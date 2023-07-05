@@ -147,7 +147,7 @@ class CalendarDialog(
             dismiss()
         }
         setKeyBackCancelable(true)
-        setOutSideCancelable(false)
+        setOutSideCancelable(true)
         show()
     }
 

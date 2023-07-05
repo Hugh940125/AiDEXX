@@ -1,13 +1,19 @@
 package com.microtech.aidexx.ui.main.trend
 
-import android.content.Context
 import android.graphics.Color
-import com.microtech.aidexx.R
+import com.microtech.aidexx.ble.device.model.GLUCOSE_NUM_ONE_DAY
 import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.getEnd
+import com.microtech.aidexx.common.getEndOfTheDay
+import com.microtech.aidexx.common.getStart
+import com.microtech.aidexx.common.millisToDays
+import com.microtech.aidexx.common.minutesToMillis
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
+import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.utils.toGlucoseValue
 import java.util.Calendar
 import java.util.Date
 
@@ -64,40 +70,57 @@ class MultiDayBGManager {
     suspend fun findDataByDays(
         startDate: Date,
         endDate: Date
-    ): MutableList<MultiDayBgItem>? {
+    ): DataInfoForTrends? {
         return ObjectBox.awaitCallInTx {
             mutableListOf.clear()
-            val calendarStart = Calendar.getInstance()
-            calendarStart.time = startDate
-            val calendarEnd = Calendar.getInstance()
-            calendarEnd.time = endDate
-            while (calendarEnd.after(calendarStart)) {
-                val list = cgmHistoryBox!!.query().between(
-                    RealCgmHistoryEntity_.deviceTime,
-                    calendarStart.time.time,
-                    calendarStart.time.time + oneDayMillis
+            var dayIndex = 0
+            val dayCount = (endDate.time - startDate.time).millisToDays()
+            val glucoseArray = Array(dayCount) { DoubleArray(GLUCOSE_NUM_ONE_DAY) }
+            val start = startDate.getStart()
+            val end = endDate.getStart()
+            var historyCount = 0
+            while (end.after(start)) {
+                val tempList = cgmHistoryBox!!.query().between(
+                    RealCgmHistoryEntity_.timestamp,
+                    start.time.time,
+                    start.time.getEndOfTheDay().time
                 ).equal(RealCgmHistoryEntity_.glucoseIsValid, 1)
-                    .equal(
-                        RealCgmHistoryEntity_.userId,
-                        UserInfoManager.getCurShowUserId(),
-                    )
+                    .equal(RealCgmHistoryEntity_.userId, UserInfoManager.getCurShowUserId())
                     .notEqual(RealCgmHistoryEntity_.eventWarning, -1)
-                    .orderDesc(RealCgmHistoryEntity_.deviceTime).build()
+                    .order(RealCgmHistoryEntity_.timestamp).build()
                     .find()
+                val list = mutableListOf<RealCgmHistoryEntity>()
+                var lastHistoryTime = 0L
+                var arrayIndex = 0
+                for (history in tempList) {
+                    if (history.timestamp - lastHistoryTime < 5.minutesToMillis()) {
+                        continue
+                    }
+                    list.add(history)
+                    history.glucose?.let {
+                        if (it.toGlucoseValue() > 25) {
+                            glucoseArray[dayIndex][arrayIndex++] = 25.0
+                        } else if (it.toGlucoseValue() < 2) {
+                            glucoseArray[dayIndex][arrayIndex++] = 2.0
+                        } else {
+                            glucoseArray[dayIndex][arrayIndex++] = it.toGlucoseValue().toDouble()
+                        }
+                    }
+                    lastHistoryTime = history.timestamp
+                }
                 val multiDayBGItem =
                     MultiDayBgItem(
-                        calendarStart,
+                        Pair(start.get(Calendar.MONTH) + 1, start.get(Calendar.DAY_OF_MONTH)),
                         false,
-                        startDate.time,
-                        endDate.time,
                         list,
                         Color.parseColor(if (mutableListOf.size < 32) colorSet[mutableListOf.size] else colorSet[mutableListOf.size % 32])
                     )
+                historyCount += list.size
                 mutableListOf.add(multiDayBGItem)
-                calendarStart.add(Calendar.DAY_OF_MONTH, 1)
+                start.add(Calendar.DAY_OF_MONTH, 1)
+                dayIndex++
             }
-            mutableListOf.reverse()
-            mutableListOf
+            DataInfoForTrends(mutableListOf, glucoseArray, historyCount)
         }
     }
 }

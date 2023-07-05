@@ -38,16 +38,8 @@ class MultiDateAdapter(
         holder.dateItem.text = String.format(
             context.getString(
                 R.string.date_format,
-                if (dateDesc.get(Calendar.MONTH) + 1 > 9) dateDesc.get(
-                    Calendar.MONTH
-                ) + 1 else "0${
-                    dateDesc.get(Calendar.MONTH) + 1
-                }",
-                if (dateDesc.get(Calendar.DAY_OF_MONTH) > 9) dateDesc.get(
-                    Calendar.DAY_OF_MONTH
-                ).toString() else "0${
-                    dateDesc.get(Calendar.DAY_OF_MONTH)
-                }"
+                if (dateDesc.first > 9) dateDesc.first else "0${dateDesc.first}",
+                if (dateDesc.second > 9) dateDesc.second else "0${dateDesc.second}"
             )
         )
         if (item.checked) {
