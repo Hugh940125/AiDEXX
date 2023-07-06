@@ -8,8 +8,8 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Class that holds all relevant data that represents the chart. That involves
@@ -57,7 +57,8 @@ public abstract class ChartData<T extends IDataSet<? extends Entry>> {
      * Default constructor.
      */
     public ChartData() {
-        mDataSets = new ArrayList<T>();
+//        mDataSets = new ArrayList<T>();
+        mDataSets = new CopyOnWriteArrayList<T>();
     }
 
     /**
@@ -78,7 +79,8 @@ public abstract class ChartData<T extends IDataSet<? extends Entry>> {
      */
     private List<T> arrayToList(T[] array) {
 
-        List<T> list = new ArrayList<>();
+        List<T> list = new CopyOnWriteArrayList<>();
+//        List<T> list = new ArrayList<>();
 
         for (T set : array) {
             list.add(set);

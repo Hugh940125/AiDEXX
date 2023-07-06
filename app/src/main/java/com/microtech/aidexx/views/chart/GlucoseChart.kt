@@ -494,7 +494,7 @@ class GlucoseChart : MyChart {
     }
 
     private fun updateChartAxisYStyle2() {
-
+        majorAxis = YAxis.AxisDependency.LEFT
         val color = ThemeManager.getTypeValue(context, R.attr.colorLineChart)
         val yAxisLeft = axisLeft
         yAxisLeft.setDrawAxisLine(false)

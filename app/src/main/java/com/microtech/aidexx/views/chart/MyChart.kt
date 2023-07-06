@@ -15,6 +15,7 @@ import com.github.mikephil.charting.listener.BarLineChartTouchListener
 import com.github.mikephil.charting.listener.ChartTouchListener
 import com.github.mikephil.charting.listener.OnChartGestureListener
 import com.github.mikephil.charting.utils.MPPointD
+import com.microtech.aidexx.utils.LogUtil
 import kotlin.math.abs
 
 open class MyChart : CombinedChart {
@@ -97,6 +98,9 @@ open class MyChart : CombinedChart {
             val rect = RectF(mViewPortHandler.contentRect)
             rect.bottom = getPixelForValues(xChartMin, gridBackgroundStart, majorAxis).y.toFloat()
             rect.top = getPixelForValues(xChartMin, gridBackgroundEnd, majorAxis).y.toFloat()
+            if (rect.bottom.isNaN() || rect.top.isNaN()) {
+                LogUtil.xLogE("图表高低区间绘制失败", "MyChart")
+            }
             c!!.drawRect(rect, mGridBackgroundPaint)
         }
 
