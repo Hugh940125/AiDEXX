@@ -92,7 +92,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                app:emojiCompatEnabled="false"
+                        app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -104,7 +104,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:orientation="horizontal">
 
                         <EditText
@@ -113,6 +112,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
                             android:layout_marginStart="20dp"
+                            android:paddingTop="10dp"
                             android:layout_weight="1"
                             android:background="@null"
                             android:includeFontPadding="false"
@@ -122,6 +122,7 @@
                             android:textColor="@color/event_preset_input" />
 
                         <ImageView
+                            android:layout_marginTop="10dp"
                             android:layout_width="wrap_content"
                             android:layout_height="12dp"
                             android:layout_gravity="center_vertical"
@@ -187,7 +188,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:orientation="horizontal">
 
                         <EditText
@@ -198,6 +198,7 @@
                             android:layout_marginStart="20dp"
                             android:layout_weight="1"
                             android:background="@null"
+                            android:paddingTop="10dp"
                             android:includeFontPadding="false"
                             android:inputType="numberDecimal"
                             android:maxLength="100"
@@ -206,6 +207,7 @@
 <!--                        android:inputType="textVisiblePassword" -->
 
                         <ImageView
+                            android:layout_marginTop="10dp"
                             android:layout_width="wrap_content"
                             android:layout_height="12dp"
                             android:layout_gravity="center_vertical"
@@ -229,7 +231,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                app:emojiCompatEnabled="false"
+                        app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -241,7 +243,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:orientation="horizontal">
 
                         <EditText
@@ -256,9 +257,11 @@
                             android:inputType="numberDecimal"
                             android:maxLength="100"
                             android:maxLines="1"
+                            android:paddingTop="10dp"
                             android:textColor="@color/event_preset_input" />
 
                         <ImageView
+                            android:layout_marginTop="10dp"
                             android:layout_width="wrap_content"
                             android:layout_height="12dp"
                             android:layout_gravity="center_vertical"
@@ -282,7 +285,7 @@
                     android:orientation="vertical">
 
                     <TextView
-                app:emojiCompatEnabled="false"
+                        app:emojiCompatEnabled="false"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="20dp"
@@ -294,7 +297,6 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
                         android:orientation="horizontal">
 
                         <EditText
@@ -305,6 +307,7 @@
                             android:layout_marginStart="20dp"
                             android:layout_weight="1"
                             android:background="@null"
+                            android:paddingTop="10dp"
                             android:includeFontPadding="false"
                             android:inputType="numberDecimal"
                             android:maxLength="100"
@@ -312,6 +315,7 @@
                             android:textColor="@color/event_preset_input" />
 
                         <ImageView
+                            android:layout_marginTop="10dp"
                             android:layout_width="wrap_content"
                             android:layout_height="12dp"
                             android:layout_gravity="center_vertical"
