@@ -36,6 +36,7 @@ class InsulinViewModel
         val insulinEntity = InsulinEntity()
         insulinEntity.uploadState = 1
         insulinEntity.expandList.addAll(toSaveDetailList.map {
+            it.unitStr = "U"
             it.insulinId = insulinEntity.insulinId
             it
         })
