@@ -15,7 +15,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 
 import com.github.mikephil.charting.animation.ChartAnimator;
-import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
@@ -236,8 +235,11 @@ public class PieChartRenderer extends DataRenderer {
 
         int visibleAngleCount = 0;
         for (int j = 0; j < entryCount; j++) {
+            Entry e = dataSet.getEntryForIndex(j);
+            if (e == null)
+                continue;
             // draw only if the value is greater than zero
-            if ((Math.abs(dataSet.getEntryForIndex(j).getY()) > Utils.FLOAT_EPSILON)) {
+            if ((Math.abs(e.getY()) > Utils.FLOAT_EPSILON)) {
                 visibleAngleCount++;
             }
         }
@@ -250,7 +252,8 @@ public class PieChartRenderer extends DataRenderer {
             float innerRadius = userInnerRadius;
 
             Entry e = dataSet.getEntryForIndex(j);
-
+            if (e == null)
+                continue;
             // draw only if the value is greater than zero
             if (!(Math.abs(e.getY()) > Utils.FLOAT_EPSILON)) {
                 angle += sliceAngle * phaseX;
@@ -482,7 +485,7 @@ public class PieChartRenderer extends DataRenderer {
             for (int j = 0; j < entryCount; j++) {
 
                 PieEntry entry = dataSet.getEntryForIndex(j);
-
+                if (entry == null) continue;
                 if (xIndex == 0)
                     angle = 0.f;
                 else
@@ -838,8 +841,10 @@ public class PieChartRenderer extends DataRenderer {
             final int entryCount = set.getEntryCount();
             int visibleAngleCount = 0;
             for (int j = 0; j < entryCount; j++) {
+                Entry entry = set.getEntryForIndex(j);
+                if (entry == null) continue;
                 // draw only if the value is greater than zero
-                if ((Math.abs(set.getEntryForIndex(j).getY()) > Utils.FLOAT_EPSILON)) {
+                if ((Math.abs(entry.getY()) > Utils.FLOAT_EPSILON)) {
                     visibleAngleCount++;
                 }
             }
@@ -1027,7 +1032,7 @@ public class PieChartRenderer extends DataRenderer {
             float sliceAngle = drawAngles[j];
 
             Entry e = dataSet.getEntryForIndex(j);
-
+            if (e == null) continue;
             // draw only if the value is greater than zero
             if ((Math.abs(e.getY()) > Utils.FLOAT_EPSILON)) {
 

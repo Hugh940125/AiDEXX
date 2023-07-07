@@ -38,6 +38,7 @@ import com.microtech.aidexx.ui.main.event.adapter.EventInputAdapter
 import com.microtech.aidexx.ui.main.event.adapter.EventPresetAdapter
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.blankj.KeyboardUtils
 import com.microtech.aidexx.utils.eventbus.DataChangedType
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -104,6 +105,8 @@ abstract class BaseEventFragment<VM:BaseViewModel, VB: ViewBinding>: BaseFragmen
 
     open fun initInputEvent(presetRecyclerViewContainer: ViewGroup,presetRecyclerView: RecyclerView, inputEditText: EditText) {
         presetAdapter = EventPresetAdapter(getViewModel().presetList.toMutableList(), onItemClick = { position ->
+
+            KeyboardUtils.hideSoftInput(inputEditText)
 
             val preset = getViewModel().presetList[position]
             val insulinDetailEntity = presetToDetail(preset)

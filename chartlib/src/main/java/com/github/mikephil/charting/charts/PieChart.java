@@ -9,6 +9,7 @@ import android.graphics.Typeface;
 import android.util.AttributeSet;
 
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.highlight.PieHighlighter;
@@ -247,7 +248,11 @@ public class PieChart extends PieRadarChartBase<PieData> {
 
             for (int j = 0; j < set.getEntryCount(); j++) {
 
-                float drawAngle = calcAngle(Math.abs(set.getEntryForIndex(j).getY()), yValueSum);
+                Entry entry = set.getEntryForIndex(j);
+                if (entry == null)
+                    continue;
+
+                float drawAngle = calcAngle(Math.abs(entry.getY()), yValueSum);
 
                 if (hasMinAngle) {
                     float temp = drawAngle - mMinAngleForSlices;

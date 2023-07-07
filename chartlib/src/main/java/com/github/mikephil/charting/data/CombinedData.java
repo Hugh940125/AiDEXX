@@ -9,6 +9,7 @@ import com.github.mikephil.charting.interfaces.datasets.IBarLineScatterCandleBub
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Data object that allows the combination of Line-, Bar-, Scatter-, Bubble- and
@@ -57,7 +58,8 @@ public class CombinedData extends BarLineScatterCandleBubbleData<IBarLineScatter
     public void calcMinMax() {
 
         if(mDataSets == null){
-            mDataSets = new ArrayList<>();
+            mDataSets = new CopyOnWriteArrayList<>();
+//            mDataSets = new ArrayList<>();
         }
         mDataSets.clear();
 

@@ -6,7 +6,6 @@ import android.util.Log;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.IPieDataSet;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -91,10 +90,12 @@ public class PieData extends ChartData<IPieDataSet> {
 
         float sum = 0;
 
-        for (int i = 0; i < getDataSet().getEntryCount(); i++)
-            sum += getDataSet().getEntryForIndex(i).getY();
-
-
+        for (int i = 0; i < getDataSet().getEntryCount(); i++) {
+            Entry entry = getDataSet().getEntryForIndex(i);
+            if (entry == null)
+                continue;
+            sum += entry.getY();
+        }
         return sum;
     }
 }

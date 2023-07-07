@@ -1,5 +1,6 @@
 package com.microtech.aidexx.common.net.entity
 
+import com.microtech.aidexx.BuildConfig
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
@@ -28,6 +29,18 @@ fun <T : ReqEntity> T.toQueryMap(): Map<String, String> {
 open class ReqEntity
 
 //region 账号
+data class ReqGetuiLogin(
+    val getuiCid: String,
+    val cidOrigin: String =
+        when {
+            BuildConfig.DEBUG -> "0"
+            BuildConfig.FLAVOR_AREA == "cn" -> "1"
+            BuildConfig.FLAVOR_AREA == "gp" -> "2"
+            else -> "0"
+        } , // 来源 0-测试 默认 1-国内
+
+): ReqEntity()
+
 data class ReqPhoneVerCode(
     val phone: String
 ): ReqEntity()
@@ -116,5 +129,9 @@ data class ReqModifyShareUserInfo (
 
 data class ReqGetShareOrFollowUsers(
     val type: String = "1"
+): ReqGetEventByPage()
+
+data class ReqGetFollowUserById(
+    val authorizationId: String
 ): ReqGetEventByPage()
 //endregion

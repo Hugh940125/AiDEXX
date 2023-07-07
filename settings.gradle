@@ -4,6 +4,9 @@ pluginManagement {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url "https://mvn.getui.com/nexus/content/repositories/releases/" }
+        // 配置HMS Core SDK的Maven仓地址。
+        maven {url 'https://developer.huawei.com/repo/'}
         gradlePluginPortal()
         google()
         mavenCentral()
@@ -16,6 +19,9 @@ dependencyResolutionManagement {
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url "https://mvn.getui.com/nexus/content/repositories/releases/" }
+        // 配置HMS Core SDK的Maven仓地址。
+        maven {url 'https://developer.huawei.com/repo/'}
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }

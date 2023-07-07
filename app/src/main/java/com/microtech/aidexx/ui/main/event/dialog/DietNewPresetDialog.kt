@@ -127,6 +127,10 @@ class DietNewPresetDialog(
                 dismiss()
             }
 
+            viWhiteSpace.setOnClickListener {
+                dismiss()
+            }
+
         }
 
     }

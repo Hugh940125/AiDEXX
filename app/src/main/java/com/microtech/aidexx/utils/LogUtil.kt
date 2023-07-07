@@ -1,6 +1,16 @@
 package com.microtech.aidexx.utils
 
+import com.getui.gtc.base.util.CommonUtil.getExternalFilesDir
+import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.ui.setting.log.FeedbackUtil
 import com.tencent.mars.xlog.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.File
 
 /**
  *@date 2023/2/15
@@ -44,5 +54,24 @@ class LogUtil {
         fun e(msg: String, tag: String = COMMON) {
             android.util.Log.e(tag, msg)
         }
+
+        fun uploadLog(scope: CoroutineScope = GlobalScope, mute: Boolean = false) {
+            Log.appenderFlushSync(true)
+            val externalFile = getExternalFilesDir(null)?.absolutePath
+            val logPath = "$externalFile${File.separator}aidex"
+            val logFile = File("${logPath}${File.separator}log")
+            val userId = UserInfoManager.instance().userId()
+            val deviceName = DeviceInfoHelper.deviceName()
+            val installVersion = DeviceInfoHelper.installVersion(getContext())
+            val osVersion = DeviceInfoHelper.osVersion()
+            val sn = TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: "unknown"
+            val zipFileName = "AiDEX${installVersion}_${deviceName}_${osVersion}_${sn}_${userId}.zip"
+            if (logFile.isDirectory) {
+                scope.launch(Dispatchers.IO) {
+                    FeedbackUtil.zipAndUpload(getContext(), logFile, logPath, zipFileName, mute)
+                }
+            }
+        }
+
     }
 }

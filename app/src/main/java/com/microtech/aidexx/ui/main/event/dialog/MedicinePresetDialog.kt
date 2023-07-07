@@ -3,6 +3,7 @@ package com.microtech.aidexx.ui.main.event.dialog
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -69,6 +70,10 @@ class MedicinePresetDialog(
 
         binding.apply {
             btnCancel.setDebounceClickListener {
+                dismiss()
+            }
+
+            viWhiteSpace.setOnClickListener {
                 dismiss()
             }
 
@@ -187,4 +192,7 @@ class MedicinePresetDialog(
         super.onDetachedFromWindow()
         binding.etDose.removeTextChangedListener(textWatcher)
     }
+
+    override fun getFocusView(): View? = binding.etDose
+
 }

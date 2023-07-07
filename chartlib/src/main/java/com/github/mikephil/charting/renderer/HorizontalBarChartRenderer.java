@@ -80,7 +80,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                  i++) {
 
                 BarEntry e = dataSet.getEntryForIndex(i);
-
+                if (e == null) continue;
                 x = e.getX();
 
                 mBarShadowRectBuffer.top = x - barWidthHalf;
@@ -209,6 +209,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                             continue;
 
                         BarEntry entry = dataSet.getEntryForIndex(j / 4);
+                        if (entry == null) continue;
                         float val = entry.getY();
                         String formattedValue = formatter.getBarLabel(entry);
 
@@ -262,7 +263,7 @@ public class HorizontalBarChartRenderer extends BarChartRenderer {
                     while (index < dataSet.getEntryCount() * mAnimator.getPhaseX()) {
 
                         BarEntry entry = dataSet.getEntryForIndex(index);
-
+                        if (entry == null) continue;
                         int color = dataSet.getValueTextColor(index);
                         float[] vals = entry.getYVals();
 

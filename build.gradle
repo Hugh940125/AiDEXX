@@ -6,6 +6,8 @@ buildscript {
     dependencies {
         classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // 增加agcp配置。
+        classpath "com.huawei.agconnect:agcp:1.7.1.300"
     }
 }
 

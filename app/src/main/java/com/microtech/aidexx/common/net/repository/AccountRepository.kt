@@ -3,6 +3,7 @@ package com.microtech.aidexx.common.net.repository
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.ReqChangePWD
 import com.microtech.aidexx.common.net.entity.ReqEmailRegister
+import com.microtech.aidexx.common.net.entity.ReqGetuiLogin
 import com.microtech.aidexx.common.net.entity.ReqPhoneCodeLogin
 import com.microtech.aidexx.common.net.entity.ReqPhoneVerCode
 import com.microtech.aidexx.common.net.entity.ReqPwdLogin
@@ -52,5 +53,9 @@ object AccountRepository {
 
     suspend fun logout() = withContext(dispatcher) {
         ApiService.instance.logout()
+    }
+
+    suspend fun getuiLogin(clientId: String) = withContext(dispatcher) {
+        ApiService.instance.getuiLogin(ReqGetuiLogin(clientId))
     }
 }

@@ -15,8 +15,8 @@ import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
-import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.SettingsEntity
+import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.ExerciseEntity
 import com.microtech.aidexx.db.entity.event.InsulinEntity
@@ -58,6 +58,7 @@ const val sendResetPasswordPhoneVerificationCode = "$USER_URL/sendResetPasswordP
 const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPasswordByVerificationCode"
 const val setPassword = "$USER_URL/setPassword"
 const val logout = "$USER_URL/logout"
+const val getuiLogin = "$USER_URL/getuiLogin"
 
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
@@ -115,9 +116,9 @@ const val saveOrUpdateInsulinRecord = "$INSULIN_URL/saveOrUpdateInsulinRecord"
 const val findInsulinRecordList = "$INSULIN_URL/findInsulinRecordList"
 const val deleteByIdsInsulin = "$INSULIN_URL/deleteByIds"
 
-const val EXERCISE_URL = "$EVENT_URL/exercise"
+const val EXERCISE_URL = "$EVENT_URL/exerciseRecord"
 const val saveOrUpdateExerciseRecord = "$EXERCISE_URL/saveOrUpdateExerciseRecord"
-const val getExerciseList = "$EXERCISE_URL/getExerciseList"
+const val findExerciseRecordList = "$EXERCISE_URL/findExerciseRecordList"
 const val deleteByIdsExercise = "$EXERCISE_URL/deleteByIds"
 
 const val MEDICATION_URL = "$EVENT_URL/medicationRecord"
@@ -138,6 +139,7 @@ const val SHARE_FOLLOW_URL = "$middleUrl/userAuthorization"
 const val saveOrUpdateUserAuthorization = "$SHARE_FOLLOW_URL/saveOrUpdateUserAuthorization"
 const val deleteByIdsShareFollow = "$SHARE_FOLLOW_URL/deleteByIds"
 const val findUserAuthorizationList = "$SHARE_FOLLOW_URL/findUserAuthorizationList"
+const val findAuthorizationInfoById = "$SHARE_FOLLOW_URL/findAuthorizationInfoById"
 const val updateAuthorizationInfo = "$SHARE_FOLLOW_URL/updateAuthorizationInfo"
 //endregion
 
@@ -161,6 +163,9 @@ interface ApiService {
     //region 账户相关
     @GET(logout)
     suspend fun logout(): ApiResult<BaseResponse<String?>>
+
+    @POST(getuiLogin)
+    suspend fun getuiLogin(@Body body: ReqGetuiLogin): ApiResult<BaseResponse<String?>>
 
     @POST(sendRegisterPhoneVerificationCode)
     suspend fun sendRegisterPhoneVerificationCode(@Body body: ReqPhoneVerCode): ApiResult<BaseResponse<Nothing>>
@@ -265,7 +270,7 @@ interface ApiService {
     suspend fun deleteByIdsInsulin(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
-    @GET(getExerciseList)
+    @GET(findExerciseRecordList)
     suspend fun getExerciseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ExerciseEntity>>>
     @POST(saveOrUpdateExerciseRecord)
     suspend fun saveOrUpdateExerciseRecord(@Body data: ReqSaveOrUpdateEventRecords<ExerciseEntity>): ApiResult<BaseResponse<MutableList<ExerciseEntity>>>
@@ -292,6 +297,8 @@ interface ApiService {
     //region 分享关注
     @GET(findUserAuthorizationList)
     suspend fun findUserAuthorizationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ShareUserInfo>>>
+    @GET(findAuthorizationInfoById)
+    suspend fun findAuthorizationInfoById(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<ShareUserInfo>>
     @POST(saveOrUpdateUserAuthorization)
     suspend fun saveOrUpdateUserAuthorization(@Body body: ReqShareUserInfo): ApiResult<BaseResponse<ShareUserInfo>>
     @POST(deleteByIdsShareFollow)

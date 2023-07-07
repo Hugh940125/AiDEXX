@@ -543,7 +543,7 @@ public class LineChartRenderer extends LineRadarRenderer {
         filled.reset();
 
         final Entry startEntry = dataSet.getEntryForIndex(startIndex);
-
+        if (startEntry == null) return;
         filled.moveTo(startEntry.getX(), startEntry.getY() * phaseY);
 
         // create a new path
@@ -552,7 +552,7 @@ public class LineChartRenderer extends LineRadarRenderer {
         for (int x = startIndex + 1; x <= endIndex; x++) {
 
             currentEntry = dataSet.getEntryForIndex(x);
-
+            if (currentEntry == null) continue;
             if (isDrawSteppedEnabled) {
                 filled.lineTo(currentEntry.getX(), previousEntry.getY() * phaseY);
             }
@@ -570,6 +570,7 @@ public class LineChartRenderer extends LineRadarRenderer {
                 XBounds fillMinXBounds = new XBounds();
                 fillMinXBounds.set(mChart, fillMinDataSet);
                 currentEntry = fillMinDataSet.getEntryForIndex(fillMinXBounds.range + fillMinXBounds.min);
+                if (currentEntry == null) return;
                 filled.lineTo(currentEntry.getX(), currentEntry.getY() * phaseY);
                 addFillMinPath(filled, fillMinDataSet, fillMinXBounds);
             } else {
@@ -604,7 +605,7 @@ public class LineChartRenderer extends LineRadarRenderer {
                 for (int x = endIndex - 1; x >= startIndex; x--) {
 
                     currentEntry = dataSet.getEntryForIndex(x);
-
+                    if (currentEntry == null) continue;
                     if (isDrawSteppedEnabled) {
                         filled.lineTo(previousEntry.getX(), currentEntry.getY() * phaseY);
                     }
@@ -635,7 +636,7 @@ public class LineChartRenderer extends LineRadarRenderer {
                     Entry next = cur;
                     int nextIndex = 0;
 
-                    if (cur == null) return;
+                    if (cur == null || prev == null) return;
 
                     // let the spline start
                     filled.lineTo(cur.getX(), cur.getY() * phaseY);
@@ -645,9 +646,11 @@ public class LineChartRenderer extends LineRadarRenderer {
                         prevPrev = prev;
                         prev = cur;
                         cur = nextIndex == j ? next : dataSet.getEntryForIndex(j);
+                        if (cur == null) continue;
 
                         nextIndex = j - 1 >= 0 ? j - 1 : j;
                         next = dataSet.getEntryForIndex(nextIndex);
+                        if (next == null) continue;
 
                         prevDx = (cur.getX() - prevPrev.getX()) * intensity;
                         prevDy = (cur.getY() - prevPrev.getY()) * intensity;
@@ -729,7 +732,7 @@ public class LineChartRenderer extends LineRadarRenderer {
                         continue;
 
                     Entry entry = dataSet.getEntryForIndex(j / 2 + mXBounds.min);
-
+                    if (entry == null) continue;
                     if (dataSet.isDrawValuesEnabled()) {
                         drawValue(c, formatter.getPointLabel(entry), x, y - valOffset, dataSet.getValueTextColor(j / 2));
                     }

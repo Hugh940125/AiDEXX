@@ -37,14 +37,13 @@
 
             <TextView
                 app:emojiCompatEnabled="false"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
+                android:paddingTop="15dp"
+                android:paddingBottom="10dp"
                 android:layout_marginEnd="15dp"
                 android:id="@+id/tv_others_time"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
                 android:includeFontPadding="false"
                 android:textColor="@color/event_switch_content"
                 android:textSize="16sp"
@@ -58,7 +57,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="0.5dp"
                 android:layout_marginStart="20dp"
-                android:layout_marginTop="5dp"
                 android:layout_marginEnd="20dp"
                 android:background="@color/event_line"
                 app:layout_constraintTop_toBottomOf="@id/tv_others_time" />

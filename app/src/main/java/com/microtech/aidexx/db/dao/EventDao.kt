@@ -497,7 +497,24 @@ object EventDao {
         val box = ObjectBox.store.boxFor(clazz)
         getIdProperty(clazz)?.let {
             val removed = box.query {
-                equal(getIdProperty(clazz), id)
+                equal(it, id)
+            }.findFirst()
+
+            removed?.let {
+                if (it.deleteStatus == 0) {
+                    it.deleteStatus = 1
+                    box.put(it)
+                }
+                it
+            }
+        }
+    }
+
+    suspend fun <T: BaseEventEntity> removeEventByFrontId(frontId: String, clazz: Class<T>) = awaitCallInTx {
+        val box = ObjectBox.store.boxFor(clazz)
+        getFrontIdProperty(clazz)?.let {
+            val removed = box.query {
+                equal(it, frontId, QueryBuilder.StringOrder.CASE_INSENSITIVE)
             }.findFirst()
 
             removed?.let {

@@ -437,7 +437,9 @@ public abstract class BaseDataSet<T extends Entry> implements IDataSet<T> {
     public int getIndexInEntries(int xIndex) {
 
         for (int i = 0; i < getEntryCount(); i++) {
-            if (xIndex == getEntryForIndex(i).getX())
+            Entry entry = getEntryForIndex(i);
+            if (entry == null) continue;
+            if (xIndex == entry.getX())
                 return i;
         }
 
@@ -484,7 +486,9 @@ public abstract class BaseDataSet<T extends Entry> implements IDataSet<T> {
     public boolean contains(T e) {
 
         for (int i = 0; i < getEntryCount(); i++) {
-            if (getEntryForIndex(i).equals(e))
+            Entry entry = getEntryForIndex(i);
+            if (entry == null) continue;
+            if (entry.equals(e))
                 return true;
         }
 

@@ -3,6 +3,7 @@ package com.microtech.aidexx.ui.main.event.dialog
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -52,7 +53,6 @@ class SportPresetDialog(
         setContentView(binding.root)
         initView()
     }
-
     private fun initView() {
         binding.apply {
 
@@ -188,4 +188,5 @@ class SportPresetDialog(
         binding.etDuration.removeTextChangedListener(textWatcher)
     }
 
+    override fun getFocusView(): View? = binding.etDuration
 }

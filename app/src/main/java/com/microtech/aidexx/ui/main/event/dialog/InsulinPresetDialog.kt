@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.main.event.dialog
 
 import android.os.Bundle
+import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -140,6 +141,8 @@ class InsulinPresetDialog(
         super.onDetachedFromWindow()
         binding.etDosage.removeTextChangedListener(textWatcher)
     }
+
+    override fun getFocusView(): View? = binding.etDosage
 
 }
 

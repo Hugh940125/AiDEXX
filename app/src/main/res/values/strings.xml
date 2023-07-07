@@ -269,7 +269,6 @@
     <string name="hypo_item">低血糖提醒</string>
     <string name="about_1">1、您在使用我们的产品服务时，将会提供与其功能相关的个人信息（可能涉及账号、位置等信息）。2、您可以对上述信息进行更正、访问、删除等。3、未经您的再次同意，我们不会将上述信息用于您未授权的其他用途或目的。4、AiDEX需要您打开定位，才能正常使用蓝牙功能进行CGM的连接。并不会收集用户位置信息，请放心使用。请注意：点击同意即表示您已阅读并同意我们的</string>
     <string name="about_2">。我们将尽全力保护您的个人信息及合法权益。再次感谢您的信任</string>
-    <string name="denied">浏览分享数据时无法访问</string>
     <string name="title_update">版本更新</string>
     <string name="btn_update">更新</string>
     <string name="log_upload">使用日志反馈</string>
@@ -355,7 +354,6 @@
     <string name="input_password">输入密码</string>
     <string name="input_repassword">再次输入密码</string>
 
-    <string name="unit_min">min</string>
     <string name="theme_dark">深色</string>
     <string name="theme_light">浅色</string>
     <string name="setting_repsd">重置密码</string>
@@ -637,6 +635,7 @@
     <string name="switch_user_fail">切换失败</string>
     <string name="title_share_file">分享文件</string>
     <string name="left_day">剩余%1$s天</string>
+    <string name="denied">浏览分享数据时无法访问</string>
     <!-- 关注分享 -->
 
     <string name="pair_fail">配对失败</string>
@@ -649,6 +648,7 @@
 
 
     <!-- 单位 -->
+    <string name="unit_min">分钟</string>
     <string name="unit_g">克</string>
     <string name="unit_kg">千克</string>
     <string name="unit_ml">毫升</string>

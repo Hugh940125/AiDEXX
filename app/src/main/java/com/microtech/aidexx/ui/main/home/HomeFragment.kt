@@ -12,7 +12,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
@@ -54,7 +54,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private val switchOrientation: Int = 1
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
-    private val homeViewModel: HomeViewModel by viewModels(ownerProducer = { requireActivity() })
+    private val homeViewModel: HomeViewModel by activityViewModels()
     private lateinit var chartViewHolder: ChartViewHolder
     private var transChangeCallback = fun(_: DeviceModel?) { judgeState() }
 

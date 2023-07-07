@@ -111,8 +111,6 @@ class HistoryViewModel: BaseViewModel() {
 
                 val allData = loadCurDateAllData(curDate.getStartOfTheDay(), curDate.getEndOfTheDay())
 
-
-
                 val countDataModel = CountModel()
                 val proportionDataModel = ProportionModel()
 
@@ -377,10 +375,10 @@ class HistoryViewModel: BaseViewModel() {
     private suspend fun loadCurDateAllData(startDate: Date, endDate: Date) =
         withContext(Dispatchers.IO) {
             listOf(
-                async { CgmCalibBgRepository.queryCgmByPage(startDate, endDate) },
-                async { CgmCalibBgRepository.queryBgByPage(startDate, endDate) },
-                async { CgmCalibBgRepository.queryCalByPage(startDate, endDate) },
-                async { EventDbRepository.queryEventByPage(startDate, endDate) }
+                async { CgmCalibBgRepository.queryCgmByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) },
+                async { CgmCalibBgRepository.queryBgByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) },
+                async { CgmCalibBgRepository.queryCalByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) },
+                async { EventDbRepository.queryEventByPage(startDate, endDate, UserInfoManager.getCurShowUserId()) }
             ).awaitAll()
         }
 
@@ -473,11 +471,11 @@ class HistoryViewModel: BaseViewModel() {
         })
     }
 
-    fun refresh() {
-        viewModelScope.launch {
-            loadAndCalculateData()
-        }
-    }
+//    fun refresh() {
+//        viewModelScope.launch {
+//            loadAndCalculateData()
+//        }
+//    }
 
     init {
         glucoseSets.add(GlucoseDataSet())
