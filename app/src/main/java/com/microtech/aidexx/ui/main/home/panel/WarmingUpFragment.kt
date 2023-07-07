@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.main.home.panel
 
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,11 +10,15 @@ import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.minutesToMillis
 import com.microtech.aidexx.databinding.FragmentWarmingUpBinding
 import com.microtech.aidexx.ui.main.home.HomeStateManager
+import com.microtech.aidexx.utils.TimeUtils
 
 class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>() {
 
+    var countTimer: CountDownTimer? = null
     var rotateAnimation: RotateAnimation? = null
 
     override fun onCreateView(
@@ -25,12 +30,37 @@ class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>(
         initAnim()
         HomeStateManager.onWarmingUpTimeLeftListener = { timeOffset ->
             if (timeOffset != null) {
-                binding.tvRemain.text = (60 - timeOffset).toString()
+                createTimer(60 - timeOffset)
             } else {
                 binding.tvRemain.text = "--"
             }
         }
         return binding.root
+    }
+
+    private fun createTimer(remain: Int) {
+        if (remain > 2) {
+            val remainLong = remain.minutesToMillis()
+            countTimer?.cancel()
+            countTimer = object : CountDownTimer(remainLong, TimeUtils.oneMinuteMillis) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val remainTime = millisUntilFinished.millisToMinutes()
+                    if (remainTime > 2) {
+                        binding.tvRemain.text = remainTime.toString()
+                    } else {
+                        binding.tvRemain.text = "2"
+                        cancel()
+                    }
+                }
+
+                override fun onFinish() {
+                    cancel()
+                }
+            }
+            countTimer?.start()
+        } else {
+            countTimer?.cancel()
+        }
     }
 
     private fun initAnim() {

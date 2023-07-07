@@ -21,10 +21,10 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
-import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
+import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.glucosePanel
@@ -60,11 +60,13 @@ import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 import java.util.Date
 
+
 /**
  * APP-SRC-A-2-7-2
  */
 const val TYPE_BRIEF = 1
 const val TYPE_RAW = 2
+const val STATUS_BITS = 6
 
 class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceModel(entity) {
     companion object {
@@ -121,10 +123,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     private var lastHypoAlertTime: Long = 0
     private var lastUrgentAlertTime: Long = 0
     private var alertSetting: SettingsEntity? = null
-    private val cgmHistories: MutableList<RealCgmHistoryEntity> = ArrayList()
     private val tempBriefList = mutableListOf<RealCgmHistoryEntity>()
     private val tempRawList = mutableListOf<RealCgmHistoryEntity>()
     private val tempCalList = mutableListOf<CalibrateEntity>()
+    private val statusBitArray = IntArray(STATUS_BITS)
+    private val calTempBitArray = IntArray(STATUS_BITS)
 
     override fun onMessage(message: BleMessage) {
         val data = message.data
@@ -234,11 +237,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override fun isDataValid(): Boolean {
-        return (lastHistoryTime != null && glucose != null && !isMalfunction && isHistoryValid && minutesAgo != null && minutesAgo in 0..15)
-    }
-
-    fun isDeviceFault(): Boolean {
-        return isMalfunction
+        return (lastHistoryTime != null && glucose != null && malFunctionList.isEmpty() && isHistoryValid && minutesAgo != null && minutesAgo in 0..15)
     }
 
     fun saveDeviceMode(expirationTime: Int) {
@@ -363,21 +362,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         latestAdTime = SystemClock.elapsedRealtime()
         val refreshSensorState = refreshSensorState(broadcast)
         if (refreshSensorState) return
-        if (broadcast.calTemp == History.CALIBRATION_NOT_ALLOWED || broadcast.historyTimeOffset < 60 * 6) {
-            onCalibrationPermitChange?.invoke(false)
-        } else {
-            onCalibrationPermitChange?.invoke(true)
-        }
-        isSensorExpired =
-            (broadcast.status == History.SESSION_STOPPED && broadcast.calTemp != History.TIME_SYNCHRONIZATION_REQUIRED)
-        isMalfunction =
-            broadcast.status == History.SENSOR_MALFUNCTION || broadcast.status == History.DEVICE_SPECIFIC_ALERT || broadcast.status == History.GENERAL_DEVICE_FAULT
-        if (isMalfunction) {
-            when (broadcast.status) {
-                History.SENSOR_MALFUNCTION -> faultType = 1
-                History.GENERAL_DEVICE_FAULT -> faultType = 2
-            }
-        }
         val adHistories = broadcast.history
         latestAd = broadcast
         if (UserInfoManager.shareUserInfo != null) {
@@ -387,7 +371,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (adHistories.isNotEmpty()) {
             if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
                 val temp = adHistories[0].glucose
-                glucose = if (isMalfunction || isSensorExpired || temp < 0) null
+                glucose = if (malFunctionList.isNotEmpty() || isSensorExpired || temp < 0) null
                 else temp.toFloat()
             }
             latestHistory = adHistories[0]
@@ -497,7 +481,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     private fun refreshSensorState(broadcast: AidexXFullBroadcastEntity): Boolean {
         broadcast.let {
-            if (it.status == History.SESSION_STOPPED && it.calTemp == History.TIME_SYNCHRONIZATION_REQUIRED) {
+            for (i in 0 until STATUS_BITS) {
+                statusBitArray[i] = broadcast.status shr i and 0x1
+                calTempBitArray[i] = broadcast.calTemp shr i and 0x1
+            }
+            if (statusBitArray[0] == 1 && calTempBitArray[0] == 1) {
                 HomeStateManager.instance().setState(newOrUsedSensor)
                 return true
             } else if (it.historyTimeOffset in 0..59 && it.isPaired == 1) {
@@ -506,6 +494,14 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             } else {
                 HomeStateManager.instance().setState(glucosePanel)
             }
+            isSensorExpired = statusBitArray[0] == 1 && calTempBitArray[0] == 0
+            onCalibrationPermitChange?.invoke(!(calTempBitArray[1] == 1 || broadcast.historyTimeOffset < 60 * 6))
+            malFunctionList.clear()
+            if (statusBitArray[5] == 1) malFunctionList.add(History.GENERAL_DEVICE_FAULT)
+            if (statusBitArray[3] == 1) malFunctionList.add(History.SENSOR_MALFUNCTION)
+            if (statusBitArray[2] == 1) malFunctionList.add(History.SENSOR_TYPE_INCORRECT_FOR_DEVICE)
+            if (statusBitArray[4] == 1) malFunctionList.add(History.DEVICE_SPECIFIC_ALERT)
+            if (statusBitArray[1] == 1) malFunctionList.add(History.DEVICE_BATTERY_LOW)
         }
         return false
     }
@@ -650,7 +646,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 when (historyEntity.eventType) {
                     History.HISTORY_GLUCOSE,
                     -> {
-                        if (isMalfunction || history.timeOffset < 60 || !isHistoryValid) {
+                        if (malFunctionList.isNotEmpty() || history.timeOffset < 60 || !isHistoryValid) {
                             historyEntity.eventWarning = -1
                         } else {
                             val highOrLowGlucoseType = historyEntity.getHighOrLowGlucoseType()

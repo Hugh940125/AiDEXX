@@ -28,7 +28,6 @@ const val X_NAME = "AiDEX X"
 const val GLUCOSE_NUM_ONE_DAY = 288
 
 abstract class DeviceModel(val entity: TransmitterEntity) {
-    var faultType = 0 // 1.异常状态，可恢复 2.需要更换
     var targetEventIndex = 0
     var nextEventIndex = 0
     var nextFullEventIndex = 0
@@ -39,7 +38,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var lastHistoryTime: Date? = null
     var controller: BleController? = null
     var isHistoryValid: Boolean = false
-    var isMalfunction: Boolean = false
+    var malFunctionList = mutableListOf<Int>()
     var glucoseLevel: GlucoseLevel? = null
     var glucoseTrend: GlucoseTrend? = null
     var latestHistory: AidexXHistoryEntity? = null

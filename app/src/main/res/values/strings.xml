@@ -676,5 +676,6 @@
     <string name="low_range">偏低</string>
     <string name="unit_times">次</string>
     <string name="help_center">帮助中心</string>
+    <string name="battery_low">电池电量低</string>
     <!-- 历史 -->
 </resources>

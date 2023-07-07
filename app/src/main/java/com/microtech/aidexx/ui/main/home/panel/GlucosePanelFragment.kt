@@ -26,7 +26,7 @@ import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.entity.BleMessage
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.schedule
 
 private const val REFRESH_PANEL = 2006
@@ -60,7 +60,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             handler.removeMessages(REFRESH_PANEL)
             handler.sendEmptyMessage(REFRESH_PANEL)
         }
-        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT,this) {
+        EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT, this) {
             if (it) resetState()
         }
     }
@@ -100,7 +100,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             return
         }
         if (isAdded && deviceModel.isDataValid() && activity != null
-            && !requireActivity().isFinishing && !deviceModel.isMalfunction
+            && !requireActivity().isFinishing && deviceModel.malFunctionList.isEmpty()
         ) {
             if (deviceModel.minutesAgo == null) {
                 binding.tvValueTime.visibility = View.GONE
@@ -144,17 +144,18 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         ) {
             binding.tvGlucoseState.visibility = View.GONE
             binding.tvGlucoseState.text = ""
-            if (deviceModel.isMalfunction) {
-                if (deviceModel.faultType == 1) {
-                    binding.tvGlucoseState.visibility = View.VISIBLE
-                    binding.tvGlucoseState.text =
-                        resources.getString(R.string.Sensor_error)
+            if (deviceModel.malFunctionList.isNotEmpty()) {
+                when (deviceModel.malFunctionList[0]) {
+                    History.GENERAL_DEVICE_FAULT -> {
+                        binding.tvGlucoseState.visibility = View.VISIBLE
+                        binding.tvGlucoseState.text = resources.getString(R.string.Sensor_error)
+                    }
+
+                    History.DEVICE_BATTERY_LOW -> {
+                        binding.tvGlucoseState.visibility = View.VISIBLE
+                        binding.tvGlucoseState.text = resources.getString(R.string.battery_low)
+                    }
                 }
-//                else if (deviceModel.faultType == 2) {
-//                    binding.tvGlucoseState.visibility = View.VISIBLE
-//                    binding.tvGlucoseState.text =
-//                        resources.getString(R.string.insert_sensor_error)
-//                }
             } else {
                 deviceModel.latestHistory?.let {
                     if (it.isValid == 1) {

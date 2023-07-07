@@ -11,7 +11,7 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.utils.TimeUtils.dateHourMinute
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
-import java.util.*
+import java.util.Date
 
 
 class WidgetUpdateManager private constructor() {
@@ -109,7 +109,8 @@ class WidgetUpdateManager private constructor() {
         val remoteViews = RemoteViews(context.packageName, R.layout.layout_aidex_widget)
         val model = TransmitterManager.instance().getDefault()
         if (model == null || !model.isPaired() || !model.isDataValid()
-            || model.isMalfunction || !UserInfoManager.instance().isLogin()) {
+            || model.malFunctionList.isNotEmpty() || !UserInfoManager.instance().isLogin()
+        ) {
             remoteViews.setTextViewText(R.id.widget_glucose_value, "--")
             remoteViews.setTextViewText(R.id.widget_unit, "")
             remoteViews.setTextViewText(R.id.widget_update_time, "--")
