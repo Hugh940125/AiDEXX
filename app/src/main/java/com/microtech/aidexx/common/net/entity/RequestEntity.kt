@@ -130,4 +130,8 @@ data class ReqModifyShareUserInfo (
 data class ReqGetShareOrFollowUsers(
     val type: String = "1"
 ): ReqGetEventByPage()
+
+data class ReqGetFollowUserById(
+    val authorizationId: String
+): ReqGetEventByPage()
 //endregion

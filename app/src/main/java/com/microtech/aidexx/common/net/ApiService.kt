@@ -139,6 +139,7 @@ const val SHARE_FOLLOW_URL = "$middleUrl/userAuthorization"
 const val saveOrUpdateUserAuthorization = "$SHARE_FOLLOW_URL/saveOrUpdateUserAuthorization"
 const val deleteByIdsShareFollow = "$SHARE_FOLLOW_URL/deleteByIds"
 const val findUserAuthorizationList = "$SHARE_FOLLOW_URL/findUserAuthorizationList"
+const val findAuthorizationInfoById = "$SHARE_FOLLOW_URL/findAuthorizationInfoById"
 const val updateAuthorizationInfo = "$SHARE_FOLLOW_URL/updateAuthorizationInfo"
 //endregion
 
@@ -296,6 +297,8 @@ interface ApiService {
     //region 分享关注
     @GET(findUserAuthorizationList)
     suspend fun findUserAuthorizationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ShareUserInfo>>>
+    @GET(findAuthorizationInfoById)
+    suspend fun findAuthorizationInfoById(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<ShareUserInfo>>
     @POST(saveOrUpdateUserAuthorization)
     suspend fun saveOrUpdateUserAuthorization(@Body body: ReqShareUserInfo): ApiResult<BaseResponse<ShareUserInfo>>
     @POST(deleteByIdsShareFollow)

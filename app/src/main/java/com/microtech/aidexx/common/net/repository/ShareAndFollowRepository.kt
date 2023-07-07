@@ -2,6 +2,7 @@ package com.microtech.aidexx.common.net.repository
 
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.ReqDeleteEventIds
+import com.microtech.aidexx.common.net.entity.ReqGetFollowUserById
 import com.microtech.aidexx.common.net.entity.ReqGetShareOrFollowUsers
 import com.microtech.aidexx.common.net.entity.ReqModifyShareUserInfo
 import com.microtech.aidexx.common.net.entity.ReqShareUserInfo
@@ -16,6 +17,10 @@ object ShareAndFollowRepository {
     suspend fun findUserAuthorizationList(isShare: Boolean = false) = withContext(dispatcher) {
         val query = ReqGetShareOrFollowUsers(if (isShare) "0" else "1")
         ApiService.instance.findUserAuthorizationList(query.toQueryMap())
+    }
+    suspend fun findAuthorizationInfoById(userAuthorizationId: String) = withContext(dispatcher) {
+        val query = ReqGetFollowUserById(userAuthorizationId)
+        ApiService.instance.findAuthorizationInfoById(query.toQueryMap())
     }
 
     suspend fun saveOrUpdateUserAuthorization(userName: String, userAlise: String?) = withContext(dispatcher) {
@@ -46,4 +51,7 @@ object ShareAndFollowRepository {
             userAuthorizationId,
         ))
     }
+
+
+
 }

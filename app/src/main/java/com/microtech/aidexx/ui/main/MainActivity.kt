@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.igexin.sdk.PushManager
@@ -29,6 +30,7 @@ import com.microtech.aidexx.databinding.ActivityMainBinding
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
+import com.microtech.aidexx.ui.main.home.HomeViewModel
 import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.utils.*
@@ -41,6 +43,7 @@ import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import java.lang.ref.WeakReference
 
 private const val REQUEST_STORAGE_PERMISSION = 2000
@@ -53,8 +56,9 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
     private var checkStep = 0
-
+    private val homeViewModel: HomeViewModel by viewModels()
     companion object {
+        private val TAG = MainActivity::class.java.simpleName
         const val HISTORY = 0
         const val TRENDS = 1
         const val HOME = 2
@@ -144,6 +148,11 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        processIntent(intent, false)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         themeConfig()
         super.onCreate(savedInstanceState)
@@ -155,6 +164,8 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         initView()
         loadData()
         initEvent()
+
+        processIntent(intent)
     }
 
     private fun initEvent() {
@@ -388,5 +399,28 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         }
     }
 
+    private fun processIntent(intent: Intent?, fromOnCreate: Boolean = true) {
+        LogUtil.d("processIntent intent=$intent fromOnCreate=$fromOnCreate", TAG)
+        intent?.let {
+            val payload = it.getStringExtra("payload")
+            payload?.ifEmpty { null }?.let {
+                intent.removeExtra("payload")
+                kotlin.runCatching {
+                    val pObj = JSONObject(payload)
+                    // { “userId”：“userAuthorizationId” }
+                    if (pObj.has(UserInfoManager.instance().userId())) {
+                        pObj.optString(UserInfoManager.instance().userId())
+                            .ifEmpty { null }?.let { userAuthorizationId ->
+                                homeViewModel.switchUser(userAuthorizationId)
+                            }
+                    } else {
+                        LogUtil.xLogE("intent数据未处理", TAG)
+                    }
+                }.exceptionOrNull()?.let { err ->
+                    LogUtil.xLogE("通知数据解析异常-$err", TAG)
+                }
+            }
+        }
+    }
 
 }

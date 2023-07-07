@@ -321,10 +321,10 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
     public int getEntryIndexForXValue(float xValue, float closestToY, Rounding rounding) {
 
         try {
-            long start = System.currentTimeMillis();
+//            long start = System.currentTimeMillis();
             int index = getEntryIndex(xValue, closestToY, rounding);
 
-            Log.d("chart getEntryIndexForXValue", "mEntries.size=" + mEntries.size() + " cost=" + (System.currentTimeMillis() - start));
+//            Log.d("chart getEntryIndexForXValue", "mEntries.size=" + mEntries.size() + " cost=" + (System.currentTimeMillis() - start));
             if (index > -1)
                 return index;
         } catch (Exception e) {

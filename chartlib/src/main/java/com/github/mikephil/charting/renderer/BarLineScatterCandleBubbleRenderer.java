@@ -1,7 +1,5 @@
 package com.github.mikephil.charting.renderer;
 
-import android.util.Log;
-
 import com.github.mikephil.charting.animation.ChartAnimator;
 import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
@@ -93,7 +91,7 @@ public abstract class BarLineScatterCandleBubbleRenderer extends DataRenderer {
             max = dataSet.getEntryIndexForXValue(high, Float.NaN, DataSet.Rounding.UP);
 
             range = (int) ((max - min) * phaseX);
-            Log.d("chart bound set", "min="+min+ " max="+max);
+//            Log.d("chart bound set", "min="+min+ " max="+max);
 
         }
     }
