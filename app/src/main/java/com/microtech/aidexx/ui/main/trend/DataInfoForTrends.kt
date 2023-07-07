@@ -8,5 +8,6 @@ package com.microtech.aidexx.ui.main.trend
 class DataInfoForTrends(
     var multiDayBgItemList: MutableList<MultiDayBgItem>,
     var glucoseArray: Array<DoubleArray>?,
-    var historyCount: Int
+    var historyCount: Int,
+    var totalHistory: Int
 )

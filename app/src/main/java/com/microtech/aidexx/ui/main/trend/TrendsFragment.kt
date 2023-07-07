@@ -36,8 +36,11 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.views.calendar.CalendarDialog
 import com.microtech.aidexx.views.dialog.Dialogs
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.DecimalFormat
 import java.util.Calendar
 import java.util.Date
 import kotlin.math.abs
@@ -46,13 +49,18 @@ import kotlin.math.roundToInt
 class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), OnClickListener {
     var rangeChanged = true
     var userIdCurrentShow = UserInfoManager.instance().userId()
+    var currentStartDate = Dialogs.DateInfo.dateLastWeek!!
+    var currentEndDate = Dialogs.DateInfo.dateToday!!
+    private var oneDigitFormat: DecimalFormat = DecimalFormat("0.0")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
     override fun onResume() {
         super.onResume()
-        updateTrends(Dialogs.DateInfo.dateLastWeek, Dialogs.DateInfo.dateToday)
+        currentStartDate = Dialogs.DateInfo.dateLastWeek!!
+        currentEndDate = Dialogs.DateInfo.dateToday!!
+        binding.trendRefreshLayout.autoRefresh()
         rangeChanged = false
     }
 
@@ -69,22 +77,29 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
     }
 
     private fun initView() {
+        binding.trendRefreshLayout.setOnRefreshListener {
+            updateTrends()
+        }
         binding.txtTitleGlucose.setOnClickListener(this)
         binding.tvAverage.setOnClickListener(this)
         binding.txtTitleTir.setOnClickListener(this)
         binding.txtTitleAgp.setOnClickListener(this)
         binding.txtTitleLBGI.setOnClickListener(this)
         binding.expandableGrid.onDataChange = { mutableList: MutableList<MultiDayBgItem> ->
-            updateMultiChart(mutableList)
+            lifecycleScope.launch {
+                updateMultiChart(mutableList)
+            }
         }
         lifecycleScope.launch {
             viewModel.cgatFlow.collectLatest { trendInfo ->
+                binding.trendRefreshLayout.finishRefresh()
                 trendInfo?.let {
                     binding.tvCoverTimeValue.text = it.coverTime
                     binding.tvMonitorTimesValue.text = it.monitorTimes
                     binding.ehba1cValue.text = it.eHbA1c
                     binding.ivEhba1cTrends.isVisible = it.showEhbA1cTrend
                     binding.tvMbgValue.text = it.mbg
+                    binding.tvMbgUnit.text = UnitManager.glucoseUnit.text
                     binding.ivMbgTrends.isVisible = it.showMbgTrend
                     val normalHolder =
                         buildDataHolder(it.normalPercent.toFloat(), R.color.colorGlucoseNormal)
@@ -103,7 +118,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                     binding.ivLowTrends.isVisible = it.showLowPercentTrend
                     binding.txtEmptyPies.isVisible = it.showPieNoData
                     updateAgpChart(it.dailyP50, it.dailyP75, it.dailyP25, it.dailyP90, it.dailyP10)
-                    binding.cursorView.setValue(it.lbgi.toFloat())
+                    binding.cursorView.setValue(oneDigitFormat.format(it.lbgi).toFloat())
                     it.multiDayHistory?.let { histories ->
                         binding.expandableGrid.refreshData(histories)
                     }
@@ -113,7 +128,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         }
     }
 
-    private fun updateMultiChart(mutableList: MutableList<MultiDayBgItem>) {
+    private suspend fun updateMultiChart(mutableList: MutableList<MultiDayBgItem>) {
         val textColor = ContextCompat.getColor(requireContext(), R.color.gray1)
         binding.chartMulti.description.isEnabled = false
         binding.chartMulti.legend.isEnabled = false
@@ -169,11 +184,13 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         binding.chartMulti.axisLeft.isEnabled = true
         binding.chartMulti.axisRight.isEnabled = false
         val lineData = LineData()
-        for (item in mutableList) {
-            if (item.histories.isNullOrEmpty()) {
-                continue
+        withContext(Dispatchers.IO) {
+            for (item in mutableList) {
+                if (item.histories.isNullOrEmpty()) {
+                    continue
+                }
+                addLineData(item.histories, lineData, item.color)
             }
-            addLineData(item.histories, lineData, item.color)
         }
         val combinedData = CombinedData()
         combinedData.setData(lineData)
@@ -472,26 +489,27 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                     rangeChanged = true
                 }
             }
-            updateTrends(startDate, Dialogs.DateInfo.dateToday)
+            currentStartDate = startDate
+            currentEndDate = Dialogs.DateInfo.dateToday!!
+            binding.trendRefreshLayout.autoRefresh()
         }, { startDate, endDate ->
-            updateTrends(startDate, endDate)
+            currentStartDate = startDate
+            currentEndDate = endDate
+            binding.trendRefreshLayout.autoRefresh()
         }).show()
     }
 
-    private fun updateTrends(startDate: Date?, endDate: Date?) {
+    private fun updateTrends() {
         userIdCurrentShow = UserInfoManager.getCurShowUserId()
-        if (startDate == null || endDate == null) {
-            return
-        }
         val formatter =
             LanguageUnitManager.getCurLanguageConf(requireContext()).dmyFormat
-        binding.timeBegin.text = formatter.format(startDate)
+        binding.timeBegin.text = formatter.format(currentStartDate)
         val calendar = Calendar.getInstance()
-        calendar.time = endDate
+        calendar.time = currentEndDate
         calendar.add(Calendar.DATE, -1)
         binding.timeEnd.text = formatter.format(calendar.time)
         lifecycleScope.launch {
-            viewModel.runCgat(startDate, endDate)
+            viewModel.runCgat(currentStartDate, currentEndDate)
         }
     }
 

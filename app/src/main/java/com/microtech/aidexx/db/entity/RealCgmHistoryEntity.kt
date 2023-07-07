@@ -51,6 +51,7 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
     var glucose: Float? = null
     var eventDataOrigin: Float? = null
     var rawIsValid: Int? = null
+    @Index
     var glucoseIsValid: Int = 0
     var quality: Int = 0
     var status: Int = 0

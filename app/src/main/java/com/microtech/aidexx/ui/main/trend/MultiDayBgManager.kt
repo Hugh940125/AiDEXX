@@ -3,7 +3,6 @@ package com.microtech.aidexx.ui.main.trend
 import android.graphics.Color
 import com.microtech.aidexx.ble.device.model.GLUCOSE_NUM_ONE_DAY
 import com.microtech.aidexx.common.equal
-import com.microtech.aidexx.common.getEnd
 import com.microtech.aidexx.common.getEndOfTheDay
 import com.microtech.aidexx.common.getStart
 import com.microtech.aidexx.common.millisToDays
@@ -74,11 +73,13 @@ class MultiDayBGManager {
         return ObjectBox.awaitCallInTx {
             mutableListOf.clear()
             var dayIndex = 0
+            var arrayIndex = 0
             val dayCount = (endDate.time - startDate.time).millisToDays()
             val glucoseArray = Array(dayCount) { DoubleArray(GLUCOSE_NUM_ONE_DAY) }
             val start = startDate.getStart()
             val end = endDate.getStart()
             var historyCount = 0
+            var totalHistory = 0
             while (end.after(start)) {
                 val tempList = cgmHistoryBox!!.query().between(
                     RealCgmHistoryEntity_.timestamp,
@@ -89,21 +90,23 @@ class MultiDayBGManager {
                     .notEqual(RealCgmHistoryEntity_.eventWarning, -1)
                     .order(RealCgmHistoryEntity_.timestamp).build()
                     .find()
+                totalHistory += tempList.size
                 val list = mutableListOf<RealCgmHistoryEntity>()
                 var lastHistoryTime = 0L
-                var arrayIndex = 0
                 for (history in tempList) {
                     if (history.timestamp - lastHistoryTime < 5.minutesToMillis()) {
                         continue
                     }
                     list.add(history)
                     history.glucose?.let {
-                        if (it.toGlucoseValue() > 25) {
-                            glucoseArray[dayIndex][arrayIndex++] = 25.0
-                        } else if (it.toGlucoseValue() < 2) {
-                            glucoseArray[dayIndex][arrayIndex++] = 2.0
-                        } else {
-                            glucoseArray[dayIndex][arrayIndex++] = it.toGlucoseValue().toDouble()
+                        if (arrayIndex <= GLUCOSE_NUM_ONE_DAY) {
+                            if (it.toGlucoseValue() > 25) {
+                                glucoseArray[dayIndex][arrayIndex++] = 25.0
+                            } else if (it.toGlucoseValue() < 2) {
+                                glucoseArray[dayIndex][arrayIndex++] = 2.0
+                            } else {
+                                glucoseArray[dayIndex][arrayIndex++] = it.toGlucoseValue().toDouble()
+                            }
                         }
                     }
                     lastHistoryTime = history.timestamp
@@ -119,8 +122,9 @@ class MultiDayBGManager {
                 mutableListOf.add(multiDayBGItem)
                 start.add(Calendar.DAY_OF_MONTH, 1)
                 dayIndex++
+                arrayIndex = 0
             }
-            DataInfoForTrends(mutableListOf, glucoseArray, historyCount)
+            DataInfoForTrends(mutableListOf, glucoseArray, historyCount, totalHistory)
         }
     }
 }

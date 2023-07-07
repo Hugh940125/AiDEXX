@@ -48,14 +48,14 @@
             tools:ignore="HardcodedText" />
 
         <LinearLayout
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             android:id="@+id/rl_date_space"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:gravity="center"
             android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_trends_title">
 
 
@@ -105,659 +105,683 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/home_scroll"
+    <com.scwang.smart.refresh.layout.SmartRefreshLayout
+        android:id="@+id/trend_refreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <!--    APP-SRC-A-7-6-->
 
-        <LinearLayout
-            android:id="@+id/ll_scroll"
+        <com.scwang.smart.refresh.header.ClassicsHeader
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_height="40dp"
+            app:srlTextFailed="@string/refresh_failed"
+            app:srlTextFinish="@string/refresh_complete"
+            app:srlTextLoading="@string/refresh_loading"
+            app:srlTextPulling="@string/refresh_can_loading"
+            app:srlTextRefreshing="@string/refresh_loading"
+            app:srlTextRelease="@string/refresh_release"
+            app:srlTextSecondary="@string/refresh_send_floor"
+            app:srlTextUpdate="@string/refresh_last_time" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.core.widget.NestedScrollView
+                android:id="@+id/trend_scroll"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/shape_circle_light"
-                android:paddingTop="20dp"
-                android:paddingBottom="10dp">
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line_start"
-                    android:layout_width="1dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.1" />
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line_end"
-                    android:layout_width="1dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.6" />
-
-                <TextView
-                    android:id="@+id/tv_cover_time_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxEms="8"
-                    android:text="@string/cgm_cover_time"
-                    android:textAlignment="viewStart"
-                    android:textSize="14sp"
-                    app:emojiCompatEnabled="false"
-                    app:layout_constraintBottom_toBottomOf="@id/tv_monitor_times_title"
-                    app:layout_constraintHorizontal_chainStyle="spread"
-                    app:layout_constraintStart_toEndOf="@id/guide_line_start"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="@id/tv_cover_time_title"
-                    app:layout_constraintTop_toBottomOf="@id/tv_cover_time_title"
-                    app:layout_constraintVertical_bias="1">
-
-                    <TextView
-                        android:id="@+id/tv_cover_time_value"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:text="0"
-                        android:textSize="35sp"
-                        android:textStyle="bold"
-                        app:emojiCompatEnabled="false"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/tv_cover_time_percent"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="3dp"
-                        android:layout_marginBottom="8dp"
-                        android:gravity="center"
-                        android:text="%"
-                        android:textColor="?trendSmallTextColor"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        app:emojiCompatEnabled="false"
-                        app:layout_constraintBottom_toBottomOf="@id/tv_cover_time_value"
-                        app:layout_constraintStart_toEndOf="@id/tv_cover_time_value" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <TextView
-                    android:id="@+id/tv_monitor_times_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxEms="8"
-                    android:text="@string/monitor_times"
-                    android:textAlignment="viewStart"
-                    android:textSize="14sp"
-                    app:emojiCompatEnabled="false"
-                    app:layout_constraintBottom_toBottomOf="@id/tv_cover_time_title"
-                    app:layout_constraintStart_toEndOf="@id/guide_line_end"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tv_monitor_times_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="0"
-                    android:textSize="35sp"
-                    android:textStyle="bold"
-                    app:emojiCompatEnabled="false"
-                    app:layout_constraintStart_toStartOf="@id/tv_monitor_times_title"
-                    app:layout_constraintTop_toBottomOf="@id/tv_monitor_times_title" />
-
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <!--            APP-SRC-A-7-1-->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/shape_circle_light"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line_one"
-                    android:layout_width="1dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.1" />
-
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/guide_line_two"
-                    android:layout_width="1dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.6" />
-
-                <TextView
-                    android:id="@+id/txt_title_glucose"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawablePadding="10dp"
-                    android:text="@string/trends_content2"
-                    android:textSize="14sp"
-                    app:drawableEndCompat="@drawable/ic_question"
-                    app:emojiCompatEnabled="false"
-                    app:layout_constraintStart_toStartOf="@id/guide_line_one"
-                    app:layout_constraintTop_toTopOf="parent" />
+                android:layout_height="match_parent">
 
                 <LinearLayout
-                    android:id="@+id/ll_ehba1c"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/ll_scroll"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:orientation="vertical"
-                    app:layout_constraintHorizontal_chainStyle="spread"
-                    app:layout_constraintStart_toStartOf="@id/txt_title_glucose"
-                    app:layout_constraintTop_toBottomOf="@id/txt_title_glucose">
+                    android:orientation="vertical">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:id="@+id/ehba1c_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="35sp"
-                            android:textStyle="bold"
-                            app:emojiCompatEnabled="false"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <ImageView
-                            android:visibility="gone"
-                            android:id="@+id/iv_ehba1c_trends"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:src="@drawable/ic_trends_up"
-                            app:layout_constraintBottom_toTopOf="@+id/txt_unit_percent"
-                            app:layout_constraintLeft_toRightOf="@+id/ehba1c_value"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            android:id="@+id/txt_unit_percent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_marginBottom="6dp"
-                            android:text="%"
-                            android:textColor="?trendSmallTextColor"
-                            app:emojiCompatEnabled="false"
-                            app:layout_constraintBottom_toBottomOf="@+id/ehba1c_value"
-                            app:layout_constraintLeft_toRightOf="@+id/ehba1c_value" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tv_average"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:drawableEnd="@drawable/ic_question"
-                    android:drawablePadding="10dp"
-                    android:gravity="center"
-                    android:text="@string/trends_content3"
-                    android:textSize="14sp"
-                    app:emojiCompatEnabled="false"
-                    app:layout_constraintStart_toEndOf="@id/guide_line_two"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <LinearLayout
-                    android:id="@+id/ll_mbg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toStartOf="@id/tv_average"
-                    app:layout_constraintTop_toBottomOf="@id/tv_average">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:id="@+id/tv_mbg_value"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textSize="35sp"
-                            android:textStyle="bold"
-                            app:emojiCompatEnabled="false"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <ImageView
-                            android:id="@+id/iv_mbg_trends"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:src="@drawable/ic_trends_up"
-                            app:layout_constraintBottom_toTopOf="@+id/tv_unit"
-                            app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average" />
-
-                        <TextView
-                            android:id="@+id/tv_unit"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_marginBottom="6dp"
-                            android:text=""
-                            android:textColor="?trendSmallTextColor"
-                            app:emojiCompatEnabled="false"
-                            app:layout_constraintBottom_toBottomOf="@+id/tv_glucose_average"
-                            app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </LinearLayout>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/txt_title_tir"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:drawableEnd="@drawable/ic_question"
-                android:drawablePadding="10dp"
-                android:gravity="center"
-                android:text="@string/low_hi_glucose"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:emojiCompatEnabled="false" />
-
-            <!--APP-SRC-A-7-2-->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="10dp"
-                android:background="@drawable/shape_circle_light">
-
-                <RelativeLayout
-                    android:id="@+id/rl_pie_chart"
-                    android:layout_width="0dp"
-                    android:layout_height="210dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintDimensionRatio="1:1"
-                    app:layout_constraintEnd_toStartOf="@id/ll_pie_chart_detail"
-                    app:layout_constraintHorizontal_chainStyle="packed"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <com.microtech.aidexx.ui.main.trend.view.PieChartView
-                        android:id="@+id/pie_chart"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:circleRadius="55dp"
-                        app:textSize="12sp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="@drawable/shape_circle_light"
+                        android:paddingTop="20dp"
+                        android:paddingBottom="10dp">
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide_line_start"
+                            android:layout_width="1dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.1" />
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide_line_end"
+                            android:layout_width="1dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.6" />
+
+                        <TextView
+                            android:id="@+id/tv_cover_time_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxEms="8"
+                            android:text="@string/cgm_cover_time"
+                            android:textAlignment="viewStart"
+                            android:textSize="14sp"
+                            app:emojiCompatEnabled="false"
+                            app:layout_constraintBottom_toBottomOf="@id/tv_monitor_times_title"
+                            app:layout_constraintHorizontal_chainStyle="spread"
+                            app:layout_constraintStart_toEndOf="@id/guide_line_start"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="@id/tv_cover_time_title"
+                            app:layout_constraintTop_toBottomOf="@id/tv_cover_time_title"
+                            app:layout_constraintVertical_bias="1">
+
+                            <TextView
+                                android:id="@+id/tv_cover_time_value"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:text="0"
+                                android:textSize="35sp"
+                                android:textStyle="bold"
+                                app:emojiCompatEnabled="false"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:id="@+id/tv_cover_time_percent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_marginStart="3dp"
+                                android:layout_marginBottom="8dp"
+                                android:gravity="center"
+                                android:text="%"
+                                android:textColor="?trendSmallTextColor"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                app:emojiCompatEnabled="false"
+                                app:layout_constraintBottom_toBottomOf="@id/tv_cover_time_value"
+                                app:layout_constraintStart_toEndOf="@id/tv_cover_time_value" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <TextView
+                            android:id="@+id/tv_monitor_times_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxEms="8"
+                            android:text="@string/monitor_times"
+                            android:textAlignment="viewStart"
+                            android:textSize="14sp"
+                            app:emojiCompatEnabled="false"
+                            app:layout_constraintBottom_toBottomOf="@id/tv_cover_time_title"
+                            app:layout_constraintStart_toEndOf="@id/guide_line_end"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tv_monitor_times_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="0"
+                            android:textSize="35sp"
+                            android:textStyle="bold"
+                            app:emojiCompatEnabled="false"
+                            app:layout_constraintStart_toStartOf="@id/tv_monitor_times_title"
+                            app:layout_constraintTop_toBottomOf="@id/tv_monitor_times_title" />
+
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!--            APP-SRC-A-7-1-->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="@drawable/shape_circle_light"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide_line_one"
+                            android:layout_width="1dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.1" />
+
+                        <androidx.constraintlayout.widget.Guideline
+                            android:id="@+id/guide_line_two"
+                            android:layout_width="1dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            app:layout_constraintGuide_percent="0.6" />
+
+                        <TextView
+                            android:id="@+id/txt_title_glucose"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawablePadding="10dp"
+                            android:text="@string/trends_content2"
+                            android:textSize="14sp"
+                            app:drawableEndCompat="@drawable/ic_question"
+                            app:emojiCompatEnabled="false"
+                            app:layout_constraintStart_toStartOf="@id/guide_line_one"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <LinearLayout
+                            android:id="@+id/ll_ehba1c"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:orientation="vertical"
+                            app:layout_constraintHorizontal_chainStyle="spread"
+                            app:layout_constraintStart_toStartOf="@id/txt_title_glucose"
+                            app:layout_constraintTop_toBottomOf="@id/txt_title_glucose">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/ehba1c_value"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="35sp"
+                                    android:textStyle="bold"
+                                    app:emojiCompatEnabled="false"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
+
+                                <ImageView
+                                    android:id="@+id/iv_ehba1c_trends"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_trends_up"
+                                    android:visibility="gone"
+                                    app:layout_constraintBottom_toTopOf="@+id/txt_unit_percent"
+                                    app:layout_constraintLeft_toRightOf="@+id/ehba1c_value"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    android:id="@+id/txt_unit_percent"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_marginBottom="6dp"
+                                    android:text="%"
+                                    android:textColor="?trendSmallTextColor"
+                                    app:emojiCompatEnabled="false"
+                                    app:layout_constraintBottom_toBottomOf="@+id/ehba1c_value"
+                                    app:layout_constraintLeft_toRightOf="@+id/ehba1c_value" />
+
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_average"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:drawableEnd="@drawable/ic_question"
+                            android:drawablePadding="10dp"
+                            android:gravity="center"
+                            android:text="@string/trends_content3"
+                            android:textSize="14sp"
+                            app:emojiCompatEnabled="false"
+                            app:layout_constraintStart_toEndOf="@id/guide_line_two"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <LinearLayout
+                            android:id="@+id/ll_mbg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:orientation="vertical"
+                            app:layout_constraintStart_toStartOf="@id/tv_average"
+                            app:layout_constraintTop_toBottomOf="@id/tv_average">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/tv_mbg_value"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0"
+                                    android:textSize="35sp"
+                                    android:textStyle="bold"
+                                    app:emojiCompatEnabled="false"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent" />
+
+                                <ImageView
+                                    android:id="@+id/iv_mbg_trends"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_trends_up"
+                                    app:layout_constraintBottom_toTopOf="@+id/tv_mbg_unit"
+                                    app:layout_constraintLeft_toRightOf="@+id/tv_mbg_value" />
+
+                                <TextView
+                                    android:id="@+id/tv_mbg_unit"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_marginBottom="6dp"
+                                    android:text=""
+                                    android:textColor="?trendSmallTextColor"
+                                    app:emojiCompatEnabled="false"
+                                    app:layout_constraintBottom_toBottomOf="@+id/tv_mbg_value"
+                                    app:layout_constraintLeft_toRightOf="@+id/tv_mbg_value" />
+
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        </LinearLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <TextView
-                        android:id="@+id/txt_empty_pies"
-                        android:layout_width="110dp"
-                        android:layout_height="110dp"
-                        android:layout_centerInParent="true"
-                        android:background="@drawable/shape_trends_pies"
+                        android:id="@+id/txt_title_tir"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:drawableEnd="@drawable/ic_question"
+                        android:drawablePadding="10dp"
                         android:gravity="center"
-                        android:text="@string/empty_data"
+                        android:text="@string/low_hi_glucose"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
                         app:emojiCompatEnabled="false" />
-                </RelativeLayout>
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/ll_pie_chart_detail"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/rl_pie_chart"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <LinearLayout
-                        android:id="@+id/ll_high"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        app:layout_constraintBottom_toTopOf="@id/desc_high"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_chainStyle="packed">
-
-                        <ImageView
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:layout_gravity="center_vertical"
-                            android:background="@drawable/shape_trend_c2"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            style="@style/trend_text_TIR"
-                            android:text="@string/hyper"
-                            app:emojiCompatEnabled="false" />
-
-                        <TextView
-                            android:id="@+id/high_percent"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:drawablePadding="6dp"
-                            android:text="0%"
-                            android:textSize="12sp"
-                            app:emojiCompatEnabled="false" />
-
-                        <ImageView
-                            android:id="@+id/iv_high_trends"
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:layout_marginStart="6dp"
-                            android:src="@drawable/ic_trends_up"
-                            android:visibility="gone"
-                            app:layout_constraintBottom_toTopOf="@+id/tv_unit"
-                            app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average"
-                            tools:ignore="ContentDescription" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/desc_high"
-                        style="@style/trend_desc_TIR"
-                        app:emojiCompatEnabled="false"
-                        app:layout_constraintBottom_toTopOf="@id/ll_normal"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/ll_high" />
-
-                    <LinearLayout
-                        android:id="@+id/ll_normal"
+                    <!--APP-SRC-A-7-2-->
+                    <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
                         android:layout_marginTop="10dp"
-                        android:gravity="center_vertical"
-                        app:layout_constraintBottom_toTopOf="@id/desc_normal"
-                        app:layout_constraintTop_toBottomOf="@id/desc_high">
+                        android:layout_marginEnd="20dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="@drawable/shape_circle_light">
 
-                        <ImageView
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:background="@drawable/shape_trend_c4"
-                            tools:ignore="ContentDescription" />
+                        <RelativeLayout
+                            android:id="@+id/rl_pie_chart"
+                            android:layout_width="0dp"
+                            android:layout_height="210dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintDimensionRatio="1:1"
+                            app:layout_constraintEnd_toStartOf="@id/ll_pie_chart_detail"
+                            app:layout_constraintHorizontal_chainStyle="packed"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent">
 
-                        <TextView
-                            style="@style/trend_text_TIR"
-                            android:text="@string/normal"
-                            app:emojiCompatEnabled="false" />
+                            <com.microtech.aidexx.ui.main.trend.view.PieChartView
+                                android:id="@+id/pie_chart"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:circleRadius="55dp"
+                                app:textSize="12sp" />
 
-                        <TextView
-                            android:id="@+id/normal_percent"
+                            <TextView
+                                android:id="@+id/txt_empty_pies"
+                                android:layout_width="110dp"
+                                android:layout_height="110dp"
+                                android:layout_centerInParent="true"
+                                android:background="@drawable/shape_trends_pies"
+                                android:gravity="center"
+                                android:text="@string/empty_data"
+                                app:emojiCompatEnabled="false" />
+                        </RelativeLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/ll_pie_chart_detail"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0%"
-                            android:textSize="12sp"
-                            app:emojiCompatEnabled="false" />
+                            android:layout_marginStart="5dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/rl_pie_chart"
+                            app:layout_constraintTop_toTopOf="parent">
 
-                    </LinearLayout>
+                            <LinearLayout
+                                android:id="@+id/ll_high"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                app:layout_constraintBottom_toTopOf="@id/desc_high"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_chainStyle="packed">
 
+                                <ImageView
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:layout_gravity="center_vertical"
+                                    android:background="@drawable/shape_trend_c2"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    style="@style/trend_text_TIR"
+                                    android:text="@string/hyper"
+                                    app:emojiCompatEnabled="false" />
+
+                                <TextView
+                                    android:id="@+id/high_percent"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:drawablePadding="6dp"
+                                    android:text="0%"
+                                    android:textSize="12sp"
+                                    app:emojiCompatEnabled="false" />
+
+                                <ImageView
+                                    android:id="@+id/iv_high_trends"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_trends_up"
+                                    android:visibility="gone"
+                                    app:layout_constraintBottom_toTopOf="@+id/tv_mbg_unit"
+                                    app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average"
+                                    tools:ignore="ContentDescription" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/desc_high"
+                                style="@style/trend_desc_TIR"
+                                app:emojiCompatEnabled="false"
+                                app:layout_constraintBottom_toTopOf="@id/ll_normal"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/ll_high" />
+
+                            <LinearLayout
+                                android:id="@+id/ll_normal"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:gravity="center_vertical"
+                                app:layout_constraintBottom_toTopOf="@id/desc_normal"
+                                app:layout_constraintTop_toBottomOf="@id/desc_high">
+
+                                <ImageView
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:background="@drawable/shape_trend_c4"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    style="@style/trend_text_TIR"
+                                    android:text="@string/normal"
+                                    app:emojiCompatEnabled="false" />
+
+                                <TextView
+                                    android:id="@+id/normal_percent"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0%"
+                                    android:textSize="12sp"
+                                    app:emojiCompatEnabled="false" />
+
+                            </LinearLayout>
+
+
+                            <TextView
+                                android:id="@+id/desc_normal"
+                                style="@style/trend_desc_TIR"
+                                app:emojiCompatEnabled="false"
+                                app:layout_constraintBottom_toTopOf="@id/ll_low"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/ll_normal" />
+
+                            <LinearLayout
+                                android:id="@+id/ll_low"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="10dp"
+                                android:gravity="center_vertical"
+                                app:layout_constraintBottom_toTopOf="@id/desc_low"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/desc_normal">
+
+                                <ImageView
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:background="@drawable/shape_trend_c1"
+                                    tools:ignore="ContentDescription" />
+
+                                <TextView
+                                    style="@style/trend_text_TIR"
+                                    android:text="@string/hypo"
+                                    app:emojiCompatEnabled="false" />
+
+                                <TextView
+                                    android:id="@+id/low_percent"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0%"
+                                    android:textSize="12sp"
+                                    app:emojiCompatEnabled="false" />
+
+                                <ImageView
+                                    android:id="@+id/iv_low_trends"
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:layout_marginStart="6dp"
+                                    android:src="@drawable/ic_trends_up"
+                                    android:visibility="gone"
+                                    app:layout_constraintBottom_toTopOf="@+id/tv_mbg_unit"
+                                    app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average"
+                                    tools:ignore="ContentDescription" />
+
+                            </LinearLayout>
+
+
+                            <TextView
+                                android:id="@+id/desc_low"
+                                style="@style/trend_desc_TIR"
+                                app:emojiCompatEnabled="false"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@id/ll_low" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <TextView
-                        android:id="@+id/desc_normal"
-                        style="@style/trend_desc_TIR"
-                        app:emojiCompatEnabled="false"
-                        app:layout_constraintBottom_toTopOf="@id/ll_low"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/ll_normal" />
+                        android:id="@+id/txt_title_agp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:drawableRight="@drawable/ic_question"
+                        android:drawablePadding="10dp"
+                        android:gravity="center"
+                        android:text="@string/daily_trends"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:emojiCompatEnabled="false" />
 
+                    <!--            APP-SRC-A-7-3-->
                     <LinearLayout
-                        android:id="@+id/ll_low"
+                        android:id="@+id/ll_trends"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:gravity="center_vertical"
-                        app:layout_constraintBottom_toTopOf="@id/desc_low"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/desc_normal">
+                        android:layout_margin="10dp"
+                        android:background="@drawable/shape_circle_light"
+                        android:orientation="vertical"
+                        android:paddingBottom="6dp">
 
-                        <ImageView
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:background="@drawable/shape_trend_c1"
-                            tools:ignore="ContentDescription" />
+                        <com.microtech.aidexx.ui.main.trend.view.TrendsChart
+                            android:id="@+id/agp_chart"
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp"
+                            android:layout_marginTop="10dp" />
 
-                        <TextView
-                            style="@style/trend_text_TIR"
-                            android:text="@string/hypo"
-                            app:emojiCompatEnabled="false" />
-
-                        <TextView
-                            android:id="@+id/low_percent"
-                            android:layout_width="wrap_content"
+                        <RelativeLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="0%"
-                            android:textSize="12sp"
-                            app:emojiCompatEnabled="false" />
+                            android:layout_marginStart="10dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginEnd="10dp"
+                            android:layout_marginBottom="10dp">
 
-                        <ImageView
-                            android:id="@+id/iv_low_trends"
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:layout_marginStart="6dp"
-                            android:src="@drawable/ic_trends_up"
-                            android:visibility="gone"
-                            app:layout_constraintBottom_toTopOf="@+id/tv_unit"
-                            app:layout_constraintLeft_toRightOf="@+id/tv_glucose_average"
-                            tools:ignore="ContentDescription" />
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:gravity="center">
 
+                                <View
+                                    android:layout_width="20dp"
+                                    android:layout_height="1.5dp"
+                                    android:background="?attr/colorTrendChartMain" />
+
+                                <TextView
+                                    style="@style/trend_text_AGP"
+                                    android:text="@string/trend_agp_1"
+                                    app:emojiCompatEnabled="false" />
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_centerHorizontal="true"
+                                android:gravity="center">
+
+                                <View
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:background="?attr/colorTrendChart75" />
+
+                                <TextView
+                                    style="@style/trend_text_AGP"
+                                    android:text="@string/trend_agp_2"
+                                    app:emojiCompatEnabled="false" />
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_alignParentRight="true"
+                                android:gravity="center">
+
+                                <View
+                                    android:layout_width="10dp"
+                                    android:layout_height="10dp"
+                                    android:background="?attr/colorTrendChart90" />
+
+                                <TextView
+                                    style="@style/trend_text_AGP"
+                                    android:text="@string/trend_agp_3"
+                                    app:emojiCompatEnabled="false" />
+                            </LinearLayout>
+
+                        </RelativeLayout>
                     </LinearLayout>
-
 
                     <TextView
-                        android:id="@+id/desc_low"
-                        style="@style/trend_desc_TIR"
-                        app:emojiCompatEnabled="false"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/ll_low" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/txt_title_agp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:drawableRight="@drawable/ic_question"
-                android:drawablePadding="10dp"
-                android:gravity="center"
-                android:text="@string/daily_trends"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:emojiCompatEnabled="false" />
-
-            <!--            APP-SRC-A-7-3-->
-            <LinearLayout
-                android:id="@+id/ll_trends"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:background="@drawable/shape_circle_light"
-                android:orientation="vertical"
-                android:paddingBottom="6dp">
-
-                <com.microtech.aidexx.ui.main.trend.view.TrendsChart
-                    android:id="@+id/agp_chart"
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginTop="10dp" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="10dp">
-
-                    <LinearLayout
+                        android:id="@+id/txt_title_multi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:gravity="center">
-
-                        <View
-                            android:layout_width="20dp"
-                            android:layout_height="1.5dp"
-                            android:background="?attr/colorTrendChartMain" />
-
-                        <TextView
-                            style="@style/trend_text_AGP"
-                            android:text="@string/trend_agp_1"
-                            app:emojiCompatEnabled="false" />
-                    </LinearLayout>
-
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/muti_day_glucose"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:emojiCompatEnabled="false" />
 
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:id="@+id/ll_multi"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:gravity="center">
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="@drawable/shape_circle_light"
+                        android:orientation="vertical"
+                        android:paddingBottom="6dp">
 
-                        <View
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:background="?attr/colorTrendChart75" />
+                        <com.microtech.aidexx.ui.main.trend.view.MultiChart
+                            android:id="@+id/chart_multi"
+                            android:layout_width="match_parent"
+                            android:layout_height="220dp"
+                            android:layout_marginTop="10dp" />
 
-                        <TextView
-                            style="@style/trend_text_AGP"
-                            android:text="@string/trend_agp_2"
-                            app:emojiCompatEnabled="false" />
+                        <com.microtech.aidexx.ui.main.trend.view.ExpandableGrid
+                            android:id="@+id/expandable_grid"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
                     </LinearLayout>
 
+                    <TextView
+                        android:id="@+id/txt_title_LBGI"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:drawablePadding="10dp"
+                        android:gravity="center"
+                        android:text="@string/trends_content6"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:drawableRightCompat="@drawable/ic_question"
+                        app:emojiCompatEnabled="false" />
 
+                    <!--            APP-SRC-A-7-5-->
                     <LinearLayout
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_alignParentRight="true"
-                        android:gravity="center">
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="20dp"
+                        android:background="@drawable/shape_circle_light"
+                        android:orientation="vertical"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
 
-                        <View
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:background="?attr/colorTrendChart90" />
+                        <com.microtech.aidexx.ui.main.trend.view.LbgiCursorView
+                            android:id="@+id/cursor_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="80dp" />
 
-                        <TextView
-                            style="@style/trend_text_AGP"
-                            android:text="@string/trend_agp_3"
-                            app:emojiCompatEnabled="false" />
                     </LinearLayout>
 
-                </RelativeLayout>
-            </LinearLayout>
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp" />
 
-            <TextView
-                android:id="@+id/txt_title_multi"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:text="@string/muti_day_glucose"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:emojiCompatEnabled="false" />
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
 
-            <LinearLayout
-                android:id="@+id/ll_multi"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/shape_circle_light"
-                android:orientation="vertical"
-                android:paddingBottom="6dp">
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <com.microtech.aidexx.ui.main.trend.view.MultiChart
-                    android:id="@+id/chart_multi"
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:layout_marginTop="10dp" />
-
-                <com.microtech.aidexx.ui.main.trend.view.ExpandableGrid
-                    android:id="@+id/expandable_grid"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/txt_title_LBGI"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:drawablePadding="10dp"
-                android:gravity="center"
-                android:text="@string/trends_content6"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:drawableRightCompat="@drawable/ic_question"
-                app:emojiCompatEnabled="false" />
-
-            <!--            APP-SRC-A-7-5-->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/shape_circle_light"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <com.microtech.aidexx.ui.main.trend.view.LbgiCursorView
-                    android:id="@+id/cursor_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="80dp" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="30dp" />
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </com.scwang.smart.refresh.layout.SmartRefreshLayout>
 </LinearLayout>
