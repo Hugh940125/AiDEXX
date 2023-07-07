@@ -12,7 +12,7 @@ import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
-import com.microtech.aidexx.utils.toGlucoseValue
+import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Calendar
 import java.util.Date
 
@@ -100,12 +100,15 @@ class MultiDayBGManager {
                     list.add(history)
                     history.glucose?.let {
                         if (arrayIndex <= GLUCOSE_NUM_ONE_DAY) {
-                            if (it.toGlucoseValue() > 25) {
-                                glucoseArray[dayIndex][arrayIndex++] = 25.0
-                            } else if (it.toGlucoseValue() < 2) {
-                                glucoseArray[dayIndex][arrayIndex++] = 2.0
+                            val glucoseValue = it / 18
+                            if (glucoseValue > ThresholdManager.GLUCOSE_UP_LIMIT / 18) {
+                                glucoseArray[dayIndex][arrayIndex++] =
+                                    (ThresholdManager.GLUCOSE_UP_LIMIT / 18).toDouble()
+                            } else if (glucoseValue < ThresholdManager.GLUCOSE_LOW_LIMIT / 18) {
+                                glucoseArray[dayIndex][arrayIndex++] =
+                                    (ThresholdManager.GLUCOSE_LOW_LIMIT / 18).toDouble()
                             } else {
-                                glucoseArray[dayIndex][arrayIndex++] = it.toGlucoseValue().toDouble()
+                                glucoseArray[dayIndex][arrayIndex++] = glucoseValue.toDouble()
                             }
                         }
                     }

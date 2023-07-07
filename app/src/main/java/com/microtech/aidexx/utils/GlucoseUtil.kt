@@ -13,6 +13,13 @@ fun Float.toGlucoseValue(): Float {
     }
 }
 
+fun Double.toGlucoseValue(): Float {
+    return when (UnitManager.glucoseUnit) {
+        UnitManager.GlucoseUnit.MMOL_PER_L -> roundOffDecimal((this / 18f).toFloat())
+        UnitManager.GlucoseUnit.MG_PER_DL -> this.toFloat()
+    }
+}
+
 fun Int.toGlucoseValue(): Float {
     return when (UnitManager.glucoseUnit) {
         UnitManager.GlucoseUnit.MMOL_PER_L -> this / 18f
@@ -24,6 +31,13 @@ fun Float.fromGlucoseValue(): Float {
     return when (UnitManager.glucoseUnit) {
         UnitManager.GlucoseUnit.MMOL_PER_L -> this * 18f
         UnitManager.GlucoseUnit.MG_PER_DL -> this
+    }
+}
+
+fun Float.mmolValueDisplay(): String {
+    return when (UnitManager.glucoseUnit) {
+        UnitManager.GlucoseUnit.MMOL_PER_L -> this.toString()
+        UnitManager.GlucoseUnit.MG_PER_DL -> UnitManager.unitFormat().format(this * 18f)
     }
 }
 
@@ -40,14 +54,20 @@ fun Float.toGlucoseString(): String {
     return UnitManager.unitFormat().format(this.toGlucoseValue())
 }
 
+fun Double.toGlucoseString(): String {
+    return UnitManager.unitFormat().format(this.toGlucoseValue())
+}
+
 fun Float.toGlucoseStringWithLowAndHigh(context: Resources): String {
     return when {
         this <= ThresholdManager.GLUCOSE_LOW_LIMIT -> context.getString(
             R.string.Glucose_Low
         )
+
         this >= ThresholdManager.GLUCOSE_UP_LIMIT -> context.getString(
             R.string.Glucose_High
         )
+
         else -> UnitManager.unitFormat().format(this.toGlucoseValue())
     }
 }

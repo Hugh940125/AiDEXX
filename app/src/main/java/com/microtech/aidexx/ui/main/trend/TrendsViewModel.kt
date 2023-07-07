@@ -3,6 +3,9 @@ package com.microtech.aidexx.ui.main.trend
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.model.GLUCOSE_NUM_ONE_DAY
 import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.fromGlucoseValue
+import com.microtech.aidexx.utils.mmolValueDisplay
+import com.microtech.aidexx.utils.toGlucoseString
 import com.microtechmd.cgat.CGA
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +37,7 @@ class TrendsViewModel : BaseViewModel() {
                     trendsInfo.showEhbA1cTrend = ehba1c >= 7
                 }
                 if (num > GLUCOSE_NUM_ONE_DAY) {
-                    trendsInfo.mbg = oneDigitFormat.format(mbg)
+                    trendsInfo.mbg = mbg.toFloat().mmolValueDisplay()
                     trendsInfo.showMbgUnit = true
                     if (!mbg.isNaN() && (mbg > 6.6 || mbg < 4.3)) {
                         trendsInfo.showMbgTrend = true

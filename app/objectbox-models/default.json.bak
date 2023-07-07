@@ -1135,7 +1135,9 @@
         {
           "id": "41:1870335223406484129",
           "name": "glucoseIsValid",
-          "type": 5
+          "indexId": "119:112320457527936412",
+          "type": 5,
+          "flags": 8
         },
         {
           "id": "42:2678688041167224115",
@@ -2100,7 +2102,7 @@
     }
   ],
   "lastEntityId": "25:1427408717192841464",
-  "lastIndexId": "118:2288979470787846953",
+  "lastIndexId": "119:112320457527936412",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
