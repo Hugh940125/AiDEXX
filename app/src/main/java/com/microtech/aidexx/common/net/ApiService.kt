@@ -59,6 +59,7 @@ const val resetPasswordByVerificationCode = "$USER_URL/passCheckToken/resetPassw
 const val setPassword = "$USER_URL/setPassword"
 const val logout = "$USER_URL/logout"
 const val getuiLogin = "$USER_URL/getuiLogin"
+const val updateUserInformation = "$USER_URL/updateUserInformation"
 
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
@@ -187,6 +188,9 @@ interface ApiService {
 
     @POST(resetPasswordByVerificationCode)
     suspend fun resetPasswordByVerificationCode(@Body body: ReqChangePWD): ApiResult<BaseResponse<String>>
+
+    @POST(updateUserInformation)
+    suspend fun updateUserInformation(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<String>>
 
     //gp-start
     @GET(sendRegisterEmailVerificationCode)

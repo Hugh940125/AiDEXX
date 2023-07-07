@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.microtech.aidexx.views.ActionBarWidget
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:actionBarTitleTextColor="@color/colorPrimary"
+        app:leftIcon="@drawable/ic_back"
+        app:titleText="@string/profile" >
+
+        <TextView
+            android:id="@+id/tvSave"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:textSize="18sp"
+            android:padding="8dp"
+            android:text="@string/save"
+            android:textColor="?appColorAccent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+    </com.microtech.aidexx.views.ActionBarWidget>
+
+    <TextView
+        android:id="@+id/tvNotice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:textColor="?colorDesc"
+        tools:text="请输入昵称" />
+
+    <com.flyco.roundview.RoundLinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="13dp"
+        android:layout_marginTop="10dp"
+        app:rv_backgroundColor="?settingItemBackground"
+        app:rv_cornerRadius="10dp">
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:alignItems="center"
+            app:justifyContent="space_between">
+
+            <EditText
+                android:id="@+id/etInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                android:background="@color/transparent"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:maxWidth="200dp"
+                android:maxLength="30"
+                android:singleLine="true"
+                android:textColor="?colorTitle"
+                android:textSize="14sp"
+                tools:text="用户名" />
+
+            <TextView
+                android:id="@+id/tvInputCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="15dp"
+                android:textColor="?colorDesc"
+                android:visibility="gone"
+                tools:text="3/5" />
+        </com.google.android.flexbox.FlexboxLayout>
+
+
+    </com.flyco.roundview.RoundLinearLayout>
+
+</LinearLayout>

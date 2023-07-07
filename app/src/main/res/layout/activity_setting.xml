@@ -55,6 +55,7 @@
             app:layout_constraintTop_toBottomOf="@id/rl_actionbar">
 
             <LinearLayout
+                android:id="@+id/setting_edit_profile_ll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
@@ -63,14 +64,29 @@
                 app:layout_constraintStart_toEndOf="@id/iv_setting_avatar"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <TextView
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="微泰动态测试"
-                    android:textColor="?settingItemTitleTextColor"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    app:emojiCompatEnabled="false" />
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/userName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?settingItemTitleTextColor"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:emojiCompatEnabled="false" />
+                    <ImageView
+                        android:id="@+id/ivSex"
+                        android:layout_width="26dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="35dp"
+                        android:adjustViewBounds="true"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@+id/userName"
+                        tools:src="@drawable/ic_male" />
+                </RelativeLayout>
+
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -83,20 +99,18 @@
 
             </LinearLayout>
 
-            <com.microtech.aidexx.views.NiceImageView
+            <ImageView
                 android:id="@+id/iv_setting_avatar"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
+                android:padding="3dp"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="30dp"
-                android:src="@mipmap/ic_launcher"
-                app:border_color="@color/green_65"
-                app:border_width="3dp"
-                app:is_circle="true"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="ImageContrastCheck" />
+                android:background="@drawable/bg_circle_image_border"
+                />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -267,6 +281,25 @@
                     app:title="@string/setting_about" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
+                android:id="@+id/txt_version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="5dp"
+                android:gravity="center"
+                android:textColor="?attr/settingItemTitleTextColor"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/txt_trademark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="center"
+                android:textColor="?attr/settingItemTitleTextColor"
+                android:textSize="11sp" />
 
         </LinearLayout>
 

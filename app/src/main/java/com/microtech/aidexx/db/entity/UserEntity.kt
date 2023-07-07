@@ -23,6 +23,7 @@ class UserEntity() : Parcelable {
 
      var name: String? = null //非必须
      var surname: String? = null //非必须
+     var fullName: String? = null //非必须
      var middleName: String? = null //非必须
      var givenName: String? = null //非必须
      var gender: Int? = null // 非必须 1男2女
@@ -34,8 +35,17 @@ class UserEntity() : Parcelable {
      var complications: String? = null // 非必须 并发症(多选); 0无,1心血管并发症,2视网膜病变,3神经病变,4肾病,5糖尿病足,99其他)
 
     fun getDisplayName() = name?.ifEmpty { null }
-        ?: "${surname?:""}${givenName?:""}".ifEmpty { null }
-        ?: phone ?: email
+//        ?: "${surname?:""}${givenName?:""}".ifEmpty { null }
+        ?: fullName
+        ?: getMaskedPhone()
+        ?: email
+        ?: ""
+
+    fun getMaskedPhone(): String? = phone?.let {
+        if (it.length == 11) {
+            it.replaceRange(3, 7, "****")
+        } else it
+    }
 
     override fun toString(): String {
         return buildString {

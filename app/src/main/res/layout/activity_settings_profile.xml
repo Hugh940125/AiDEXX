@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <com.microtech.aidexx.views.ActionBarWidget
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:actionBarTitleTextColor="@color/colorPrimary"
+        app:leftIcon="@drawable/ic_back"
+        app:titleText="@string/profile" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                style="@style/baseMargin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:background="?bgSetting"
+                android:orientation="vertical">
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_nickName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/nick_name" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/user_height" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_line="true"
+                    app:has_next="true"
+                    app:title="@string/user_wight" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/fl_bmi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="10dp"
+                    app:justifyContent="space_between">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="25dp"
+                        android:text="BMI"
+                        android:textColor="?colorDesc"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvBmi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="33dp"
+                        android:textColor="?colorDesc"
+                        android:textSize="16sp"
+                        tools:text="20" />
+
+
+                </com.google.android.flexbox.FlexboxLayout>
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_name_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:visibility="gone"
+                    app:title="@string/user_name_start" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_name_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:visibility="gone"
+                    app:title="@string/user_name_center" />
+
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_name_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:visibility="gone"
+                    app:title="@string/user_name_end" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/baseMargin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:background="?bgSetting"
+                android:orientation="vertical">
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_full_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/Profile_Name" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/phone" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/gender" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_birth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_next="true"
+                    app:title="@string/user_birth" />
+
+                <com.google.android.flexbox.FlexboxLayout
+                    android:id="@+id/flAge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    app:justifyContent="space_between">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="25dp"
+                        android:text="@string/Profile_Age"
+                        android:textColor="?colorDesc"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvAge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="33dp"
+                        android:textColor="?colorDesc"
+                        android:textSize="16sp"
+                        tools:text="20" />
+
+                </com.google.android.flexbox.FlexboxLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/baseMargin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:background="?bgSetting"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siw_diabetes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_line="true"
+                    app:has_next="true"
+                    app:title="@string/diabetes" />
+
+                <LinearLayout
+                    android:id="@+id/llDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/flDiagnosis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="10dp"
+                        app:justifyContent="space_between">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="25dp"
+                            android:text="@string/Disease_Course"
+                            android:textColor="?colorDesc"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvDiagnosis"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="33dp"
+                            android:ellipsize="end"
+                            android:lines="1"
+                            android:maxWidth="200dp"
+                            android:textColor="?colorDesc"
+                            android:textSize="16sp"
+                            tools:text="" />
+
+                    </com.google.android.flexbox.FlexboxLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginHorizontal="20dp"
+                        android:background="?dividerLine" />
+
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/flTreatment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        app:justifyContent="space_between">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="25dp"
+                            android:text="@string/Disease_Treatment"
+                            android:textColor="?colorDesc"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvTreatment"
+                            android:layout_width="180dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="33dp"
+                            android:ellipsize="end"
+                            android:gravity="end"
+                            android:maxLines="1"
+                            android:textColor="?colorDesc"
+                            android:textSize="16sp"
+                            tools:text="20" />
+
+                    </com.google.android.flexbox.FlexboxLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginHorizontal="20dp"
+                        android:background="?dividerLine" />
+
+                    <com.google.android.flexbox.FlexboxLayout
+                        android:id="@+id/flComplications"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        app:justifyContent="space_between">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="25dp"
+                            android:text="@string/Disease_Comps"
+                            android:textColor="?colorDesc"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvComplications"
+                            android:layout_width="180dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="33dp"
+                            android:ellipsize="end"
+                            android:gravity="end"
+                            android:maxLines="1"
+                            android:textColor="?colorDesc"
+                            android:textSize="16sp"
+                            tools:text="20" />
+
+
+                    </com.google.android.flexbox.FlexboxLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginHorizontal="20dp"
+                        android:background="?dividerLine" />
+                </LinearLayout>
+
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siwOtherDisease"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    app:has_line="false"
+                    app:has_next="true"
+                    app:title="@string/Disease_Others" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/siwFillInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:visibility="gone"
+                    app:has_line="false"
+                    app:has_next="true"
+                    app:title="@string/Improve_Profile" />
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="40dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

@@ -2,34 +2,48 @@ package com.microtech.aidexx.ui.setting
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.MediaStore
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.signature.ObjectKey
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
+import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.toast
-import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.common.user.UserInfoManager
+import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.databinding.ActivitySettingBinding
+import com.microtech.aidexx.db.entity.UserEntity_.gender
 import com.microtech.aidexx.ui.pair.TransmitterActivity
 import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
+import com.microtech.aidexx.ui.setting.profile.ProfileSettingsActivity
 import com.microtech.aidexx.ui.setting.share.ShareFollowActivity
 import com.microtech.aidexx.ui.web.WebActivity
+import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
+import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
+
+    private val REQUEST_CODE_GALLERY = 0x10// 图库选取图片标识请求码
     private val units = listOf(UnitManager.GlucoseUnit.MMOL_PER_L.text, UnitManager.GlucoseUnit.MG_PER_DL.text)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,12 +60,57 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
     override fun onResume() {
         super.onResume()
         val default = TransmitterManager.instance().getDefault()
-        binding.settingTrans.setValue(default?.entity?.deviceSn ?: "")
+        binding.apply {
+            settingTrans.setValue(default?.entity?.deviceSn ?: "")
+            userName.text = UserInfoManager.instance().getDisplayName()
+
+            UserInfoManager.instance().userEntity?.apply {
+                when (gender) {
+                    1 -> ivSex.setImageDrawable(
+                        AppCompatResources.getDrawable(
+                            this@SettingActivity, R.drawable.ic_male)
+                    )
+                    2 -> ivSex.setImageDrawable(
+                        AppCompatResources.getDrawable(
+                            this@SettingActivity,R.drawable.ic_female)
+                    )
+                    else -> ivSex.setImageDrawable(null)
+                }
+            }
+
+            Glide.with(this@SettingActivity)
+                .load("https://static.pancares.com/aidex/UPPf03550ef07a7b2164f06deaef597ce37")
+//                .load(UserInfoManager.instance().userEntity?.avatar)
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .signature(ObjectKey(System.currentTimeMillis()))
+                .error(R.drawable.ic_default_avatar)
+                .apply(RequestOptions.circleCropTransform())
+                .into(binding.ivSettingAvatar)
+        }
+
     }
 
     private fun initView() {
         binding.apply {
             ivSettingBack.setDebounceClickListener { finish() }
+
+            ivSettingAvatar.setDebounceClickListener {
+                EnquireManager.instance().showEnquireOrNot(
+                    this@SettingActivity,
+                    getString(R.string.want_visit_gallery),
+                    getString(R.string.user_photo_for_avatar),
+                    onPositive = {
+                        checkSelfPermission(this@SettingActivity, PermissionGroups.Storage)
+                    },
+                    flag = EnquireManager.FLAG_AVATAR
+                )
+            }
+
+            settingEditProfileLl.setDebounceClickListener {
+                ActivityUtil.toActivity(this@SettingActivity, ProfileSettingsActivity::class.java)
+            }
+
             tvWelfare.setDebounceClickListener {
                 WebActivity.loadWeb(
                     context = this@SettingActivity,
@@ -147,7 +206,23 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
             settingAbout.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
             }
+
+            txtVersion.text = buildString {
+                append("Version ")
+                append(BuildConfig.VERSION_NAME)
+            }
+            txtTrademark.text = buildString {
+                append("Copyright ©2011-")
+                append(Calendar.getInstance().get(Calendar.YEAR))
+            }
+
         }
+    }
+
+    private fun gallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        // 以startActivityForResult的方式启动一个activity用来获取返回的结果
+        startActivityForResult(intent, REQUEST_CODE_GALLERY)
     }
 
     override fun getViewBinding(): ActivitySettingBinding {

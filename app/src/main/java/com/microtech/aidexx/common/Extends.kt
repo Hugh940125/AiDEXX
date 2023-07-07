@@ -111,6 +111,21 @@ fun Date.dateAndTimeHour(pattern: String = DATE_FORMAT_HM): String? =
 fun Long.hourMinute(pattern: String = "HH:mm"): String? =
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)
 
+fun Date.dateAndYM(pattern: String = "yyyy-MM"): String? {
+    return try {
+        SimpleDateFormat(pattern, Locale.getDefault()).format(this)
+    } catch (e: Exception) {
+        null
+    }
+}
+
+fun String.dateAndYM(pattern: String = "yyyy-MM"): Date? {
+    return try {
+        SimpleDateFormat(pattern).parse(this)
+    } catch (e: Exception) {
+        null
+    }
+}
 
 fun Date.getStartOfTheDay(): Date {
     val calendar = Calendar.getInstance()

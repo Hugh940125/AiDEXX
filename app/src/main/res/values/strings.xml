@@ -83,7 +83,6 @@
     <string name="exercise_duration_null">请完成输入</string>
 
     <string name="profile">个人信息</string>
-    <string name="user_name">昵称</string>
     <string name="gender">性别</string>
     <string name="diabetes">糖尿病类型</string>
     <string name="email">邮箱地址</string>
@@ -675,7 +674,52 @@
     <string name="normal_range">正常</string>
     <string name="low_range">偏低</string>
     <string name="unit_times">次</string>
+    <!-- 历史 -->
+
+    <!-- 个人信息 -->
+    <string name="nick_name">昵称</string>
+    <string name="One_Tap_Login_Self">本机号码一键登录</string>
+    <string name="Not_Current_Mobile">不是当前手机号？</string>
+    <string name="One_Tap_Login">一键登录</string>
+    <string name="Check_Edit_Profile">查看并编辑个人信息</string>
+    <string name="Personal_Center_Follow_Share">关注/分享</string>
+    <string name="Settings_Apple_Health">苹果健康</string>
+    <string name="Help_Center">帮助中心</string>
+    <string name="Profile_Name">姓名</string>
+    <string name="Profile_Diabetes_Course_Years">年</string>
+    <string name="Profile_Diabetes_Course_Months">个月</string>
+    <string name="Profile_Edit">编辑</string>
+    <string name="Profile_Enter">输入</string>
+    <string name="Profile_Age">年龄</string>
+    <string name="Disease_Course">病程</string>
+    <string name="Disease_Treatment">治疗方式</string>
+    <string name="Disease_Comps">并发症</string>
+    <string name="Disease_Others">其他疾病</string>
+    <string name="Diabetes_Choose_Type">请选择糖尿病类型</string>
+    <string name="Diabetes_Confirm_Date">请选择确诊日期</string>
+    <string name="Diabetes_Choose_Treatment">请选择治疗方式</string>
+    <string name="Diabetes_Choose_Comps">请选择并发症</string>
+    <string name="Single_Choice">单选</string>
+    <string name="Multiple_Choice">多选</string>
+    <string name="Improve_Profile">完善信息</string>
+    <string name="Basic_Profile">基本信息</string>
+    <string name="Improve_Enter_Nickname">请输入昵称</string>
+    <string name="Improve_Enter_name">请输入姓名</string>
+    <string name="Improve_Select_Birthday">请选择出生日期</string>
+    <string name="Improve_Previous_Step">上一步</string>
+    <string name="Profile_Improve_Prompt">完善信息后，服务团队可为您提供精细化的售后服务和帮助指导，所有信息将保密</string>
+    <string name="Health_Archive">健康档案</string>
+    <string name="Improve_Get_Instruct">完善信息可获得个性化帮助指导</string>
+    <string name="Go_Improve">去完善</string>
+    <string name="Scan_Watch_Pair_Transmitter">扫描手表登录/配对发射器</string>
+    <string name="Transmitter_Exist_Unpair_First">发射器已存在，请先解配</string>
+    <string name="Kind_Tips">温馨提示</string>
+    <string name="Preheat_Done_Go_Check">预热已完成，快来看看您当前的血糖值吧。</string>
+    <string name="Bluetooth_Authority">蓝牙权限</string>
+    <string name="Ensure_Bluetooth_Authority_ON">请确保手机蓝牙开关和蓝牙权限已开启</string>
+    <string name="Diabetes_Type">糖尿病类型</string>
+    <!-- 个人信息 -->
+
     <string name="help_center">帮助中心</string>
     <string name="battery_low">电池电量低</string>
-    <!-- 历史 -->
 </resources>

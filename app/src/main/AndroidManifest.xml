@@ -46,6 +46,7 @@
         android:theme="@style/AppThemeLight"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
@@ -103,7 +104,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize|screenLayout|uiMode|fontScale|fontWeightAdjustment|locale|keyboard|layoutDirection|density|navigation|smallestScreenSize|mcc|mnc|touchscreen"
             android:exported="true"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" >
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -169,21 +170,28 @@
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.profile.ProfileSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.profile.EditNameActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
 
         <service
             android:name=".service.MainService"
             android:enabled="true"
             android:exported="true"
             android:permission="aidex-main-service" />
-
         <service
             android:name=".service.push.AidexPushService"
             android:exported="false"
             android:label="PushService"
-            android:process=":pushservice"/>
-
+            android:process=":pushservice" />
         <service android:name=".service.push.GeTuiIntentService" />
-
 
         <provider
             android:name=".views.CgmFileProvider"
@@ -198,7 +206,6 @@
         <receiver
             android:name=".service.TimeChangeReceiver"
             android:exported="false" />
-
         <receiver
             android:name=".ui.widget.AidexWidgetProvider"
             android:exported="true"

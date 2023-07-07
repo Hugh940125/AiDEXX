@@ -55,6 +55,7 @@ object MmkvManager {
     private const val FLAG_NEW_VERSION_INSULIN_SYS_PRESET = "FLAG_NEW_VERSION_INSULIN_SYS_PRESET"
     private const val CURRENT_LANGUAGE_TAG = "CURRENT_LANGUAGE_TAG"
     private const val UPGRADE_RESOURCE_ZIP_FILE_INFO = "UPGRADE_RESOURCE_ZIP_FILE_INFO"
+    private const val HAS_SHOW_AVATAR_ENQUIRE = "HAS_SHOW_AVATAR_ENQUIRE"
 
 
     fun setUpgradeResourceZipFileInfo(info: String) =

@@ -8,6 +8,7 @@ import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.db.entity.UserEntity_
 import com.microtech.aidexx.db.repository.AccountDbRepository
 import com.microtech.aidexx.ui.setting.share.ShareUserInfo
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -22,7 +23,8 @@ import kotlinx.coroutines.withContext
  *@desc 用户信息管理
  */
 class UserInfoManager {
-    private var userEntity: UserEntity? = null
+    var userEntity: UserEntity? = null
+        private set
 
     init {
         AidexxApp.mainScope.launch {
@@ -53,10 +55,6 @@ class UserInfoManager {
         fun getCurShowUserId() = shareUserInfo?.dataProviderId ?: instance().userId()
     }
 
-    suspend fun loadUserInfo() {
-
-    }
-
     fun userId(): String {
         return userEntity?.userId ?: "unknown"
     }
@@ -69,8 +67,26 @@ class UserInfoManager {
         MmkvManager.setLogin(isLogin)
     }
 
-    fun updateProfile(profile: String) {
-        MmkvManager.saveProfile(profile)
+    suspend fun updateProfile(
+        name: String? = null,
+        fullName: String? = null,
+        height: Int? = null,
+        bodyWeight: Int? = null,
+        gender: Int? = null,
+        birthDate: String? = null,
+    ) {
+        userEntity?.let { user ->
+            fullName?.let { user.fullName = it }
+            name?.let { userEntity?.name = it }
+            height?.let { userEntity?.height = it }
+            bodyWeight?.let { userEntity?.bodyWeight = it }
+            gender?.let { userEntity?.gender = it }
+            birthDate?.let { userEntity?.birthDate = it }
+
+            AccountDbRepository.saveUser(user)
+        } ?:let {
+            LogUtil.xLogE("updateProfile user null")
+        }
     }
 
     fun getDisplayName() = userEntity?.getDisplayName()

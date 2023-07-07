@@ -10,6 +10,9 @@ class EnquireManager private constructor() {
     private val enquireList = mutableListOf<StandardDialog>()
 
     companion object {
+
+        val FLAG_AVATAR = "ENQUIRE_FLAG_AVTAR"
+
         private val INSTANCE = EnquireManager()
 
         fun instance(): EnquireManager {
