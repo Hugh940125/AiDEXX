@@ -6,8 +6,9 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.ScatterDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.BitmapUtils
+import java.util.concurrent.CopyOnWriteArrayList
 
-class CalDataSet : ScatterDataSet(ArrayList<Entry>(), "bg") {
+class CalDataSet : ScatterDataSet(CopyOnWriteArrayList<Entry>(), "bg") {
 
     companion object {
         private const val size = 40f

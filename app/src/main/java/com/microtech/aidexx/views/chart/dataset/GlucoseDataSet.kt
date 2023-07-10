@@ -6,8 +6,9 @@ import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineDataSet
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
+import java.util.concurrent.CopyOnWriteArrayList
 
-open class GlucoseDataSet: LineDataSet(ArrayList<Entry>(), "glucose") {
+open class GlucoseDataSet: LineDataSet(CopyOnWriteArrayList<Entry>(), "glucose") {
 
     init {
         axisDependency = YAxis.AxisDependency.RIGHT

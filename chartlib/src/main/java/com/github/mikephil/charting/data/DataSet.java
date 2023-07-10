@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * The DataSet class represents one group or type of entries (Entry) in the
@@ -55,7 +56,7 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
         this.mEntries = entries;
 
         if (mEntries == null)
-            mEntries = new ArrayList<T>();
+            mEntries = new CopyOnWriteArrayList<T>();
 
         calcMinMax();
     }
@@ -241,7 +242,7 @@ public abstract class DataSet<T extends Entry> extends BaseDataSet<T> {
             return;
 
         if (mEntries == null) {
-            mEntries = new ArrayList<T>();
+            mEntries = new CopyOnWriteArrayList<T>();
         }
 
         calcMinMax(e);

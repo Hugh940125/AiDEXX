@@ -409,16 +409,17 @@ class ChartViewModel: ViewModel() {
     //endregion
 
 
-    private val nextPageCgmData = mutableListOf<RealCgmHistoryEntity>()
-    private val nextPageBgData = mutableListOf<BloodGlucoseEntity>()
-    private val nextPageCalData = mutableListOf<CalibrateEntity>()
-    private val nextPageEventData = mutableListOf<BaseEventEntity>()
+    private val nextPageCgmData = CopyOnWriteArrayList<RealCgmHistoryEntity>()
+    private val nextPageBgData = CopyOnWriteArrayList<BloodGlucoseEntity>()
+    private val nextPageCalData = CopyOnWriteArrayList<CalibrateEntity>()
+    private val nextPageEventData = CopyOnWriteArrayList<BaseEventEntity>()
     /**
      * 加载下一页数据到图表集合
      * @return false-正在加载时 发现切换用户了
      */
     private suspend fun loadNextPageData(startDate: Date, endDate: Date, needApply: Boolean = true): Boolean =
         withContext(Dispatchers.IO) {
+            LogUtil.d("===CHART=== loadNextPage start=${startDate} end=${endDate}")
             timeMin = ChartUtil.dateToX(startDate)
             var isSuccess = true
 

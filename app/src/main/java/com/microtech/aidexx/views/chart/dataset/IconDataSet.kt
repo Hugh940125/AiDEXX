@@ -7,8 +7,9 @@ import com.github.mikephil.charting.data.ScatterDataSet
 import com.github.mikephil.charting.utils.MPPointF
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.BitmapUtils
+import java.util.concurrent.CopyOnWriteArrayList
 
-class IconDataSet : ScatterDataSet(ArrayList<Entry>(), "icon") {
+class IconDataSet : ScatterDataSet(CopyOnWriteArrayList<Entry>(), "icon") {
 
     companion object {
         private const val size = 40f
