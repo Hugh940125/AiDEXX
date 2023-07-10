@@ -13,8 +13,6 @@ import com.github.mikephil.charting.interfaces.datasets.IDataSet;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 
-import java.util.List;
-
 /**
  * Superclass of all render classes for the different data types (line, bar, ...).
  *
@@ -68,17 +66,18 @@ public abstract class DataRenderer extends Renderer {
     protected boolean isDrawingValuesAllowed(ChartInterface chart) {
 
         // 去除不需要画value 和 icon的数据
-        int count = 0;
-        List list = chart.getData().getDataSets();
-        for (Object o: list) {
-            if (o instanceof IDataSet) {
-                if (((IDataSet<?>)o).isDrawValuesEnabled() || ((IDataSet<?>)o).isDrawIconsEnabled()) {
-                    count += ((IDataSet<?>) o).getEntryCount();
-                }
-            }
-        }
-
-        return count < chart.getMaxVisibleCount();// * mViewPortHandler.getScaleX();
+//        int count = 0;
+//        List list = chart.getData().getDataSets();
+//        for (Object o: list) {
+//            if (o instanceof IDataSet) {
+//                if (((IDataSet<?>)o).isDrawValuesEnabled() || ((IDataSet<?>)o).isDrawIconsEnabled()) {
+//                    count += ((IDataSet<?>) o).getEntryCount();
+//                }
+//            }
+//        }
+//        return count < chart.getMaxVisibleCount();// * mViewPortHandler.getScaleX();
+        // 不限制换画多少icon
+        return true;// * mViewPortHandler.getScaleX();
     }
 
     /**
