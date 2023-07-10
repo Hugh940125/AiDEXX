@@ -7,10 +7,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.formatToYMd
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityBloodGlucoseHistoryBinding
 import com.microtech.aidexx.ui.main.bg.BgRepositoryApi
-import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.views.calendar.CalendarDialog
 import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.launch
@@ -74,13 +74,11 @@ class BloodGlucoseHistoryActivity : BaseActivity<BaseViewModel, ActivityBloodGlu
         if (startDate == null || endDate == null) {
             return
         }
-        val formatter =
-            LanguageUnitManager.getCurLanguageConf(this).dmyFormat
-        binding.timeBegin.text = formatter.format(startDate)
+        binding.timeBegin.text = startDate.formatToYMd()
         val calendar = Calendar.getInstance()
         calendar.time = endDate
         calendar.add(Calendar.DATE, -1)
-        binding.timeEnd.text = formatter.format(calendar.time)
+        binding.timeEnd.text = calendar.time.formatToYMd()
         lifecycleScope.launch {
             historyAdapter.setList(
                 BgRepositoryApi.getBloodGlucoseHistory(

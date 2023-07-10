@@ -27,6 +27,7 @@ import com.microtech.aidexx.data.resource.AppUpgradeManager
 import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.databinding.ActivityMainBinding
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
@@ -173,6 +174,9 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
             if (it in 0..4) {
                 binding.viewpager.currentItem = it
             }
+        }
+        EventBusManager.onReceive<BaseEventEntity>(EventBusKey.EVENT_GO_TO_HISTORY, this) {
+            binding.viewpager.currentItem = HISTORY
         }
         EventBusManager.onReceive<Int>(EventBusKey.EVENT_LOGOUT, this) {
             finish()

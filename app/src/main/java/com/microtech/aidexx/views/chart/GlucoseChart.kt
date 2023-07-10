@@ -26,8 +26,8 @@ import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.formatToHHmm
 import com.microtech.aidexx.db.entity.BaseEventEntity
-import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
@@ -37,6 +37,7 @@ import java.lang.ref.WeakReference
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 /**
  * Home页中的图表
@@ -83,7 +84,7 @@ class GlucoseChart : MyChart {
         /**
          * 选中事件浮框具体事件的跳转历史记录按钮点击回调
          */
-        var onGoToHistory: (() -> Unit)?
+        var onGoToHistory: ((BaseEventEntity) -> Unit)?
 
         /**
          * 当前区域所属日期
@@ -198,11 +199,11 @@ class GlucoseChart : MyChart {
         }
 
         setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
-            private val formatSD =
-                LanguageUnitManager.getCurLanguageConf(context).hmFormat
 
             override fun onValueSelected(e: Entry, h: Highlight) {
-                extraParams?.outerDescriptionX?.text = formatSD.format(ChartUtil.xToSecond(h.x) * 1000)
+
+                extraParams?.outerDescriptionX?.text = Date(ChartUtil.xToSecond(h.x) * 1000).formatToHHmm()
+
                 if (ThemeManager.isLight()) {
                     extraParams?.outerDescriptionView?.setBackgroundResource(R.drawable.bg_desc_light)
                 } else {
@@ -241,7 +242,7 @@ class GlucoseChart : MyChart {
                 if (list.size > 5) {
                     extraParams?.goToHistory?.visibility = View.VISIBLE
                     extraParams?.goToHistory?.setOnClickListener {
-                        extraParams?.onGoToHistory?.invoke()
+                        extraParams?.onGoToHistory?.invoke(list.last().data as BaseEventEntity)
                     }
                 } else {
                     extraParams?.goToHistory?.visibility = View.GONE
@@ -433,27 +434,30 @@ class GlucoseChart : MyChart {
 
         xAxis.valueFormatter = object : ValueFormatter() {
 
-            private val mFormatD =
-                LanguageUnitManager.getCurLanguageConf(context).monthDayDateFormat
-            private var mFormatT: SimpleDateFormat =
-                LanguageUnitManager.getCurLanguageConf(context).hmFormat
+            private var mFormatToHHmm: SimpleDateFormat = SimpleDateFormat(
+                this@GlucoseChart.resources.getString(R.string.date_HHmm),
+                Locale.getDefault())
+            private var mFormatToMMdd: SimpleDateFormat = SimpleDateFormat(
+                this@GlucoseChart.resources.getString(R.string.date_md),
+                Locale.getDefault())
 
             override fun getFormattedValue(value: Float): String {
                 val second: Long = ChartUtil.xToSecond(value)
 
-                extraParams?.curDateTv?.text = mFormatD.format(Date(second * 1000))
+                extraParams?.curDateTv?.text = mFormatToMMdd.format(Date(second * 1000))
 
                 val hours =
                     (second + TimeUtils.timeZoneOffsetSeconds()) % TimeUtils.oneDaySeconds / TimeUtils.oneHourSeconds
                 return when {
                     hours == 0L -> {
-                        mFormatT.format(Date(second * 1000))
+//                        SimpleDateFormat("HH:mm\nMM/dd").format(Date(second * 1000))
+                        mFormatToHHmm.format(Date(second * 1000))
                     }
                     (value - lowestVisibleX < xAxis.granularity) && (hours % 24 < 24 - xAxis.granularity * (CHART_LABEL_COUNT - 1)) -> {
-                        mFormatT.format(Date(second * 1000))
+                        mFormatToHHmm.format(Date(second * 1000))
                     }
                     else -> {
-                        mFormatT.format(Date(second * 1000))
+                        mFormatToHHmm.format(Date(second * 1000))
                     }
                 }
             }

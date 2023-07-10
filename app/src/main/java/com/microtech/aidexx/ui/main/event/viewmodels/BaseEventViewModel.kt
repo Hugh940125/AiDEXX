@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import androidx.annotation.IntDef
 import androidx.lifecycle.viewModelScope
 import com.microtech.aidexx.base.BaseViewModel
-import com.microtech.aidexx.common.date2ymdhm
+import com.microtech.aidexx.common.formatToYMdHm
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.db.entity.BaseEventEntity
@@ -78,7 +78,7 @@ abstract class BaseEventViewModel<T: BaseEventEntity, D: BaseEventDetail, P: Bas
 
     fun updateEventTime(date: Date = Date()): String {
         eventTime = date
-        return eventTime.date2ymdhm() ?: Date().date2ymdhm()!!
+        return eventTime.formatToYMdHm() ?: Date().formatToYMdHm()!!
     }
 
     protected abstract suspend fun queryPresetByName(name: String): List<P>

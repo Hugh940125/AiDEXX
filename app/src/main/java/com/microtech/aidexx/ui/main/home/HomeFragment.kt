@@ -102,9 +102,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         chartViewHolder = ChartViewHolder(binding, this) {
             if (switchOrientation == 2) {
                 orientation(initOrientation)
-                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY, true, 500)
+                EventBusManager.sendDelay(EventBusKey.EVENT_GO_TO_HISTORY, it, 500)
             } else {
-                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY, true)
+                EventBusManager.send(EventBusKey.EVENT_GO_TO_HISTORY, it)
             }
         }
     }

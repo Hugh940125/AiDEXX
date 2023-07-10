@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.core.view.isVisible
 import com.microtech.aidexx.R
+import com.microtech.aidexx.common.formatToYM
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.toastShort
 import com.microtech.aidexx.databinding.DialogCalendarBinding
@@ -226,7 +227,12 @@ class CalendarSingleDialog(
     }
 
     private fun buildText(year: Int, month: Int): String {
-        return buildString {
+
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.YEAR, year)
+        calendar.set(Calendar.MONTH, month)
+
+        return calendar.time.formatToYM() ?: buildString {
             append(year)
             append("/")
             append(month)

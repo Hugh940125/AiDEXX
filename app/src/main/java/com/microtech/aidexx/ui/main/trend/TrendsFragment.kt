@@ -23,13 +23,13 @@ import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
+import com.microtech.aidexx.common.formatToYMd
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentTrendBinding
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.ui.main.trend.view.PieChartView
-import com.microtech.aidexx.utils.LanguageUnitManager
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.UnitManager
@@ -501,13 +501,11 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
 
     private fun updateTrends() {
         userIdCurrentShow = UserInfoManager.getCurShowUserId()
-        val formatter =
-            LanguageUnitManager.getCurLanguageConf(requireContext()).dmyFormat
-        binding.timeBegin.text = formatter.format(currentStartDate)
+        binding.timeBegin.text = currentStartDate.formatToYMd()
         val calendar = Calendar.getInstance()
         calendar.time = currentEndDate
         calendar.add(Calendar.DATE, -1)
-        binding.timeEnd.text = formatter.format(calendar.time)
+        binding.timeEnd.text = calendar.time.formatToYMd()
         lifecycleScope.launch {
             viewModel.runCgat(currentStartDate, currentEndDate)
         }

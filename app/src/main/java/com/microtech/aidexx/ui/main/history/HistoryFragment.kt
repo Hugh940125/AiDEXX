@@ -14,29 +14,30 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.dp2px
+import com.microtech.aidexx.common.formatToYMd
 import com.microtech.aidexx.common.getStatusBarHeight
 import com.microtech.aidexx.common.isSameDay
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.databinding.FragmentHistoryBinding
-import com.microtech.aidexx.utils.LanguageUnitManager
+import com.microtech.aidexx.db.entity.BaseEventEntity
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.views.ScrollTab
 import com.microtech.aidexx.views.calendar.CalendarSingleDialog
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Date
 
 
 class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
 
     private val vm by activityViewModels<HistoryViewModel>()
-    private lateinit var dateFormat: SimpleDateFormat
+    private var toJumpDate: Date? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        dateFormat = LanguageUnitManager.getCurLanguageConf(requireContext()).dmyFormat
         binding = FragmentHistoryBinding.inflate(layoutInflater)
         binding.root.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
 
@@ -44,12 +45,17 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
         initScrollTab()
         initViewPager()
 
+        EventBusManager.onReceive<BaseEventEntity>(EventBusKey.EVENT_GO_TO_HISTORY, this) {
+            toJumpDate = Date(it.timestamp)
+        }
+
         return binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        vm.updateDate(Date())
+        vm.updateDate(toJumpDate ?: Date())
+        toJumpDate = null
     }
 
     private fun initTitle() {
@@ -58,7 +64,7 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
             lifecycleScope.launch {
                 vm.curDate.collectLatest {
                     val newDate = it?:Date()
-                    tvTimeSelected.text = dateFormat.format(newDate)
+                    tvTimeSelected.text = newDate.formatToYMd()
                     if (Date().isSameDay(newDate)) {
                         btnNextDay.isClickable = false
                         btnNextDay.setColorFilter(resources.getColor(R.color.gray1,null), PorterDuff.Mode.SRC_IN)

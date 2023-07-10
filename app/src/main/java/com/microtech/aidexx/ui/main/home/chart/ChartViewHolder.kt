@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.databinding.FragmentHomeBinding
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
@@ -29,7 +30,7 @@ import kotlin.time.Duration.Companion.seconds
 class ChartViewHolder(
     private val vb: FragmentHomeBinding,
     private val fragment: HomeFragment,
-    private val toHistory: ()->Unit
+    private val toHistory: (BaseEventEntity)->Unit
     ) {
 
     private val chartViewModel: ChartViewModel by fragment.viewModels()
@@ -65,7 +66,7 @@ class ChartViewHolder(
                 override var rlDescription: RelativeLayout? = vb.rlDescription
                 override var outerDescriptionU: TextView? = descriptionTvContent
                 override var goToHistory: ImageView? = vb.goToHistory
-                override var onGoToHistory: (() -> Unit)? = { toHistory.invoke() }
+                override var onGoToHistory: ((BaseEventEntity) -> Unit)? = { toHistory.invoke(it) }
 
                 override var curDateTv: TextView? = tvXTime
 

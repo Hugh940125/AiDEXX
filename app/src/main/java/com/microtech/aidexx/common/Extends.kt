@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.LocalManageUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.ToastUtil
@@ -46,6 +47,26 @@ const val baseUuid = "00000000-0000-1000-8000-00805F9B34FB"
 const val DATE_FORMAT_YMDHMS = "yyyy-MM-dd HH:mm:ss"
 const val DATE_FORMAT_YMDHM = "yyyy/MM/dd HH:mm"
 const val DATE_FORMAT_HM = "HH:mm"
+
+
+fun Date.formatToYMdHm(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_ymdhm), Locale.getDefault()).format(this)
+fun Date.formatToYMd(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_ymd), Locale.getDefault()).format(this)
+fun Date.formatToYM(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_ym), Locale.getDefault()).format(this)
+fun Date.formatToYMBirthday(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_ym_birthday), Locale.getDefault()).format(this)
+fun Date.formatToMd(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_md), Locale.getDefault()).format(this)
+/**
+ * 中文显示x月x日
+ */
+fun Date.formatToMdShowUnit(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_md_show_unit), Locale.getDefault()).format(this)
+fun Date.formatToHHmm(): String? =
+    SimpleDateFormat(getContext().getString(R.string.date_HHmm), Locale.getDefault()).format(this)
+
 
 
 fun Float.roundTwoDigits(): Float {

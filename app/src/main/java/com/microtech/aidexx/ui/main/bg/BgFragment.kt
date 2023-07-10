@@ -25,6 +25,7 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.date2ymdhm
+import com.microtech.aidexx.common.formatToYMdHm
 import com.microtech.aidexx.common.toColor
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentBgBinding
@@ -123,7 +124,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
 
     private fun refreshView() {
         refreshBtnState()
-        binding.tvTime.text = TimeUtils.currentDate.date2ymdhm()
+        binding.tvTime.text = TimeUtils.currentDate.formatToYMdHm()
         selectDate = TimeUtils.currentDate
         binding.tvGlucoseUnit.text = UnitManager.glucoseUnit.text
     }
@@ -244,7 +245,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
                 binding.tvMoreHistory.visibility = View.VISIBLE
                 binding.llBgRecode.apply {
                     llContainer.visibility = View.VISIBLE
-                    tvGlucoseTime.text = lastGlucoseRecord.getDisplayTime("yyyy-MM-dd HH:mm")
+                    tvGlucoseTime.text = lastGlucoseRecord.getDisplayTime(getString(R.string.date_ymdhm_dash))
                     var tagText = lastGlucoseRecord.getTagText(requireContext().resources)
                     if (tagText.isNullOrEmpty()) {
                         tagText = "— —"

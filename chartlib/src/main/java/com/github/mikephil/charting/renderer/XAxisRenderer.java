@@ -248,7 +248,7 @@ public class XAxisRenderer extends AxisRenderer {
                 if (style.contains("-")) { yValue = y - mAxisLabelPaint.getTextSize(); }
                 if (style.contains("+")) { yValue = y + mAxisLabelPaint.getTextSize(); }
             }
-
+//            yValue = y + mAxisLabelPaint.getTextSize();
             Utils.drawXAxisValue(c, labels[1], xValue, yValue, secondPaint, anchor, angleDegrees);
         } else {
             Utils.drawXAxisValue(c, formattedLabel, x, y, mAxisLabelPaint, anchor, angleDegrees);

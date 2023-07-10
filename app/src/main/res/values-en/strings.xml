@@ -721,13 +721,13 @@
     <!-- 个人信息 -->
 
     <!-- 日期事件格式 -->
-    <string name="date_ymdhm">yyyy/MM/dd HH:mm</string>
+    <string name="date_ymdhm">dd/MM/yyyy HH:mm</string>
     <string name="date_ymdhm_dash">yyyy-MM-dd HH:mm</string>
-    <string name="date_ymd">yyyy/MM/dd</string>
-    <string name="date_ym">yyyy/MM</string>
+    <string name="date_ymd">dd/MM/yyyy</string>
+    <string name="date_ym">MM/yyyy</string>
     <string name="date_ym_birthday">yyyy-MM</string>
-    <string name="date_md">MM/dd</string>
-    <string name="date_md_show_unit">MM月dd日</string>
+    <string name="date_md">dd/MM</string>
+    <string name="date_md_show_unit">dd/MM</string>
     <string name="date_HHmm">HH:mm</string>
     <!-- 日期事件格式 -->
 
