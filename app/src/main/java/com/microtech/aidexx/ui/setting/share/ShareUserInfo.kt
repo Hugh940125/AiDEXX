@@ -3,21 +3,61 @@ package com.microtech.aidexx.ui.setting.share
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import com.microtech.aidexx.R
+import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.common.millisToHours
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.UserEntity
+import com.microtech.aidexx.utils.ThresholdManager
+import com.microtech.aidexx.utils.TimeUtils
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 data class UserTrendInfo(
     val appTime: String?,//	string 非必须 string 时间
-    val trend: String?,//	string 非必须 string 趋势
+
+    //number 非必须 趋势
+    // -99 未知，无趋势 -3 快速下降 -2 下降
+    // -1 缓慢下降 0 平稳 1 缓慢上升 2 上升 3 快速上升
+    val trend: Int?,
+    val trendValue: Int?, //number 非必须 趋势值。两位浮点数
+
     val trendId: String?,//	string 非必须 string 趋势表id
     val dstOffset: String?,//	string 非必须 string 偏移量
     val userId: String?,//	string 必须 string 用户id
     val appTimeZone: String?,//	string 非必须 string 时区
     val bloodGlucose: Int?, //	number 非必须 0.111111 值 mock: @float
 ): Parcelable {
+
+
+    fun getGlucoseTrend(): DeviceModel.GlucoseTrend? =
+        when (trend) {
+            -3 -> DeviceModel.GlucoseTrend.SUPER_FAST_DOWN
+            -2 -> DeviceModel.GlucoseTrend.FAST_DOWN
+            -1 -> DeviceModel.GlucoseTrend.DOWN
+            0 -> DeviceModel.GlucoseTrend.STEADY
+            1 -> DeviceModel.GlucoseTrend.UP
+            2 -> DeviceModel.GlucoseTrend.FAST_UP
+            3 -> DeviceModel.GlucoseTrend.SUPER_FAST_UP
+            else -> null
+        }
+
+    fun getGlucoseLevel(): DeviceModel.GlucoseLevel? =
+        bloodGlucose?.let {
+            if (it < ThresholdManager.hypo) {
+                DeviceModel.GlucoseLevel.LOW
+            } else if (it < ThresholdManager.hyper) {
+                DeviceModel.GlucoseLevel.NORMAL
+            } else {
+                DeviceModel.GlucoseLevel.HIGH
+            }
+        }
+
     constructor(parcel: Parcel) : this(
         parcel.readString(),
-        parcel.readString(),
+        parcel.readValue(Int::class.java.classLoader) as? Int,
+        parcel.readValue(Int::class.java.classLoader) as? Int,
         parcel.readString(),
         parcel.readString(),
         parcel.readString(),
@@ -27,7 +67,8 @@ data class UserTrendInfo(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(appTime)
-        parcel.writeString(trend)
+        parcel.writeValue(trend)
+        parcel.writeValue(trendValue)
         parcel.writeString(trendId)
         parcel.writeString(dstOffset)
         parcel.writeString(userId)
@@ -48,6 +89,7 @@ data class UserTrendInfo(
             return arrayOfNulls(size)
         }
     }
+
 
 }
 
@@ -153,6 +195,47 @@ data class ShareUserInfo(
     } else {
         readerAlias?.ifEmpty { null } ?: readerUserName ?: ""
     }
+
+
+    /**
+     * null - 计算异常 隐藏界面或者--表示
+     * < 0 - 传感器过期
+     */
+    fun getSensorLeftTime(): Int? =
+        cgmDevice?.let { device ->
+            val et = device.et ?: 15
+
+            var startUpTimestamp = 0L
+            device.sensorStartUp?.let {  startUpTime ->
+                device.startUpTimeZone?.let { startUpTimeZone ->
+                    device.dstOffset?.let { dst ->
+                        startUpTimestamp = TimeUtils.calTimestamp(startUpTime, startUpTimeZone, dst == "1") ?: 0
+                    }
+                }
+            }
+
+            if (startUpTimestamp == 0L) {
+                return null
+            }
+            return (et * TimeUtils.oneDayMillis - (System.currentTimeMillis() - startUpTimestamp)).millisToHours()
+        }
+
+    fun getSensorStatusDesc(): String {
+        return getSensorLeftTime()?.let {
+            if (it < 0) {
+                getContext().getString(R.string.sensor_expired)
+            } else if (it < TimeUtils.oneDayHour) {
+                String.format(getContext().getString(R.string.expiring_in_hour), if (it < 1) "1" else "$it")
+            } else {
+                val days = BigDecimal(it).divide(
+                    BigDecimal(TimeUtils.oneDayHour),
+                    RoundingMode.CEILING
+                ).toInt()
+                String.format(getContext().getString(R.string.left_day), "$days")
+            }
+        } ?: String.format(getContext().getString(R.string.left_day), getContext().getString(R.string.data_place_holder))
+    }
+
 
     constructor(parcel: Parcel) : this(
         parcel.readString(),

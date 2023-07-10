@@ -10,9 +10,13 @@ import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.parser.CgmHistoryEntity
-import io.objectbox.annotation.*
-import java.util.*
-import kotlin.jvm.Transient
+import io.objectbox.annotation.ConflictStrategy
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Index
+import io.objectbox.annotation.IndexType
+import io.objectbox.annotation.Unique
+import java.util.Date
+import java.util.TimeZone
 
 @Entity
 class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
@@ -34,7 +38,7 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
             field = value
             appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
             appTimeZone = TimeZone.getDefault().id //
-            dstOffset = TimeZone.getDefault().dstSavings //
+            dstOffset = calDstOffset() //
         }
 
     @Index

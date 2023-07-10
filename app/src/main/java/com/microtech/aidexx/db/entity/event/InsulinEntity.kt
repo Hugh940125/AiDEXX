@@ -26,7 +26,7 @@ class InsulinEntity : BaseEventEntity {
             field = value
             appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
             appTimeZone = TimeZone.getDefault().id //
-            dstOffset = TimeZone.getDefault().dstSavings //
+            dstOffset = calDstOffset()  //
         }
     var insulinName: String? = null
 

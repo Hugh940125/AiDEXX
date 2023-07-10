@@ -29,7 +29,7 @@ class MedicationEntity : BaseEventEntity {
             field = value
             appTime = value.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
             appTimeZone = TimeZone.getDefault().id //
-            dstOffset = TimeZone.getDefault().dstSavings //
+            dstOffset = calDstOffset() //
         }
 
     @Index(type = IndexType.HASH)

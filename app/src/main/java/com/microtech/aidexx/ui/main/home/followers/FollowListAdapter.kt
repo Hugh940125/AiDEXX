@@ -48,16 +48,19 @@ class FollowListAdapter(
                     getFriendlyTimeSpanByNow(timestamp)
                 } ?: ctx.getString(R.string.data_place_holder)
 
-                val leftDay = user.cgmDevice?.et ?: ctx.getString(R.string.data_place_holder)
-                leftTime.text = String.format(ctx.getString(R.string.left_day), "$leftDay")
+                leftTime.text = user.getSensorStatusDesc()
 
                 user.userTrend?.let {
-                    bgPanel.rotation = -90f
+                    bgPanel.rotation = when (it.getGlucoseTrend()) {
+                        DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.FAST_UP -> 180f
+                        DeviceModel.GlucoseTrend.UP -> -90f
+                        else -> 0f
+                    }
                 }
 
                 bgPanel.setBackgroundResource(
                     HomeBackGroundSelector.instance()
-                        .getBgForTrend(DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseLevel.LOW)
+                        .getBgForTrend(user.userTrend?.getGlucoseTrend(), user.userTrend?.getGlucoseLevel())
                 )
 
                 listFollowRoot.setOnClickListener {

@@ -1,9 +1,9 @@
 package com.microtech.aidexx.db.entity
 
 import android.content.res.Resources
-import com.microtech.aidexx.common.DATE_FORMAT_YMDHMS
 import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.TimeUtils
 import io.objectbox.annotation.BaseEntity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Index
@@ -57,11 +57,13 @@ abstract class BaseEventEntity {
             calTimestamp()
         }
 
-    var dstOffset: Int? = null
+    var dstOffset: String? = null
         set(value) {
             field = value
             calTimestamp()
         }
+
+    fun calDstOffset() = if (TimeZone.getDefault().dstSavings > 0) "1" else "0"
 
     fun getDisplayTime(formatStr: String = "HH:mm", useDeviceTimeZone: Boolean = true): String {
         val sdf = SimpleDateFormat(formatStr, Locale.ENGLISH)
@@ -83,16 +85,16 @@ abstract class BaseEventEntity {
     fun setTimeInfo(date: Date) {
         appTime = date.formatWithoutZone() // yyyy-MM-dd HH:mm:ss
         appTimeZone = TimeZone.getDefault().id //
-        dstOffset = if (TimeZone.getDefault().dstSavings > 0) 1 else 0 //
+        dstOffset = calDstOffset() //
     }
 
     fun calTimestamp() {
         if (canCalTimestamp()) {
-            val sdf = SimpleDateFormat(DATE_FORMAT_YMDHMS, Locale.ENGLISH)
-            sdf.timeZone = TimeZone.getTimeZone(appTimeZone)
-            timestamp = appTime?.let {
-                sdf.parse(it)?.time
-            } ?: let {
+            timestamp = TimeUtils.calTimestamp(
+                appTime!!,
+                appTimeZone!!,
+                dstOffset == "1"
+            ) ?: let {
                 LogUtil.d("calTimestamp error=> $appTime $appTimeZone $dstOffset")
                 System.currentTimeMillis()
             }
