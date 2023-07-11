@@ -125,6 +125,7 @@ class UserInfoManager {
      * @param from 0-主动退出 1-被踢
      */
     suspend fun onUserExit(from: Int = 0) {
+        AccountDbRepository.removeAll()
         this@UserInfoManager.userEntity = null
         shareUserInfo = null
         updateLoginFlag(false)

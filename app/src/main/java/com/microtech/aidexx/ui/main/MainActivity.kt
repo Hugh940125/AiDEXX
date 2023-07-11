@@ -59,7 +59,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
     private var checkStep = 0
-    private var curTimeZoneId: String? = null
+    private var curTimeZoneId: Int? = null
     private val homeViewModel: HomeViewModel by viewModels()
     companion object {
         private val TAG = MainActivity::class.java.simpleName
@@ -225,14 +225,14 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     private fun checkTimeZoneChange() {
         curTimeZoneId?.let {
-            if (it != TimeZone.getDefault().id) {
+            if (it != TimeZone.getDefault().rawOffset) {
                 lifecycleScope.launch {
                     delay(500)
                     recreate()
                 }
             }
         }
-        curTimeZoneId = TimeZone.getDefault().id
+        curTimeZoneId = TimeZone.getDefault().rawOffset
     }
 
     private fun checkPermission() {
