@@ -267,6 +267,9 @@ abstract class DataSyncController<T: BaseEventEntity> {
 
     protected suspend fun applyData(userId: String, data: List<T>) {
         insertToDb(data, tClazz)
+        EventBusManager.send(
+            EventBusKey.EVENT_DATA_CHANGED,
+            EventDataChangedInfo(DataChangedType.ADD, data))
     }
 
     protected abstract suspend fun downloadData(userId: String): Boolean

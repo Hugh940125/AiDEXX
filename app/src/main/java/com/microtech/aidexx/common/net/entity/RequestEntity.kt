@@ -5,6 +5,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.memberProperties
 
 const val PAGE_SIZE = 500
+const val PAGE_SIZE_CGM = 5000
 const val CGM_RECENT_COUNT = 5000
 const val BG_RECENT_COUNT = 5000
 const val CAL_RECENT_COUNT = 5000

@@ -110,7 +110,7 @@ object EventRepository {
     suspend inline fun <reified EVENT: BaseEventEntity> getRecentData(
         userId: String,
         count: Int = CGM_RECENT_COUNT,
-        isForLogin: Boolean = false
+        pageSize: Int = PAGE_SIZE
     ): Boolean {
 
         val clazz = EVENT::class.java
@@ -144,7 +144,7 @@ object EventRepository {
                 endAutoIncrementColumn = 0L
             }
 
-            (0 until count).chunked(PAGE_SIZE).all { list ->
+            (0 until count).chunked(pageSize).all { list ->
 
                 if (endAutoIncrementColumn != null && endAutoIncrementColumn!! <= 0L) {
                     LogUtil.d("最小id为0 代表数据下载完了")

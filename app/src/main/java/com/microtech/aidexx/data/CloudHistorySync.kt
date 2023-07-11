@@ -8,6 +8,7 @@ import com.microtech.aidexx.common.net.entity.CAL_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.CGM_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.EVENT_RECENT_COUNT
 import com.microtech.aidexx.common.net.entity.PAGE_SIZE
+import com.microtech.aidexx.common.net.entity.PAGE_SIZE_CGM
 import com.microtech.aidexx.common.net.repository.EventRepository
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
@@ -62,7 +63,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<Any>? =
         when (val apiResult = EventRepository.getEventRecordsByPageInfo(
             userId,
-            PAGE_SIZE,
+            if (tClazz == RealCgmHistoryEntity::class.java) PAGE_SIZE_CGM else PAGE_SIZE,
             startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
             endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
             tClazz
@@ -161,7 +162,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
             val tasks = listOf(
                 async { SettingsManager.downloadSettings(userId) },
-                async { updateStatus(EventRepository.getRecentData<RealCgmHistoryEntity>(userId, CGM_RECENT_COUNT)) },
+                async { updateStatus(EventRepository.getRecentData<RealCgmHistoryEntity>(userId, CGM_RECENT_COUNT, PAGE_SIZE_CGM)) },
                 async { updateStatus(EventRepository.getRecentData<BloodGlucoseEntity>(userId, BG_RECENT_COUNT)) },
                 async { updateStatus(EventRepository.getRecentData<CalibrateEntity>(userId, CAL_RECENT_COUNT)) },
                 async { updateStatus(EventRepository.getRecentData<DietEntity>(userId, EVENT_RECENT_COUNT)) },
