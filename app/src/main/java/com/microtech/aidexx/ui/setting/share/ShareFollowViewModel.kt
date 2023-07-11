@@ -28,9 +28,9 @@ class ShareFollowViewModel: ViewModel() {
 
 
     suspend fun shareMyselfToOther(userName: String, userAlise: String?) = flow {
-        when (ShareAndFollowRepository.saveOrUpdateUserAuthorization(userName, userAlise)) {
-            is ApiResult.Success -> emit(true)
-            is ApiResult.Failure -> emit(false)
+        when (val ret = ShareAndFollowRepository.saveOrUpdateUserAuthorization(userName, userAlise)) {
+            is ApiResult.Success -> emit(null)
+            is ApiResult.Failure -> emit(ret.msg)
         }
     }.flowOn(Dispatchers.IO)
 

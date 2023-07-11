@@ -40,11 +40,7 @@ class ShareAddUserActivity : BaseActivity<BaseViewModel, ActivityShareAddUserBin
                     lifecycleScope.launch {
                         sfViewModel.shareMyselfToOther(account, alias).collect {
                             WaitDialog.dismiss()
-                            if (it) {
-                                finish()
-                            } else {
-                                getString(R.string.failure).toast()
-                            }
+                            it?.toast() ?: finish()
                         }
                     }
                 } else {

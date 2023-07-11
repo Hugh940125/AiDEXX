@@ -30,6 +30,9 @@
     <color name="history_time_line">#FF66A55D</color>
     <color name="history_bg_icon">#404040</color>
 
+    <!-- 分享关注 -->
+    <color name="share_label">#FFBBBBBB</color>
+
     <color name="time_picker_title_bg">#111111</color>
 
 </resources>
