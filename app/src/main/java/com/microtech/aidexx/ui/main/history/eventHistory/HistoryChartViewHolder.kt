@@ -11,6 +11,7 @@ import com.github.mikephil.charting.data.CombinedData
 import com.microtech.aidexx.R
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.databinding.FragmentHistoryEventBinding
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.ui.main.history.EventHistoryFragment
 import com.microtech.aidexx.ui.main.history.HistoryViewModel
 import com.microtech.aidexx.utils.UnitManager
@@ -37,7 +38,7 @@ class EventHistoryChartViewHolder(
                 override var rlDescription: RelativeLayout? = null
                 override var outerDescriptionU: TextView? = null
                 override var goToHistory: ImageView? = null
-                override var onGoToHistory: (() -> Unit)? = null
+                override var onGoToHistory: ((BaseEventEntity) -> Unit)? = null
                 override var curDateTv: TextView? = null
 
                 override fun xMax(): Float = vm.xMax()

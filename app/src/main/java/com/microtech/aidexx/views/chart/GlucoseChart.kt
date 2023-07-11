@@ -512,7 +512,11 @@ class GlucoseChart : MyChart {
         yAxisLeft.textSize = 14f
         yAxisLeft.textColor = textColor!!
 
-        axisRight.isEnabled = false
+        //右侧y轴需要启用 否则数据绘制错乱 原因未知怀疑是majorAxis的设置bug
+        axisRight.isEnabled = true
+        axisRight.setDrawAxisLine(false)
+        axisRight.setDrawGridLines(false)
+        axisRight.setDrawLabels(false)
     }
 
     fun moveToDay(dayInSecond: Long) {
