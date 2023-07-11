@@ -9,6 +9,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
+import com.microtech.aidexx.common.formatToYMdHm
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
@@ -116,19 +117,20 @@ class ChartViewModel: ViewModel() {
                         var needNotify: Boolean
                         withContext(Dispatchers.IO) {
 
-                            LogUtil.d("===CHART=== 当前数据最小日期$curPageMinDate")
+                            LogUtil.d("===CHART=== 当前数据最小日期${curPageMinDate.formatToYMdHm()} ${curPageMinDate.time}")
                             var maxTime = curPageMinDate // ob between是前闭后闭
                             //获取当前最小日期前的最近一条数据时间 因为可能有断层 导致图表无法滚动
                             val latestOne = CgmCalibBgRepository.queryNextByTargetDate(
                                 UserInfoManager.getCurShowUserId(),
                                 maxTime
                             )
+                            LogUtil.d("===CHART=== 当前数据最小日期最靠近的一条数据${latestOne?.timestamp}")
                             maxTime = latestOne?.let { rche ->
-                                rche.deviceTime
+                                Date(rche.timestamp)
                             } ?: maxTime
 
-                            val curMinTime = getCurPageStartDate(curPageMinDate.time)
-                            LogUtil.d("===CHART=== timeMin=$timeMin start=${curMinTime} end=${maxTime}")
+                            val curMinTime = getCurPageStartDate(maxTime.time)
+//                            val curMinTime = getCurPageStartDate(curPageMinDate.time)
 
                             needNotify = loadNextPageData(curMinTime, maxTime, false)
 
@@ -419,7 +421,7 @@ class ChartViewModel: ViewModel() {
      */
     private suspend fun loadNextPageData(startDate: Date, endDate: Date, needApply: Boolean = true): Boolean =
         withContext(Dispatchers.IO) {
-            LogUtil.d("===CHART=== loadNextPage start=${startDate} end=${endDate}")
+            LogUtil.d("===CHART=== loadNextPage start=${startDate.formatToYMdHm()} end=${endDate.formatToYMdHm()}")
             timeMin = ChartUtil.dateToX(startDate)
             var isSuccess = true
 
@@ -507,7 +509,7 @@ class ChartViewModel: ViewModel() {
 
 
     private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis()): Date =
-        Date(curTime - TimeUtils.oneDayMillis * 7)
+        Date(curTime - TimeUtils.oneDayMillis * 4)
 
     //todo 用户退出时调用
     fun clearEventSets() {
