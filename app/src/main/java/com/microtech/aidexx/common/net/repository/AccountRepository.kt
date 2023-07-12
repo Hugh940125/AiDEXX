@@ -1,5 +1,7 @@
 package com.microtech.aidexx.common.net.repository
 
+import android.net.Uri
+import androidx.core.net.toFile
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.common.net.entity.ReqChangePWD
 import com.microtech.aidexx.common.net.entity.ReqEmailRegister
@@ -9,6 +11,9 @@ import com.microtech.aidexx.common.net.entity.ReqPhoneVerCode
 import com.microtech.aidexx.common.net.entity.ReqPwdLogin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 
 object AccountRepository {
 
@@ -57,6 +62,13 @@ object AccountRepository {
 
     suspend fun getuiLogin(clientId: String) = withContext(dispatcher) {
         ApiService.instance.getuiLogin(ReqGetuiLogin(clientId))
+    }
+
+    suspend fun userUploadAvatar(fileUri: Uri) = withContext(dispatcher) {
+        val file = fileUri.toFile()
+        val fileBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+        val part = MultipartBody.Part.createFormData("file", file.name, fileBody)
+        ApiService.instance.userUploadAvatar(part)
     }
 
     suspend fun updateUserInformation(

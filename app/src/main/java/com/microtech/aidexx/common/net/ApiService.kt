@@ -32,6 +32,7 @@ import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.Throttle
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -60,6 +61,7 @@ const val setPassword = "$USER_URL/setPassword"
 const val logout = "$USER_URL/logout"
 const val getuiLogin = "$USER_URL/getuiLogin"
 const val updateUserInformation = "$USER_URL/updateUserInformation"
+const val userUploadAvatar = "$USER_URL/userUploadAvatar"
 
 //gp
 const val sendRegisterEmailVerificationCode = "$USER_URL/sendRegisterEmailVerificationCode"
@@ -191,6 +193,9 @@ interface ApiService {
 
     @POST(updateUserInformation)
     suspend fun updateUserInformation(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<String>>
+    @Multipart
+    @POST(userUploadAvatar)
+    suspend fun userUploadAvatar(@Part part: MultipartBody.Part): ApiResult<BaseResponse<String>>
 
     //gp-start
     @GET(sendRegisterEmailVerificationCode)

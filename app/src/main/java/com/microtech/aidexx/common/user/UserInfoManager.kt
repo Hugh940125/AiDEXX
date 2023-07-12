@@ -78,6 +78,7 @@ class UserInfoManager {
         bodyWeight: Int? = null,
         gender: Int? = null,
         birthDate: String? = null,
+        avatar: String? = null,
     ) {
         userEntity?.let { user ->
             fullName?.let { user.fullName = it }
@@ -86,6 +87,7 @@ class UserInfoManager {
             bodyWeight?.let { userEntity?.bodyWeight = it }
             gender?.let { userEntity?.gender = it }
             birthDate?.let { userEntity?.birthDate = it }
+            avatar?.let { userEntity?.avatar = it }
 
             AccountDbRepository.saveUser(user)
         } ?: let {
@@ -129,10 +131,13 @@ class UserInfoManager {
      * @param from 0-主动退出 1-被踢
      */
     suspend fun onUserExit(from: Int = 0) {
+        updateLoginFlag(false)
+        saveUserId("")
+        MmkvManager.saveToken("")
         AccountDbRepository.removeAll()
         this@UserInfoManager.userEntity = null
         shareUserInfo = null
-        updateLoginFlag(false)
+
         // 用户退出登录
         EventBusManager.send(EventBusKey.EVENT_LOGOUT, 0)
     }

@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.microtech.aidexx.R
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.views.dialog.standard.StandardDialog
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -99,14 +100,20 @@ object PermissionsUtil {
                     missedPermissions.add(permissions[i])
                 }
             }
-            //如果有权限没有被允许
-            if (missedPermissions.isNotEmpty() && !context.shouldShowRequestPermissionRationale(
-                    missedPermissions[0]
-                )
-            ) {
-                //跳转到系统设置权限页面，或者直接关闭页面，不让他继续访问
-                if (showSystemSetting) {
-                    showSystemPermissionsSettingDialog(context)
+            //如果权限被禁止并不再询问
+            if (missedPermissions.isNotEmpty()) {
+
+                if (missedPermissions.any {
+                        !context.shouldShowRequestPermissionRationale(it)
+                }) {
+                    LogUtil.d("权限${missedPermissions.joinToString()} 被拒绝并不再提示")
+                    //跳转到系统设置权限页面，或者直接关闭页面，不让他继续访问
+                    if (showSystemSetting) {
+                        showSystemPermissionsSettingDialog(context)
+                    }
+                } else {
+                    // 不存在不再询问的权限 再加一个回调？
+                    LogUtil.d("权限${missedPermissions.joinToString()}被拒绝")
                 }
             } else {
                 callBackMap[requestCode]?.invoke()
