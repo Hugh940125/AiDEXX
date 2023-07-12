@@ -19,7 +19,7 @@ import java.util.Locale
 object MmkvManager {
     private const val SETTINGS = "SETTINGS"
     private const val PHONE_NUMBER = "PHONE_NUMBER"
-    private const val GET_USER_ID = "GET_USER_ID"
+    private const val USER_ID = "USER_ID"
     private const val THEME = "THEME"
     private const val GLUCOSE_UNIT = "GLUCOSE_UNIT"
     private const val CUSTOMER_SERVICE_ICON_LEFT = "CUSTOMER_SERVICE_ICON_LEFT"
@@ -69,7 +69,7 @@ object MmkvManager {
         MmkvUtil.decodeString(CURRENT_LANGUAGE_TAG, Locale.getDefault().toLanguageTag())
 
 
-    private fun <T: BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) = when(clazz) {
+    private fun <T : BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) = when (clazz) {
         DietSysPresetEntity::class.java -> FLAG_NEW_VERSION_FOOD_SYS_PRESET
         SportSysPresetEntity::class.java -> FLAG_NEW_VERSION_EXERCISE_SYS_PRESET
         MedicineSysPresetEntity::class.java -> FLAG_NEW_VERSION_MEDICINE_SYS_PRESET
@@ -77,7 +77,7 @@ object MmkvManager {
         else -> null
     }
 
-    private fun <T: BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when(clazz) {
+    private fun <T : BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when (clazz) {
         DietSysPresetEntity::class.java -> VERSION_FOOD_SYS_PRESET
         SportSysPresetEntity::class.java -> VERSION_EXERCISE_SYS_PRESET
         MedicineSysPresetEntity::class.java -> VERSION_MEDICINE_SYS_PRESET
@@ -85,32 +85,37 @@ object MmkvManager {
         else -> null
     }
 
-    fun <T: BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
+    fun <T : BaseSysPreset> getEventSysPresetVersion(clazz: Class<T>): String {
         return getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
     }
-    fun <T: BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
+
+    fun <T : BaseSysPreset> setEventSysPresetVersion(version: String, clazz: Class<T>) {
         getEventSysPresetVersionKey(clazz)?.let { MmkvUtil.encodeString(it, version) }
     }
-    fun <T: BaseSysPreset> getEventSysPresetNewVersion(clazz: Class<T>): String {
+
+    fun <T : BaseSysPreset> getEventSysPresetNewVersion(clazz: Class<T>): String {
         return getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.decodeString(it, "") } ?: ""
     }
-    fun <T: BaseSysPreset> setEventSysPresetNewVersion(newVersion: String, clazz: Class<T>) {
+
+    fun <T : BaseSysPreset> setEventSysPresetNewVersion(newVersion: String, clazz: Class<T>) {
         getHasEventSysPresetNewVersionKey(clazz)?.let { MmkvUtil.encodeString(it, newVersion) }
     }
 
 
     fun setLanguageVersion(version: String) = MmkvUtil.encodeString(VERSION_LANGUAGE, version)
-    fun getLanguageVersion():String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
+    fun getLanguageVersion(): String = MmkvUtil.decodeString(VERSION_LANGUAGE, "")
     fun setLanguageNewVersion(version: String) {
         MmkvUtil.encodeString(FLAG_NEW_VERSION_LANGUAGE, version)
     }
-    fun getLanguageNewVersion():String = MmkvUtil.decodeString(FLAG_NEW_VERSION_LANGUAGE, "")
+
+    fun getLanguageNewVersion(): String = MmkvUtil.decodeString(FLAG_NEW_VERSION_LANGUAGE, "")
     fun setUnitVersion(version: String) = MmkvUtil.encodeString(VERSION_UNIT, version)
-    fun getUnitVersion():String = MmkvUtil.decodeString(VERSION_UNIT, "")
+    fun getUnitVersion(): String = MmkvUtil.decodeString(VERSION_UNIT, "")
     fun setUnitNewVersion(version: String) {
         MmkvUtil.encodeString(FLAG_NEW_VERSION_UNIT, version)
     }
-    fun getUnitNewVersion():String = MmkvUtil.decodeString(FLAG_NEW_VERSION_UNIT, "")
+
+    fun getUnitNewVersion(): String = MmkvUtil.decodeString(FLAG_NEW_VERSION_UNIT, "")
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
@@ -118,7 +123,7 @@ object MmkvManager {
     fun isLastLoginEventDownloadSuccess(key: String): Boolean = MmkvUtil.decodeBoolean(key, true)
 
     fun setEventSyncTask(key: String, tasks: DataSyncController.SyncTaskItemList?) {
-        MmkvUtil.encodeString(key, tasks?.toString()?:"")
+        MmkvUtil.encodeString(key, tasks?.toString() ?: "")
     }
 
     fun getEventSyncTask(key: String): DataSyncController.SyncTaskItemList? =
@@ -166,7 +171,8 @@ object MmkvManager {
 
     fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, false)
     fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, true)
-    fun saveUserId(id: String) = MmkvUtil.encodeString(GET_USER_ID, id)
+    fun saveUserId(id: String) = MmkvUtil.encodeString(USER_ID, id)
+    fun getUserId():String = MmkvUtil.decodeString(USER_ID,"")
     fun getOnlineServiceMsgCount() = MmkvUtil.decodeInt(UserInfoManager.instance().userId(), 0)
 
     fun setOnlineServiceMsgCount(count: Int) =

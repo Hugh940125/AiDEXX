@@ -43,7 +43,7 @@ class UserInfoManager {
 
         @Synchronized
         fun instance(): UserInfoManager {
-            if (INSTANCE == null){
+            if (INSTANCE == null) {
                 INSTANCE = UserInfoManager()
             }
             return INSTANCE!!
@@ -56,7 +56,7 @@ class UserInfoManager {
     }
 
     fun userId(): String {
-        return userEntity?.userId ?: "unknown"
+        return userEntity?.userId ?: MmkvManager.getUserId()
     }
 
     fun isLogin(): Boolean {
@@ -65,6 +65,10 @@ class UserInfoManager {
 
     fun updateLoginFlag(isLogin: Boolean) {
         MmkvManager.setLogin(isLogin)
+    }
+
+    fun saveUserId(userId: String) {
+        MmkvManager.saveUserId(userId)
     }
 
     suspend fun updateProfile(
@@ -84,7 +88,7 @@ class UserInfoManager {
             birthDate?.let { userEntity?.birthDate = it }
 
             AccountDbRepository.saveUser(user)
-        } ?:let {
+        } ?: let {
             LogUtil.xLogE("updateProfile user null")
         }
     }

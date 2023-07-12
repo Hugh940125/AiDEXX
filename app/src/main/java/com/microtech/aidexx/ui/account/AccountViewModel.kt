@@ -76,6 +76,7 @@ class AccountViewModel : BaseViewModel() {
                     emit(1 to "开始下载数据")
                     if (downloadData(userId)) {
                         UserInfoManager.instance().updateLoginFlag(true)
+                        UserInfoManager.instance().saveUserId(userId)
                         emit(2 to "登录成功")
                     } else {
                         // 清除token 用户信息
