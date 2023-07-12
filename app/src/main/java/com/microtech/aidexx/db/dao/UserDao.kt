@@ -29,4 +29,8 @@ object UserDao {
         }.remove() > 0
     } ?: false
 
+    suspend fun removeAll() = awaitCallInTx {
+        box.removeAll()
+    }
+
 }

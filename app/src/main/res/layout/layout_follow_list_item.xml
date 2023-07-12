@@ -73,7 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/data_place_holder"
-            android:textColor="#ff171a1d"
+            android:textColor="@color/share_label"
             android:textSize="12sp"
             android:layout_marginBottom="10dp"/>
         <TextView
@@ -81,7 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/left_day"
-            android:textColor="#ff171a1d"
+            android:textColor="@color/share_label"
             android:textSize="12sp" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -90,7 +90,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="司徒李昂"
-        android:textColor="#ff171a1d"
+        android:textColor="@color/share_label"
         android:textSize="16sp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

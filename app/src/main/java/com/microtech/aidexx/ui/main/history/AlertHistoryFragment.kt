@@ -50,9 +50,10 @@ class AlertHistoryFragment : BaseFragment<BaseViewModel, FragmentAlertHistoryBin
                     initView()
 
                     dataList.clear()
-                    dataList.addAll(it)
+                    dataList.addAll(it.sortedByDescending { hdm ->
+                        hdm.time
+                    })
                     adapter.notifyDataSetChanged()
-
                 }
             }
         }

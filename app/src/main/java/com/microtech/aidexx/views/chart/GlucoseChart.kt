@@ -529,7 +529,7 @@ class GlucoseChart : MyChart {
     }
 
     private fun getSubstring(str: String?, count: Int): String {
-        if (null == str || str.isEmpty()) {
+        if (str.isNullOrEmpty()) {
             return ""
         }
         val uriBytes = str.toByteArray()

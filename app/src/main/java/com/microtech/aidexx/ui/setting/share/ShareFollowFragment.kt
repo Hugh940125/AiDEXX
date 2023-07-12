@@ -99,6 +99,11 @@ class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewM
         binding.shareRefreshLayout.autoRefresh()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        timeHandler.removeMessages(messageWhat)
+    }
+
     class TimeHandler(val binding: FragShareOrFollowBinding) : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)

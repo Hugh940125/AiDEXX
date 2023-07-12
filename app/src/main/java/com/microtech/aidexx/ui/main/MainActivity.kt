@@ -43,9 +43,11 @@ import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.tencent.mars.xlog.Log
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.lang.ref.WeakReference
+import java.util.TimeZone
 
 private const val REQUEST_STORAGE_PERMISSION = 2000
 private const val REQUEST_BLUETOOTH_PERMISSION = 2001
@@ -57,6 +59,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     var mCurrentOrientation: Int = Configuration.ORIENTATION_PORTRAIT
     private lateinit var mHandler: Handler
     private var checkStep = 0
+    private var curTimeZoneId: Int? = null
     private val homeViewModel: HomeViewModel by viewModels()
     companion object {
         private val TAG = MainActivity::class.java.simpleName
@@ -204,6 +207,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     override fun onResume() {
+        checkTimeZoneChange()
         super.onResume()
         checkAndUpdateResourceIfNeeded()
         checkPermission()
@@ -217,6 +221,18 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onPause() {
         super.onPause()
         mHandler.removeCallbacksAndMessages(null)
+    }
+
+    private fun checkTimeZoneChange() {
+        curTimeZoneId?.let {
+            if (it != TimeZone.getDefault().rawOffset) {
+                lifecycleScope.launch {
+                    delay(500)
+                    recreate()
+                }
+            }
+        }
+        curTimeZoneId = TimeZone.getDefault().rawOffset
     }
 
     private fun checkPermission() {

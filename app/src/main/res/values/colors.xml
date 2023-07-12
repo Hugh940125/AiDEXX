@@ -182,6 +182,9 @@
     <color name="history_time_line">#FF94D38B</color>
     <color name="history_bg_icon">#FFFFFF</color>
 
+    <!-- 分享关注 -->
+    <color name="share_label">#FF171A1D</color>
+
     <color name="time_picker_title_bg">#e6e6e6</color>
     <color name="white80">#80FFFFFF</color>
     <color name="dialogxMaterialDarkDialogBkgColor">#343434</color>
