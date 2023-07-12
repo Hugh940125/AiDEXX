@@ -59,6 +59,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 import java.util.Date
+import kotlin.math.abs
 
 
 /**
@@ -475,6 +476,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         latestAd?.let {
             val entity = latestAd as AidexXFullBroadcastEntity
             return entity.calTemp != History.CALIBRATION_NOT_ALLOWED && entity.historyTimeOffset > 60 * 6
+                    && latestAdTime != 0L && abs(SystemClock.elapsedRealtime() - latestAdTime) <= 60 * 1000
         }
         return false
     }
@@ -589,13 +591,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         })
     }
 
-    private fun continueCalFetch() {
-        if (newestCalIndex > nextCalIndex) {
-            getController().getCalibration(nextCalIndex)
-            isGettingTransmitterData = true
-        }
-    }
-
     // 保存数据
     private fun saveBriefHistory(
         histories: MutableList<AidexXHistoryEntity>,
@@ -662,7 +657,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                     )
                                             }
                                             if ((lastHyperAlertTime == 0L
-                                                        || deviceTimeMillis - lastHyperAlertTime > alertFrequency)
+                                                        || deviceTimeMillis - lastHyperAlertTime >= alertFrequency)
                                                 && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency
                                             ) {
                                                 historyEntity.eventWarning =
@@ -683,7 +678,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                 )
                                             }
                                             if ((lastHypoAlertTime == 0L
-                                                        || deviceTimeMillis - lastHypoAlertTime > alertFrequency)
+                                                        || deviceTimeMillis - lastHypoAlertTime >= alertFrequency)
                                                 && TimeUtils.currentTimeMillis - deviceTimeMillis <= alertFrequency
                                             ) {
                                                 historyEntity.eventWarning =
@@ -706,7 +701,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                                     )
                                             }
                                             if ((lastUrgentAlertTime == 0L
-                                                        || deviceTimeMillis - lastUrgentAlertTime > urgentFrequency)
+                                                        || deviceTimeMillis - lastUrgentAlertTime >= urgentFrequency)
                                                 && TimeUtils.currentTimeMillis - deviceTimeMillis <= urgentFrequency
                                             ) {
                                                 historyEntity.eventWarning =
@@ -780,23 +775,18 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
     }
 
+    private fun continueCalFetch() {
+        if (newestCalIndex > nextCalIndex) {
+            getController().getCalibration(nextCalIndex)
+            isGettingTransmitterData = true
+        }
+    }
+
     private fun getLastAlertTime(sensorId: String, type: Int): Long {
         val build = cgmHistoryBox!!.query().equal(
             RealCgmHistoryEntity_.sensorId, sensorId
         )
-        when (type) {
-            History.HISTORY_LOCAL_HYPER -> build.equal(
-                RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPER
-            )
-
-            History.HISTORY_LOCAL_HYPO -> build.equal(
-                RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_HYPO
-            )
-
-            History.HISTORY_LOCAL_URGENT_HYPO -> build.equal(
-                RealCgmHistoryEntity_.eventWarning, History.HISTORY_LOCAL_URGENT_HYPO
-            )
-        }
+        build.equal(RealCgmHistoryEntity_.eventWarning, type)
         val lastAlert = build.orderDesc(RealCgmHistoryEntity_.idx).build().findFirst()
         return lastAlert?.deviceTime?.time ?: 0
     }

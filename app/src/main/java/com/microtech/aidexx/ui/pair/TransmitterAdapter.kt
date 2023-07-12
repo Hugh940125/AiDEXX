@@ -23,8 +23,8 @@ class TransmitterAdapter :
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
-        if (position == 0) {
-            holder.setGone(R.id.trans_line, true)
-        }
+//        if (position == 0) {
+//            holder.setGone(R.id.trans_line, true)
+//        }
     }
 }

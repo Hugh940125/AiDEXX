@@ -36,7 +36,7 @@ fun Float.fromGlucoseValue(): Float {
 
 fun Float.mmolValueDisplay(): String {
     return when (UnitManager.glucoseUnit) {
-        UnitManager.GlucoseUnit.MMOL_PER_L -> this.toString()
+        UnitManager.GlucoseUnit.MMOL_PER_L -> UnitManager.unitFormat().format(this)
         UnitManager.GlucoseUnit.MG_PER_DL -> UnitManager.unitFormat().format(this * 18f)
     }
 }

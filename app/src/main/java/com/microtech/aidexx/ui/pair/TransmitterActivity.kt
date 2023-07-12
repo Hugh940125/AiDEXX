@@ -5,11 +5,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
+import androidx.core.text.toSpannable
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
@@ -151,6 +155,14 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     }
 
     private fun initView() {
+        val spannableString = SpannableString("点击查看更多历史设备")
+        spannableString.setSpan(
+            ForegroundColorSpan(getColor(R.color.green_65)),
+            5,
+            9,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        binding.tvHistoryDevice.text = spannableString.toSpannable()
         binding.actionbarTransmitter.getLeftIcon().setOnClickListener { finish() }
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()

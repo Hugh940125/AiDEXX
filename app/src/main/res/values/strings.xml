@@ -182,7 +182,7 @@
     <string name="hr6">6小时</string>
     <string name="hr12">12小时</string>
     <string name="hr24">24小时</string>
-    <string name="Pair">配对</string>
+    <string name="pair">配对</string>
     <string name="expand">展开</string>
     <string name="Collapse">收起</string>
     <string name="guide_alert">不要忽略高血糖和低血糖的症状。\n\n如果您的血糖提醒和传感器血糖读数与您的症状或期望不符，请使用血糖仪测量指尖血。</string>

@@ -86,7 +86,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:id="@+id/bt_confirm"
-            android:text="@string/Pair" />
+            android:text="@string/pair" />
 
     </LinearLayout>
 

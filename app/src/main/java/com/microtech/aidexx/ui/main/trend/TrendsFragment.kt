@@ -337,11 +337,14 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p90Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        daily90[i].toFloat().toGlucoseValue()
+                        if (UnitManager.glucoseUnit.index == 0) daily90[i].toFloat() else daily90[i].toFloat() * 18
                     )
                 )
             }
             val p90DataSet = LineDataSet(p90Entries, "")
+            p90DataSet.setDrawIcons(false)
+            p90DataSet.setDrawValues(false)
+            p90DataSet.isHighlightEnabled = false
             p90DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p90DataSet.setDrawCircles(false)
             val color90 = ThemeManager.getTypeValue(context, R.attr.colorTrendChart90)
@@ -352,11 +355,14 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p10Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        daily10[i].toFloat().toGlucoseValue()
+                        if (UnitManager.glucoseUnit.index == 0) daily10[i].toFloat() else daily10[i].toFloat() * 18
                     )
                 )
             }
             val p10DataSet = LineDataSet(p10Entries, "")
+            p10DataSet.setDrawIcons(false)
+            p10DataSet.setDrawValues(false)
+            p10DataSet.isHighlightEnabled = false
             p10DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p10DataSet.setDrawCircles(false)
             p10DataSet.color = resources.getColor(R.color.transparent)
@@ -387,11 +393,14 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p75Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        daily75[i].toFloat().toGlucoseValue()
+                        if (UnitManager.glucoseUnit.index == 0) daily75[i].toFloat() else daily75[i].toFloat() * 18
                     )
                 )
             }
             val p75DataSet = LineDataSet(p75Entries, "")
+            p75DataSet.setDrawIcons(false)
+            p75DataSet.setDrawValues(false)
+            p75DataSet.isHighlightEnabled = false
             p75DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p75DataSet.setDrawCircles(false)
             val color75 = ThemeManager.getTypeValue(context, R.attr.colorTrendChart75)
@@ -403,11 +412,14 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p25Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        daily25[i].toFloat().toGlucoseValue()
+                        if (UnitManager.glucoseUnit.index == 0) daily25[i].toFloat() else daily25[i].toFloat() * 18
                     )
                 )
             }
             val p25DataSet = LineDataSet(p25Entries, "")
+            p25DataSet.setDrawIcons(false)
+            p25DataSet.setDrawValues(false)
+            p25DataSet.isHighlightEnabled = false
             p25DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p25DataSet.setDrawCircles(false)
             p25DataSet.color = resources.getColor(R.color.transparent)
@@ -447,12 +459,15 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                     meanEntries.add(
                         Entry(
                             24f / 288 * (i.toFloat() + 0.5f),
-                            dailyMean[i].toFloat().toGlucoseValue()
+                            if (UnitManager.glucoseUnit.index == 0) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
                         )
                     )
                 }
             }
             val meanDataSet = LineDataSet(meanEntries, "")
+            meanDataSet.setDrawIcons(false)
+            meanDataSet.setDrawValues(false)
+            meanDataSet.isHighlightEnabled = false
             meanDataSet.axisDependency = YAxis.AxisDependency.LEFT
             meanDataSet.setDrawCircles(false)
             meanDataSet.color = ThemeManager.getTypeValue(context, R.attr.colorTrendChartMain)
