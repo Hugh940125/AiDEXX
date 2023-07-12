@@ -32,6 +32,8 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.toGlucoseValue
 import java.lang.ref.WeakReference
 import java.nio.charset.Charset
@@ -141,6 +143,12 @@ class GlucoseChart : MyChart {
         defStyle
     )
 
+    override fun reload() {
+        super.reload()
+        LogUtil.d("===CHART=== reload")
+        EventBusManager.send(EventBusKey.EVENT_RELOAD_CHART, extraParams?.getYAxisStyle())
+    }
+
     fun setAndUseLifecycleOwnerEvent(lifecycleOwner: LifecycleOwner) {
         this.lifecycleOwner = lifecycleOwner
 
@@ -164,6 +172,10 @@ class GlucoseChart : MyChart {
     private val timerHandler by lazy { THandler(this) }
 
     init {
+        initView()
+    }
+
+    private fun initView() {
 //        isLogEnabled = BuildConfig.DEBUG
         textColor = ThemeManager.getTypeValue(context, R.attr.colorChartText)
         initBackground()
@@ -294,6 +306,7 @@ class GlucoseChart : MyChart {
      * 初始化数据集
      */
     fun initData(combinedData: CombinedData) {
+        LogUtil.d("initData", TAG)
         updateChartAxisY()
         updateChartAxisX()
         updateListener()
@@ -310,7 +323,7 @@ class GlucoseChart : MyChart {
      *                       默认false时，会根据图表当前是否在最新视图位置判断是否需要移动到最新视图
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
-
+        LogUtil.d("notifyChanged", TAG)
         resetTimerToRefreshChart()
         // 如果初始化比较慢 新来的数据优先调到这里
         if (data == null) {

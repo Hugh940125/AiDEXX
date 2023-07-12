@@ -154,12 +154,14 @@ class ChartViewHolder(
         }
         /** 切换用户 */
         EventBusManager.onReceive<ShareUserInfo>(EventBusKey.EVENT_SWITCH_USER, fragment) {
+            LogUtil.d("EVENT_SWITCH_USER", TAG)
             chartViewModel.reload()
         }
 
         /** 高低血糖阈值改变 */
         EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_HYP_CHANGE, fragment) {
             // todo 待优化把所有数据重新按照高低血糖阈值计算一遍
+            LogUtil.d("EVENT_HYP_CHANGE", TAG)
             chartViewModel.reload()
         }
 

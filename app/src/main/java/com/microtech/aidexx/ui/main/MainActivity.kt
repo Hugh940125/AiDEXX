@@ -72,6 +72,8 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     class MainHandler(val activity: MainActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
+        private var dialogKey: String = "battery_optimize-${System.currentTimeMillis()}"
+
         override fun handleMessage(msg: Message) {
             reference.get()?.let {
                 if (!it.isFinishing) {
@@ -121,7 +123,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     },
                                     confirm = {
                                         ignoreBatteryOptimization(it)
-                                    }, key = "battery_optimize"
+                                    }, key = dialogKey
                                 )
                             }
                         }
@@ -183,6 +185,15 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         }
         EventBusManager.onReceive<Int>(EventBusKey.EVENT_LOGOUT, this) {
             finish()
+        }
+
+        /** 图表异常 */
+        EventBusManager.onReceive<Int?>(EventBusKey.EVENT_RELOAD_CHART, this) {
+            lifecycleScope.launch {
+                delay(500)
+                LogUtil.xLogE("EVENT_RELOAD_CHART - recreate", TAG)
+                recreate()
+            }
         }
     }
 

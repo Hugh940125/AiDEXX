@@ -226,7 +226,7 @@ class ChartViewModel: ViewModel() {
             it.deviceTime
         } ?: Date()
         LogUtil.d("查询第一条 日期 ${cgmMaxDate} ${this@ChartViewModel}", TAG)
-        val minDate = getCurPageStartDate(cgmMaxDate.time)
+        val minDate = getCurPageStartDate(cgmMaxDate.time, true)
         LogUtil.d("查询第一条 最小日期 ${minDate} ${this@ChartViewModel}", TAG)
         // 加载所有该日期区间的数据
         loadNextPageData(minDate, Date())
@@ -276,6 +276,7 @@ class ChartViewModel: ViewModel() {
      *      --通知外部刷页面
      */
     fun reload() {
+        LogUtil.d("reload()", TAG)
         if (!isDataInit) return
         reset()
         viewModelScope.launch {
@@ -508,8 +509,8 @@ class ChartViewModel: ViewModel() {
         )
 
 
-    private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis()): Date =
-        Date(curTime - TimeUtils.oneDayMillis * 4)
+    private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis(), isFromInit: Boolean = false): Date =
+        Date(curTime - TimeUtils.oneDayMillis * (if (isFromInit) 2 else 4))
 
     //todo 用户退出时调用
     fun clearEventSets() {
