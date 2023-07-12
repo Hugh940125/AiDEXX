@@ -39,11 +39,10 @@ object StringUtils {
         return result
     }
 
-    fun getPrivacyPhone(mobile: String): String {
-        return mobile.substring(0, 3) + "****" + mobile.substring(
-            7,
-            mobile.length
-        )
+    fun getMaskedPhone(phone: String?): String? = phone?.let {
+        if (it.length == 11) {
+            it.replaceRange(3, 7, "****")
+        } else it
     }
 
     fun initProtocol(

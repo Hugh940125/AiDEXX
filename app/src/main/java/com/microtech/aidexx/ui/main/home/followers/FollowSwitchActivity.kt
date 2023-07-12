@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.main.home.followers
 
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -10,6 +11,8 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
@@ -31,6 +34,7 @@ import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
 import com.microtech.aidexx.views.dialog.Dialogs
@@ -145,9 +149,7 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                     val shareUserInfo = ShareUserInfo()
                     shareUserInfo.dataProviderId = UserInfoManager.instance().userId()
 
-                    LiveEventBus
-                        .get(EventBusKey.EVENT_SWITCH_USER, ShareUserInfo::class.java)
-                        .post(shareUserInfo) //通知刷新历史页面
+                    EventBusManager.send(EventBusKey.EVENT_SWITCH_USER, shareUserInfo)
 
                     followListAdapter.unselectAll()
 
@@ -158,6 +160,17 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                 ActivityUtil.toActivity(this@FollowSwitchActivity, ShareFollowActivity::class.java)
             }
             rvFollowList.layoutManager = LinearLayoutManager(this@FollowSwitchActivity)
+            rvFollowList.addItemDecoration(object: ItemDecoration() {
+                override fun getItemOffsets(
+                    outRect: Rect,
+                    view: View,
+                    parent: RecyclerView,
+                    state: RecyclerView.State
+                ) {
+                    super.getItemOffsets(outRect, view, parent, state)
+                    outRect.bottom = 20
+                }
+            })
             rvFollowList.adapter = followListAdapter
             followListAdapter.refreshData(dataList)
         }

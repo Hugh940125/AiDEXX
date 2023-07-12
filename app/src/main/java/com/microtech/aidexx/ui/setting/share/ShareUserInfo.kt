@@ -9,6 +9,7 @@ import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.millisToHours
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.UserEntity
+import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import java.math.BigDecimal
@@ -191,9 +192,9 @@ data class ShareUserInfo(
         get() = normalPushState == 1
 
     fun getDisplayName() = if (UserInfoManager.instance().userId() == dataReaderId) {
-        providerAlias?.ifEmpty { null } ?: providerUserName ?: ""
+        providerAlias?.ifEmpty { null } ?: StringUtils.getMaskedPhone(providerUserName) ?: ""
     } else {
-        readerAlias?.ifEmpty { null } ?: readerUserName ?: ""
+        readerAlias?.ifEmpty { null } ?: StringUtils.getMaskedPhone(readerUserName) ?: ""
     }
 
 
