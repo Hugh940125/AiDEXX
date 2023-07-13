@@ -58,6 +58,9 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
 
     override fun onResume() {
         super.onResume()
+        binding.tvTrendsTitle.text = UserInfoManager.shareUserInfo?.let {
+            it.getDisplayName()
+        } ?: getString(R.string.trends_title)
         currentStartDate = Dialogs.DateInfo.dateLastWeek!!
         currentEndDate = Dialogs.DateInfo.dateToday!!
         binding.trendRefreshLayout.autoRefresh()
@@ -77,6 +80,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
     }
 
     private fun initView() {
+
         binding.trendRefreshLayout.setOnRefreshListener {
             updateTrends()
         }

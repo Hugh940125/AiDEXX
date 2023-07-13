@@ -18,6 +18,7 @@ import com.microtech.aidexx.common.formatToYMd
 import com.microtech.aidexx.common.getStatusBarHeight
 import com.microtech.aidexx.common.isSameDay
 import com.microtech.aidexx.common.setDebounceClickListener
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHistoryBinding
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -54,6 +55,9 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
 
     override fun onResume() {
         super.onResume()
+        binding.tvHistoryTitle.text = UserInfoManager.shareUserInfo?.let {
+            it.getDisplayName()
+        } ?: getString(R.string.title_history)
         vm.updateDate(toJumpDate ?: Date())
         toJumpDate = null
     }
@@ -61,6 +65,7 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
     private fun initTitle() {
 
         binding.apply {
+
             lifecycleScope.launch {
                 vm.curDate.collectLatest {
                     val newDate = it?:Date()

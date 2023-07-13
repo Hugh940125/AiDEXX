@@ -3,6 +3,7 @@ package com.microtech.aidexx.ui.setting
 import com.google.gson.Gson
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
@@ -69,6 +70,9 @@ object SettingsManager {
     }
 
     suspend fun downloadSettings(userId: String) {
+        if (UserInfoManager.instance().userId() != userId) {
+            return
+        }
         when (val response = ApiService.instance.downloadSetting(userId)) {
             is ApiResult.Success -> {
                 response.result.data?.let { settingsEntity ->

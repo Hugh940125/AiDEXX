@@ -450,7 +450,7 @@ class ChartViewModel: ViewModel() {
                         }
                     },
                     async {
-                        CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
+                        CgmCalibBgRepository.queryBgByPage(startDate, endDate, UserInfoManager.getCurShowUserId())?.let { d ->
                             if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
@@ -463,7 +463,7 @@ class ChartViewModel: ViewModel() {
                         }
                     },
                     async {
-                        CgmCalibBgRepository.queryCalByPage(startDate, endDate)?.let { d ->
+                        CgmCalibBgRepository.queryCalByPage(startDate, endDate, UserInfoManager.getCurShowUserId())?.let { d ->
                             if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
@@ -476,7 +476,7 @@ class ChartViewModel: ViewModel() {
                         }
                     },
                     async {
-                        EventDbRepository.queryEventByPage(startDate, endDate).let { d ->
+                        EventDbRepository.queryEventByPage(startDate, endDate, UserInfoManager.getCurShowUserId()).let { d ->
                             if (d.isNotEmpty() && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {

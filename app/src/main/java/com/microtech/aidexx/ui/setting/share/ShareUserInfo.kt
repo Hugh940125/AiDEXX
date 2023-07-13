@@ -7,13 +7,18 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.millisToHours
+import com.microtech.aidexx.common.millisToMinutes
+import com.microtech.aidexx.common.parseToTimestamp
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.UserEntity
 import com.microtech.aidexx.utils.StringUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
+import com.microtech.aidexx.utils.toGlucoseValue
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 data class UserTrendInfo(
     val appTime: String?,//	string 非必须 string 时间
@@ -111,6 +116,25 @@ data class CgmDevice(
     val deviceMac: String?, // 必须 string 设备mac地址
     val deviceModel: String?, // 必须 string 设备型号
 ): Parcelable {
+
+    /**
+     * null - 计算异常 隐藏界面或者--表示
+     * < 0 - 传感器过期
+     */
+    fun getSensorLeftTime(): Int? {
+        val et = et ?: 15
+        var startUpTimestamp = sensorStartUp?.let {  startUpTime ->
+            kotlin.runCatching {
+                SimpleDateFormat("yyyy-MM-dd HH:mm:ssZ", Locale.ENGLISH).parse(startUpTime)?.time
+            }.getOrNull() ?: 0L
+        } ?: 0L
+
+        if (startUpTimestamp == 0L) {
+            return null
+        }
+        return (et * TimeUtils.oneDayMillis - (System.currentTimeMillis() - startUpTimestamp)).millisToHours()
+    }
+
     constructor(parcel: Parcel) : this(
         parcel.readValue(Int::class.java.classLoader) as? Int,
         parcel.readString(),
@@ -198,31 +222,17 @@ data class ShareUserInfo(
     }
 
 
-    /**
-     * null - 计算异常 隐藏界面或者--表示
-     * < 0 - 传感器过期
-     */
-    fun getSensorLeftTime(): Int? =
-        cgmDevice?.let { device ->
-            val et = device.et ?: 15
+    fun getGlucoseValue(): Float? = userTrend?.bloodGlucose?.toGlucoseValue()
 
-            var startUpTimestamp = 0L
-            device.sensorStartUp?.let {  startUpTime ->
-                device.startUpTimeZone?.let { startUpTimeZone ->
-                    device.dstOffset?.let { dst ->
-                        startUpTimestamp = TimeUtils.calTimestamp(startUpTime, startUpTimeZone, dst == "1") ?: 0
-                    }
-                }
-            }
-
-            if (startUpTimestamp == 0L) {
-                return null
-            }
-            return (et * TimeUtils.oneDayMillis - (System.currentTimeMillis() - startUpTimestamp)).millisToHours()
-        }
+    fun getLatestValueTimeStr(): String? {
+        return userTrend?.appTime?.let {
+            val timestamp = it.parseToTimestamp(userTrend?.appTimeZone!!)
+            getFriendlyTimeSpanByNow(timestamp)
+        } ?: getContext().getString(R.string.data_place_holder)
+    }
 
     fun getSensorStatusDesc(): String {
-        return getSensorLeftTime()?.let {
+        return cgmDevice?.getSensorLeftTime()?.let {
             if (it < 0) {
                 getContext().getString(R.string.sensor_expired)
             } else if (it < TimeUtils.oneDayHour) {
@@ -237,6 +247,20 @@ data class ShareUserInfo(
         } ?: String.format(getContext().getString(R.string.left_day), getContext().getString(R.string.data_place_holder))
     }
 
+
+    private fun getFriendlyTimeSpanByNow(timestamp: Long?): String {
+        return timestamp?.let {
+            val minutesAgo = (TimeUtils.currentTimeMillis - it).millisToMinutes()
+            return if (minutesAgo == 0) {
+                getContext().getString(R.string.now)
+            } else {
+                buildString {
+                    append(minutesAgo)
+                    append(getContext().getString(R.string.min_ago))
+                }
+            }
+        } ?: getContext().getString(R.string.data_place_holder)
+    }
 
     constructor(parcel: Parcel) : this(
         parcel.readString(),

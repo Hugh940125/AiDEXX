@@ -70,7 +70,9 @@ public abstract class LineRadarRenderer extends LineScatterCandleRadarRenderer {
 
             int save = c.save();
 
-            c.clipPath(filledPath);
+            // 注释代码实现空间换时间 多占10m空间但不卡顿
+            //不注释-执行时内存多占用 大数据量下多大几百M 导致卡顿 执行后会释放
+//            c.clipPath(filledPath);
             c.drawColor(color);
             try {
                 c.drawPaint(mRenderPaint);

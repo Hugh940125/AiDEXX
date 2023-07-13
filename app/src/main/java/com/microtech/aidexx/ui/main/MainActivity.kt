@@ -416,6 +416,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         super.onDestroy()
         Log.appenderClose()
         binding.mainTabView.onTabChange = null
+        UserInfoManager.shareUserInfo = null
     }
 
     override fun onBackPressed() {

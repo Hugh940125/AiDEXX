@@ -78,21 +78,19 @@ class ShareAndFollowEditActivity :
                 } ?: finish()
             } ?: finish()
 
+            val accountMasked = editData.getDisplayName()
+            shareAndFollowEditActionbar.setTitle(accountMasked)
+            tvAccountValue.text = accountMasked
+            etAliasValue.setText(editData.providerAlias ?: "")
             when (editFrom) {
                 EDIT_FROM_SHARE -> {
                     clEdit.visibility = View.GONE
                     btnEditDelete.text = getString(R.string.cancel_share)
-                    shareAndFollowEditActionbar.setTitle(editData.getDisplayName())
-                    tvAccountValue.text = editData.providerUserName
 
-                    etAliasValue.setText(editData.providerAlias ?: "")
                 }
                 EDIT_FROM_FOLLOW -> {
                     clEdit.visibility = View.VISIBLE
                     btnEditDelete.text = getString(R.string.cancel_follow)
-                    shareAndFollowEditActionbar.setTitle(editData.getDisplayName())
-                    tvAccountValue.text = editData.providerUserName
-                    etAliasValue.setText(editData.providerAlias ?: "")
                 }
             }
             shareAndFollowEditActionbar.getLeftIcon().setOnClickListener {

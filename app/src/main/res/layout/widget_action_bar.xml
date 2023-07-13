@@ -5,7 +5,7 @@
     android:id="@+id/actionbar_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/bgNav"
+    android:background="@color/bg_nav_bar"
     android:orientation="horizontal">
 
     <ImageView

@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
@@ -29,12 +30,15 @@ import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
+import com.microtech.aidexx.ui.setting.share.ShareFollowViewModel
 import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -55,9 +59,13 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private var mainActivity: MainActivity? = null
     private var lastPageTag: String? = null
     private val homeViewModel: HomeViewModel by activityViewModels()
+    private val shareVm by viewModels<ShareFollowViewModel>()
+
     private lateinit var chartViewHolder: ChartViewHolder
+
     private var transChangeCallback = fun(_: DeviceModel?) { judgeState() }
 
+    private var fixedRateToGetFollowListJob: Job? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mainActivity = activity as MainActivity
@@ -70,10 +78,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     override fun onResume() {
         super.onResume()
         orientation(initOrientation)
+        UserInfoManager.shareUserInfo?.let {
+            startFixedRateToGetFollowListJob()
+        }
     }
 
     override fun onPause() {
         super.onPause()
+        stopFixedRateToGetFollowListJob()
     }
 
     override fun onDetach() {
@@ -166,16 +178,13 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                     changeUi(true)
                     tvSn.text =
                         TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: ""
+
                 } else { // 其他人
                     changeUi(false)
 //                  todo 添加第一次查看分享人时的引导  GuideManager.instance().startHomeGuide(activity, this@HomeFragment, vb)
-                    dataOwner.text = it.getDisplayName()
-                    frgShare.tvUnitShare.text = UnitManager.glucoseUnit.text
-                    tvSn.text = it.cgmDevice?.deviceSn ?: ""
-
+                    updateShareUserData()
                 }
             }
-
         }
 
         EventBusManager.onReceive<MutableList<ShareUserInfo>>(EventBusKey.EVENT_FOLLOWERS_UPDATED, this) {
@@ -271,6 +280,65 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         })
         binding.serviceView.show()
     }
+
+
+    private fun startFixedRateToGetFollowListJob() {
+        fixedRateToGetFollowListJob?.cancel()
+        fixedRateToGetFollowListJob = lifecycleScope.launch {
+            shareVm.fixedRateToGetFollowList().collectLatest {
+                it?.let {
+                    it.find {  shareUserInfo ->
+                        shareUserInfo.userAuthorizationId == UserInfoManager.shareUserInfo?.userAuthorizationId
+                    }?.let { latestShareUserInfo ->
+                        UserInfoManager.shareUserInfo = latestShareUserInfo
+                        updateShareUserData()
+                    } ?: let {
+                        LogUtil.d("当前关注的用户已经取消授权", TAG)
+                    }
+                }
+            }
+        }
+    }
+    private fun stopFixedRateToGetFollowListJob() {
+        fixedRateToGetFollowListJob?.cancel()
+    }
+    private fun updateShareUserData() {
+        UserInfoManager.shareUserInfo?.let {
+            binding.apply {
+                dataOwner.text = it.getDisplayName()
+                tvSn.text = it.cgmDevice?.deviceSn ?: ""
+
+                frgShare.apply {
+
+                    val glucoseValue = it.getGlucoseValue()
+                    tvGlucoseValueShare.text = "${glucoseValue ?: getString(R.string.data_place_holder)}"
+                    tvUnitShare.isVisible = glucoseValue != null
+                    if (tvUnitShare.isVisible) {
+                        tvUnitShare.text = UnitManager.glucoseUnit.text
+                    }
+
+                    tvValueTimeShare.text = it.getLatestValueTimeStr()
+                    tvGlucoseStateShare.isVisible = false
+                    tvGlucoseStateShare.text = ""
+                    tvSensorRemainTimeShare.text = it.getSensorStatusDesc()
+                    it.userTrend?.let {
+                        bgPanelShare.rotation = when (it.getGlucoseTrend()) {
+                            DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.FAST_UP -> 180f
+                            DeviceModel.GlucoseTrend.UP -> -90f
+                            else -> 0f
+                        }
+                    }
+                    bgPanelShare.setBackgroundResource(
+                        HomeBackGroundSelector.instance()
+                            .getBgForTrend(it.userTrend?.getGlucoseTrend(), it.userTrend?.getGlucoseLevel())
+                    )
+
+                }
+
+            }
+        }
+    }
+
 
     companion object {
         @JvmStatic

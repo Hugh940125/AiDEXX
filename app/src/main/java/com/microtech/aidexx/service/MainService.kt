@@ -153,10 +153,10 @@ class MainService : Service(), LifecycleOwner {
                         return
                     }
                 }
-                serviceMainScope.launch {
-                    CloudHistorySync.downloadData(UserInfoManager.getCurShowUserId())
-                }
-                if (count % 2 == 0) {
+                if (count % 3 == 0) {
+                    serviceMainScope.launch {
+                        CloudHistorySync.downloadData(UserInfoManager.getCurShowUserId())
+                    }
                     serviceMainScope.launch {
                         CloudHistorySync.uploadDeletedData()
                         CloudHistorySync.uploadHistoryData()
@@ -164,6 +164,7 @@ class MainService : Service(), LifecycleOwner {
                         SettingsManager.uploadSettings()
                     }
                 }
+
                 if (count % 6 == 0) {
                     if (model?.entity?.sensorStartTime != null && model.entity.id == null) {
                         AidexxApp.mainScope.launch {
