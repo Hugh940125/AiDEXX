@@ -34,6 +34,7 @@ import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.main.home.HomeViewModel
 import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
+import com.microtech.aidexx.ui.welcome.WelcomeActivity
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.ThemeManager.themeConfig
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -426,7 +427,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 
     private fun checkAndUpdateResourceIfNeeded() {
         MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
-            startActivity(Intent(this, LoadResourceActivity::class.java))
+            startActivity(Intent(this, WelcomeActivity::class.java))
             finish()
         }
     }

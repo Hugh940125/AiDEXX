@@ -5,6 +5,7 @@
         <!--启动画面背景颜色-->
         <item name="windowSplashScreenBackground">@android:color/black</item>
         <!-- 启动画面icon图标：这里可以是图片、帧动画等-->
+<!--        <item name="windowSplashScreenAnimatedIcon">@drawable/news_avd_v02</item>-->
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
         <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
         <!-- icon动画在关闭之前显示的时长：最长时间为1000毫秒-->
@@ -12,7 +13,7 @@
         <!--        &lt;!&ndash; 启动画面底部的 Brand 图片&ndash;&gt;-->
         <!--        <item name="android:windowSplashScreenBrandingImage" tools:targetApi="s">@drawable/pic_aidex</item>-->
         <!--        &lt;!&ndash; Splash退出后的主题&ndash;&gt;-->
-        <!--        <item name="postSplashScreenTheme">@style/Theme.Android12_Splash</item>-->
+        <item name="postSplashScreenTheme">@style/AppThemeLight</item>
     </style>
 
     <style name="StandardDialog" parent="android:style/Theme.Dialog">
