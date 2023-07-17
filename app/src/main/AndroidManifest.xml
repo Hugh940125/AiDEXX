@@ -161,11 +161,6 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".ui.setting.LoadResourceActivity"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
-        <activity
             android:name=".ui.main.home.followers.FollowSwitchActivity"
             android:exported="false"
             android:screenOrientation="portrait"

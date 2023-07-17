@@ -1,15 +1,19 @@
 package com.microtech.aidexx.base
 
+import android.graphics.Color
 import android.graphics.drawable.Animatable2.AnimationCallback
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
+import android.view.View
+import android.view.WindowInsets
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
+import com.microtech.aidexx.common.dp2px
 import com.microtech.aidexx.common.net.entity.UpgradeInfo
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.data.resource.LanguageResourceManager
@@ -23,11 +27,17 @@ import kotlinx.coroutines.withContext
 
 abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, ActivityWelcomeBinding>() {
 
+    @Volatile
     private var resourceLoaded = false
+    @Volatile
     private var isAnimationFinish = false
     private val isSupportSplashProgress = SDK_INT >= Build.VERSION_CODES.S
 
-    abstract fun afterAgreeUserProtocal()
+
+    companion object {
+        private const val TAG = "BaseWelcomeActivity"
+    }
+    abstract fun afterAgreeUserProtocol()
 
     override fun getViewBinding(): ActivityWelcomeBinding {
         return ActivityWelcomeBinding.inflate(layoutInflater)
@@ -60,7 +70,7 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
                     LanguageResourceManager.loadLanguageInfo()
                 }
             }.exceptionOrNull()?.let {
-                LogUtil.xLogE("资源加载失败：$it", "BaseWelcomeActivity")
+                LogUtil.xLogE("资源加载失败：$it", TAG)
             }
 
             resourceLoaded = true
@@ -73,6 +83,7 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
     private fun initSplashProgressIfSupported() {
         val splashScreen = installSplashScreen()
         splashScreen.setOnExitAnimationListener {
+            LogUtil.d("OnExitAnimationListener", TAG)
             it.remove()
             if (isSupportSplashProgress) {
                 afterResourceLoaded()
@@ -92,8 +103,9 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
     }
     private fun initSplashProgressIfNoSupported() {
         if (!isSupportSplashProgress) {
-            binding.loadResource.icon.apply {
-                val animatedVectorDrawable = drawable
+            binding.loadResource.apply {
+                splashIconContainer.setPadding(0,getNavBarHeight(),0,0)
+                val animatedVectorDrawable = splashIcon.drawable
                 if (animatedVectorDrawable is AnimatedVectorDrawable) {
                     animatedVectorDrawable.registerAnimationCallback(animationCallback)
                     animatedVectorDrawable.start()
@@ -103,6 +115,15 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
             binding.loadResource.root.isVisible = false
         }
     }
+    private fun getNavBarHeight(): Int {
+        val resourceId: Int = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId != 0) {
+            resources.getDimensionPixelSize(resourceId)
+        } else {
+            40.dp2px()
+        }
+    }
+
     private fun nextStepIfNeed() {
         if (resourceLoaded && isAnimationFinish) {
             binding.loadResource.root.isVisible = false
@@ -111,15 +132,39 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
     }
 
     private fun afterResourceLoaded() {
+        LogUtil.d("afterResourceLoaded", TAG)
+        updateWindow()
         if (MmkvManager.isAppFirstLaunch()) {
+            LogUtil.d("AppFirstLaunch", TAG)
             binding.viewAgreeProtocal.isVisible = true
             binding.viewAgreeProtocal.onClick = {
                 binding.viewAgreeProtocal.isVisible = false
                 MmkvManager.saveAppLaunched()
-                afterAgreeUserProtocal()
+                afterAgreeUserProtocol()
             }
         } else {
-            afterAgreeUserProtocal()
+            afterAgreeUserProtocol()
+        }
+    }
+
+    private fun updateWindow() {
+        val window = this.window
+        val decorView = window.decorView
+        if (SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+            window.statusBarColor = Color.TRANSPARENT
+            window.insetsController?.also { controller ->
+                controller.show(WindowInsets.Type.statusBars())
+                controller.show(WindowInsets.Type.navigationBars())
+            }
+        } else {
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            window.statusBarColor = Color.TRANSPARENT
+            window.decorView.apply {
+                // 设置状态栏系统栏覆盖在应用内容上
+                systemUiVisibility =
+                    systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            }
         }
     }
 
@@ -127,7 +172,7 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
         super.onDestroy()
         binding.viewAgreeProtocal.removeClick()
         if (!isSupportSplashProgress) {
-            binding.loadResource.icon.apply {
+            binding.loadResource.splashIcon.apply {
                 val animatedVectorDrawable = drawable
                 if (animatedVectorDrawable is AnimatedVectorDrawable) {
                     animatedVectorDrawable.unregisterAnimationCallback(animationCallback)

@@ -32,7 +32,6 @@ import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.main.home.HomeViewModel
-import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.ui.welcome.WelcomeActivity
 import com.microtech.aidexx.utils.*

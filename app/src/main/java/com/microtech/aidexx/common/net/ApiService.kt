@@ -376,7 +376,7 @@ interface ApiService {
 
             baseResponse.run {
                 if (code != RESULT_OK) {
-                    if (code in 800..807) {
+                    if (code in 800..806 || code == 501) {
 
                         UserInfoManager.instance().onTokenExpired()
 

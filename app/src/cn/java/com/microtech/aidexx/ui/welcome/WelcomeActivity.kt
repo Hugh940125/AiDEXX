@@ -9,7 +9,7 @@ import com.microtech.aidexx.utils.ActivityUtil
 
 class WelcomeActivity : BaseWelcomeActivity<BaseViewModel>() {
 
-    override fun afterAgreeUserProtocal() {
+    override fun afterAgreeUserProtocol() {
         if (UserInfoManager.instance().isLogin()) {
             ActivityUtil.toActivity(this, MainActivity::class.java)
         } else {
