@@ -29,6 +29,7 @@ import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
 import com.microtech.aidexx.ui.setting.profile.ProfileSettingsActivity
 import com.microtech.aidexx.ui.setting.share.ShareFollowActivity
 import com.microtech.aidexx.ui.web.WebActivity
+import com.microtech.aidexx.ui.welcome.WelcomeActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.FileUtils
 import com.microtech.aidexx.utils.LogUtil
@@ -166,27 +167,39 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                     }
                 }
             }
+
+            lifecycleScope.launch {
+                settingLanguage.setValue(
+                    LanguageResourceManager.getCurLanguageConfEntity()?.name
+                        ?: LanguageResourceManager.getCurLanguageTag()
+                )
+            }
             settingLanguage.setDebounceClickListener {
                 lifecycleScope.launch {
 
                     withContext(Dispatchers.IO) {
                         LanguageResourceManager.getSupportLanguages()
-                    }?.let { supportLanguages ->
+                    }.let { supportLanguages ->
 
+                        val languageStrList = supportLanguages.fold(mutableListOf<String>()) { list, conf ->
+                            conf.langId?.let {
+                                list.add(conf.name ?: it)
+                            }
+                            list
+                        }
                         Dialogs.Picker(this@SettingActivity).singlePick(
-                                supportLanguages,
-                                supportLanguages.indexOf(LanguageResourceManager.getCurLanguageTag()) ) {
-
-                            "选中了第 $it 个，切换暂未实现".toast()
-                            return@singlePick
+                            languageStrList,
+                            languageStrList.indexOf(LanguageResourceManager.getCurLanguageTag()) ) {
 
                             lifecycleScope.launch {
                                 withContext(Dispatchers.IO) {
                                     LanguageResourceManager.onLanguageChanged(supportLanguages[it])
                                 }
-                                settingLanguage.setValue(themes[it])
+                                settingLanguage.setValue(languageStrList[it])
+
+                                ActivityUtil.toActivity(this@SettingActivity, WelcomeActivity::class.java)
                                 for (activity in AidexxApp.instance.activityStack) {
-                                    activity?.recreate()
+                                    activity?.finish()
                                 }
                             }
                         }

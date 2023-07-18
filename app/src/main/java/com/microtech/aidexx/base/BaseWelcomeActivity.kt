@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
@@ -31,11 +32,12 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
     private var resourceLoaded = false
     @Volatile
     private var isAnimationFinish = false
-    private val isSupportSplashProgress = SDK_INT >= Build.VERSION_CODES.S
+    private var isSupportSplashProgress = true
 
 
     companion object {
         private const val TAG = "BaseWelcomeActivity"
+        const val EXT_UPDATE_RESOURCE = "EXT_UPDATE_RESOURCE"
     }
     abstract fun afterAgreeUserProtocol()
 
@@ -44,6 +46,10 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        isSupportSplashProgress = SDK_INT >= Build.VERSION_CODES.S
+                && !intent.getBooleanExtra(EXT_UPDATE_RESOURCE, false)
+
         initSplashProgressIfSupported()
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -68,6 +74,7 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
                         LocalResourceManager.upgradeFromAssets()
                     }
                     LanguageResourceManager.loadLanguageInfo()
+                    LogUtil.d("资源加载成功", TAG)
                 }
             }.exceptionOrNull()?.let {
                 LogUtil.xLogE("资源加载失败：$it", TAG)
@@ -84,9 +91,10 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
         val splashScreen = installSplashScreen()
         splashScreen.setOnExitAnimationListener {
             LogUtil.d("OnExitAnimationListener", TAG)
-            it.remove()
             if (isSupportSplashProgress) {
-                afterResourceLoaded()
+                afterResourceLoaded(it)
+            } else {
+                it.remove()
             }
         }
         splashScreen.setKeepOnScreenCondition {
@@ -111,8 +119,6 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
                     animatedVectorDrawable.start()
                 }
             }
-        } else {
-            binding.loadResource.root.isVisible = false
         }
     }
     private fun getNavBarHeight(): Int {
@@ -126,22 +132,23 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
 
     private fun nextStepIfNeed() {
         if (resourceLoaded && isAnimationFinish) {
-            binding.loadResource.root.isVisible = false
             afterResourceLoaded()
         }
     }
 
-    private fun afterResourceLoaded() {
-        LogUtil.d("afterResourceLoaded", TAG)
+    private fun afterResourceLoaded(splashScreen: SplashScreenViewProvider? = null) {
         updateWindow()
+        LogUtil.d("afterResourceLoaded", TAG)
         if (MmkvManager.isAppFirstLaunch()) {
-            LogUtil.d("AppFirstLaunch", TAG)
+            splashScreen?.remove()
+            binding.loadResource.root.isVisible = false
             binding.viewAgreeProtocal.isVisible = true
             binding.viewAgreeProtocal.onClick = {
                 binding.viewAgreeProtocal.isVisible = false
                 MmkvManager.saveAppLaunched()
                 afterAgreeUserProtocol()
             }
+            LogUtil.d("AppFirstLaunch", TAG)
         } else {
             afterAgreeUserProtocol()
         }

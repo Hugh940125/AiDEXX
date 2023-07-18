@@ -20,6 +20,7 @@ import com.igexin.sdk.PushManager
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
+import com.microtech.aidexx.base.BaseWelcomeActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -42,6 +43,7 @@ import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.standard.StandardDialog
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -74,12 +76,17 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         private val reference = WeakReference(activity)
         private var dialogKey: String = "battery_optimize-${System.currentTimeMillis()}"
 
+        private var storagePermissionDialog: StandardDialog? = null
+        private var bluetoothPermissionDialog: StandardDialog? = null
+        private var ignoreBatteryDialog: StandardDialog? = null
+
         override fun handleMessage(msg: Message) {
             reference.get()?.let {
                 if (!it.isFinishing) {
                     when (msg.what) {
                         REQUEST_STORAGE_PERMISSION -> {
-                            EnquireManager.instance()
+                            storagePermissionDialog?.dismiss()
+                            storagePermissionDialog = EnquireManager.instance()
                                 .showEnquireOrNot(
                                     it,
                                     it.getString(R.string.need_storage),
@@ -92,7 +99,8 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                 )
                         }
                         REQUEST_BLUETOOTH_PERMISSION -> {
-                            EnquireManager.instance()
+                            bluetoothPermissionDialog?.dismiss()
+                            bluetoothPermissionDialog = EnquireManager.instance()
                                 .showEnquireOrNot(
                                     it,
                                     it.getString(R.string.need_bt_permission),
@@ -116,7 +124,8 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                             val hasIgnored =
                                 powerManager.isIgnoringBatteryOptimizations(it.packageName)
                             if (!hasIgnored) {
-                                Dialogs.showWhether(
+                                ignoreBatteryDialog?.dismiss()
+                                ignoreBatteryDialog = Dialogs.showWhether(
                                     it,
                                     content = activity.getString(R.string.content_ignore_battery),
                                     cancel = {
@@ -162,7 +171,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         themeConfig()
         super.onCreate(savedInstanceState)
-        checkAndUpdateResourceIfNeeded()
         setContentView(binding.root)
         mHandler = MainHandler(this)
         initSDKs()
@@ -218,9 +226,11 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     override fun onResume() {
-        checkTimeZoneChange()
         super.onResume()
-        checkAndUpdateResourceIfNeeded()
+        if (checkAndUpdateResourceIfNeeded()) {
+            return
+        }
+        checkTimeZoneChange()
         checkPermission()
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo()?.let {
@@ -424,11 +434,14 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
 
-    private fun checkAndUpdateResourceIfNeeded() {
-        MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
-            startActivity(Intent(this, WelcomeActivity::class.java))
+    private fun checkAndUpdateResourceIfNeeded(): Boolean {
+        return MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
+            ActivityUtil.toActivity(this, Bundle().also {
+                it.putBoolean(BaseWelcomeActivity.EXT_UPDATE_RESOURCE, true)
+            }, WelcomeActivity::class.java)
             finish()
-        }
+            true
+        } ?: false
     }
 
     private fun processIntent(intent: Intent?, fromOnCreate: Boolean = true) {

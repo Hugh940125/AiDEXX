@@ -358,10 +358,6 @@ abstract class DataSyncController<T: BaseEventEntity> {
             is ApiResult.Success -> {
                 apiResult.result.data?.ifEmpty { null }?.let {
                     applyData(userId, it as List<T>)
-                    EventBusManager.send(
-                        EventBusKey.EVENT_DATA_CHANGED,
-                        EventDataChangedInfo(DataChangedType.ADD, it)
-                    )
                 }
                 true
             }

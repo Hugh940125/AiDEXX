@@ -80,8 +80,9 @@ class ShareAndFollowEditActivity :
 
             val accountMasked = editData.getDisplayName()
             shareAndFollowEditActionbar.setTitle(accountMasked)
-            tvAccountValue.text = accountMasked
-            etAliasValue.setText(editData.providerAlias ?: "")
+            tvAccountValue.text = editData.getMaskedAccount()
+
+            etAliasValue.setText(editData.getAlias())
             when (editFrom) {
                 EDIT_FROM_SHARE -> {
                     clEdit.visibility = View.GONE

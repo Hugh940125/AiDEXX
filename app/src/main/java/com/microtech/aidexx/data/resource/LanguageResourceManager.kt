@@ -11,13 +11,11 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.LayoutInflaterCompat
+import com.microtech.aidexx.db.entity.LanguageConfEntity
 import com.microtech.aidexx.db.repository.LanguageDbRepository
-import com.microtech.aidexx.utils.LanguageUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.views.SettingItemWidget
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 object LanguageResourceManager {
 
@@ -28,7 +26,7 @@ object LanguageResourceManager {
     // 初次进入时系统语言
 
 
-    suspend fun onLanguageChanged(languageTag: String) {
+    suspend fun onLanguageChanged(languageConf: LanguageConfEntity) {
 
     }
 
@@ -39,29 +37,21 @@ object LanguageResourceManager {
 
     }
 
-    // todo 需要配置 code-item映射表
-    suspend fun getSupportLanguages(): MutableList<String> {
+    suspend fun getSupportLanguages(): MutableList<LanguageConfEntity> {
         val conf = LanguageDbRepository().querySupportLanguages()
-       if (conf.isNullOrEmpty()) {
-           LogUtil.xLogE("没有语言相关配置", TAG)
-           return getDefaultSupportLanguages()
-       }
-        return conf
+        return conf?.ifEmpty { null } ?: getDefaultSupportLanguages()
     }
-
 
     fun getCurLanguageTag() = MmkvManager.getCurrentLanguageTag()
 
-    fun getCurLanguageConf(context: Context): LanguageConf {
-        return when (LanguageUtil.getInstance(context).selectLanguage) {
-            0 -> LanguageConf.LANGUAGE_EN
-            1 -> LanguageConf.LANGUAGE_CN
-            else -> LanguageConf.LANGUAGE_CN
-        }
-    }
+    suspend fun getCurLanguageConfEntity() =
+        LanguageDbRepository().queryConfById(getCurLanguageTag())
 
-    private fun getDefaultSupportLanguages(): MutableList<String> {
-        return mutableListOf("简体中文","English")
+    private fun getDefaultSupportLanguages(): MutableList<LanguageConfEntity> {
+        return mutableListOf(
+            LanguageConfEntity(name = "简体中文", langId = "zh-Hans-CN"),
+            LanguageConfEntity(name = "English", langId = "en-us")
+        )
     }
 
     fun getAidexResourceInspector(resources: Resources): Resources {
@@ -154,174 +144,4 @@ object LanguageResourceManager {
             }
         })
     }
-}
-
-
-enum class LanguageConf(
-    val index: Int,
-    val accept_language: String,
-    val yearMonthDayDateFormat: SimpleDateFormat,
-    val hourMinuteDateFormat: SimpleDateFormat,
-    val fullDateFormat: SimpleDateFormat,
-    val monthDayDateFormat: SimpleDateFormat,
-    val yearMonthFormat: SimpleDateFormat,
-    val fullDateFormatWithSeparator: SimpleDateFormat,
-
-    ) {
-
-    LANGUAGE_EN(
-        0,
-        "en-US",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH)
-
-    ),
-    LANGUAGE_CN(
-        1,
-        "zh-cn",
-        SimpleDateFormat("yyyy/MM/dd", Locale.CHINA),
-        SimpleDateFormat("HH:mm", Locale.CHINA),
-        SimpleDateFormat("yyyy/MM/dd H:mm", Locale.CHINA),
-        SimpleDateFormat("MM/dd", Locale.CHINA),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy-MM-dd H:mm", Locale.CHINA),
-
-        ),
-    LANGUAGE_CS(
-        2,
-        "cs",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-
-        ),
-    LANGUAGE_SK(
-        3,
-        "sk",
-        SimpleDateFormat("dd/MM/yyyy", Locale.KOREA),
-        SimpleDateFormat("HH:mm", Locale.KOREA),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.KOREA),
-        SimpleDateFormat("dd/MM", Locale.KOREA),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.KOREA),
-
-        ),
-    LANGUAGE_FR(
-        4,
-        "fr",
-        SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE),
-        SimpleDateFormat("HH:mm", Locale.FRANCE),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.FRANCE),
-        SimpleDateFormat("dd/MM", Locale.FRANCE),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.FRANCE),
-
-
-        ),
-    LANGUAGE_AR(
-        5,
-        "ar",
-        SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("MM/dd", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH),
-    ),
-    LANGUAGE_IT(
-        6,
-        "it",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-        ),
-    LANGUAGE_MN(
-        7,
-        "mn-MN",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-        ),
-    LANGUAGE_RO(
-        8,
-        "ro",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-        ),
-    LANGUAGE_TR(
-        9,
-        "tr",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-        ),
-    LANGUAGE_ES(
-        10,
-        "es",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-        ),
-    LANGUAGE_RU(
-        11,
-        "ru",
-        SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH),
-        SimpleDateFormat("HH:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale.ENGLISH),
-        SimpleDateFormat("dd/MM", Locale.ENGLISH),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale.ENGLISH),
-
-
-        ),
-    LANGUAGE_DE(
-        12,
-        "de",
-        SimpleDateFormat("dd/MM/yyyy"),
-        SimpleDateFormat("HH:mm"),
-        SimpleDateFormat("dd/MM/yyyy H:mm"),
-        SimpleDateFormat("dd/MM"),
-        SimpleDateFormat("yyyy/MM", Locale.ENGLISH),
-        SimpleDateFormat("dd-MM-yyyy H:mm"),
-
-        ),
-    LANGUAGE_SV(
-        13,
-        "sv",
-        SimpleDateFormat("dd/MM/yyyy", Locale("sv")),
-        SimpleDateFormat("HH:mm", Locale("sv")),
-        SimpleDateFormat("dd/MM/yyyy H:mm", Locale("sv")),
-        SimpleDateFormat("dd/MM", Locale("sv")),
-        SimpleDateFormat("MM/yyyy", Locale("sv")),
-        SimpleDateFormat("dd-MM-yyyy H:mm", Locale("sv")),
-    )
 }

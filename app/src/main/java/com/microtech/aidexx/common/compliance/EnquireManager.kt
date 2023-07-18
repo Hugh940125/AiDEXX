@@ -7,8 +7,6 @@ import com.microtech.aidexx.views.dialog.standard.StandardDialog
 
 class EnquireManager private constructor() {
 
-    private val enquireList = mutableListOf<StandardDialog>()
-
     companion object {
 
         val FLAG_AVATAR = "ENQUIRE_FLAG_AVTAR"
@@ -27,14 +25,8 @@ class EnquireManager private constructor() {
         onPositive: (() -> Unit)?,
         onNegative: (() -> Unit)? = null,
         flag: String? = null
-    ) {
+    ): StandardDialog? {
         if ((flag != null && MmkvManager.getEnquireFlag(flag)) || flag == null) {
-            if (enquireList.isNotEmpty()) {
-                enquireList.forEach {
-                    it.dismiss()
-                }
-                enquireList.clear()
-            }
             val dialog = StandardDialog.Setter(context)
                 .title(title)
                 .content(content)
@@ -46,18 +38,17 @@ class EnquireManager private constructor() {
                     }
                     onPositive?.invoke()
                     dialog.dismiss()
-                    enquireList.clear()
                 }.setCancel(
                     context.getString(R.string.dont_allow)
                 ) { dialog, _ ->
                     onNegative?.invoke()
                     dialog.dismiss()
-                    enquireList.clear()
                 }.create(StandardDialog.TYPE_VERTICAL)
             dialog.show()
-            enquireList.add(dialog)
+            return dialog
         } else {
             onPositive?.invoke()
+            return null
         }
     }
 }

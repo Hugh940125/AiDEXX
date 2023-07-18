@@ -13,3 +13,13 @@ data class LanguageEntity(
     @Index val module: String? = null, // 哪个模块 或定义为优先级
     @Index var version: String? = null
 )
+
+@Entity
+data class LanguageConfEntity(
+    @Id var id: Long? = null,
+    @Index val name: String? = null,
+    val chineseName: String? = null,
+    @Index val langId: String? = null, // zh-Hans-CN 三段格式
+    @Index val langZoneId: String? = null,
+    @Index var isDefault: Int? = 0
+)

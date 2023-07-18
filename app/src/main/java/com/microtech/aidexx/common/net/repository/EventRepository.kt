@@ -138,6 +138,10 @@ object EventRepository {
                 startAutoIncrementColumn = MmkvManager.getEventDataId(loginMaxIdKey)
             }
 
+            startAutoIncrementColumn = startAutoIncrementColumn?.let {
+                it + 1
+            }
+
             val breakAll: ()->Unit = {
                 //  中途停止说明 start--end 区间数据不够 已经下载完了
                 // end标记为0代表 登录成功后不 同步任务不需要拉这段数据

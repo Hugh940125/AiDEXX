@@ -42,15 +42,21 @@ class GeTuiIntentService: GTIntentService() {
             } catch (e: Exception) {
                 LogUtil.xLogE("推送消息异常：$e", tag)
                 null
-            }?.getRealMsgByType()?.let {
+            }?.let { pushMsg ->
+                pushMsg.getRealMsgByType()?.let {
 
-                AidexxApp.instance.ioScope.launch {
-                    if (it.applyMsg()) {
-                        LogUtil.d("")
-                    } else {
-                        LogUtil.xLogE("推送消息处理失败", tag)
+                    AidexxApp.instance.ioScope.launch {
+                        if (it.applyMsg()) {
+                            LogUtil.d("推送消息处理")
+                        } else {
+                            LogUtil.xLogE("推送消息处理失败", tag)
+                        }
                     }
+                }?:let {
+                    LogUtil.xLogE("推送消息获取实体失败 ${pushMsg.msgType}--${pushMsg.detail}", tag)
                 }
+            } ?:let {
+                LogUtil.xLogE("推送消息异常-1", tag)
             }
         } ?:let {
             LogUtil.xLogE("推送消息接收异常", tag)

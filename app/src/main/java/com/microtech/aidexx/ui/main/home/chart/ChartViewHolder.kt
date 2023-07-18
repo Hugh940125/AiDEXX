@@ -133,6 +133,7 @@ class ChartViewHolder(
                         if (it?.needScrollToLatest != false) 0.seconds else 1.seconds
                     }.collect {
                         it?.let {
+                            LogUtil.d("===CHART=== 刷新图表")
                             chart.notifyChanged(it.needScrollToLatest)
                         }
                     }

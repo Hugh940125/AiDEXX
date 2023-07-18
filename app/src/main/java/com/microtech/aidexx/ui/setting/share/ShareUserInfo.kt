@@ -221,6 +221,18 @@ data class ShareUserInfo(
         readerAlias?.ifEmpty { null } ?: StringUtils.getMaskedPhone(readerUserName) ?: ""
     }
 
+    fun getMaskedAccount() = if (UserInfoManager.instance().userId() == dataReaderId) {
+         StringUtils.getMaskedPhone(providerUserName) ?: ""
+    } else {
+         StringUtils.getMaskedPhone(readerUserName) ?: ""
+    }
+
+    fun getAlias() = if (UserInfoManager.instance().userId() == dataReaderId) {
+        providerAlias
+    } else {
+        readerAlias
+    } ?: ""
+
 
     fun getGlucoseValue(): Float? = userTrend?.bloodGlucose?.toGlucoseValue()
 
