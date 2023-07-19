@@ -41,6 +41,7 @@ import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.entity.BleMessage
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
@@ -57,6 +58,8 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
     }
 
     private val shareVm by viewModels<ShareFollowViewModel>()
+    private lateinit var followListAdapter: FollowListAdapter
+    private var fixedRateToGetFollowListJob: Job? = null
 
     override fun getViewBinding(): ActivityFollowListBinding =
         ActivityFollowListBinding.inflate(layoutInflater)
@@ -95,6 +98,15 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
     override fun onResume() {
         super.onResume()
         MessageDistributor.instance().observer(mObserver)
+        fixedRateToGetFollowListJob?.cancel()
+        fixedRateToGetFollowListJob = lifecycleScope.launch {
+            shareVm.fixedRateToGetFollowList().collectLatest {
+                it?.let {
+                    followListAdapter.refreshData(it)
+                }
+            }
+        }
+
         binding.apply {
             if (!MmkvManager.isAlreadyShowFollowersGuide()) { //默认是true 先隐藏掉
                 binding.clShadow.visibility = View.VISIBLE
@@ -116,7 +128,7 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
 
     private fun initData(dataList: List<ShareUserInfo>) {
 
-        val followListAdapter = FollowListAdapter(this)
+        followListAdapter = FollowListAdapter(this)
         followListAdapter.onSelectChange = { _: Int, shareUserInfo: ShareUserInfo ->
 
             if (shareUserInfo.dataProviderId != null && UserInfoManager.shareUserInfo?.dataProviderId != shareUserInfo.dataProviderId) {
@@ -182,13 +194,6 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
             followListAdapter.refreshData(dataList)
         }
 
-        lifecycleScope.launch {
-            shareVm.fixedRateToGetFollowList().collectLatest {
-                it?.let {
-                    followListAdapter.refreshData(it)
-                }
-            }
-        }
     }
 
     private fun updateMySelfInfo() {

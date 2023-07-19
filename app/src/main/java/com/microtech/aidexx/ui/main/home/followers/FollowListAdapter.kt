@@ -85,7 +85,7 @@ class FollowListAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun refreshData(list: List<ShareUserInfo>) {
         followList.clear()
-        followList.addAll(list)
+        followList.addAll(list.filter { !it.hide })
         notifyDataSetChanged()
     }
 

@@ -278,12 +278,7 @@ class ChartViewModel: ViewModel() {
     }.flowOn(Dispatchers.IO)
 
     /**
-     *  todo 重新加载数据
-     *      清空当前数据集
-     *      重置所有标记位
-     *      --通知外部刷页面
-     *      加载第一页数据
-     *      --通知外部刷页面
+     *  重新加载图表数据
      */
     fun reload() {
         LogUtil.d("reload()", TAG)

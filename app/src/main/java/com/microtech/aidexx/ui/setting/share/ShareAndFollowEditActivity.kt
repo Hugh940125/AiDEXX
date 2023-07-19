@@ -9,8 +9,11 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.toast
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.ActivityShareAndFollowEditBinding
 import com.microtech.aidexx.utils.NetUtil
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtech.aidexx.views.dialog.lib.WaitDialog
 import kotlinx.coroutines.launch
@@ -135,9 +138,8 @@ class ShareAndFollowEditActivity :
         when (v) {
             binding.btnEditSave -> {
                 val alias = binding.etAliasValue.text.toString()
-                if (normalPush != null || emergePush != null || alias != editData.providerAlias) {
+                if (hideState != null || normalPush != null || emergePush != null || alias != editData.providerAlias) {
                     if (NetUtil.isNetAvailable(this)) {
-                        val map = mutableMapOf<String, Any>()
 
                         if (editFrom == EDIT_FROM_SHARE) {
 
@@ -168,6 +170,9 @@ class ShareAndFollowEditActivity :
                                 ).collect {
                                     WaitDialog.dismiss()
                                     if (it) {
+                                        if (hideState == true) {
+                                            checkAndSwitchToMySelf()
+                                        }
                                         finish()
                                     } else {
                                         getString(R.string.failure).toast()
@@ -183,29 +188,42 @@ class ShareAndFollowEditActivity :
                 }
             }
             binding.btnEditDelete -> {
-                Dialogs.showAlert(
+                Dialogs.showWhether(
                     this,
-                    resources.getString(R.string.title_share_delete),
-                    ""
-                ) {
-                    if (NetUtil.isNetAvailable(this)) {
-                        WaitDialog.show(this, getString(R.string.loading))
-                        lifecycleScope.launch {
-                            sfViewModel.cancelShare(editData.userAuthorizationId!!).collect {
-                                WaitDialog.dismiss()
-                                if (it) {
-                                    finish()
-                                } else {
-                                    getString(R.string.failure).toast()
+                    content = resources.getString(R.string.title_share_delete),
+                    confirm = {
+                        if (NetUtil.isNetAvailable(this)) {
+                            WaitDialog.show(this, getString(R.string.loading))
+                            lifecycleScope.launch {
+                                sfViewModel.cancelShare(editData.userAuthorizationId!!).collect {
+                                    WaitDialog.dismiss()
+                                    if (it) {
+                                        checkAndSwitchToMySelf()
+                                        finish()
+                                    } else {
+                                        getString(R.string.failure).toast()
+                                    }
                                 }
                             }
-                        }
 
-                    } else {
-                        resources.getString(R.string.net_error).toast()
+                        } else {
+                            resources.getString(R.string.net_error).toast()
+                        }
                     }
-                }
+                )
             }
         }
     }
+
+    private fun checkAndSwitchToMySelf() {
+        if (UserInfoManager.shareUserInfo?.userAuthorizationId ==
+            editData.userAuthorizationId!!) {
+            // 删除了正在查看关注人的数据时 切换到自己数据
+            UserInfoManager.shareUserInfo = null
+            val shareUserInfo = ShareUserInfo()
+            shareUserInfo.dataProviderId = UserInfoManager.instance().userId()
+            EventBusManager.send(EventBusKey.EVENT_SWITCH_USER, shareUserInfo)
+        }
+    }
+
 }

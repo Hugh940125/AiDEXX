@@ -171,6 +171,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         themeConfig()
         super.onCreate(savedInstanceState)
+        UserInfoManager.shareUserInfo = null
         setContentView(binding.root)
         mHandler = MainHandler(this)
         initSDKs()

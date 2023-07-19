@@ -81,6 +81,11 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         UserInfoManager.shareUserInfo?.let {
             startFixedRateToGetFollowListJob()
         }
+
+        //拉关注人列表 控制切换用户按钮是否显示
+        lifecycleScope.launch {
+            binding.switchUserData.isVisible = homeViewModel.getFollowers()
+        }
     }
 
     override fun onPause() {
@@ -109,7 +114,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initData()
         LogUtil.d("ChartViewModel homefragment onViewCreated", TAG)
         chartViewHolder = ChartViewHolder(binding, this) {
             if (switchOrientation == 2) {
@@ -192,13 +196,6 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             binding.switchUserData.isVisible = homeViewModel.mFollowers.isNotEmpty()
         }
 
-    }
-
-    private fun initData() {
-        //拉关注人列表 控制切换用户按钮是否显示
-        lifecycleScope.launch {
-            binding.switchUserData.isVisible = homeViewModel.getFollowers()
-        }
     }
 
     private fun judgeState() {
@@ -332,7 +329,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                         HomeBackGroundSelector.instance()
                             .getBgForTrend(it.userTrend?.getGlucoseTrend(), it.userTrend?.getGlucoseLevel())
                     )
-
+                    HomeBackGroundSelector.instance().getHomeBg(it.userTrend?.getGlucoseLevel())
                 }
 
             }

@@ -37,7 +37,7 @@ class HomeViewModel: BaseViewModel() {
                 } else {
                     mFollowers.clear()
                     mFollowers.addAll(ret.result.data!!)
-                    true
+                    mFollowers.any { !it.hide }
                 }
             }
             is ApiResult.Failure -> {
