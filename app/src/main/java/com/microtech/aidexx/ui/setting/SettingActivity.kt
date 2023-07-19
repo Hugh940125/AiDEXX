@@ -41,8 +41,10 @@ import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.lib.WaitDialog
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -251,7 +253,7 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                         val resultUri = UCrop.getOutput(data)
                         LogUtil.d("剪裁结果 : $resultUri")
                         resultUri?.let {
-                            Dialogs.showWait()
+                            WaitDialog.show(this@SettingActivity, getString(R.string.loading))
                             AidexxApp.instance.ioScope.launch {
                                 when (val ret = AccountRepository.userUploadAvatar(resultUri)) {
                                     is ApiResult.Success -> {
@@ -260,13 +262,14 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                                                 AccountRepository.updateUserInformation(avatar = it)
                                             ) {
                                                 is ApiResult.Success -> {
-                                                    Dialogs.dismissWait()
                                                     // 更新本地数据
                                                     UserInfoManager.instance().updateProfile(avatar = it)
-                                                    if (!isFinishing) {
-                                                        withContext(Dispatchers.Main) {
+                                                    delay(1000) // 停顿1s再加载图片 否则可能图片链接报404 服务端小周说的
+                                                    withContext(Dispatchers.Main) {
+                                                        if (!isFinishing) {
                                                             loadAvatar()
                                                         }
+                                                        WaitDialog.dismiss()
                                                     }
                                                 }
 
@@ -300,7 +303,6 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
 
     private fun loadAvatar() {
         Glide.with(this@SettingActivity)
-//            .load("https://static.pancares.com/aidex/UPPf03550ef07a7b2164f06deaef597ce37")
             .load(UserInfoManager.instance().userEntity?.avatar)
             .error(R.drawable.ic_default_avatar)
             .apply(RequestOptions.circleCropTransform())

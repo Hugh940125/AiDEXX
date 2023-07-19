@@ -22,6 +22,7 @@ import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 
 class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewModel, FragShareOrFollowBinding>() {
@@ -113,10 +114,12 @@ class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewM
         timeHandler.removeMessages(messageWhat)
     }
 
-    class TimeHandler(val binding: FragShareOrFollowBinding) : Handler(Looper.getMainLooper()) {
+    class TimeHandler(binding: FragShareOrFollowBinding) : Handler(Looper.getMainLooper()) {
+
+        var bindingWeakReference = WeakReference(binding)
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
-            binding.shareRefreshLayout.finishRefresh()
+            bindingWeakReference.get()?.shareRefreshLayout?.finishRefresh()
         }
     }
 

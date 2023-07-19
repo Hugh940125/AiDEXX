@@ -72,7 +72,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         const val EVENT = 4
     }
 
-    class MainHandler(val activity: MainActivity) : Handler(Looper.getMainLooper()) {
+    class MainHandler(activity: MainActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
         private var dialogKey: String = "battery_optimize-${System.currentTimeMillis()}"
 
@@ -117,7 +117,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                             it.enableLocation()
                         }
                         REQUEST_ENABLE_BLUETOOTH -> {
-                            activity.enableBluetooth()
+                            it.enableBluetooth()
                         }
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
@@ -127,7 +127,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                 ignoreBatteryDialog?.dismiss()
                                 ignoreBatteryDialog = Dialogs.showWhether(
                                     it,
-                                    content = activity.getString(R.string.content_ignore_battery),
+                                    content = it.getString(R.string.content_ignore_battery),
                                     cancel = {
                                     },
                                     confirm = {

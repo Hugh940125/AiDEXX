@@ -161,7 +161,7 @@ class GlucoseChart : MyChart {
         })
     }
 
-    class THandler(val chart: GlucoseChart): Handler(Looper.getMainLooper()) {
+    class THandler(chart: GlucoseChart): Handler(Looper.getMainLooper()) {
         private val mChart: WeakReference<GlucoseChart> = WeakReference(chart)
         override fun handleMessage(msg: Message) {
             if (MSG_TIME_TO_REFRESH_CHART == msg.what) {
