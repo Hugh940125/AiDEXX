@@ -41,6 +41,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -111,7 +112,7 @@ class ChartViewModel: ViewModel() {
     init {
         viewModelScope.launch {
             launch {
-                startLoadNextPage.collect {
+                startLoadNextPage.debounce(200) .collect {
                     if (it) {
                         LogUtil.d("===CHART===开始加载下一页")
                         var needNotify: Boolean
@@ -195,6 +196,9 @@ class ChartViewModel: ViewModel() {
                         if (needNotify) {
                             LogUtil.d("===CHART=== 下一页数据已添加到图表待刷新")
                             mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
+                        } else {
+                            val ret = startLoadNextPage.compareAndSet(expect = false, true)
+                            LogUtil.d("===CHART=== 滚到最左边后发现没有数据 startLoadNextPage: $ret")
                         }
                         //重置标记
                         val ret = startApplyNextPageData.compareAndSet(true, update = false)
@@ -295,10 +299,18 @@ class ChartViewModel: ViewModel() {
     fun needLoadNextPage(isLtr: Boolean, visibleLeftX: Float, xAxisMin: Float): Boolean {
 
         if (isLtr || !isDataInit) return false
-//        LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发 loadedmin=$loadedMinDate xAxisMin=$xAxisMin vf=$visibleLeftX" )
-        if(loadedMinDate == xAxisMin) {
-            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
-            return false
+
+        if(loadedMinDate == xAxisMin ) {
+            if (nextPageBgData.isNotEmpty() ||
+                        nextPageCalData.isNotEmpty() ||
+                        nextPageCgmData.isNotEmpty() ||
+                        nextPageEventData.isNotEmpty()) {
+//                LogUtil.d("===CHART=== 滚动过程发现下一页数据已经加载 不再触发")
+                return false
+            } else {
+                // 这种情况依赖 startLoadNextPage cas 来保证有数据的同一页只加载一次
+//                LogUtil.d("===CHART=== 滚动过程已经触发下一页但没数据 继续触发")
+            }
         }
 
         val isLeftTwoDays = abs(

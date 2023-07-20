@@ -15,7 +15,6 @@ import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.ui.main.home.HomeFragment
 import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
@@ -89,17 +88,17 @@ class ChartViewHolder(
                 ) {
                     if (chartViewModel.needLoadNextPage(isLtr, visibleLeftX, xAxisMin)) {
                         val ret = chartViewModel.startLoadNextPage.compareAndSet(expect = false, true)
-                        LogUtils.debug(TAG,"===CHART=== startLoadNextPage: $ret")
+                        LogUtil.d("===CHART=== startLoadNextPage: $ret",TAG)
                     }
                 }
 
                 override fun onToEndLeft() {
                     val ret = chartViewModel.startApplyNextPageData.compareAndSet(expect = false, true)
-                    LogUtils.debug(TAG,"===CHART===onToEndLeft start applyData: $ret")
+                    LogUtil.d("===CHART===onToEndLeft start applyData: $ret",TAG)
                 }
 
                 override fun onToEndRight() {
-                    LogUtils.debug(TAG,"===CHART===onToEndRight")
+                    LogUtil.d("===CHART===onToEndRight",TAG)
                 }
             }
 
