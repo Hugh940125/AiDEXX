@@ -426,10 +426,10 @@ interface ApiService {
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .sslSocketFactory(sslParams!!.sSLSocketFactory, sslParams.trustManager) //添加信任证书
                 .hostnameVerifier { _: String?, _: SSLSession? -> true } //忽略host验证
-                //            .followRedirects(false)  //禁制OkHttp的重定向操作，我们自己处理重定向
-                //            .addInterceptor(new RedirectInterceptor())
+//                .followRedirects(false)  //禁制OkHttp的重定向操作，我们自己处理重定向
+//                .addInterceptor(new RedirectInterceptor())
                 .addInterceptor(HeaderInterceptor())
-                .addInterceptor(TokenInterceptor())
+//                .addInterceptor(TokenInterceptor())
                 .addInterceptor(LogInterceptor())
             return if (BuildConfig.enableEncrypt) {
                 clientBuilder

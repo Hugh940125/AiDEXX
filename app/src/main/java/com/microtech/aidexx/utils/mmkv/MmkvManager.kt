@@ -12,6 +12,7 @@ import com.microtech.aidexx.db.entity.event.preset.InsulinSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.MedicineSysPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.SportSysPresetEntity
 import com.microtech.aidexx.ui.main.event.viewmodels.EventType
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThresholdManager
 import java.util.Date
 import java.util.Locale
@@ -160,8 +161,17 @@ object MmkvManager {
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
     fun isLogin(): Boolean = MmkvUtil.decodeBoolean(FLAG_LOGIN, false)
-    fun saveToken(token: String) = MmkvUtil.encodeString(TOKEN, token)
-    fun getToken(): String = MmkvUtil.decodeString(TOKEN, "")
+    fun saveToken(token: String) {
+        LogUtil.eAiDEX("save token: $token")
+        MmkvUtil.encodeString(TOKEN, token)
+    }
+
+    fun getToken(): String {
+        val token = MmkvUtil.decodeString(TOKEN, "")
+        LogUtil.eAiDEX("get token: $token")
+        return token
+    }
+
     fun saveHypo(value: Float) = MmkvUtil.encodeFloat(HYPO, value)
     fun getHypo() = MmkvUtil.decodeFloat(HYPO, ThresholdManager.DEFAULT_HYPO)
 
@@ -172,7 +182,7 @@ object MmkvManager {
     fun saveAppLaunched() = MmkvUtil.encodeBoolean(IS_APP_FIRST_LAUNCH, false)
     fun isAppFirstLaunch() = MmkvUtil.decodeBoolean(IS_APP_FIRST_LAUNCH, true)
     fun saveUserId(id: String) = MmkvUtil.encodeString(USER_ID, id)
-    fun getUserId():String = MmkvUtil.decodeString(USER_ID,"")
+    fun getUserId(): String = MmkvUtil.decodeString(USER_ID, "")
     fun getOnlineServiceMsgCount() = MmkvUtil.decodeInt(UserInfoManager.instance().userId(), 0)
 
     fun setOnlineServiceMsgCount(count: Int) =

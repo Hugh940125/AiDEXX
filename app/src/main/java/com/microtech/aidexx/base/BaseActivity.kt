@@ -17,6 +17,7 @@ import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.viewbinding.ViewBinding
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ui.account.LoginActivity
@@ -100,11 +101,13 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
         EventBusManager.onReceive<Boolean>(EventBusKey.TOKEN_EXPIRED, this)
         {
-            Dialogs.showMessage(this, content = getString(R.string.token_expired), callBack = {
-                val intent = Intent(this, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-            })
+            lifecycleScope.launch {
+                Dialogs.showMessage(this@BaseActivity, content = getString(R.string.token_expired), callBack = {
+                    val intent = Intent(this@BaseActivity, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                })
+            }
         }
     }
 
