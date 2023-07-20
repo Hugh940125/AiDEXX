@@ -7,9 +7,14 @@ import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.views.dialog.Dialogs
-import okhttp3.*
+import okhttp3.Call
+import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.Response
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -28,13 +33,23 @@ object FeedbackUtil {
     ) {
         val files = logFile.listFiles()
         if (files.isNullOrEmpty()) {
-            LogUtil.eAiDEX("Log file is null or empty")
+            LogUtil.eAiDEX("log files is null or empty")
             Dialogs.showSuccess(context.resources?.getString(R.string.str_succ))
             return
         }
         val fileList = files.filter { file -> file.name.endsWith("xlog", true) }.toMutableList()
         val dbFile =
             File("${context.filesDir.absolutePath}${File.separator}objectbox${File.separator}objectbox${File.separator}data.mdb")
+        val mmkvFile =
+            File("${context.filesDir.absolutePath}${File.separator}mmkv${File.separator}mmkv.default")
+        val mmkvFileCrc =
+            File("${context.filesDir.absolutePath}${File.separator}mmkv${File.separator}mmkv.default.crc")
+        if (mmkvFile.exists() && mmkvFileCrc.exists()) {
+            fileList.add(mmkvFile)
+            fileList.add(mmkvFileCrc)
+        } else {
+            LogUtil.eAiDEX("mmkv backup fail, files not exists")
+        }
         if (dbFile.exists()) {
             fileList.add(dbFile)
         }

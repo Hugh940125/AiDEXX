@@ -33,13 +33,13 @@ data class UserTrendInfo(
 
     fun getGlucoseTrend(): DeviceModel.GlucoseTrend? =
         when (trend) {
-            -3 -> DeviceModel.GlucoseTrend.SUPER_FAST_DOWN
-            -2 -> DeviceModel.GlucoseTrend.FAST_DOWN
-            -1 -> DeviceModel.GlucoseTrend.DOWN
+            -3 -> DeviceModel.GlucoseTrend.FAST_FALL
+            -2 -> DeviceModel.GlucoseTrend.FALL
+            -1 -> DeviceModel.GlucoseTrend.SLOW_FALL
             0 -> DeviceModel.GlucoseTrend.STEADY
-            1 -> DeviceModel.GlucoseTrend.UP
-            2 -> DeviceModel.GlucoseTrend.FAST_UP
-            3 -> DeviceModel.GlucoseTrend.SUPER_FAST_UP
+            1 -> DeviceModel.GlucoseTrend.SLOW_UP
+            2 -> DeviceModel.GlucoseTrend.UP
+            3 -> DeviceModel.GlucoseTrend.FAST_UP
             else -> null
         }
 

@@ -57,7 +57,8 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         }
 
     enum class GlucoseLevel { LOW, NORMAL, HIGH }
-    enum class GlucoseTrend { SUPER_FAST_DOWN, FAST_DOWN, DOWN, STEADY, UP, FAST_UP, SUPER_FAST_UP }
+    enum class GlucoseTrend(val index: Int) { FAST_FALL(-3), FALL(-2), SLOW_FALL(-1),
+        STEADY(0), SLOW_UP(1), UP(2), FAST_UP(3), UNKNOWN(-99) }
 
     fun deviceId(): String? {
         return entity.id

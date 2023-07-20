@@ -152,6 +152,7 @@ const val DEVICE = "$middleUrl/cgmDevice/getUserDeviceInfo" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CAL_HISTORY = "$middleUrl/cgmCalibration/saveCalibration" //上传日志
 const val UPLOAD_CGM_BRIEF = "$middleUrl/cgmRecord/saveCgmRecord" //上传CGM
+const val UPLOAD_CGM_TREND = "$middleUrl/userTrend/saveOrUpdateUserTrend" //上传CGM趋势
 const val UPDATE_CGM_RECORD = "$middleUrl/cgmRecord/updateCgmRecord" //更新CGM
 const val DOWNLOAD_CGM_RECORD = "$middleUrl/cgm-record/list" //下载CGM
 const val UPLOAD_BG_HISTORY = "$middleUrl/bloodGlucoseRecord/saveOrUpdateFingerBloodGlucose" //下载CGM
@@ -315,6 +316,9 @@ interface ApiService {
     @GET("$CGM_LIST_RECENT?{params}")
     suspend fun getRecentHistories(@Path("params") params: String)
             : Call<BaseResponse<BasePageList<RealCgmHistoryEntity>>>
+
+    @POST(UPLOAD_CGM_TREND)
+    suspend fun postGlucoseTrend(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<TrendInfo>>
 
     @POST(UPLOAD_CGM_BRIEF)
     suspend fun postBriefHistory(@Body body: RequestBody): ApiResult<BaseResponse<List<RealCgmHistoryEntity>>>

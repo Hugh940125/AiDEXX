@@ -30,7 +30,7 @@ class HomeBackGroundSelector private constructor() {
                     else R.drawable.bg_panel_blank_dark
                 }
             }
-            DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.SUPER_FAST_DOWN -> {
+            DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseTrend.FAST_FALL -> {
                 when (level) {
                     DeviceModel.GlucoseLevel.HIGH -> if (ThemeManager.isLight()) R.drawable.super_trends_yellow_light
                     else R.drawable.super_trends_yellow_dark
@@ -40,7 +40,7 @@ class HomeBackGroundSelector private constructor() {
                     else R.drawable.super_trends_blue_dark
                 }
             }
-            DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseTrend.FAST_DOWN -> {
+            DeviceModel.GlucoseTrend.UP, DeviceModel.GlucoseTrend.FALL -> {
                 when (level) {
                     DeviceModel.GlucoseLevel.HIGH -> if (ThemeManager.isLight()) R.drawable.trend_yellow_light
                     else R.drawable.trend_yellow_dark
@@ -51,7 +51,7 @@ class HomeBackGroundSelector private constructor() {
                 }
             }
 
-            DeviceModel.GlucoseTrend.UP, DeviceModel.GlucoseTrend.DOWN -> {
+            DeviceModel.GlucoseTrend.SLOW_UP, DeviceModel.GlucoseTrend.SLOW_FALL -> {
                 when (level) {
                     DeviceModel.GlucoseLevel.HIGH -> if (ThemeManager.isLight()) R.drawable.trends_fast_yellow_light
                     else R.drawable.trends_fast_yellow_dark

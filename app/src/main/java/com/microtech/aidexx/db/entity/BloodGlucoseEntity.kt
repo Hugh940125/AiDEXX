@@ -5,6 +5,7 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.roundOffDecimal
+import com.microtech.aidexx.utils.toGlucoseStringWithUnit
 import com.microtech.aidexx.utils.toGlucoseValue
 import io.objectbox.annotation.Entity
 import java.util.Date
@@ -55,11 +56,7 @@ class BloodGlucoseEntity : BaseEventEntity {
             }
 
     override fun getValueDescription(res: Resources): String {
-        val unit = UnitManager.glucoseUnit.text
-        return when (UnitManager.glucoseUnit) {
-            UnitManager.GlucoseUnit.MMOL_PER_L -> "${roundOffDecimal(bloodGlucoseMg / 18)}$unit"
-            UnitManager.GlucoseUnit.MG_PER_DL -> "$bloodGlucoseMg$unit"
-        }
+        return bloodGlucoseMg.toGlucoseStringWithUnit()
     }
 
     override fun toString(): String {

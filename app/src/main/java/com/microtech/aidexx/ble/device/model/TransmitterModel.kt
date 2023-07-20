@@ -9,6 +9,7 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.common.date2ymdhm
 import com.microtech.aidexx.common.equal
+import com.microtech.aidexx.common.formatWithoutZone
 import com.microtech.aidexx.common.millisToHours
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.millisToSeconds
@@ -59,6 +60,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.charset.Charset
 import java.util.Date
+import java.util.TimeZone
 import kotlin.math.abs
 
 
@@ -82,7 +84,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             instance.controller?.let {
                 it.mac = entity.deviceMac
                 it.sn = entity.deviceSn
-                it.name = "$X_NAME-${entity.deviceSn}"
+                it.name = X_NAME
                 val userId = UserInfoManager.instance().userId()
                 val getBytes = userId.toByteArray(Charset.forName("UTF-8"))
                 it.hostAddress = getBytes
@@ -365,10 +367,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         if (refreshSensorState) return
         val adHistories = broadcast.history
         latestAd = broadcast
-        if (UserInfoManager.shareUserInfo != null) {
-            LogUtil.eAiDEX("view sharing")
-            return
-        }
         if (adHistories.isNotEmpty()) {
             if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
                 val temp = adHistories[0].glucose
@@ -393,8 +391,11 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         }
         latestHistory?.let {
             val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
-            if (glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
+            if (isHistoryValid && glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
                 lastHistoryTime = historyDate
+                AidexxApp.mainScope.launch {
+//                    uploadTrend(broadcast.trend, historyDate)
+                }
             }
         }
         targetEventIndex = latestHistory?.timeOffset ?: 1
@@ -455,6 +456,30 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 getController().calibrationRange
             }
         }
+    }
+
+    private suspend fun uploadTrend(trendValue: Int, historyDate: Date) {
+        val trend: GlucoseTrend = when (trendValue) {
+            in 0..10 -> GlucoseTrend.FAST_FALL
+            in 1..10 -> GlucoseTrend.FALL
+            in 2..10 -> GlucoseTrend.SLOW_FALL
+            in 3..10 -> GlucoseTrend.STEADY
+            in 4..10 -> GlucoseTrend.SLOW_UP
+            in 5..10 -> GlucoseTrend.UP
+            in 6..10 -> GlucoseTrend.FAST_UP
+            else -> GlucoseTrend.UNKNOWN
+        }
+        val appTime = historyDate.formatWithoutZone()
+        val appTimeZone = TimeZone.getDefault().id
+        val dstOffset = if (TimeZone.getDefault().dstSavings > 0) "1" else "0"
+        val map = hashMapOf<String, Any?>()
+        map["appTime"] = appTime
+        map["trend"] = trend.index
+        map["trendValue"] = trendValue
+        map["appTimeZone"] = appTimeZone
+        map["dstOffset"] = dstOffset
+        map["userId"] = UserInfoManager.instance().userId()
+        ApiService.instance.postGlucoseTrend(map)
     }
 
     override fun getSensorRemainingTime(): Int? {
@@ -736,15 +761,16 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             entity.eventIndex = histories.last().timeOffset
             nextEventIndex = entity.eventIndex + 1
             transmitterBox!!.put(entity)
-//                updateGlucoseTrend(tempBriefList.last().deviceTime)
-            EventBusManager.send(
-                EventBusKey.EVENT_DATA_CHANGED,
-                EventDataChangedInfo(
-                    DataChangedType.ADD,
-                    mutableListOf<RealCgmHistoryEntity>().also {
-                        it.addAll(tempBriefList)
-                    })
-            )
+            if (UserInfoManager.shareUserInfo == null) {
+                EventBusManager.send(
+                    EventBusKey.EVENT_DATA_CHANGED,
+                    EventDataChangedInfo(
+                        DataChangedType.ADD,
+                        mutableListOf<RealCgmHistoryEntity>().also {
+                            it.addAll(tempBriefList)
+                        })
+                )
+            }
             tempBriefList.clear()
             if (goon) continueBriefFetch()
         }, onError = {

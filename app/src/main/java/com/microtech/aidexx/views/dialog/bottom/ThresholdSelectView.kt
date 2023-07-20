@@ -1,12 +1,15 @@
 package com.microtech.aidexx.views.dialog.bottom
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import com.microtech.aidexx.R
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.fromGlucoseValue
 import com.microtech.aidexx.views.ruler.RulerWidget
 
+@SuppressLint("ClickableViewAccessibility")
 class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onValue: ((value: Float) -> Unit)) :
     BaseBottomPopupView(context) {
 
@@ -28,6 +31,7 @@ class ThresholdSelectView(context: Context, type: RulerWidget.RulerType, var onV
         btCancel?.setOnClickListener {
             dismiss()
         }
+        contentContainer.setOnTouchListener { _, _ -> true }
         setKeyBackCancelable(true)
         setOutSideCancelable(true)
     }

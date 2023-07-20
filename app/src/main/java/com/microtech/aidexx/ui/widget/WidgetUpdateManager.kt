@@ -56,41 +56,41 @@ class WidgetUpdateManager private constructor() {
         trend: DeviceModel.GlucoseTrend
     ) {
         trend.let {
-            if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.SUPER_FAST_DOWN) {
+            if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.FAST_FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t4_l)
-            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.SUPER_FAST_DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.FAST_FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t4)
-            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.SUPER_FAST_DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.FAST_FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t4_h)
-            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.FAST_DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t3_l)
-            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.FAST_DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t3)
-            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.FAST_DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t3_h)
-            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.SLOW_FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t2_l)
-            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.SLOW_FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t2)
-            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.DOWN) {
+            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.SLOW_FALL) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t2_h)
-            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.UP) {
+            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.SLOW_UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t5_l)
-            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.UP) {
+            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.SLOW_UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t5)
-            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.UP) {
+            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.SLOW_UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t5_h)
-            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.FAST_UP) {
+            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t7_l)
-            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.FAST_UP) {
+            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t7)
-            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.FAST_UP) {
+            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t7_h)
-            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.SUPER_FAST_UP) {
+            } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.FAST_UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t6_l)
-            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.SUPER_FAST_UP) {
+            } else if (level == DeviceModel.GlucoseLevel.NORMAL && trend == DeviceModel.GlucoseTrend.FAST_UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t6)
-            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.SUPER_FAST_UP) {
+            } else if (level == DeviceModel.GlucoseLevel.HIGH && trend == DeviceModel.GlucoseTrend.FAST_UP) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t6_h)
             } else if (level == DeviceModel.GlucoseLevel.LOW && trend == DeviceModel.GlucoseTrend.STEADY) {
                 remoteViews.setImageViewResource(R.id.widget_trend, R.drawable.ic_t1_l)

@@ -59,3 +59,5 @@ data class ResEventPresetVersion(
     val sysVersion: String?,
     val userVersion: String?
 )
+
+data class TrendInfo(val appTime:String, val trend:Int, val trendValue:Int,val trendId:String,val dstOffset:String,val userId:String,val appTimeZone:String)

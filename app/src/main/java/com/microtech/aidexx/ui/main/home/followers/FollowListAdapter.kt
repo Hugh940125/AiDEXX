@@ -52,8 +52,8 @@ class FollowListAdapter(
 
                 user.userTrend?.let {
                     bgPanel.rotation = when (it.getGlucoseTrend()) {
-                        DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.FAST_UP -> 180f
-                        DeviceModel.GlucoseTrend.UP -> -90f
+                        DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseTrend.UP -> 180f
+                        DeviceModel.GlucoseTrend.SLOW_UP -> -90f
                         else -> 0f
                     }
                 }

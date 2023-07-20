@@ -124,8 +124,8 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
             }
 
             binding.bgPanel.rotation = when (deviceModel.glucoseTrend) {
-                DeviceModel.GlucoseTrend.SUPER_FAST_UP, DeviceModel.GlucoseTrend.FAST_UP -> 180f
-                DeviceModel.GlucoseTrend.UP -> -90f
+                DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseTrend.UP -> 180f
+                DeviceModel.GlucoseTrend.SLOW_UP -> -90f
                 else -> 0f
             }
             binding.bgPanel.setBackgroundResource(
