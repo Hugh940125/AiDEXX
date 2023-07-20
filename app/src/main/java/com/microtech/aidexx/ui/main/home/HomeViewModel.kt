@@ -6,6 +6,8 @@ import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.net.ApiResult
+import com.microtech.aidexx.common.net.ApiService
+import com.microtech.aidexx.common.net.entity.WelfareInfo
 import com.microtech.aidexx.common.net.repository.ShareAndFollowRepository
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -18,7 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HomeViewModel: BaseViewModel() {
+class HomeViewModel : BaseViewModel() {
 
     // 关注人列表
     val mFollowers: MutableList<ShareUserInfo> = mutableListOf()
@@ -40,6 +42,7 @@ class HomeViewModel: BaseViewModel() {
                     mFollowers.any { !it.hide }
                 }
             }
+
             is ApiResult.Failure -> {
                 LogUtil.d("getFollowers fail code=${ret.code} msg=${ret.msg}")
                 false
@@ -68,9 +71,23 @@ class HomeViewModel: BaseViewModel() {
                         }
                     }
                 }
+
                 is ApiResult.Failure -> {
                     LogUtil.xLogE("通知过来的分享人切换失败-数据拉取失败${ret.code}-${ret.msg}")
                 }
+            }
+        }
+    }
+
+    suspend fun getActivities(): WelfareInfo? = withContext(Dispatchers.IO) {
+        when (val ret = ApiService.instance.getWelfareActivity()) {
+            is ApiResult.Success -> {
+                ret.result.data
+            }
+
+            is ApiResult.Failure -> {
+                LogUtil.d("getFollowers fail code=${ret.code} msg=${ret.msg}")
+                null
             }
         }
     }

@@ -1,0 +1,48 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="27dp"
+    android:viewportWidth="24"
+    android:viewportHeight="27">
+  <path
+      android:pathData="M7.5,4L8.5,4C10.433,4 12,5.567 12,7.5L12,9L12,9L7.5,9C6.119,9 5,7.881 5,6.5C5,5.119 6.119,4 7.5,4Z"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?actionbarIconColor"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M16.5,4L15.5,4C13.567,4 12,5.567 12,7.5L12,9L12,9L16.5,9C17.881,9 19,7.881 19,6.5C19,5.119 17.881,4 16.5,4Z"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="?actionbarIconColor"
+      android:fillType="evenOdd"/>
+  <path
+      android:pathData="M22,8.727C23.105,8.727 24,9.623 24,10.727L24,13.273C24,14.377 23.105,15.273 22,15.273L14,15.272L14,13.727L21,13.727C21.513,13.727 21.936,13.341 21.993,12.844L22,12.727L22,11.727C22,11.175 21.552,10.727 21,10.727L3,10.727C2.487,10.727 2.064,11.113 2.007,11.611L2,11.727L2,12.727C2,13.24 2.386,13.663 2.883,13.721L3,13.727L10,13.727L10,15.272L2,15.273C0.895,15.273 0,14.377 0,13.273L0,10.727C-0,9.623 0.895,8.727 2,8.727L22,8.727Z"
+      android:strokeWidth="1"
+      android:fillColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M19.833,25C20.346,25 20.769,24.614 20.827,24.117L20.833,24L20.833,16L14,16L14,14L22.833,14L22.833,24C22.833,25.657 21.49,27 19.833,27L4.167,27C2.51,27 1.167,25.657 1.167,24L1.167,14L10,14L10,16L2.833,16L2.833,24C2.833,24.513 3.219,24.936 3.717,24.993L3.833,25L19.833,25Z"
+      android:strokeWidth="1"
+      android:fillColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M8,10h2v15h-2z"
+      android:strokeWidth="1"
+      android:fillColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M14,10h2v15h-2z"
+      android:strokeWidth="1"
+      android:fillColor="?actionbarIconColor"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M20,4m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0"
+      android:strokeWidth="1"
+      android:fillColor="#CD494F"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+</vector>

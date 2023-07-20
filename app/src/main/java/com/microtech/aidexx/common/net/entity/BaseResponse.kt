@@ -45,6 +45,7 @@ data class UpgradeInfo(
         val isForce: Boolean,
         val info: VersionData
     )
+
     data class VersionData(
         val version: String = "",
         val downloadpath: String = "", // 接口返回时为下载地址 下载成功后保存本地地址
@@ -60,4 +61,28 @@ data class ResEventPresetVersion(
     val userVersion: String?
 )
 
-data class TrendInfo(val appTime:String, val trend:Int, val trendValue:Int,val trendId:String,val dstOffset:String,val userId:String,val appTimeZone:String)
+data class TrendInfo(
+    val appTime: String,
+    val trend: Int,
+    val trendValue: Int,
+    val trendId: String,
+    val dstOffset: String,
+    val userId: String,
+    val appTimeZone: String
+)
+
+data class WelfareInfo(
+    val viewWelfareCenter: Boolean,
+    val viewIndexTag: Boolean,
+    val viewIndexBanner: Boolean,
+    val activityList: List<ActivityInfo>
+)
+
+data class ActivityInfo(
+    val title: String,
+    val content: String,
+    val activityId: Int,
+    val url: String,
+    val description: String,
+    val isLook: Int,
+)

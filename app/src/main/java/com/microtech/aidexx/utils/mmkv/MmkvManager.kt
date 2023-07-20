@@ -239,4 +239,7 @@ object MmkvManager {
 
     fun getSettings() = MmkvUtil.decodeParcelable(SETTINGS, SettingsEntity::class.java)
     fun saveSettings(parcelable: Parcelable) = MmkvUtil.encodeParcelable(SETTINGS, parcelable)
+//    fun getLastWelfareDialogTime(): Long {
+//
+//    }
 }

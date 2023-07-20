@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.main.home
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
@@ -9,17 +10,20 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.common.net.entity.WelfareInfo
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
 import com.microtech.aidexx.ui.main.MainActivity
@@ -30,8 +34,10 @@ import com.microtech.aidexx.ui.main.home.panel.NeedPairFragment
 import com.microtech.aidexx.ui.main.home.panel.NewOrUsedSensorFragment
 import com.microtech.aidexx.ui.main.home.panel.WarmingUpFragment
 import com.microtech.aidexx.ui.setting.SettingActivity
+import com.microtech.aidexx.ui.setting.getWelfareCenterUrl
 import com.microtech.aidexx.ui.setting.share.ShareFollowViewModel
 import com.microtech.aidexx.ui.setting.share.ShareUserInfo
+import com.microtech.aidexx.ui.web.WebActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.UnitManager
@@ -53,7 +59,8 @@ const val newOrUsedSensor = "newOrUsedSensor"
 const val warmingUp = "warmingUp"
 
 class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
-
+    private var welfareInfo: WelfareInfo? = null
+    private var welfareDialog: AlertDialog? = null
     private val initOrientation: Int = 0
     private val switchOrientation: Int = 1
     private var mainActivity: MainActivity? = null
@@ -81,12 +88,61 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         UserInfoManager.shareUserInfo?.let {
             startFixedRateToGetFollowListJob()
         }
-
         //拉关注人列表 控制切换用户按钮是否显示
         lifecycleScope.launch {
             binding.switchUserData.isVisible = homeViewModel.getFollowers()
+            welfareInfo = homeViewModel.getActivities()
+            welfareInfo?.let {
+                binding.welfareCenter.isVisible = it.viewIndexTag
+                val showRedDot = it.activityList.any { activity -> activity.isLook != 1 }
+                binding.welfareCenter
+                    .setImageDrawable(
+                        ContextCompat.getDrawable(
+                            requireContext(),
+                            if (showRedDot) R.drawable.ic_gift_with_dot else R.drawable.ic_gift
+                        )
+                    )
+                if (it.viewIndexBanner){
+                    showWelfareDialog(it.activityList[0].url)
+                }
+            }
         }
     }
+
+    private fun showWelfareDialog(url: String) {
+//        TimeUtils.currentTimeMillis - MmkvManager.getLastWelfareDialogTime()
+        if (welfareDialog?.isShowing == true){
+            return
+        }
+        val builder = AlertDialog.Builder(context)
+        builder.setCancelable(false)
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.layout_advert_dialog, null)
+        val ivClose = dialogView.findViewById<ImageView>(R.id.iv_close)
+        val ivDetail = dialogView.findViewById<ImageView>(R.id.iv_detail)
+        context?.let {
+            Glide.with(it).load(url).placeholder(R.drawable.ic_aidex)
+                .into(ivDetail)
+        }
+        ivDetail.setOnClickListener {
+            welfareDialog?.dismiss()
+            welfareDialog?.cancel()
+            WebActivity.loadWeb(
+                requireContext(),
+                url = getWelfareCenterUrl(),
+                fullScreen = true,
+                from = "welfare_center"
+            )
+        }
+        ivClose.setOnClickListener {
+            welfareDialog?.dismiss()
+            welfareDialog?.cancel()
+        }
+        builder.setView(dialogView)
+        welfareDialog = builder.create()
+        welfareDialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        welfareDialog?.show()
+    }
+
 
     override fun onPause() {
         super.onPause()
@@ -148,11 +204,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                 ActivityUtil.toActivity(
                     requireContext(),
                     Bundle().also {
-                        it.putParcelableArrayList(FollowSwitchActivity.EXTRA_LIST_DATA, ArrayList<Parcelable?>().also { list ->
-                            list.addAll(homeViewModel.mFollowers)
-                        })
+                        it.putParcelableArrayList(
+                            FollowSwitchActivity.EXTRA_LIST_DATA,
+                            ArrayList<Parcelable?>().also { list ->
+                                list.addAll(homeViewModel.mFollowers)
+                            })
                     },
-                    FollowSwitchActivity::class.java)
+                    FollowSwitchActivity::class.java
+                )
             }
         }
 
@@ -284,7 +343,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
         fixedRateToGetFollowListJob = lifecycleScope.launch {
             shareVm.fixedRateToGetFollowList().collectLatest {
                 it?.let {
-                    it.find {  shareUserInfo ->
+                    it.find { shareUserInfo ->
                         shareUserInfo.userAuthorizationId == UserInfoManager.shareUserInfo?.userAuthorizationId
                     }?.let { latestShareUserInfo ->
                         UserInfoManager.shareUserInfo = latestShareUserInfo
@@ -296,9 +355,11 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             }
         }
     }
+
     private fun stopFixedRateToGetFollowListJob() {
         fixedRateToGetFollowListJob?.cancel()
     }
+
     private fun updateShareUserData() {
         UserInfoManager.shareUserInfo?.let {
             binding.apply {

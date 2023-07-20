@@ -50,6 +50,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Calendar
 
+fun getWelfareCenterUrl(): String {
+    val token = MmkvManager.getToken()
+    val userId = UserInfoManager.instance().userId()
+    return "${BuildConfig.welfareCenterUrl}?token=${token}&userId=${userId}"
+}
 class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
 
     private val REQUEST_CODE_GALLERY = 0x10// 图库选取图片标识请求码
@@ -58,12 +63,6 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         initView()
-    }
-
-    private fun getWelfareCenterUrl(): String {
-        val token = MmkvManager.getToken()
-        val userId = UserInfoManager.instance().userId()
-        return "${BuildConfig.welfareCenterUrl}?token=${token}&userId=${userId}"
     }
 
     override fun onResume() {

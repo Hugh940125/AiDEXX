@@ -146,6 +146,7 @@ const val findAuthorizationInfoById = "$SHARE_FOLLOW_URL/findAuthorizationInfoBy
 const val updateAuthorizationInfo = "$SHARE_FOLLOW_URL/updateAuthorizationInfo"
 //endregion
 
+const val API_GET_WELFARE_ACTIVITY = "$middleUrl/activity/getActivityList" //福利活动
 const val API_DOWNLOAD_SETTING = "$middleUrl/userSetting/getUserSetting" //下载设置
 const val API_UPLOAD_SETTING = "$middleUrl/userSetting/updateUserSetting" //上传设置
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
@@ -354,6 +355,9 @@ interface ApiService {
 
     @GET(API_DOWNLOAD_SETTING)
     suspend fun downloadSetting(@Query("userId") userId: String): ApiResult<BaseResponse<SettingsEntity>>
+
+    @GET(API_GET_WELFARE_ACTIVITY)
+    suspend fun getWelfareActivity(): ApiResult<BaseResponse<WelfareInfo>>
 
     @Streaming
     @GET
