@@ -1,6 +1,7 @@
 package com.microtech.aidexx.db.repository
 
 import com.microtech.aidexx.db.dao.LanguageDao
+import com.microtech.aidexx.db.entity.LanguageConfEntity
 import com.microtech.aidexx.db.entity.LanguageEntity
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 
@@ -22,6 +23,17 @@ class LanguageDbRepository {
 
     suspend fun removeAll() = dao.removeAll()
 
-    suspend fun querySupportLanguages() = dao.querySupportLanguages()
+    suspend fun querySupportLanguages(): MutableList<LanguageConfEntity>? {
+        val supportLanguage = dao.querySupportLanguages()
+        return supportLanguage?.let {
+            dao.queryConfs(it)
+        }
+    }
+
+    suspend fun queryConfById(languageId: String) = dao.queryConf(languageId)
+
+    suspend fun removeAllConf() = dao.removeAllConf()
+    suspend fun insertConf(list: MutableList<LanguageConfEntity>) = dao.insertConf(list)
+
 
 }

@@ -155,7 +155,7 @@ object MmkvManager {
     }
 
     fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
-    fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, false)
+    fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
 
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)

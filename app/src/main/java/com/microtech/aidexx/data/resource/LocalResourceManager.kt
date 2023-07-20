@@ -358,6 +358,8 @@ object LocalResourceManager {
         return result
     }
 
+    // todo 语言配置文件更新
+
     private fun <R> readJsonFileToObj(jsonFilePath: String, clazz: Class<R>? = null, typeToken: TypeToken<R>? = null): R? {
         clazz ?: typeToken ?: return null
         if (FileUtils.isFileExists(jsonFilePath)) {

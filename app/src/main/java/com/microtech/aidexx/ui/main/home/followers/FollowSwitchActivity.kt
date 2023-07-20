@@ -1,5 +1,6 @@
 package com.microtech.aidexx.ui.main.home.followers
 
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -10,6 +11,8 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ItemDecoration
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
@@ -28,13 +31,17 @@ import com.microtech.aidexx.ui.setting.share.ShareFollowActivity
 import com.microtech.aidexx.ui.setting.share.ShareFollowViewModel
 import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.toGlucoseStringWithLowAndHigh
 import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.entity.BleMessage
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
@@ -51,6 +58,8 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
     }
 
     private val shareVm by viewModels<ShareFollowViewModel>()
+    private lateinit var followListAdapter: FollowListAdapter
+    private var fixedRateToGetFollowListJob: Job? = null
 
     override fun getViewBinding(): ActivityFollowListBinding =
         ActivityFollowListBinding.inflate(layoutInflater)
@@ -89,8 +98,17 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
     override fun onResume() {
         super.onResume()
         MessageDistributor.instance().observer(mObserver)
+        fixedRateToGetFollowListJob?.cancel()
+        fixedRateToGetFollowListJob = lifecycleScope.launch {
+            shareVm.fixedRateToGetFollowList().collectLatest {
+                it?.let {
+                    followListAdapter.refreshData(it)
+                }
+            }
+        }
+
         binding.apply {
-            if (!MmkvManager.isAlreadyShowFollowersGuide()) {
+            if (!MmkvManager.isAlreadyShowFollowersGuide()) { //默认是true 先隐藏掉
                 binding.clShadow.visibility = View.VISIBLE
                 clShadow.setOnClickListener {
                     clShadow.visibility = View.GONE
@@ -110,25 +128,30 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
 
     private fun initData(dataList: List<ShareUserInfo>) {
 
-        val followListAdapter = FollowListAdapter(this)
+        followListAdapter = FollowListAdapter(this)
         followListAdapter.onSelectChange = { _: Int, shareUserInfo: ShareUserInfo ->
 
             if (shareUserInfo.dataProviderId != null && UserInfoManager.shareUserInfo?.dataProviderId != shareUserInfo.dataProviderId) {
-                UserInfoManager.shareUserInfo = shareUserInfo
-                Dialogs.showWait(getString(R.string.loading))
 
-                // 该用户的数据下载成功后再执行切换
-                lifecycleScope.launch {
-                    if (CloudHistorySync.downloadRecentData(shareUserInfo.dataProviderId!!)) {
-                        Dialogs.dismissWait()
-                        LiveEventBus
-                            .get(EventBusKey.EVENT_SWITCH_USER, ShareUserInfo::class.java)
-                            .post(shareUserInfo)
-                        finish()
-                    } else {
-                        Dialogs.dismissWait()
-                        getString(R.string.switch_user_fail).toast()
+                if (NetUtil.isNetAvailable(this)) {
+                    // 该用户的数据下载成功后再执行切换
+                    lifecycleScope.launch {
+                        Dialogs.showWait(getString(R.string.loading))
+                        if (CloudHistorySync.downloadRecentData(shareUserInfo.dataProviderId!!)) {
+                            Dialogs.dismissWait()
+                            UserInfoManager.shareUserInfo = shareUserInfo
+                            LiveEventBus
+                                .get(EventBusKey.EVENT_SWITCH_USER, ShareUserInfo::class.java)
+                                .post(shareUserInfo)
+
+                            finish()
+                        } else {
+                            Dialogs.dismissWait()
+                            getString(R.string.switch_user_fail).toast()
+                        }
                     }
+                } else {
+                    getString(R.string.net_error).toast()
                 }
             }
         }
@@ -145,9 +168,7 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                     val shareUserInfo = ShareUserInfo()
                     shareUserInfo.dataProviderId = UserInfoManager.instance().userId()
 
-                    LiveEventBus
-                        .get(EventBusKey.EVENT_SWITCH_USER, ShareUserInfo::class.java)
-                        .post(shareUserInfo) //通知刷新历史页面
+                    EventBusManager.send(EventBusKey.EVENT_SWITCH_USER, shareUserInfo)
 
                     followListAdapter.unselectAll()
 
@@ -158,17 +179,21 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                 ActivityUtil.toActivity(this@FollowSwitchActivity, ShareFollowActivity::class.java)
             }
             rvFollowList.layoutManager = LinearLayoutManager(this@FollowSwitchActivity)
+            rvFollowList.addItemDecoration(object: ItemDecoration() {
+                override fun getItemOffsets(
+                    outRect: Rect,
+                    view: View,
+                    parent: RecyclerView,
+                    state: RecyclerView.State
+                ) {
+                    super.getItemOffsets(outRect, view, parent, state)
+                    outRect.bottom = 20
+                }
+            })
             rvFollowList.adapter = followListAdapter
             followListAdapter.refreshData(dataList)
         }
 
-        lifecycleScope.launch {
-            shareVm.fixedRateToGetFollowList().collectLatest {
-                it?.let {
-                    followListAdapter.refreshData(it)
-                }
-            }
-        }
     }
 
     private fun updateMySelfInfo() {
@@ -176,7 +201,6 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
 
             userName.text = UserInfoManager.instance().getDisplayName()
             ivSelected.isVisible = UserInfoManager.shareUserInfo == null
-            tvUnit.text = UnitManager.glucoseUnit.text
 
             val deviceModel = TransmitterManager.instance().getDefault()
 
@@ -186,10 +210,29 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                     deviceModel
                 }
 
-            tvGlucoseValue.text = availableModel?.glucose?.toGlucoseStringWithLowAndHigh(resources)
-                ?: getString(R.string.data_place_holder)
+            val errorStateDes = if (availableModel?.minutesAgo != null && availableModel.glucose != null
+                && availableModel.minutesAgo!! in 0..15
+            ) {
+                if (availableModel.malFunctionList.isNotEmpty()) {
+                    when (availableModel.malFunctionList[0]) {
+                        History.GENERAL_DEVICE_FAULT -> resources.getString(R.string.Sensor_error)
+                        History.DEVICE_BATTERY_LOW -> resources.getString(R.string.battery_low)
+                        else -> null
+                    }
+                } else {
+                    availableModel.latestHistory?.let {
+                        if (it.isValid == 1) {
+                            when (it.status) {
+                                History.STATUS_INVALID -> resources.getString(R.string.transmitter_stableing)
+                                History.STATUS_ERROR -> resources.getString(R.string.Sensor_error)
+                                else -> null
+                            }
+                        } else null
+                    }
+                }
+            } else null
 
-            lastTime.text = availableModel?.let {
+            latestValueTime.text = errorStateDes ?: availableModel?.let {
                 if (it.minutesAgo == null) {
                     getString(R.string.data_place_holder)
                 } else {
@@ -203,6 +246,32 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                     }
                 }
             } ?: getString(R.string.data_place_holder)
+
+            tvGlucoseValue.text = errorStateDes?.let { getString(R.string.data_place_holder) }
+                ?: availableModel?.glucose?.toGlucoseStringWithLowAndHigh(resources)
+                ?: getString(R.string.data_place_holder)
+
+            tvUnit.isVisible = tvGlucoseValue.text != getString(R.string.data_place_holder)
+            if (tvUnit.isVisible) {
+                tvUnit.text = UnitManager.glucoseUnit.text
+            }
+
+            errorStateDes?.let {
+                bgPanel.rotation = 0f
+                bgPanel.setBackgroundResource(
+                    HomeBackGroundSelector.instance().getBgForTrend(null, null)
+                )
+            } ?: availableModel?.let {
+                bgPanel.rotation = when (it.glucoseTrend) {
+                    DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseTrend.UP -> 180f
+                    DeviceModel.GlucoseTrend.SLOW_UP -> -90f
+                    else -> 0f
+                }
+                bgPanel.setBackgroundResource(
+                    HomeBackGroundSelector.instance()
+                        .getBgForTrend(it.glucoseTrend, it.glucoseLevel)
+                )
+            }
 
             val remainingTime = availableModel?.getSensorRemainingTime()
             leftTime.text = remainingTime?.let {
@@ -218,18 +287,6 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                     String.format(getString(R.string.left_day), getString(R.string.data_place_holder))
                 }
             } ?: String.format(getString(R.string.left_day), getString(R.string.data_place_holder))
-
-            availableModel?.let {
-                bgPanel.rotation = when (it.glucoseTrend) {
-                    DeviceModel.GlucoseTrend.FAST_UP, DeviceModel.GlucoseTrend.UP -> 180f
-                    DeviceModel.GlucoseTrend.SLOW_UP -> -90f
-                    else -> 0f
-                }
-                bgPanel.setBackgroundResource(
-                    HomeBackGroundSelector.instance()
-                        .getBgForTrend(it.glucoseTrend, it.glucoseLevel)
-                )
-            }
 
         }
     }

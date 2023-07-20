@@ -20,6 +20,7 @@ import com.igexin.sdk.PushManager
 import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
+import com.microtech.aidexx.base.BaseWelcomeActivity
 import com.microtech.aidexx.common.compliance.EnquireManager
 import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -32,8 +33,8 @@ import com.microtech.aidexx.service.MainService
 import com.microtech.aidexx.ui.account.AccountViewModel
 import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.main.home.HomeViewModel
-import com.microtech.aidexx.ui.setting.LoadResourceActivity
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
+import com.microtech.aidexx.ui.welcome.WelcomeActivity
 import com.microtech.aidexx.utils.*
 import com.microtech.aidexx.utils.ThemeManager.themeConfig
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -42,6 +43,7 @@ import com.microtech.aidexx.utils.mmkv.MmkvManager
 import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtech.aidexx.views.dialog.standard.StandardDialog
 import com.tencent.mars.xlog.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -70,14 +72,21 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         const val EVENT = 4
     }
 
-    class MainHandler(val activity: MainActivity) : Handler(Looper.getMainLooper()) {
+    class MainHandler(activity: MainActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
+        private var dialogKey: String = "battery_optimize-${System.currentTimeMillis()}"
+
+        private var storagePermissionDialog: StandardDialog? = null
+        private var bluetoothPermissionDialog: StandardDialog? = null
+        private var ignoreBatteryDialog: StandardDialog? = null
+
         override fun handleMessage(msg: Message) {
             reference.get()?.let {
                 if (!it.isFinishing) {
                     when (msg.what) {
                         REQUEST_STORAGE_PERMISSION -> {
-                            EnquireManager.instance()
+                            storagePermissionDialog?.dismiss()
+                            storagePermissionDialog = EnquireManager.instance()
                                 .showEnquireOrNot(
                                     it,
                                     it.getString(R.string.need_storage),
@@ -90,7 +99,8 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                 )
                         }
                         REQUEST_BLUETOOTH_PERMISSION -> {
-                            EnquireManager.instance()
+                            bluetoothPermissionDialog?.dismiss()
+                            bluetoothPermissionDialog = EnquireManager.instance()
                                 .showEnquireOrNot(
                                     it,
                                     it.getString(R.string.need_bt_permission),
@@ -107,21 +117,22 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                             it.enableLocation()
                         }
                         REQUEST_ENABLE_BLUETOOTH -> {
-                            activity.enableBluetooth()
+                            it.enableBluetooth()
                         }
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored =
                                 powerManager.isIgnoringBatteryOptimizations(it.packageName)
                             if (!hasIgnored) {
-                                Dialogs.showWhether(
+                                ignoreBatteryDialog?.dismiss()
+                                ignoreBatteryDialog = Dialogs.showWhether(
                                     it,
-                                    content = activity.getString(R.string.content_ignore_battery),
+                                    content = it.getString(R.string.content_ignore_battery),
                                     cancel = {
                                     },
                                     confirm = {
                                         ignoreBatteryOptimization(it)
-                                    }, key = "battery_optimize"
+                                    }, key = dialogKey
                                 )
                             }
                         }
@@ -160,7 +171,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     override fun onCreate(savedInstanceState: Bundle?) {
         themeConfig()
         super.onCreate(savedInstanceState)
-        checkAndUpdateResourceIfNeeded()
+        UserInfoManager.shareUserInfo = null
         setContentView(binding.root)
         mHandler = MainHandler(this)
         initSDKs()
@@ -183,6 +194,15 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         }
         EventBusManager.onReceive<Int>(EventBusKey.EVENT_LOGOUT, this) {
             finish()
+        }
+
+        /** 图表异常 */
+        EventBusManager.onReceive<Int?>(EventBusKey.EVENT_RELOAD_CHART, this) {
+            lifecycleScope.launch {
+                delay(500)
+                LogUtil.xLogE("EVENT_RELOAD_CHART - recreate", TAG)
+                recreate()
+            }
         }
     }
 
@@ -207,9 +227,11 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
     override fun onResume() {
-        checkTimeZoneChange()
         super.onResume()
-        checkAndUpdateResourceIfNeeded()
+        if (checkAndUpdateResourceIfNeeded()) {
+            return
+        }
+        checkTimeZoneChange()
         checkPermission()
         lifecycleScope.launch {
             AppUpgradeManager.fetchVersionInfo()?.let {
@@ -405,6 +427,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         super.onDestroy()
         Log.appenderClose()
         binding.mainTabView.onTabChange = null
+        UserInfoManager.shareUserInfo = null
     }
 
     override fun onBackPressed() {
@@ -412,11 +435,14 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     }
 
 
-    private fun checkAndUpdateResourceIfNeeded() {
-        MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
-            startActivity(Intent(this, LoadResourceActivity::class.java))
+    private fun checkAndUpdateResourceIfNeeded(): Boolean {
+        return MmkvManager.getUpgradeResourceZipFileInfo().ifEmpty { null }?.let {
+            ActivityUtil.toActivity(this, Bundle().also {
+                it.putBoolean(BaseWelcomeActivity.EXT_UPDATE_RESOURCE, true)
+            }, WelcomeActivity::class.java)
             finish()
-        }
+            true
+        } ?: false
     }
 
     private fun processIntent(intent: Intent?, fromOnCreate: Boolean = true) {

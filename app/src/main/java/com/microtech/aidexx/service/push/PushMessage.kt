@@ -2,8 +2,9 @@ package com.microtech.aidexx.service.push
 
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.microtech.aidexx.common.getContext
+import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.event.DietEntity
 import com.microtech.aidexx.db.entity.event.ExerciseEntity
@@ -12,6 +13,10 @@ import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.eventbus.DataChangedType
+import com.microtech.aidexx.utils.eventbus.EventBusKey
+import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.eventbus.EventDataChangedInfo
 import com.microtech.aidexx.utils.permission.PermissionGroups
 
 open class PushMessage {
@@ -23,12 +28,13 @@ open class PushMessage {
     //-1 cgm无效数据 0-cgm数据(暂不使用) 1高血糖 2-低血糖，3-紧急低
     // 4-饮食事件变更，5运动事件变更，6用药事件变更，7德岛素事件变更，8-其他事件变更，
     // 9-指血数据变更，10-日志上报
-    protected val msgType: Int? = null
+    val msgType: Int? = null
     val detail: String? = null
     fun getRealMsgByType(): PushMessage? {
-        val gson = Gson()
-        return kotlin.runCatching {
-            when (msgType) {
+        val gson = GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss.SSS").create()
+        var ret: PushMessage? = null
+        kotlin.runCatching {
+            ret = when (msgType) {
                 1,2,3 -> PushCgmMsg()
                 4 -> PushDietMsg(gson.fromJson(detail, DietEntity::class.java))
                 5 -> PushExerciseMsg(gson.fromJson(detail, ExerciseEntity::class.java))
@@ -39,64 +45,77 @@ open class PushMessage {
                 10 -> PushLogMsg()
                 else -> null
             }
-        }.getOrNull()
+        }.exceptionOrNull()?.let {
+            LogUtil.xLogE("getRealMsgByType fail detail=$detail  error=$it", TAG)
+        }
+        return ret
     }
 
-    open suspend fun applyMsg(): Boolean = false
+    open suspend fun applyMsg(): Boolean =
+        applyToDb()?.let {
+            notifyEventDataChanged(it)
+            true
+        } ?: false
+
+    open suspend fun applyToDb(): BaseEventEntity? = null
+    private fun notifyEventDataChanged(event: BaseEventEntity) {
+        EventBusManager.send(EventBusKey.EVENT_DATA_CHANGED,
+            EventDataChangedInfo(DataChangedType.DELETE, listOf(event)))
+    }
 }
 
 data class PushDietMsg(
     val data: DietEntity?
 ): PushMessage() {
-    override suspend fun applyMsg(): Boolean {
+    override suspend fun applyToDb(): BaseEventEntity? {
         return data?.foodId?.let {
-            EventDbRepository.removeEventByFrontId(it, DietEntity::class.java) == null
-        } ?: false
+            EventDbRepository.removeEventByFrontId(it, DietEntity::class.java)
+        }
     }
 }
 data class PushExerciseMsg(
     val data: ExerciseEntity?
 ): PushMessage() {
-    override suspend fun applyMsg(): Boolean {
+    override suspend fun applyToDb(): BaseEventEntity? {
         return data?.exerciseId?.let {
-            EventDbRepository.removeEventByFrontId(it, ExerciseEntity::class.java) == null
-        } ?: false
+            EventDbRepository.removeEventByFrontId(it, ExerciseEntity::class.java)
+        }
     }
 }
 data class PushMedicationMsg(
     val data: MedicationEntity?
 ): PushMessage() {
-    override suspend fun applyMsg(): Boolean {
+    override suspend fun applyToDb(): BaseEventEntity? {
         return data?.medicationId?.let {
-            EventDbRepository.removeEventByFrontId(it, MedicationEntity::class.java) == null
-        } ?: false
+            EventDbRepository.removeEventByFrontId(it, MedicationEntity::class.java)
+        }
     }
 }
 data class PushInsulinMsg(
     val data: InsulinEntity?
 ): PushMessage() {
-    override suspend fun applyMsg(): Boolean {
+    override suspend fun applyToDb(): BaseEventEntity? {
         return data?.insulinId?.let {
-            EventDbRepository.removeEventByFrontId(it, InsulinEntity::class.java) == null
-        } ?: false
+            EventDbRepository.removeEventByFrontId(it, InsulinEntity::class.java)
+        }
     }
 }
 data class PushOtherMsg(
     val data: OthersEntity?
 ): PushMessage() {
-    override suspend fun applyMsg(): Boolean {
+    override suspend fun applyToDb(): BaseEventEntity? {
         return data?.otherId?.let {
-            EventDbRepository.removeEventByFrontId(it, OthersEntity::class.java) == null
-        } ?: false
+            EventDbRepository.removeEventByFrontId(it, OthersEntity::class.java)
+        }
     }
 }
 data class PushBgMsg(
     val data: BloodGlucoseEntity?
 ): PushMessage() {
-    override suspend fun applyMsg(): Boolean {
+    override suspend fun applyToDb(): BaseEventEntity? {
         return data?.bloodGlucoseId?.let {
-            EventDbRepository.removeEventByFrontId(it, BloodGlucoseEntity::class.java) == null
-        } ?: false
+            EventDbRepository.removeEventByFrontId(it, BloodGlucoseEntity::class.java)
+        }
     }
 }
 class PushLogMsg: PushMessage() {

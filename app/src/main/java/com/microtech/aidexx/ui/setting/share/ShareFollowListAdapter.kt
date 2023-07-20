@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.microtech.aidexx.BuildConfig
+import com.microtech.aidexx.R
 import com.microtech.aidexx.databinding.ItemShareFollowListBinding
 import com.microtech.aidexx.utils.LogUtil
 
@@ -35,7 +35,8 @@ class ShareFollowListAdapter: RecyclerView.Adapter<ShareFollowListAdapter.ViewHo
                 ivShareWechat.isVisible = false //item.source == 3
 
                 Glide.with(root.context)
-                    .load("${ BuildConfig.baseUrl }${item.information?.avatar}")
+                    .load(item.information?.avatar)
+                    .error(R.drawable.ic_default_avatar)
                     .transform(CircleCrop())
                     .into(ivAvatar)
 

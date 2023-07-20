@@ -158,7 +158,7 @@ class ChartViewModel: ViewModel() {
                             val mergeDataTasks = listOf(
                                 async {
                                     if (nextPageCgmData.isNotEmpty()) {
-                                        LogUtil.d("===CHART=== 下一页数据 ${Thread.currentThread()} size=${nextPageCgmData.size}")
+                                        LogUtil.d("===CHART=== 下一页数据 nextPageCgmData size=${nextPageCgmData.size}")
                                         addCgmData(nextPageCgmData)
                                         nextPageCgmData.clear()
                                         needNotify = true
@@ -166,6 +166,7 @@ class ChartViewModel: ViewModel() {
                                 },
                                 async {
                                     if (nextPageBgData.isNotEmpty()) {
+                                        LogUtil.d("===CHART=== 下一页数据 nextPageBgData size=${nextPageBgData.size}")
                                         addBgData(nextPageBgData)
                                         nextPageBgData.clear()
                                         needNotify = true
@@ -173,8 +174,17 @@ class ChartViewModel: ViewModel() {
                                 },
                                 async {
                                     if (nextPageCalData.isNotEmpty()) {
+                                        LogUtil.d("===CHART=== 下一页数据 nextPageCalData size=${nextPageCalData.size}")
                                         addCalData(nextPageCalData)
                                         nextPageCalData.clear()
+                                        needNotify = true
+                                    }
+                                },
+                                async {
+                                    if (nextPageEventData.isNotEmpty()) {
+                                        LogUtil.d("===CHART=== 下一页数据 nextPageEventData size=${nextPageEventData.size}")
+                                        addEvent(nextPageEventData)
+                                        nextPageEventData.clear()
                                         needNotify = true
                                     }
                                 }
@@ -223,10 +233,10 @@ class ChartViewModel: ViewModel() {
         LogUtil.d("查询第一条 $latestOne ${this@ChartViewModel}", TAG)
 
         val cgmMaxDate = latestOne?.let {
-            it.deviceTime
+            Date(it.timestamp)
         } ?: Date()
         LogUtil.d("查询第一条 日期 ${cgmMaxDate} ${this@ChartViewModel}", TAG)
-        val minDate = getCurPageStartDate(cgmMaxDate.time)
+        val minDate = getCurPageStartDate(cgmMaxDate.time, true)
         LogUtil.d("查询第一条 最小日期 ${minDate} ${this@ChartViewModel}", TAG)
         // 加载所有该日期区间的数据
         loadNextPageData(minDate, Date())
@@ -268,14 +278,10 @@ class ChartViewModel: ViewModel() {
     }.flowOn(Dispatchers.IO)
 
     /**
-     *  todo 重新加载数据
-     *      清空当前数据集
-     *      重置所有标记位
-     *      --通知外部刷页面
-     *      加载第一页数据
-     *      --通知外部刷页面
+     *  重新加载图表数据
      */
     fun reload() {
+        LogUtil.d("reload()", TAG)
         if (!isDataInit) return
         reset()
         viewModelScope.launch {
@@ -291,7 +297,7 @@ class ChartViewModel: ViewModel() {
         if (isLtr || !isDataInit) return false
 //        LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发 loadedmin=$loadedMinDate xAxisMin=$xAxisMin vf=$visibleLeftX" )
         if(loadedMinDate == xAxisMin) {
-//            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
+            LogUtil.d("===CHART=== 滚动过程已经触发了下一页加载 不再触发")
             return false
         }
 
@@ -441,7 +447,7 @@ class ChartViewModel: ViewModel() {
                                 } else {
                                     LogUtil.d("===CHART=== 下一页数据 size=${d.size} 准备完毕")
                                     if (d.size > 2) {
-                                        LogUtil.d("===CHART=== 下一页数据 first=${d.first().deviceTime} last=${d.last().deviceTime}")
+                                        LogUtil.d("===CHART=== 下一页数据 first=${d.first().timestamp} last=${d.last().timestamp}")
                                     }
                                     nextPageCgmData.addAll(d)
                                 }
@@ -449,7 +455,7 @@ class ChartViewModel: ViewModel() {
                         }
                     },
                     async {
-                        CgmCalibBgRepository.queryBgByPage(startDate, endDate)?.let { d ->
+                        CgmCalibBgRepository.queryBgByPage(startDate, endDate, UserInfoManager.getCurShowUserId())?.let { d ->
                             if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
@@ -462,7 +468,7 @@ class ChartViewModel: ViewModel() {
                         }
                     },
                     async {
-                        CgmCalibBgRepository.queryCalByPage(startDate, endDate)?.let { d ->
+                        CgmCalibBgRepository.queryCalByPage(startDate, endDate, UserInfoManager.getCurShowUserId())?.let { d ->
                             if (d.size > 0 && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
@@ -475,7 +481,7 @@ class ChartViewModel: ViewModel() {
                         }
                     },
                     async {
-                        EventDbRepository.queryEventByPage(startDate, endDate).let { d ->
+                        EventDbRepository.queryEventByPage(startDate, endDate, UserInfoManager.getCurShowUserId()).let { d ->
                             if (d.isNotEmpty() && d[0].userId != UserInfoManager.getCurShowUserId()) {
                                 isSuccess = false
                             } else {
@@ -508,17 +514,15 @@ class ChartViewModel: ViewModel() {
         )
 
 
-    private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis()): Date =
-        Date(curTime - TimeUtils.oneDayMillis * 4)
+    private fun getCurPageStartDate(curTime: Long = System.currentTimeMillis(), isFromInit: Boolean = false): Date =
+        Date(curTime - TimeUtils.oneDayMillis * (if (isFromInit) 2 else 4))
 
-    //todo 用户退出时调用
-    fun clearEventSets() {
+    private fun clearEventSets() {
         bgSet.clear()
         eventSet.clear()
     }
 
-    // todo 用户退出是调用
-    fun clearGlucoseSets() {
+    private fun clearGlucoseSets() {
         glucoseSets.clear()
         calSet.clear()
         timeMin = null
@@ -668,6 +672,7 @@ class ChartViewModel: ViewModel() {
     private fun xMaxMin(dateTime: Float) {
         if (timeMin == null || timeMin!! > dateTime) {
             timeMin = dateTime
+            LogUtil.d("===CHART=== timeMin=$timeMin")
         }
 
         if (timeMax == null || timeMax!! < dateTime) {

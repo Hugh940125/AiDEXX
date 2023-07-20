@@ -109,7 +109,7 @@ object Dialogs {
         confirmBtnText: String? = null,
         cancelBtnText: String? = null,
         @DialogBtnOrientation btnOrientation: Int = DIALOGS_TYPE_STANDARD
-    ) {
+    ): StandardDialog {
         key?.let {
             whetherDialogMap[it]?.dismiss()
         }
@@ -129,6 +129,7 @@ object Dialogs {
             whetherDialogMap[it] = create
         }
         create.show()
+        return create
     }
 
     fun showWait(

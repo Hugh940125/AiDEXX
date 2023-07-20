@@ -1,55 +1,18 @@
 package com.microtech.aidexx.ui.welcome
 
 import android.content.Intent
-import android.os.Bundle
 import androidx.core.view.isVisible
-import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.base.BaseWelcomeActivity
 import com.microtech.aidexx.common.user.UserInfoManager
-import com.microtech.aidexx.databinding.ActivityWelcomeBinding
 import com.microtech.aidexx.ui.account.LoginActivity
 import com.microtech.aidexx.ui.account.RegisterActivity
 import com.microtech.aidexx.ui.main.MainActivity
 import com.microtech.aidexx.utils.ActivityUtil
-import com.microtech.aidexx.utils.ThemeManager
-import com.microtech.aidexx.utils.mmkv.MmkvManager
-import com.microtech.aidexx.views.dialog.lib.DialogX
 
-class WelcomeActivity : BaseActivity<BaseViewModel, ActivityWelcomeBinding>() {
+class WelcomeActivity : BaseWelcomeActivity<BaseViewModel>() {
 
-    override fun getViewBinding(): ActivityWelcomeBinding {
-        return ActivityWelcomeBinding.inflate(layoutInflater)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-        when (ThemeManager.theme.index) {
-            0 -> DialogX.globalTheme = DialogX.THEME.LIGHT
-            1 -> DialogX.globalTheme = DialogX.THEME.DARK
-        }
-        initView()
-    }
-
-    private fun initView() {
-        if (MmkvManager.isAppFirstLaunch()) {
-            binding.viewAgreeProtocal.isVisible = true
-            binding.viewAgreeProtocal.onClick = {
-                binding.viewAgreeProtocal.isVisible = false
-                MmkvManager.saveAppLaunched()
-                greenLight()
-            }
-        } else {
-            greenLight()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        binding.viewAgreeProtocal.removeClick()
-    }
-
-    private fun greenLight() {
+    override fun afterAgreeUserProtocal() {
         if (UserInfoManager.instance().isLogin()) {
             ActivityUtil.toActivity(this, MainActivity::class.java)
             finish()

@@ -219,6 +219,8 @@ dependencies {
 //    implementation 'com.assist-v3:vivo:3.1.0'  // vivo
 //    implementation 'com.getui.opt:ups:3.0.3'   // ups，ups目前支持坚果，索尼，海信手机
 //    implementation 'com.huawei.hms:push:6.5.0.300'
+
+    implementation 'com.github.yalantis:ucrop:2.2.8'
 }
 
 apply plugin: 'io.objectbox'

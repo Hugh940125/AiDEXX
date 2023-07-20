@@ -2,6 +2,7 @@ package com.microtech.aidexx.db.entity
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.microtech.aidexx.utils.StringUtils
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.annotation.Unique
@@ -37,15 +38,11 @@ class UserEntity() : Parcelable {
     fun getDisplayName() = name?.ifEmpty { null }
 //        ?: "${surname?:""}${givenName?:""}".ifEmpty { null }
         ?: fullName
-        ?: getMaskedPhone()
+        ?: StringUtils.getMaskedPhone(phone)
         ?: email
         ?: ""
 
-    fun getMaskedPhone(): String? = phone?.let {
-        if (it.length == 11) {
-            it.replaceRange(3, 7, "****")
-        } else it
-    }
+    fun getMaskedPhone(): String? = StringUtils.getMaskedPhone(phone)
 
     override fun toString(): String {
         return buildString {

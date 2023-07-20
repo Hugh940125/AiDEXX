@@ -84,6 +84,8 @@ open class MyChart : CombinedChart {
         defStyle
     )
 
+    open fun reload(){ }
+
     override fun init() {
         super.init()
         setNoDataText("")
@@ -99,7 +101,9 @@ open class MyChart : CombinedChart {
             rect.bottom = getPixelForValues(xChartMin, gridBackgroundStart, majorAxis).y.toFloat()
             rect.top = getPixelForValues(xChartMin, gridBackgroundEnd, majorAxis).y.toFloat()
             if (rect.bottom.isNaN() || rect.top.isNaN()) {
-                LogUtil.xLogE("图表高低区间绘制失败", "MyChart")
+                LogUtil.xLogE("===CHART=== 图表高低区间绘制失败", "MyChart")
+                reload()
+                return
             }
             c!!.drawRect(rect, mGridBackgroundPaint)
         }

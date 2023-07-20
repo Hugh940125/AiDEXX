@@ -133,6 +133,7 @@ class ChartViewHolder(
                         if (it?.needScrollToLatest != false) 0.seconds else 1.seconds
                     }.collect {
                         it?.let {
+                            LogUtil.d("===CHART=== 刷新图表")
                             chart.notifyChanged(it.needScrollToLatest)
                         }
                     }
@@ -154,12 +155,14 @@ class ChartViewHolder(
         }
         /** 切换用户 */
         EventBusManager.onReceive<ShareUserInfo>(EventBusKey.EVENT_SWITCH_USER, fragment) {
+            LogUtil.d("EVENT_SWITCH_USER", TAG)
             chartViewModel.reload()
         }
 
         /** 高低血糖阈值改变 */
         EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_HYP_CHANGE, fragment) {
             // todo 待优化把所有数据重新按照高低血糖阈值计算一遍
+            LogUtil.d("EVENT_HYP_CHANGE", TAG)
             chartViewModel.reload()
         }
 

@@ -128,7 +128,7 @@ object EventRepository {
 
             if (MmkvManager.isLastLoginEventDownloadSuccess(loginStateKey)) {
                 MmkvManager.setLastLoginEventDownloadState(loginStateKey, false)
-                startAutoIncrementColumn = EventDbRepository.findMaxEventId<EVENT>() ?: 0L
+                startAutoIncrementColumn = EventDbRepository.findMaxEventId<EVENT>(userId) ?: 0L
                 startAutoIncrementColumn = if (startAutoIncrementColumn!! <= 0L) null else startAutoIncrementColumn
 
                 // 保存登录同步前本地最大id
@@ -136,6 +136,10 @@ object EventRepository {
             } else {
                 // 上次登录失败 说明库里有脏数据 就从sp取上次登录时本地最大id
                 startAutoIncrementColumn = MmkvManager.getEventDataId(loginMaxIdKey)
+            }
+
+            startAutoIncrementColumn = startAutoIncrementColumn?.let {
+                it + 1
             }
 
             val breakAll: ()->Unit = {

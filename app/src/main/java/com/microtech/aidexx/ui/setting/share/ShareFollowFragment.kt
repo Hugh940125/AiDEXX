@@ -13,12 +13,16 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.common.toast
 import com.microtech.aidexx.databinding.FragShareOrFollowBinding
+import com.microtech.aidexx.utils.NetUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import kotlinx.coroutines.launch
+import java.lang.ref.WeakReference
 
 
 class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewModel, FragShareOrFollowBinding>() {
@@ -66,6 +70,12 @@ class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewM
     @SuppressLint("NotifyDataSetChanged")
     private fun getData() {
         lifecycleScope.launch {
+
+            if (!NetUtil.isNetAvailable(requireContext())) {
+                timeHandler.sendEmptyMessageDelayed(messageWhat, 1000)
+                getString(R.string.net_error).toast()
+                return@launch
+            }
             timeHandler.sendEmptyMessageDelayed(messageWhat, 10 * 1000)
             sfViewModel.loadData(isShare).collect { dataList ->
                 binding.apply {
@@ -104,10 +114,12 @@ class ShareFollowFragment(private val isShare: Boolean) : BaseFragment<BaseViewM
         timeHandler.removeMessages(messageWhat)
     }
 
-    class TimeHandler(val binding: FragShareOrFollowBinding) : Handler(Looper.getMainLooper()) {
+    class TimeHandler(binding: FragShareOrFollowBinding) : Handler(Looper.getMainLooper()) {
+
+        var bindingWeakReference = WeakReference(binding)
         override fun handleMessage(msg: Message) {
             super.handleMessage(msg)
-            binding.shareRefreshLayout.finishRefresh()
+            bindingWeakReference.get()?.shareRefreshLayout?.finishRefresh()
         }
     }
 

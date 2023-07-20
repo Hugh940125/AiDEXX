@@ -230,7 +230,7 @@ class CalendarSingleDialog(
 
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
-        calendar.set(Calendar.MONTH, month)
+        calendar.set(Calendar.MONTH, month-1)
 
         return calendar.time.formatToYM() ?: buildString {
             append(year)

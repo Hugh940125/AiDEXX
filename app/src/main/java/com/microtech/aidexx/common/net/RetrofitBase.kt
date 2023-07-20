@@ -1,10 +1,15 @@
 package com.microtech.aidexx.common.net
 
-import android.util.Log
+import com.microtech.aidexx.utils.LogUtil
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.Timeout
-import retrofit2.*
+import retrofit2.Call
+import retrofit2.CallAdapter
+import retrofit2.Callback
+import retrofit2.Converter
+import retrofit2.Response
+import retrofit2.Retrofit
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
@@ -81,7 +86,7 @@ internal class ApiCall<T>(private val delegate: Call<T>) : Call<ApiResult<T>> {
             }
 
             override fun onFailure(call: Call<T>, t: Throwable) {
-                Log.e(TAG_API_SERVICE, "ApiCall on Failure t=$t t.message=${t.localizedMessage}")
+                LogUtil.xLogE("ApiCall on Failure t=$t t.message=${t.localizedMessage} request=${request()} }", TAG_API_SERVICE)
 
                 when (t) {
                     is BizException -> callback.onResponse(

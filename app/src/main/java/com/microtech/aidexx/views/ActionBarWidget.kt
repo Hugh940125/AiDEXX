@@ -49,6 +49,7 @@ open class ActionBarWidget : ConstraintLayout {
         parent.setPadding(0, getStatusBarHeight() + 10.dp2px(),8.dp2px(), 8.dp2px())
         mViewBinding = WidgetActionBarBinding.bind(parent)
         ivRightIcon = parent.findViewById(R.id.iv_right)
+        setBackgroundColor(resources.getColor(R.color.bg_nav_bar, context.theme))
     }
 
     //获取状态栏的高度

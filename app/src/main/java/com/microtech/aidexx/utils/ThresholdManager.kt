@@ -4,8 +4,6 @@ import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.ui.setting.alert.AlertUtil
-import com.microtech.aidexx.utils.eventbus.EventBusKey
-import com.microtech.aidexx.utils.eventbus.EventBusManager
 import kotlinx.coroutines.launch
 
 object ThresholdManager {
@@ -28,9 +26,6 @@ object ThresholdManager {
     init {
         AidexxApp.mainScope.launch {
             alertSetting = SettingsManager.settingEntity!!
-            if (alertSetting.highLimitMg != DEFAULT_HYPER || alertSetting.lowLimitMg != DEFAULT_HYPO) {
-                EventBusManager.send(EventBusKey.EVENT_HYP_CHANGE, true)
-            }
         }
     }
 

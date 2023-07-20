@@ -8,16 +8,11 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.microtech.aidexx.R
 import com.microtech.aidexx.ble.device.model.DeviceModel
-import com.microtech.aidexx.common.getContext
-import com.microtech.aidexx.common.millisToMinutes
-import com.microtech.aidexx.common.parseToTimestamp
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.LayoutFollowListItemBinding
 import com.microtech.aidexx.ui.main.home.HomeBackGroundSelector
 import com.microtech.aidexx.ui.setting.share.ShareUserInfo
-import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
-import com.microtech.aidexx.utils.toGlucoseValue
 
 
 class FollowListAdapter(
@@ -38,16 +33,14 @@ class FollowListAdapter(
                 user.isLooking = user.dataProviderId == UserInfoManager.shareUserInfo?.dataProviderId
                 ivSelected.isVisible = user.isLooking
 
-                val gValue = user.userTrend?.bloodGlucose?.toGlucoseValue()
-                    ?:ctx.getString(R.string.data_place_holder)
-                tvGlucoseValue.text = "$gValue"
-                tvUnit.text = UnitManager.glucoseUnit.text
+                val glucoseValue = user.getGlucoseValue()
+                tvGlucoseValue.text = "${glucoseValue?:ctx.getString(R.string.data_place_holder)}"
+                tvUnit.isVisible = glucoseValue != null
+                if (tvUnit.isVisible) {
+                    tvUnit.text = UnitManager.glucoseUnit.text
+                }
 
-                lastTime.text = user.userTrend?.appTime?.let {
-                    val timestamp = it.parseToTimestamp(user.userTrend?.appTimeZone!!)
-                    getFriendlyTimeSpanByNow(timestamp)
-                } ?: ctx.getString(R.string.data_place_holder)
-
+                latestValueTime.text = user.getLatestValueTimeStr()
                 leftTime.text = user.getSensorStatusDesc()
 
                 user.userTrend?.let {
@@ -71,20 +64,6 @@ class FollowListAdapter(
             }
         }
 
-        private fun getFriendlyTimeSpanByNow(timestamp: Long?): String {
-            return timestamp?.let {
-                val minutesAgo = (TimeUtils.currentTimeMillis - it).millisToMinutes()
-                return if (minutesAgo == 0) {
-                    getContext().getString(R.string.now)
-                } else {
-                    buildString {
-                        append(minutesAgo)
-                        append(getContext().getString(R.string.min_ago))
-                    }
-                }
-            } ?: getContext().getString(R.string.data_place_holder)
-        }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FollowListViewHolder {
@@ -106,7 +85,7 @@ class FollowListAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun refreshData(list: List<ShareUserInfo>) {
         followList.clear()
-        followList.addAll(list)
+        followList.addAll(list.filter { !it.hide })
         notifyDataSetChanged()
     }
 

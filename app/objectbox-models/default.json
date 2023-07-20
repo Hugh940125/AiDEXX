@@ -2104,10 +2104,57 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "26:1394050152852526191",
+      "lastPropertyId": "6:554698657828763349",
+      "name": "LanguageConfEntity",
+      "properties": [
+        {
+          "id": "1:4910702244691538147",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1420632504292872075",
+          "name": "name",
+          "indexId": "120:5480781226479900504",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "3:6733980562130932886",
+          "name": "chineseName",
+          "type": 9
+        },
+        {
+          "id": "4:6018537603499358359",
+          "name": "langId",
+          "indexId": "121:7787932562258179726",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "5:8153424733605540145",
+          "name": "langZoneId",
+          "indexId": "122:1176321304458830441",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "6:554698657828763349",
+          "name": "isDefault",
+          "indexId": "123:349843899380339168",
+          "type": 5,
+          "flags": 8
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "25:1427408717192841464",
-  "lastIndexId": "119:112320457527936412",
+  "lastEntityId": "26:1394050152852526191",
+  "lastIndexId": "123:349843899380339168",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

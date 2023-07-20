@@ -367,7 +367,7 @@ class HistoryViewModel: BaseViewModel() {
     }
 
     private fun calculateForAlert(records: MutableList<HistoryDetailModel>, event: RealCgmHistoryEntity) {
-        if (event.getHighOrLowGlucoseType() != 0) {
+        if (event.eventWarning in 1..3) {
             records.add(event.toHistoryDetailModel())
         }
     }

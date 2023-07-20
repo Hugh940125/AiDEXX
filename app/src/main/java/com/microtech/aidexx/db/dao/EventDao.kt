@@ -207,19 +207,40 @@ object EventDao {
             else -> null
         }
     }
-    suspend inline fun <reified T: BaseEventEntity> findMaxEventId(): Long? {
-
-        val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(T::class.java)
-        property ?: return null
-        return awaitCallInTx {
-            ObjectBox.store.boxFor(T::class.java).query().build().property(property as Property<T>).max()
+    fun getUserIdPropertyByClazz(clazz: Class<*>): Property<out BaseEventEntity>? {
+        return when (clazz) {
+            RealCgmHistoryEntity::class.java -> RealCgmHistoryEntity_.userId
+            BloodGlucoseEntity::class.java -> BloodGlucoseEntity_.userId
+            CalibrateEntity::class.java -> CalibrateEntity_.userId
+            DietEntity::class.java -> DietEntity_.userId
+            MedicationEntity::class.java -> MedicationEntity_.userId
+            InsulinEntity::class.java -> InsulinEntity_.userId
+            ExerciseEntity::class.java -> ExerciseEntity_.userId
+            OthersEntity::class.java -> OthersEntity_.userId
+            else -> null
         }
     }
-    suspend fun <T: BaseEventEntity> findMaxEventId(clazz: Class<T>): Long? {
-        val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(clazz)
+    suspend inline fun <reified T: BaseEventEntity> findMaxEventId(userId: String): Long? {
+
+        val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(T::class.java)
+        val userIdProperty: Property<out BaseEventEntity>? = getUserIdPropertyByClazz(T::class.java)
         property ?: return null
+        userIdProperty ?: return null
         return awaitCallInTx {
-            ObjectBox.store.boxFor(clazz).query().build().property(property as Property<T>).max()
+            ObjectBox.store.boxFor(T::class.java).query{
+                equal(userIdProperty as Property<T>, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            }.property(property as Property<T>).max()
+        }
+    }
+    suspend fun <T: BaseEventEntity> findMaxEventId(userId: String, clazz: Class<T>): Long? {
+        val property: Property<out BaseEventEntity>? = getEventIdPropertyByClazz(clazz)
+        val userIdProperty: Property<out BaseEventEntity>? = getUserIdPropertyByClazz(clazz)
+        property ?: return null
+        userIdProperty ?: return null
+        return awaitCallInTx {
+            ObjectBox.store.boxFor(clazz).query{
+                equal(userIdProperty as Property<T>, userId, QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            }.property(property as Property<T>).max()
         }
     }
 

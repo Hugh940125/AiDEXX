@@ -1,7 +1,6 @@
 package com.microtech.aidexx.ui.setting.share
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.repository.ShareAndFollowRepository
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import java.util.Timer
 
 class ShareFollowViewModel: ViewModel() {
@@ -82,13 +80,11 @@ class ShareFollowViewModel: ViewModel() {
     }.flowOn(Dispatchers.IO)
 
     suspend fun fixedRateToGetFollowList() = callbackFlow {
-        viewModelScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                loadData(false).collect {
-                    send(it)
-                }
-                delay(periodPullFollowList)
+        while (isActive) {
+            loadData(false).collect {
+                send(it)
             }
+            delay(periodPullFollowList)
         }
         awaitClose()
     }

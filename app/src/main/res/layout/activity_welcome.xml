@@ -89,7 +89,7 @@
     <include
         android:id="@+id/loadResource"
         layout="@layout/activity_load_resource"
-        android:visibility="gone"
+        android:visibility="visible"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

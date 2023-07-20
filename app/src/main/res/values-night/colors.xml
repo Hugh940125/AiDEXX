@@ -32,6 +32,9 @@
 
     <!-- 分享关注 -->
     <color name="share_label">#FFBBBBBB</color>
+    <color name="share_title">#ffffff</color>
+
+    <color name="bg_nav_bar">#1F2227</color>
 
     <color name="time_picker_title_bg">#111111</color>
 
