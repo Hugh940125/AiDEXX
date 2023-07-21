@@ -78,6 +78,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     private var fixedRateToGetFollowListJob: Job? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LogUtil.d("onCreate", TAG)
         mainActivity = activity as MainActivity
     }
 
@@ -87,6 +88,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     override fun onResume() {
         super.onResume()
+        LogUtil.d("onResume", TAG)
         orientation(initOrientation)
         UserInfoManager.shareUserInfo?.let {
             startFixedRateToGetFollowListJob()
@@ -157,6 +159,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
 
     override fun onDetach() {
         super.onDetach()
+        LogUtil.d("onDetach", TAG)
         HomeStateManager.instance().cancel()
         TransmitterManager.removeOnTransmitterChangeListener(transChangeCallback)
         HomeStateManager.onHomeStateChange = null

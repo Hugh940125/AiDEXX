@@ -58,7 +58,10 @@ object MmkvManager {
     private const val CURRENT_LANGUAGE_TAG = "CURRENT_LANGUAGE_TAG"
     private const val UPGRADE_RESOURCE_ZIP_FILE_INFO = "UPGRADE_RESOURCE_ZIP_FILE_INFO"
     private const val HAS_SHOW_AVATAR_ENQUIRE = "HAS_SHOW_AVATAR_ENQUIRE"
+    private const val OS_API_31_FIRST_IN = "OS_API_31_FIRST_IN"
 
+    fun isApi31FirstIn(): Boolean = MmkvUtil.decodeBoolean(OS_API_31_FIRST_IN, true)
+    fun setApi31FirstIn() = MmkvUtil.encodeBoolean(OS_API_31_FIRST_IN, false)
 
     fun setUpgradeResourceZipFileInfo(info: String) =
         MmkvUtil.encodeString(UPGRADE_RESOURCE_ZIP_FILE_INFO, info)

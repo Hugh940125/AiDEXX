@@ -165,6 +165,7 @@ class GlucoseChart : MyChart {
         private val mChart: WeakReference<GlucoseChart> = WeakReference(chart)
         override fun handleMessage(msg: Message) {
             if (MSG_TIME_TO_REFRESH_CHART == msg.what) {
+                LogUtil.d("未接收到数据 定时刷新", TAG)
                 mChart.get()?.notifyChanged(false)
             }
         }
@@ -323,13 +324,13 @@ class GlucoseChart : MyChart {
      *                       默认false时，会根据图表当前是否在最新视图位置判断是否需要移动到最新视图
      */
     fun notifyChanged(needMoveLatest: Boolean = false) {
-        LogUtil.d("notifyChanged", TAG)
+        LogUtil.d("notifyChanged needMoveLatest=$needMoveLatest", TAG)
         resetTimerToRefreshChart()
         // 如果初始化比较慢 新来的数据优先调到这里
         if (data == null) {
             return
         }
-        LogUtil.d("===CHART===  highestVisibleX=${highestVisibleX} max=${xAxis.axisMaximum} min=${xAxis.axisMinimum}")
+        LogUtil.d("===CHART===  highestVisibleX=${highestVisibleX} max=${xAxis.axisMaximum} min=${xAxis.axisMinimum}", TAG)
         if (axisRight.isEnabled) updateYaxisMaxMin(axisRight)
         if (axisLeft.isEnabled) updateYaxisMaxMin(axisLeft)
         updateGlucoseStartEndValue()
@@ -365,6 +366,7 @@ class GlucoseChart : MyChart {
     }
 
     private fun refresh() {
+        LogUtil.d("refresh", TAG)
         touchable = false
 
         val curMin = xAxis.axisMinimum
@@ -390,7 +392,7 @@ class GlucoseChart : MyChart {
         xAxis.axisMinimum = extraParams?.xMin() ?: 0f
         xAxis.axisMaximum = max
         visibleXRange = extraParams?.xRange() ?: 0f
-
+        LogUtil.d("refreshAndMove max=$max", TAG)
         moveViewToX(max)
         delayAutoScaleY(1000)
     }
