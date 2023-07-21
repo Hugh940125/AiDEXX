@@ -18,6 +18,7 @@ import java.util.Date
 import java.util.Locale
 
 object MmkvManager {
+    private const val LAST_WELFARE_DIALOG_TIME = "SETTINGS"
     private const val SETTINGS = "SETTINGS"
     private const val PHONE_NUMBER = "PHONE_NUMBER"
     private const val USER_ID = "USER_ID"
@@ -239,7 +240,6 @@ object MmkvManager {
 
     fun getSettings() = MmkvUtil.decodeParcelable(SETTINGS, SettingsEntity::class.java)
     fun saveSettings(parcelable: Parcelable) = MmkvUtil.encodeParcelable(SETTINGS, parcelable)
-//    fun getLastWelfareDialogTime(): Long {
-//
-//    }
+    fun getWelfareDialogTime(): Long = MmkvUtil.decodeLong(LAST_WELFARE_DIALOG_TIME, 0)
+    fun saveWelfareDialogTime(time: Long) = MmkvUtil.encodeLong(LAST_WELFARE_DIALOG_TIME, time)
 }

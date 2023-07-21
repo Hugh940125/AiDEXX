@@ -100,13 +100,13 @@ class MultiDayBGManager {
                     list.add(history)
                     history.glucose?.let {
                         if (arrayIndex <= GLUCOSE_NUM_ONE_DAY) {
-                            val glucoseValue = it / 18
+                            val glucoseValue = it / 18f
                             if (glucoseValue > ThresholdManager.GLUCOSE_UP_LIMIT / 18) {
                                 glucoseArray[dayIndex][arrayIndex++] =
-                                    (ThresholdManager.GLUCOSE_UP_LIMIT / 18).toDouble()
-                            } else if (glucoseValue < ThresholdManager.GLUCOSE_LOW_LIMIT / 18) {
+                                    (ThresholdManager.GLUCOSE_UP_LIMIT / 18f).toDouble()
+                            } else if (glucoseValue < ThresholdManager.GLUCOSE_LOW_LIMIT / 18f) {
                                 glucoseArray[dayIndex][arrayIndex++] =
-                                    (ThresholdManager.GLUCOSE_LOW_LIMIT / 18).toDouble()
+                                    (ThresholdManager.GLUCOSE_LOW_LIMIT / 18f).toDouble()
                             } else {
                                 glucoseArray[dayIndex][arrayIndex++] = glucoseValue.toDouble()
                             }

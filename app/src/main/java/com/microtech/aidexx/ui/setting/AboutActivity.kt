@@ -106,7 +106,7 @@ class AboutActivity : BaseActivity<BaseViewModel, ActivityAboutBinding>() {
             val deviceName = DeviceInfoHelper.deviceName()
             val installVersion = DeviceInfoHelper.installVersion(this@AboutActivity)
             val osVersion = DeviceInfoHelper.osVersion()
-            val sn = TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: "unknown"
+            val sn = TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: ""
             val zipFileName = "AiDEX${installVersion}_${deviceName}_${osVersion}_${sn}_${userId}.zip"
             if (logFile.isDirectory) {
                 lifecycleScope.launch(Dispatchers.IO) {

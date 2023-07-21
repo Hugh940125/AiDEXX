@@ -23,6 +23,7 @@ import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.common.formatToYMd
 import com.microtech.aidexx.common.net.entity.WelfareInfo
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
@@ -40,9 +41,11 @@ import com.microtech.aidexx.ui.setting.share.ShareUserInfo
 import com.microtech.aidexx.ui.web.WebActivity
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.utils.mmkv.MmkvManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -102,7 +105,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                             if (showRedDot) R.drawable.ic_gift_with_dot else R.drawable.ic_gift
                         )
                     )
-                if (it.viewIndexBanner){
+                if (it.viewIndexBanner) {
                     showWelfareDialog(it.activityList[0].url)
                 }
             }
@@ -110,10 +113,13 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun showWelfareDialog(url: String) {
-//        TimeUtils.currentTimeMillis - MmkvManager.getLastWelfareDialogTime()
-        if (welfareDialog?.isShowing == true){
+        val welfareDialogTime = MmkvManager.getWelfareDialogTime()
+        if (welfareDialog?.isShowing == true || (TimeUtils.currentTimeMillis > welfareDialogTime &&
+                    Date().formatToYMd().equals(Date(welfareDialogTime).formatToYMd()))
+        ) {
             return
         }
+        MmkvManager.saveWelfareDialogTime(TimeUtils.currentTimeMillis)
         val builder = AlertDialog.Builder(context)
         builder.setCancelable(false)
         val dialogView = LayoutInflater.from(context).inflate(R.layout.layout_advert_dialog, null)

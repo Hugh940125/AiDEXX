@@ -63,7 +63,9 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         } ?: getString(R.string.trends_title)
         currentStartDate = Dialogs.DateInfo.dateLastWeek!!
         currentEndDate = Dialogs.DateInfo.dateToday!!
-        binding.trendRefreshLayout.autoRefresh()
+        if (!binding.trendRefreshLayout.isRefreshing){
+            binding.trendRefreshLayout.autoRefresh()
+        }
         rangeChanged = false
     }
 
@@ -80,7 +82,6 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
     }
 
     private fun initView() {
-
         binding.trendRefreshLayout.setOnRefreshListener {
             updateTrends()
         }
@@ -314,16 +315,30 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         //设置警告线的宽度
         limitLineHigh.lineWidth = 0.5f
         yAxis.addLimitLine(limitLineHigh)
+        val max = daily90?.max()
+        if (max == null || max < 18) {
+            when (UnitManager.glucoseUnit) {
+                UnitManager.GlucoseUnit.MMOL_PER_L -> {
+                    yAxis.axisMinimum = 0f
+                    yAxis.axisMaximum = 20f
+                }
 
-        when (UnitManager.glucoseUnit) {
-            UnitManager.GlucoseUnit.MMOL_PER_L -> {
-                yAxis.axisMinimum = 0f
-                yAxis.axisMaximum = 20f
+                UnitManager.GlucoseUnit.MG_PER_DL -> {
+                    yAxis.axisMinimum = 0f
+                    yAxis.axisMaximum = 360f
+                }
             }
+        } else {
+            when (UnitManager.glucoseUnit) {
+                UnitManager.GlucoseUnit.MMOL_PER_L -> {
+                    yAxis.axisMinimum = 0f
+                    yAxis.axisMaximum = 30f
+                }
 
-            UnitManager.GlucoseUnit.MG_PER_DL -> {
-                yAxis.axisMinimum = 0f
-                yAxis.axisMaximum = 360f
+                UnitManager.GlucoseUnit.MG_PER_DL -> {
+                    yAxis.axisMinimum = 0f
+                    yAxis.axisMaximum = 540f
+                }
             }
         }
         val lines = floatArrayOf(20f, 1000f)
@@ -341,7 +356,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p90Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit.index == 0) daily90[i].toFloat() else daily90[i].toFloat() * 18
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily90[i].toFloat() else daily90[i].toFloat() * 18
                     )
                 )
             }
@@ -359,7 +374,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p10Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit.index == 0) daily10[i].toFloat() else daily10[i].toFloat() * 18
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily10[i].toFloat() else daily10[i].toFloat() * 18
                     )
                 )
             }
@@ -397,7 +412,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p75Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit.index == 0) daily75[i].toFloat() else daily75[i].toFloat() * 18
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily75[i].toFloat() else daily75[i].toFloat() * 18
                     )
                 )
             }
@@ -416,7 +431,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 p25Entries.add(
                     Entry(
                         24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit.index == 0) daily25[i].toFloat() else daily25[i].toFloat() * 18
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily25[i].toFloat() else daily25[i].toFloat() * 18
                     )
                 )
             }
@@ -463,7 +478,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                     meanEntries.add(
                         Entry(
                             24f / 288 * (i.toFloat() + 0.5f),
-                            if (UnitManager.glucoseUnit.index == 0) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
+                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
                         )
                     )
                 }
