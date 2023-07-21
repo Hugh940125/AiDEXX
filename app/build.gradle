@@ -31,6 +31,21 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("aidex.jks")
+            storePassword "weitai2020"
+            keyAlias "weitai"
+            keyPassword "weitai2020"
+        }
+        release {
+            storeFile file('aidex.jks')
+            storePassword 'weitai2020'
+            keyPassword 'weitai2020'
+            keyAlias 'weitai'
+        }
+    }
+
     buildTypes {
         release {
             debuggable true
