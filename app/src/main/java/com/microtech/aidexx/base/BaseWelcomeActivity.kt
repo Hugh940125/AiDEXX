@@ -83,6 +83,12 @@ abstract class BaseWelcomeActivity<VM : BaseViewModel>: BaseActivity<VM, Activit
             resourceLoaded = true
             if (!isSupportSplashProgress) {
                 nextStepIfNeed()
+            } else {
+                // 三星api31 第一次安装启动不会回调闪屏动画结束事件
+                if (SDK_INT == 31 && MmkvManager.isApi31FirstIn()) {
+                    MmkvManager.setApi31FirstIn()
+                    afterResourceLoaded()
+                }
             }
         }
     }
