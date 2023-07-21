@@ -212,7 +212,7 @@ class ChartViewModel: ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        LogUtil.d("onCleared ${this@ChartViewModel}", TAG)
+        LogUtil.d("HomeFragment chartvm onCleared ${this@ChartViewModel}", TAG)
     }
 
     /**
@@ -290,6 +290,7 @@ class ChartViewModel: ViewModel() {
         reset()
         viewModelScope.launch {
             initData(true).collect {
+                LogUtil.d("===CHART=== reload initdata")
                 mDataChangedFlow.emit(ChartChangedInfo(timeMin, true))
             }
         }
@@ -338,6 +339,7 @@ class ChartViewModel: ViewModel() {
                     }
                     if (rets.isNotEmpty()) {
                         addCgmData(rets)
+                        LogUtil.d("===CHART=== onCgmDataChanged")
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -359,6 +361,7 @@ class ChartViewModel: ViewModel() {
                     }
                     if (rets.isNotEmpty()) {
                         addBgData(rets)
+                        LogUtil.d("===CHART=== onBgDataChanged add")
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -369,6 +372,7 @@ class ChartViewModel: ViewModel() {
                         } else false
                     }
                     if (needRefresh) {
+                        LogUtil.d("===CHART=== onBgDataChanged del")
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -387,6 +391,7 @@ class ChartViewModel: ViewModel() {
                     }
                     if (rets.isNotEmpty()) {
                         addCalData(rets)
+                        LogUtil.d("===CHART=== onCalDataChanged add")
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -662,6 +667,7 @@ class ChartViewModel: ViewModel() {
                     }
                     if (rets.isNotEmpty()) {
                         addEvent(rets)
+                        LogUtil.d("===CHART=== onEventDataChanged add")
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }
@@ -672,6 +678,7 @@ class ChartViewModel: ViewModel() {
                         } else false
                     }
                     if (needRefresh) {
+                        LogUtil.d("===CHART=== onEventDataChanged del")
                         mDataChangedFlow.emit(ChartChangedInfo(timeMin, false))
                     }
                 }

@@ -115,6 +115,7 @@ class ChartViewHolder(
                             chart.updateGranularity(it)
                             // 重建了后 viewModel中granular不为null
                             if (chart.data != null) {
+                                LogUtil.d("granularityFlow CHANGE", TAG)
                                 chart.notifyChanged()
                             }
                         }
@@ -128,12 +129,19 @@ class ChartViewHolder(
                 }
 
                 launch {
+
+                    var firstIn = true
+                    // 重建后禁用粘性事件 否则导致图表滚动位置不一致
                     chartViewModel.mDataChangedFlow.debounce{
                         if (it?.needScrollToLatest != false) 0.seconds else 1.seconds
                     }.collect {
                         it?.let {
-                            LogUtil.d("===CHART=== 刷新图表")
-                            chart.notifyChanged(it.needScrollToLatest)
+                            if (!firstIn) {
+                                LogUtil.d("===CHART=== 刷新图表 $it", TAG)
+                                chart.notifyChanged(it.needScrollToLatest)
+                            } else {
+                                firstIn = false
+                            }
                         }
                     }
                 }
