@@ -23,8 +23,10 @@ object CloudBgHistorySync : CloudHistorySync<BloodGlucoseEntity>() {
 
 
     override suspend fun postLocalData(map: HashMap<String, MutableList<BloodGlucoseEntity>>): BaseResponse<List<BloodGlucoseEntity>>? {
+        if (!canDoHttpRequest(DataTaskType.Upload)) return null
         return when (val postHistory = ApiService.instance.postBgHistory(map)) {
             is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Upload)
                 postHistory.result
             }
             is ApiResult.Failure -> {

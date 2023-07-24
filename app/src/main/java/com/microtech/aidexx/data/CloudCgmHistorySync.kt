@@ -46,8 +46,10 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     }
 
     private suspend fun postBriefData(body: RequestBody): BaseResponse<List<RealCgmHistoryEntity>>? {
+        if (!canDoHttpRequest(DataTaskType.Upload)) return null
         return when (val postHistory = ApiService.instance.postBriefHistory(body)) {
             is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Upload)
                 postHistory.result
             }
             is ApiResult.Failure -> {
@@ -55,15 +57,6 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
             }
         }
     }
-
-//    override suspend fun getRemoteData(userId: String): List<RealCgmHistoryEntity>? =
-//        when (val apiResult = EventRepository.getCgmRecordsByPageInfo(
-//            userId = userId,
-//            endAutoIncrementColumn = MmkvManager.getEventDataMinId<Long>(getDataSyncFlagKey(userId))?.let { it - 1 },
-//        )) {
-//            is ApiResult.Success -> apiResult.result.data
-//            is ApiResult.Failure -> null
-//        }
 
     private suspend fun getNeedUploadData(type: Int = 0): MutableList<RealCgmHistoryEntity>? {
         val userId = UserInfoManager.instance().userId()
@@ -87,8 +80,10 @@ object CloudCgmHistorySync : CloudHistorySync<RealCgmHistoryEntity>() {
     }
 
     private suspend fun updateHistory(map: HashMap<String, MutableList<RealCgmHistoryEntity>>): BaseResponse<List<RealCgmHistoryEntity>>? {
+        if (!canDoHttpRequest(DataTaskType.Upload)) return null
         return when (val updateHistory = ApiService.instance.updateHistory(map)) {
             is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Upload)
                 updateHistory.result
             }
             is ApiResult.Failure -> {

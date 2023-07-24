@@ -12,25 +12,38 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     companion object {
         private const val TAG = "EventHistorySync"
     }
-    private suspend fun saveOrUpload(data: List<T>): MutableList<T>? =
-        when (val apiResult = EventRepository.saveOrUpdateRecords(data)) {
-            is ApiResult.Success -> apiResult.result.data as MutableList<T>
+    private suspend fun saveOrUpload(data: List<T>): MutableList<T>? {
+        if (!canDoHttpRequest(DataTaskType.Upload)) return null
+        return when (val apiResult = EventRepository.saveOrUpdateRecords(data)) {
+            is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Upload)
+                apiResult.result.data as MutableList<T>
+            }
             is ApiResult.Failure -> null
         }
+    }
 
-    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<T>? =
-        when (val apiResult = EventRepository.getEventRecordsByPageInfo(
+
+    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<T>? {
+        if (!canDoHttpRequest(DataTaskType.Download)) return null
+        return when (val apiResult = EventRepository.getEventRecordsByPageInfo(
             userId,
             PAGE_SIZE,
             startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
             endAutoIncrementColumn = syncTaskItem.endAutoIncrementColumn,
             tClazz)
         ) {
-            is ApiResult.Success -> apiResult.result.data as List<T>
+            is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Download)
+                apiResult.result.data as List<T>
+            }
             is ApiResult.Failure -> null
         }
+    }
+
 
     open suspend fun upload() {
+        if (!canSync("上传数据")) return
         val needUploadData = getNeedUploadData()
         needUploadData?.ifEmpty { null }?.let {
             saveOrUpload(it)?.let { rspData ->
@@ -40,7 +53,7 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     }
 
     override suspend fun downloadData(userId: String): Boolean {
-        if (canSync()) {
+        if (canSync("下载数据-$userId")) {
 
             val syncTaskItem = getFirstTaskItem(userId) ?:let {
                 LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}", TAG)
@@ -90,10 +103,16 @@ abstract class EventHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     }
 
     // region 同步删除
-    open suspend fun uploadDeletedData(data: List<String>): Boolean =
-        EventRepository.deleteEventByIds(data, tClazz)
+    open suspend fun uploadDeletedData(data: List<String>): Boolean {
+        if (!canDoHttpRequest(DataTaskType.UploadDel)) return false
+        return if (EventRepository.deleteEventByIds(data, tClazz)) {
+            onHttpRequestSuccess(DataTaskType.UploadDel)
+            true
+        } else false
+    }
+
     override suspend fun uploadDeletedData(userId: String): Boolean {
-        if (canSync()) {
+        if (canSync("上传删除数据")) {
             val data = EventDbRepository.queryDeletedData(tClazz)
             return data?.ifEmpty {
                 LogUtil.d("DELETE $tClazz EMPTY", TAG)

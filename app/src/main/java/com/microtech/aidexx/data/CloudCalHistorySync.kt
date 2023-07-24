@@ -23,8 +23,10 @@ object CloudCalHistorySync : CloudHistorySync<CalibrateEntity>() {
 
 
     override suspend fun postLocalData(map: HashMap<String, MutableList<CalibrateEntity>>): BaseResponse<List<CalibrateEntity>>? {
+        if (!canDoHttpRequest(DataTaskType.Upload)) return null
         return when (val postCalHistory = ApiService.instance.postCalHistory(map)) {
             is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Upload)
                 postCalHistory.result
             }
             is ApiResult.Failure -> {

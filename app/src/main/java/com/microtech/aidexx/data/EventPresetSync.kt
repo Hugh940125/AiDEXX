@@ -2,6 +2,7 @@ package com.microtech.aidexx.data
 
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.repository.EventRepository
+import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.event.preset.BasePresetEntity
 import com.microtech.aidexx.db.entity.event.preset.DietUsrPresetEntity
 import com.microtech.aidexx.db.entity.event.preset.InsulinUsrPresetEntity
@@ -13,18 +14,39 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import java.lang.reflect.ParameterizedType
 
 abstract class EventPresetSync<T : BasePresetEntity> {
 
+    private val tClazz =
+        (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
 
-    private suspend fun saveOrUpload(data: List<T>): MutableList<T>? =
-        when (val apiResult = EventRepository.saveOrUpdateRecords(data)) {
-            is ApiResult.Success -> apiResult.result.data as MutableList<T>
+    private val limitController = SyncFrequencyLimitController()
+    private fun canSync(xLogInfo: String = ""): Boolean {
+        var ret = UserInfoManager.instance().isLogin()
+        if (!ret) {
+            LogUtil.xLogE("$xLogInfo 未登录，${tClazz.simpleName} 停止")
+            return false
+        }
+        return true
+    }
+
+
+    private suspend fun saveOrUpload(data: List<T>): MutableList<T>? {
+        if (!limitController.canDo("上传-${tClazz.simpleName}")) return null
+        return when (val apiResult = EventRepository.saveOrUpdateRecords(data)) {
+            is ApiResult.Success -> {
+                limitController.resetNextDoTime()
+                apiResult.result.data as MutableList<T>
+            }
             is ApiResult.Failure -> null
         }
+    }
+
 
 
     open suspend fun upload() {
+        if (!canSync("上传数据")) return
         val needUploadData = getNeedUploadData()
         needUploadData?.ifEmpty { null }?.let {
             saveOrUpload(it)?.let { rspData ->
