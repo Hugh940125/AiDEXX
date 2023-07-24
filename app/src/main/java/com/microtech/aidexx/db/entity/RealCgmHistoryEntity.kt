@@ -139,6 +139,15 @@ class RealCgmHistoryEntity : CgmHistoryEntity, BaseEventEntity() {
 
     }
 
+    fun getEventWarningTip(res: Resources): String {
+        return when (eventWarning) {
+            History.HISTORY_LOCAL_HYPER -> res.getString(R.string.high_gluecose_alert)
+            History.HISTORY_LOCAL_HYPO -> res.getString(R.string.low_gluecose_alert)
+            History.HISTORY_LOCAL_URGENT_HYPO -> res.getString(R.string.Urgent_Low_Alarm)
+            else -> ""
+        }
+    }
+
     override fun getEventDescription(res: Resources): String {
         return when (getHighOrLowGlucoseType()) {
             History.HISTORY_LOCAL_HYPER -> res.getString(R.string.high_gluecose_alert)
