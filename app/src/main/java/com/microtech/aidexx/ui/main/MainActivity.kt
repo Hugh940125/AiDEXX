@@ -131,34 +131,13 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     cancel = {
                                     },
                                     confirm = {
-                                        ignoreBatteryOptimization(it)
+                                        it.ignoreBatteryOptimization(it)
                                     }, key = dialogKey
                                 )
                             }
                         }
                     }
                 }
-            }
-        }
-
-        @SuppressLint("BatteryLife")
-        fun ignoreBatteryOptimization(activity: Activity) {
-            try {
-                val intent: Intent
-                if (ActivityUtil.isHarmonyOS()) {
-                    intent = Intent(Intent.ACTION_MAIN)
-                    intent.addCategory(Intent.CATEGORY_LAUNCHER)
-                    intent.component = ComponentName(
-                        "com.android.settings",
-                        "com.android.settings.Settings\$HighPowerApplicationsActivity"
-                    )
-                } else {
-                    intent = Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                    intent.data = Uri.parse("package:" + activity.packageName)
-                }
-                activity.startActivity(intent)
-            } catch (e: Exception) {
-                LogUtil.eAiDEX("Set ignore battery optimizations failed:${e.printStackTrace()}")
             }
         }
     }

@@ -169,6 +169,10 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 }
             }
 
+            settingPermission.setDebounceClickListener {
+                ActivityUtil.toActivity(this@SettingActivity, PermissionCheckActivity::class.java)
+            }
+
             lifecycleScope.launch {
                 settingLanguage.setValue(
                     LanguageResourceManager.getCurLanguageConfEntity()?.name

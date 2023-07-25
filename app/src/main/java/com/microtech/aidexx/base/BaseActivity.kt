@@ -1,6 +1,9 @@
 package com.microtech.aidexx.base
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -290,5 +293,26 @@ abstract class BaseActivity<VM : BaseViewModel, VB : ViewBinding> : AppCompatAct
         }
         intent.putExtras(bundle1)
         startActivity(intent)
+    }
+
+    @SuppressLint("BatteryLife")
+    fun ignoreBatteryOptimization(activity: Activity) {
+        try {
+            val intent: Intent
+            if (ActivityUtil.isHarmonyOS()) {
+                intent = Intent(Intent.ACTION_MAIN)
+                intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                intent.component = ComponentName(
+                    "com.android.settings",
+                    "com.android.settings.Settings\$HighPowerApplicationsActivity"
+                )
+            } else {
+                intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:" + activity.packageName)
+            }
+            activity.startActivity(intent)
+        } catch (e: Exception) {
+            LogUtil.eAiDEX("Set ignore battery optimizations failed:${e.printStackTrace()}")
+        }
     }
 }
