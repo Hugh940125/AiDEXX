@@ -26,10 +26,22 @@ object SettingsManager {
             return field
         }
 
+    fun getHyperAlertSwitch(): Boolean {
+        return settingEntity?.highAlertSwitch == 0
+    }
+
+    fun getHypoAlertSwitch(): Boolean {
+        return settingEntity?.lowAlertSwitch == 0
+    }
+
+    fun getUrgentAlertSwitch(): Boolean {
+        return settingEntity?.urgentLowAlertSwitch == 0
+    }
+
     fun saveSetting(settings: SettingsEntity?) {
         settings?.let {
-            settings.version++
-            MmkvManager.saveSettings(settings)
+            it.version++
+            MmkvManager.saveSettings(it)
         }
     }
 
@@ -51,13 +63,14 @@ object SettingsManager {
     suspend fun uploadSettings() {
         settingEntity?.let {
             if (it.version > 0 && it.userSettingId != null) {
-                val toJson = Gson().toJson(settingEntity)
+                val toJson = Gson().toJson(it)
                 val toRequestBody = toJson.toRequestBody("application/json".toMediaType())
                 when (val response = ApiService.instance.uploadSetting(toRequestBody)) {
                     is ApiResult.Success -> {
-                        if (it.version == settingEntity!!.version){
+                        if (it.version == settingEntity!!.version) {
                             it.version = 0
                             MmkvManager.saveSettings(it)
+                            LogUtil.eAiDEX("Settings upload success:$it")
                         }
                     }
 

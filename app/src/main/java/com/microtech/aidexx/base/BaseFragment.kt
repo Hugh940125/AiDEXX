@@ -6,7 +6,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.Throttle
+import com.microtech.aidexx.utils.statusbar.StatusBarHelper
 import java.lang.reflect.ParameterizedType
 
 abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment(), PageActions {
@@ -23,6 +25,11 @@ abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment(), 
 
     override fun onResume() {
         super.onResume()
+        if (ThemeManager.isLight()) {
+            StatusBarHelper.setStatusBarLightMode(requireActivity())
+        } else {
+            StatusBarHelper.setStatusBarDarkMode(requireActivity())
+        }
         LogUtil.eAiDEX("onResume ----> ${this::class.java.name}")
     }
 
@@ -50,5 +57,4 @@ abstract class BaseFragment<VM : BaseViewModel, VB : ViewBinding> : Fragment(), 
     fun isBindingInit() = ::binding.isInitialized
 
     override fun canLeave(): AfterLeaveCallback? = null
-
 }

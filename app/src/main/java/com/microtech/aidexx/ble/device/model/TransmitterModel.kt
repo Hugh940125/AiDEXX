@@ -673,7 +673,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                             if (highOrLowGlucoseType != 0) {
                                 when (highOrLowGlucoseType) {
                                     History.HISTORY_LOCAL_HYPER -> {
-                                        if (AlertUtil.hyperSwitchEnable) {
+                                        if (SettingsManager.getHyperAlertSwitch()) {
                                             if (lastHyperAlertTime == 0L) {
                                                 lastHyperAlertTime =
                                                     getLastAlertTime(
@@ -696,7 +696,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                     }
 
                                     History.HISTORY_LOCAL_HYPO -> {
-                                        if (AlertUtil.hypoSwitchEnable) {
+                                        if (SettingsManager.getHypoAlertSwitch()) {
                                             if (lastHypoAlertTime == 0L) {
                                                 lastHypoAlertTime = getLastAlertTime(
                                                     sensorId, History.HISTORY_LOCAL_HYPO
@@ -717,7 +717,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                                     }
 
                                     History.HISTORY_LOCAL_URGENT_HYPO -> {
-                                        if (AlertUtil.urgentLowSwitchEnable) {
+                                        if (SettingsManager.getUrgentAlertSwitch()) {
                                             if (lastUrgentAlertTime == 0L) {
                                                 lastUrgentAlertTime =
                                                     getLastAlertTime(

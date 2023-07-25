@@ -6,6 +6,7 @@ import com.tencent.mmkv.MMKV
 class MmkvUtil {
     companion object {
         private val INSTANCE = MMKV.defaultMMKV()
+        val SETTING = MMKV.mmkvWithID("setting")
 
         fun encodeString(key: String, value: String) {
             INSTANCE.encode(key, value)
@@ -47,12 +48,16 @@ class MmkvUtil {
             INSTANCE.encode(key, value)
         }
 
-        fun <T : Parcelable> decodeParcelable(key: String, clazz: Class<T>): T? {
-            return INSTANCE.decodeParcelable(key, clazz)
+        fun <T : Parcelable> decodeParcelable(
+            key: String,
+            clazz: Class<T>,
+            target: MMKV = INSTANCE
+        ): T? {
+            return target.decodeParcelable(key, clazz)
         }
 
-        fun encodeParcelable(key: String, parcelable: Parcelable) {
-            INSTANCE.encode(key, parcelable)
+        fun encodeParcelable(key: String, parcelable: Parcelable, target: MMKV = INSTANCE) {
+            target.encode(key, parcelable)
         }
     }
 }

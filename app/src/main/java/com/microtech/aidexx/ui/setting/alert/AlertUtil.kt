@@ -35,9 +35,6 @@ object AlertUtil {
     private var vibrator: Vibrator? = null
     var alertFrequency: Long = 30.minutesToMillis()
     var urgentFrequency: Long = 5.minutesToMillis()
-    var hyperSwitchEnable: Boolean = true
-    var hypoSwitchEnable: Boolean = true
-    var urgentLowSwitchEnable: Boolean = true
 
     fun init(context: Context) {
         soundMap = hashMapOf()
@@ -116,7 +113,6 @@ object AlertUtil {
     fun setHypoEnable(enable: Boolean) {
         val alertSettings = SettingsManager.settingEntity
         alertSettings?.lowAlertSwitch = if (enable) 0 else 1
-        hypoSwitchEnable = enable
         saveSetting(alertSettings)
     }
 
@@ -129,7 +125,6 @@ object AlertUtil {
     fun setHyperEnable(value: Boolean) {
         val alertSettings = SettingsManager.settingEntity
         alertSettings?.highAlertSwitch = if (value) 0 else 1
-        hyperSwitchEnable = value
         saveSetting(alertSettings)
     }
 
@@ -147,14 +142,13 @@ object AlertUtil {
 
     fun setFastDownEnable(enable: Boolean) {
         val alertSettings = SettingsManager.settingEntity
-        alertSettings?.isFastDownEnable = if (enable) 0 else 1
+        alertSettings?.fastDownSwitch = if (enable) 0 else 1
         saveSetting(alertSettings)
     }
 
     fun setUrgentEnable(enable: Boolean) {
         val alertSettings = SettingsManager.settingEntity
-        alertSettings?.fastDownSwitch = if (enable) 0 else 1
-        urgentLowSwitchEnable = enable
+        alertSettings?.urgentLowAlertSwitch = if (enable) 0 else 1
         saveSetting(alertSettings)
     }
 

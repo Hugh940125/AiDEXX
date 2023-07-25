@@ -74,13 +74,14 @@ object MmkvManager {
         MmkvUtil.decodeString(CURRENT_LANGUAGE_TAG, Locale.getDefault().toLanguageTag())
 
 
-    private fun <T : BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) = when (clazz) {
-        DietSysPresetEntity::class.java -> FLAG_NEW_VERSION_FOOD_SYS_PRESET
-        SportSysPresetEntity::class.java -> FLAG_NEW_VERSION_EXERCISE_SYS_PRESET
-        MedicineSysPresetEntity::class.java -> FLAG_NEW_VERSION_MEDICINE_SYS_PRESET
-        InsulinSysPresetEntity::class.java -> FLAG_NEW_VERSION_INSULIN_SYS_PRESET
-        else -> null
-    }
+    private fun <T : BaseSysPreset> getHasEventSysPresetNewVersionKey(clazz: Class<T>) =
+        when (clazz) {
+            DietSysPresetEntity::class.java -> FLAG_NEW_VERSION_FOOD_SYS_PRESET
+            SportSysPresetEntity::class.java -> FLAG_NEW_VERSION_EXERCISE_SYS_PRESET
+            MedicineSysPresetEntity::class.java -> FLAG_NEW_VERSION_MEDICINE_SYS_PRESET
+            InsulinSysPresetEntity::class.java -> FLAG_NEW_VERSION_INSULIN_SYS_PRESET
+            else -> null
+        }
 
     private fun <T : BaseSysPreset> getEventSysPresetVersionKey(clazz: Class<T>) = when (clazz) {
         DietSysPresetEntity::class.java -> VERSION_FOOD_SYS_PRESET
@@ -124,7 +125,9 @@ object MmkvManager {
 
     fun setResourceVersion(version: String) = MmkvUtil.encodeString(RESOURCE_VERSION, version)
     fun getResourceVersion(): String = MmkvUtil.decodeString(RESOURCE_VERSION, "")
-    fun setLastLoginEventDownloadState(key: String, isSuccess: Boolean) = MmkvUtil.encodeBoolean(key, isSuccess)
+    fun setLastLoginEventDownloadState(key: String, isSuccess: Boolean) =
+        MmkvUtil.encodeBoolean(key, isSuccess)
+
     fun isLastLoginEventDownloadSuccess(key: String): Boolean = MmkvUtil.decodeBoolean(key, true)
 
     fun setEventSyncTask(key: String, tasks: DataSyncController.SyncTaskItemList?) {
@@ -152,15 +155,21 @@ object MmkvManager {
     fun setUnitLatestUpdateTime(time: Long) = MmkvUtil.encodeLong(UNIT_LATEST_UPDATE_TIME, time)
 
     fun setPresetVersion(@EventType type: Int, version: String, isSys: Boolean) {
-        return MmkvUtil.encodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", version)
+        return MmkvUtil.encodeString(
+            "${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}",
+            version
+        )
     }
 
     fun getPresetVersion(@EventType type: Int, isSys: Boolean): String {
         return MmkvUtil.decodeString("${PRESET_VERSION_}$type${if (isSys) "_SYS" else "_USR"}", "")
     }
 
-    fun setAlreadyShowFollowersGuide() = MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
-    fun isAlreadyShowFollowersGuide() = MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
+    fun setAlreadyShowFollowersGuide() =
+        MmkvUtil.encodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
+
+    fun isAlreadyShowFollowersGuide() =
+        MmkvUtil.decodeBoolean(ALREADY_SHOW_FOLLOWERS_DIALOG_GUIDE, true)
 
     fun saveProfile(profile: String) = MmkvUtil.encodeString(USER_AVATAR, profile)
     fun setLogin(isLogin: Boolean) = MmkvUtil.encodeBoolean(FLAG_LOGIN, isLogin)
@@ -241,8 +250,12 @@ object MmkvManager {
     fun getAppCheckVersionTime(): Long =
         MmkvUtil.decodeLong("$APP_CHECK_UPDATE_DATE-${BuildConfig.VERSION_NAME}", 0)
 
-    fun getSettings() = MmkvUtil.decodeParcelable(SETTINGS, SettingsEntity::class.java)
-    fun saveSettings(parcelable: Parcelable) = MmkvUtil.encodeParcelable(SETTINGS, parcelable)
+    fun getSettings() =
+        MmkvUtil.decodeParcelable(SETTINGS, SettingsEntity::class.java, MmkvUtil.SETTING)
+
+    fun saveSettings(parcelable: Parcelable) =
+        MmkvUtil.encodeParcelable(SETTINGS, parcelable, MmkvUtil.SETTING)
+
     fun getWelfareDialogTime(): Long = MmkvUtil.decodeLong(LAST_WELFARE_DIALOG_TIME, 0)
     fun saveWelfareDialogTime(time: Long) = MmkvUtil.encodeLong(LAST_WELFARE_DIALOG_TIME, time)
 }

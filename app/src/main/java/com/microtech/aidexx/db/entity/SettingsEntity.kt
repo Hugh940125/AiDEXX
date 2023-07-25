@@ -19,7 +19,6 @@ class SettingsEntity() : Parcelable {
     var highAlertSwitch = 0
     var highLimitMg = ThresholdManager.DEFAULT_HYPER
     var fastUpSwitch = 0
-    var isFastDownEnable = 0
     var fastDownSwitch = 0
     var urgentLowAlertSwitch = 0
     var urgentLowMg = ThresholdManager.URGENT_HYPO
@@ -43,7 +42,6 @@ class SettingsEntity() : Parcelable {
         highAlertSwitch = parcel.readInt()
         highLimitMg = parcel.readFloat()
         fastUpSwitch = parcel.readInt()
-        isFastDownEnable = parcel.readInt()
         fastDownSwitch = parcel.readInt()
         urgentLowAlertSwitch = parcel.readInt()
         urgentLowMg = parcel.readFloat()
@@ -69,7 +67,6 @@ class SettingsEntity() : Parcelable {
         parcel.writeInt(highAlertSwitch)
         parcel.writeFloat(highLimitMg)
         parcel.writeInt(fastUpSwitch)
-        parcel.writeInt(isFastDownEnable)
         parcel.writeInt(fastDownSwitch)
         parcel.writeInt(urgentLowAlertSwitch)
         parcel.writeFloat(urgentLowMg)
@@ -86,7 +83,7 @@ class SettingsEntity() : Parcelable {
     }
 
     override fun toString(): String {
-        return "SettingsEntity(language=$language, timeZone=$timeZone, userId=$userId, unit=$unit, theme=$theme, userSettingId=$userSettingId, alertType=$alertType, alertRate=$alertRate, lowAlertSwitch=$lowAlertSwitch, lowLimitMg=$lowLimitMg, highAlertSwitch=$highAlertSwitch, highLimitMg=$highLimitMg, fastUpSwitch=$fastUpSwitch, isFastDownEnable=$isFastDownEnable, fastDownSwitch=$fastDownSwitch, urgentLowAlertSwitch=$urgentLowAlertSwitch, urgentLowMg=$urgentLowMg, urgentAlertType=$urgentAlertType, urgentAlertRate=$urgentAlertRate, signalMissingSwitch=$signalMissingSwitch, signalMissingAlertType=$signalMissingAlertType, signalMissingAlertRate=$signalMissingAlertRate, version=$version)"
+        return "SettingsEntity(language=$language, timeZone=$timeZone, userId=$userId, unit=$unit, theme=$theme, userSettingId=$userSettingId, alertType=$alertType, alertRate=$alertRate, lowAlertSwitch=$lowAlertSwitch, lowLimitMg=$lowLimitMg, highAlertSwitch=$highAlertSwitch, highLimitMg=$highLimitMg, fastUpSwitch=$fastUpSwitch, fastDownSwitch=$fastDownSwitch, urgentLowAlertSwitch=$urgentLowAlertSwitch, urgentLowMg=$urgentLowMg, urgentAlertType=$urgentAlertType, urgentAlertRate=$urgentAlertRate, signalMissingSwitch=$signalMissingSwitch, signalMissingAlertType=$signalMissingAlertType, signalMissingAlertRate=$signalMissingAlertRate, version=$version)"
     }
 
     companion object CREATOR : Parcelable.Creator<SettingsEntity> {

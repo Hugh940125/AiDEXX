@@ -1,6 +1,7 @@
 package com.microtech.aidexx.ui.setting.alert
 
 import android.os.Bundle
+import android.widget.CompoundButton
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -107,20 +108,28 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         //
         alertFrequency = alertSettings.alertRate
         binding.noticeFrequency.setValue(
-            getString(R.string.notice_inner, listOfFrequencyString[listOfFrequency.indexOf(alertFrequency)])
+            getString(
+                R.string.notice_inner,
+                listOfFrequencyString[if (listOfFrequency.indexOf(alertFrequency) == -1) 0
+                else listOfFrequency.indexOf(alertFrequency)]
+            )
         )
         binding.noticeFrequency.setOnClickListener {
             setMethodOrFrequency(
                 binding.noticeFrequency,
                 listOfFrequencyString,
-                listOfFrequency.indexOf(alertFrequency),
+                if (listOfFrequency.indexOf(alertFrequency) == -1) 0
+                else listOfFrequency.indexOf(alertFrequency),
                 TYPE_SET_FREQUENCY,
                 false
             )
         }
         //
         urgentAlertMethod = alertSettings.urgentAlertType - 1
-        binding.noticeMethodUrgent.setValue(listOfMethod[urgentAlertMethod])
+        binding.noticeMethodUrgent.setValue(
+            listOfMethod[if (urgentAlertMethod > listOfMethod.size - 1)
+                listOfMethod.size - 1 else urgentAlertMethod]
+        )
         binding.noticeMethodUrgent.setOnClickListener {
             setMethodOrFrequency(
                 binding.noticeMethodUrgent,
@@ -133,12 +142,17 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         //
         urgentAlertFrequency = alertSettings.urgentAlertRate
         binding.noticeFrequencyUrgent.setValue(
-            getString(R.string.notice_inner, listOfFrequencyString[listOfFrequency.indexOf(urgentAlertFrequency)])
+            getString(
+                R.string.notice_inner,
+                listOfFrequencyString[if (listOfFrequency.indexOf(urgentAlertFrequency) == -1) 0
+                else listOfFrequency.indexOf(urgentAlertFrequency)]
+            )
         )
         binding.noticeFrequencyUrgent.setOnClickListener {
             setMethodOrFrequency(
                 binding.noticeFrequencyUrgent, listOfFrequencyString,
-                listOfFrequency.indexOf(urgentAlertFrequency), TYPE_SET_FREQUENCY, true
+                if (listOfFrequency.indexOf(urgentAlertFrequency) == -1) 0
+                else listOfFrequency.indexOf(urgentAlertFrequency), TYPE_SET_FREQUENCY, true
             )
         }
         //
@@ -161,12 +175,12 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         binding.switchRaiseAlert.getSwitch().setOnCheckedChangeListener { _, isChecked ->
             AlertUtil.setFastUpEnable(isChecked)
         }
-        binding.switchFallAlert.getSwitch().isChecked = alertSettings.isFastDownEnable == 0
+        binding.switchFallAlert.getSwitch().isChecked = alertSettings.fastDownSwitch == 0
         binding.switchFallAlert.getSwitch().setOnCheckedChangeListener { _, isChecked ->
             AlertUtil.setFastDownEnable(isChecked)
         }
         //
-        binding.switchUrgentAlert.getSwitch().isChecked = alertSettings.fastDownSwitch == 0
+        binding.switchUrgentAlert.getSwitch().isChecked = alertSettings.urgentLowAlertSwitch == 0
         binding.switchUrgentAlert.getSwitch().setOnCheckedChangeListener { _, isChecked ->
             if (!isChecked) {
                 Dialogs.showWhether(this@AlertSettingsActivity, content = getString(
@@ -185,32 +199,39 @@ class AlertSettingsActivity : BaseActivity<BaseViewModel, ActivitySettingsAlertB
         binding.lowUrgentValue.setValue(ThresholdManager.URGENT_HYPO.toGlucoseStringWithUnit())
         //
         binding.switchSignalLoss.getSwitch().isChecked = alertSettings.signalMissingSwitch == 0
-        binding.switchSignalLoss.getSwitch().setOnCheckedChangeListener { _, isChecked ->
+        val function: (buttonView: CompoundButton, isChecked: Boolean) -> Unit = { _, isChecked ->
             AlertUtil.setSignalLossEnable(isChecked)
         }
+        binding.switchSignalLoss.getSwitch().setOnCheckedChangeListener(function)
         //
+        val signalMissingAlertType = alertSettings.signalMissingAlertType - 1
         binding.noticeMethodSignalLoss.setValue(
-            listOfMethod[alertSettings.signalMissingAlertType - 1]
+            listOfMethod[if (signalMissingAlertType > listOfMethod.size - 1)
+                listOfMethod.size - 1 else signalMissingAlertType]
         )
         binding.noticeMethodSignalLoss.setOnClickListener {
             val signalLossAlertMethod = alertSettings.signalMissingAlertType
-            Dialogs.Picker(this@AlertSettingsActivity).singlePick(listOfMethod, signalLossAlertMethod) {
-                binding.noticeMethodSignalLoss.setValue(listOfMethod[it])
-                AlertUtil.alert(this@AlertSettingsActivity, it, false)
-                AlertUtil.setSignalLossMethod(it + 1)
-            }
+            Dialogs.Picker(this@AlertSettingsActivity)
+                .singlePick(listOfMethod, signalLossAlertMethod) {
+                    binding.noticeMethodSignalLoss.setValue(listOfMethod[it])
+                    AlertUtil.alert(this@AlertSettingsActivity, it, false)
+                    AlertUtil.setSignalLossMethod(it + 1)
+                }
         }
         //
         val signalLossAlertFrequency = alertSettings.signalMissingAlertRate
         val subList = listOfFrequencyString.subList(1, listOfFrequencyString.size)
         binding.noticeFrequencySignal.setValue(
             getString(
-                R.string.notice_inner, subList[listOfFrequency.indexOf(signalLossAlertFrequency) - 1]
+                R.string.notice_inner,
+                subList[if (listOfFrequency.indexOf(signalLossAlertFrequency) == -1) 0
+                else listOfFrequency.indexOf(signalLossAlertFrequency) - 1]
             )
         )
         binding.noticeFrequencySignal.setOnClickListener {
             Dialogs.Picker(this@AlertSettingsActivity)
-                .singlePick(subList, listOfFrequency.indexOf(signalLossAlertFrequency) - 1) {
+                .singlePick(subList, if (listOfFrequency.indexOf(signalLossAlertFrequency) == -1) 0
+                else listOfFrequency.indexOf(signalLossAlertFrequency) - 1) {
                     binding.noticeFrequencySignal.setValue(
                         getString(
                             R.string.notice_inner,
