@@ -107,7 +107,7 @@ fun RealCgmHistoryEntity.toHistoryDetailModel(): HistoryDetailModel {
     historyDetailModel.idForRealEntity = idx
     historyDetailModel.time = timestamp
     historyDetailModel.deletable = false
-    when (getHighOrLowGlucoseType()) {
+    when (eventWarning) {
         History.HISTORY_LOCAL_HYPER -> {
             historyDetailModel.resourceId = R.drawable.ic_yellow_alert
         }

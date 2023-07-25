@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.microtech.aidexx",
+  "variantName": "cnAidexMgmoRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 103,
+      "versionName": "1.0.3",
+      "outputFile": "AiDEX-X_1.0.3_cnAidexMgmo_release_20230721162639.apk"
+    }
+  ],
+  "elementType": "File"
+}

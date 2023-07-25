@@ -60,8 +60,9 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
 
     //region 下载数据
-    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<Any>? =
-        when (val apiResult = EventRepository.getEventRecordsByPageInfo(
+    open suspend fun getRemoteData(userId: String, syncTaskItem: SyncTaskItem): List<Any>? {
+        if (!canDoHttpRequest(DataTaskType.Download)) return null
+        return when (val apiResult = EventRepository.getEventRecordsByPageInfo(
             userId,
             if (tClazz == RealCgmHistoryEntity::class.java) PAGE_SIZE_CGM else PAGE_SIZE,
             startAutoIncrementColumn = syncTaskItem.startAutoIncrementColumn,
@@ -69,12 +70,17 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
             tClazz
         )
         ) {
-            is ApiResult.Success -> apiResult.result.data
+            is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Download)
+                apiResult.result.data
+            }
             is ApiResult.Failure -> null
         }
+    }
+
 
     override suspend fun downloadData(userId: String): Boolean {
-        if (canSync()) {
+        if (canSync("下载数据")) {
 
             val syncTaskItem = getFirstTaskItem(userId) ?: let {
                 LogUtil.d("SyncTaskItemList=empty ${tClazz.simpleName}", TAG)
@@ -108,11 +114,16 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
     //endregion
 
     // region 同步删除
-    open suspend fun uploadDeletedData(data: List<String>): Boolean =
-        EventRepository.deleteEventByIds(data, tClazz)
+    open suspend fun uploadDeletedData(data: List<String>): Boolean {
+        if (!canDoHttpRequest(DataTaskType.UploadDel)) return false
+        return if (EventRepository.deleteEventByIds(data, tClazz)) {
+            onHttpRequestSuccess(DataTaskType.UploadDel)
+            true
+        } else false
+    }
 
     override suspend fun uploadDeletedData(userId: String): Boolean {
-        if (canSync()) {
+        if (canSync("上传删除数据")) {
             val data = EventDbRepository.queryDeletedData(tClazz)
             return data?.ifEmpty {
                 LogUtil.d("DELETE $tClazz EMPTY", TAG)

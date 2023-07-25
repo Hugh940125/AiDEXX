@@ -39,6 +39,12 @@ import java.lang.reflect.ParameterizedType
 
 private val dataSyncScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+sealed class DataTaskType {
+    object Upload: DataTaskType()
+    object Download: DataTaskType()
+    object UploadDel: DataTaskType()
+}
+
 abstract class DataSyncController<T: BaseEventEntity> {
 
     companion object {
@@ -75,6 +81,20 @@ abstract class DataSyncController<T: BaseEventEntity> {
 
     val tClazz =
         (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<T>
+
+    private val uploadLimitController = SyncFrequencyLimitController()
+    private val downloadLimitController = SyncFrequencyLimitController()
+    private val uploadDelLimitController = SyncFrequencyLimitController()
+    private fun getLimitController(type: DataTaskType): SyncFrequencyLimitController =
+        when (type) {
+            is DataTaskType.Upload -> uploadLimitController
+            is DataTaskType.Download -> downloadLimitController
+            is DataTaskType.UploadDel -> uploadDelLimitController
+        }
+    fun canDoHttpRequest(type: DataTaskType): Boolean =
+        getLimitController(type).canDo("${type::class.java.simpleName}-${tClazz.simpleName}")
+    fun onHttpRequestSuccess(type: DataTaskType) =
+        getLimitController(type).resetNextDoTime()
 
     sealed class SyncStatus {
         data class Loading(val progress: Int = 0): SyncStatus()
@@ -210,9 +230,8 @@ abstract class DataSyncController<T: BaseEventEntity> {
         stopDownloadFun: (Boolean)->Unit
     ) {
 
-        if (!canSync()) {
+        if (!canSync("下载数据-$userId")) {
             downloadStatusStateFlow.emit(SyncStatus.Failure())
-            LogUtil.xLogI("download data stop no login ${tClazz.simpleName}", TAG)
         } else {
             statusFlow.emit(SyncStatus.Loading())
             if (downloadData(userId)) {
@@ -241,9 +260,7 @@ abstract class DataSyncController<T: BaseEventEntity> {
 
     private suspend fun syncDeletedData(userId: String, stopFun: (Boolean)->Unit) {
 
-        if (!canSync()) {
-            LogUtil.xLogI("sync deleted data stop no login ${tClazz.simpleName}", TAG)
-        } else {
+        if (canSync("同步删除数据")) {
             if (!uploadDeletedData(userId)) {
                 LogUtil.xLogI("sync deleted data stop fail ${tClazz.simpleName}", TAG)
             }
@@ -256,13 +273,13 @@ abstract class DataSyncController<T: BaseEventEntity> {
     }
 
 
-
-    fun canSync(): Boolean {
+    fun canSync(xLogInfo: String = ""): Boolean {
         val ret = UserInfoManager.instance().isLogin()
         if (!ret) {
-            LogUtil.xLogE("未登录，${tClazz.simpleName} 停止")
+            LogUtil.xLogE("$xLogInfo 未登录，${tClazz.simpleName} 停止", TAG)
+            return false
         }
-        return ret
+        return true
     }
 
     protected suspend fun applyData(userId: String, data: List<T>) {
@@ -348,6 +365,7 @@ abstract class DataSyncController<T: BaseEventEntity> {
         var startAutoIncrementColumn: Long? = EventDbRepository.findMaxEventId(userId, tClazz) ?: 0L
         startAutoIncrementColumn = if (startAutoIncrementColumn!! <= 0L) null else startAutoIncrementColumn + 1
 
+        if (canDoHttpRequest(DataTaskType.Download)) return false
         return when (val apiResult = EventRepository.getEventRecordsByPageInfo(
             userId,
             PAGE_SIZE,
@@ -356,6 +374,7 @@ abstract class DataSyncController<T: BaseEventEntity> {
             tClazz)
         ) {
             is ApiResult.Success -> {
+                onHttpRequestSuccess(DataTaskType.Download)
                 apiResult.result.data?.ifEmpty { null }?.let {
                     applyData(userId, it as List<T>)
                 }
@@ -366,3 +385,54 @@ abstract class DataSyncController<T: BaseEventEntity> {
     }
 
 }
+
+class SyncFrequencyLimitController {
+
+
+    private val tag = SyncFrequencyLimitController::class.java.simpleName
+    /**
+     * MainService 中是30秒执行一次
+     */
+    private val normalInterval = 30
+    private val uploadTaskIntervalRate = listOf(1, 4, 4, 10, 10, 30, 60, 120)
+    private var curRateIndex = 0
+    private var nextDoTimestampSecond = 0
+
+    fun canDo(content: String = ""): Boolean {
+        val curTimestampSecond = System.currentTimeMillis() / 1000
+        if (curTimestampSecond < nextDoTimestampSecond) {
+            LogUtil.xLogE("$content 被降频 curRateIndex=$curRateIndex rate=${uploadTaskIntervalRate[curRateIndex]} " +
+                    "curTime=$curTimestampSecond next=$nextDoTimestampSecond $this", tag)
+            LogUtil.d("$content 被降频 curRateIndex=$curRateIndex rate=${uploadTaskIntervalRate[curRateIndex]} " +
+                    "curTime=$curTimestampSecond next=$nextDoTimestampSecond", tag)
+            return false
+        }
+        LogUtil.d(
+            "idx=$curRateIndex rate=${uploadTaskIntervalRate[curRateIndex]} " +
+                    "cur=$curTimestampSecond next=$nextDoTimestampSecond $content 开始执行",
+            tag
+        )
+        setNextDoTime()
+        return true
+    }
+
+    private fun setNextDoTime() {
+        curRateIndex++
+        if (curRateIndex >= uploadTaskIntervalRate.size) {
+            curRateIndex = uploadTaskIntervalRate.size - 1
+        }
+        nextDoTimestampSecond =
+            (System.currentTimeMillis() / 1000).toInt() +
+                    (normalInterval * uploadTaskIntervalRate[curRateIndex])
+    }
+
+    fun resetNextDoTime() {
+        curRateIndex = 0
+        nextDoTimestampSecond = 0
+    }
+
+    override fun toString(): String {
+        return "idx=$curRateIndex rate=${uploadTaskIntervalRate[curRateIndex]} next=$nextDoTimestampSecond"
+    }
+}
+

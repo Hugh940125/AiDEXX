@@ -108,7 +108,9 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                         )
                     )
                 if (it.viewIndexBanner) {
-                    showWelfareDialog(it.activityList[0].url)
+                    it.activityList.ifEmpty { null }?.let { activitys ->
+                        showWelfareDialog(activitys[0].url)
+                    }
                 }
             }
         }
