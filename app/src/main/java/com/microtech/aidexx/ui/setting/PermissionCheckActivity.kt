@@ -5,10 +5,14 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.animation.Animation
+import android.view.animation.LinearInterpolator
+import android.view.animation.RotateAnimation
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -21,29 +25,35 @@ import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.SettingItemWidget
 import com.microtech.aidexx.views.dialog.Dialogs
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCheckBinding>() {
-
 
     override fun getViewBinding(): ActivityPermissionCheckBinding {
         return ActivityPermissionCheckBinding.inflate(layoutInflater)
     }
 
+    private lateinit var locationItem: SettingItemWidget
+    private lateinit var bluetoothItem: SettingItemWidget
+    private lateinit var notificationItem: SettingItemWidget
+    private lateinit var batteryItem: SettingItemWidget
+    private lateinit var storageItem: SettingItemWidget
+    private lateinit var cameraItem: SettingItemWidget
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         binding.run {
             actionBar.getLeftIcon().setOnClickListener {
                 finish()
             }
-
             checkOnce.setDebounceClickListener {
                 checkAllPermission()
             }
-
         }
+        resetView()
     }
 
     override fun onResume() {
@@ -51,16 +61,44 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
         checkAllPermission()
     }
 
-    private fun checkAllPermission() {
+    private fun resetView() {
         binding.itemLl.removeAllViews()
-        // 蓝牙
-        checkBluetooth()
-        checkNotification()
-        checkBattery()
-        checkStorage()
-        checkCamera()
-
+        locationItem = genCheckItem(getString(R.string.open_location))
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            addItemToView(locationItem)
+        }
+        bluetoothItem = genCheckItem(getString(R.string.open_bluetooth))
+        addItemToView(bluetoothItem)
+        notificationItem = genCheckItem(getString(R.string.open_notification))
+        addItemToView(notificationItem)
+        batteryItem = genCheckItem(getString(R.string.battery_no_optimization))
+        addItemToView(batteryItem)
+        storageItem = genCheckItem(getString(R.string.open_storage))
+        addItemToView(storageItem)
+        cameraItem = genCheckItem(getString(R.string.open_camera), noDivider = true)
+        addItemToView(cameraItem)
     }
+
+    private fun checkAllPermission() {
+        resetView()
+        lifecycleScope.launch {
+
+            delay(genRandomLoadingTime())
+            // 蓝牙
+            checkBluetooth(bluetoothItem)
+            delay(genRandomLoadingTime())
+            checkNotification(notificationItem)
+            delay(genRandomLoadingTime())
+            checkBattery(batteryItem)
+            delay(genRandomLoadingTime())
+            checkStorage(storageItem)
+            delay(genRandomLoadingTime())
+            checkCamera(cameraItem)
+        }
+    }
+
+    private fun genRandomLoadingTime() =
+        (Math.random() * 1000L + 500L).toLong()
 
     private fun addItemToView(item: SettingItemWidget) {
         binding.itemLl.addView(item)
@@ -68,8 +106,8 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
 
     //region 蓝牙
     private fun checkLocation(
-        checkItemView: SettingItemWidget? = null
-    ): Pair<Boolean, SettingItemWidget?> {
+        checkItemView: SettingItemWidget
+    ): Pair<Boolean, SettingItemWidget> {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             var hasGranted = 0 // 1-没有定位权限 2-没有打开定位服务
             PermissionsUtil.checkPermissions(this, PermissionGroups.Location) {
@@ -110,26 +148,16 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
                 }
             } else null
 
-            val itemView = checkItemView?.let {
-                updateCheckItem(it, value, rightIcon, onClick)
-                it
-            } ?:let {
-                val item = genCheckItem(
-                    getString(R.string.open_location),
-                    value, rightIcon, false, onClick
-                )
-                addItemToView(item)
-                item
-            }
-            return (hasGranted == 0) to itemView
+            updateCheckItem(checkItemView, value, rightIcon, onClick)
+            return (hasGranted == 0) to checkItemView
         }
-        return true to null
+        return true to checkItemView
     }
 
-    private fun checkBluetooth(checkItemView: SettingItemWidget? = null) {
+    private fun checkBluetooth(checkItemView: SettingItemWidget) {
         var hasGranted = 0 // 1-没定位权限 2-没有蓝牙权限 3-没有打开蓝牙服务
 
-        if (checkLocation().first) {
+        if (checkLocation(locationItem).first) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 PermissionsUtil.checkPermissions(this, PermissionGroups.Bluetooth) {
                     hasGranted = 2
@@ -179,17 +207,12 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
             rightIcon = R.drawable.ic_warnning
         }
 
-        checkItemView?.let {
-            updateCheckItem(it, value, rightIcon,onClick)
-        } ?: addItemToView(
-            genCheckItem(getString(R.string.open_bluetooth), value, rightIcon,
-                false, onClick)
-        )
+        updateCheckItem(checkItemView, value, rightIcon,onClick)
     }
     //endregion
 
     //region 通知
-    private fun checkNotification(itemView: SettingItemWidget? = null) {
+    private fun checkNotification(itemView: SettingItemWidget) {
         val isNotifyEnabled = NotificationManagerCompat.from(this).areNotificationsEnabled()
         val onClick = if (isNotifyEnabled) null else {
             object: ((SettingItemWidget)->Unit) {
@@ -223,15 +246,12 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
         }
 
         val rightIcon = if (isNotifyEnabled) R.drawable.ic_access else R.drawable.ic_warnning
-        itemView?.let {
-            updateCheckItem(it, "", rightIcon, onClick )
-        } ?: addItemToView(genCheckItem(getString(R.string.open_notification), "", rightIcon, false, onClick))
-
+        updateCheckItem(itemView, "", rightIcon, onClick )
     }
     //endregion
 
     //region 不允许电池优化
-    private fun checkBattery(itemView: SettingItemWidget? = null) {
+    private fun checkBattery(itemView: SettingItemWidget) {
         val powerManager = getSystemService(POWER_SERVICE) as PowerManager
         val hasIgnored = powerManager.isIgnoringBatteryOptimizations(packageName)
 
@@ -251,14 +271,12 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
         }
 
         val rightIcon = if (hasIgnored) R.drawable.ic_access else R.drawable.ic_warnning
-        itemView?.let {
-            updateCheckItem(it, "", rightIcon, onClick )
-        } ?: addItemToView(genCheckItem(getString(R.string.battery_no_optimization), "", rightIcon, false, onClick))
+        updateCheckItem(itemView, "", rightIcon, onClick )
     }
     //endregion
 
     //region 存储及相册
-    private fun checkStorage(itemView: SettingItemWidget? = null) {
+    private fun checkStorage(itemView: SettingItemWidget) {
 
         var hasGranted = true
         PermissionsUtil.checkPermissions(this, PermissionGroups.Storage) {
@@ -283,18 +301,13 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
             }
         }
         val rightIcon = if (hasGranted) R.drawable.ic_access else R.drawable.ic_warnning
-        itemView?.let {
-            updateCheckItem(it,"", rightIcon, onClick)
-        } ?: addItemToView(genCheckItem(
-            getString(R.string.open_storage),
-            "", rightIcon, false, onClick
-        ))
+        updateCheckItem(itemView,"", rightIcon, onClick)
 
     }
     //endregion
 
     //region 相机
-    private fun checkCamera(itemView: SettingItemWidget? = null) {
+    private fun checkCamera(itemView: SettingItemWidget) {
         var hasGranted = true
         PermissionsUtil.checkPermissions(this, PermissionGroups.Camera) {
             hasGranted = false
@@ -318,12 +331,7 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
             }
         }
         val rightIcon = if (hasGranted) R.drawable.ic_access else R.drawable.ic_warnning
-        itemView?.let {
-            updateCheckItem(it,"", rightIcon, onClick)
-        } ?: addItemToView(genCheckItem(
-            getString(R.string.open_camera),
-            "", rightIcon, true, onClick
-        ))
+        updateCheckItem(itemView,"", rightIcon, onClick)
     }
     //endregion
 
@@ -331,7 +339,6 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
     private fun genCheckItem(
         title: String,
         value: String = "",
-        @DrawableRes rightIcon: Int,
         noDivider: Boolean = false,
         onClick: ((SettingItemWidget)->Unit)? = null
     ): SettingItemWidget {
@@ -342,7 +349,19 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
         itemView.getSwitch().isVisible = false
         itemView.getRightImage().isVisible = true
         itemView.getRightImage().setImageDrawable(
-            ContextCompat.getDrawable(this, rightIcon))
+            ContextCompat.getDrawable(this, R.drawable.ic_scanning))
+
+        val rotateAnimation = RotateAnimation(
+                0f, 360f, RotateAnimation.RELATIVE_TO_SELF,
+                0.5f, RotateAnimation.RELATIVE_TO_SELF, 0.5f
+            )
+        rotateAnimation.fillAfter = true
+        rotateAnimation.interpolator = LinearInterpolator()
+        rotateAnimation.repeatCount = Animation.INFINITE
+        rotateAnimation.repeatMode = Animation.RESTART
+        rotateAnimation.duration = 1500
+
+        itemView.getRightImage().startAnimation(rotateAnimation)
         itemView.setDivider(noDivider)
         itemView.getRightImage().setDebounceClickListener {
             onClick?.invoke(itemView)
@@ -357,12 +376,12 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
         onClick: ((SettingItemWidget)->Unit)? = null
     ) {
         itemView.setValue(value)
+        itemView.getRightImage().animation.cancel()
         itemView.getRightImage().setImageDrawable(
             ContextCompat.getDrawable(this, rightIcon))
         itemView.getRightImage().setDebounceClickListener {
             onClick?.invoke(itemView)
         }
-
     }
     //endregion
 }
