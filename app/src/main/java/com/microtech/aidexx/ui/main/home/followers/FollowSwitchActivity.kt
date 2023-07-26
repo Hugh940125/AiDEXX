@@ -136,7 +136,7 @@ class FollowSwitchActivity : BaseActivity<BaseViewModel, ActivityFollowListBindi
                 if (NetUtil.isNetAvailable(this)) {
                     // 该用户的数据下载成功后再执行切换
                     lifecycleScope.launch {
-                        Dialogs.showWait(getString(R.string.loading))
+                        Dialogs.showWait(getString(R.string.download_data))
                         if (CloudHistorySync.downloadRecentData(shareUserInfo.dataProviderId!!)) {
                             Dialogs.dismissWait()
                             UserInfoManager.shareUserInfo = shareUserInfo

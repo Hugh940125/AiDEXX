@@ -121,7 +121,7 @@ class RegisterActivity: BaseActivity<AccountViewModel, ActivityRegisterBinding>(
             viewModel.login(name, EncryptUtils.md5(password), verCode, LOGIN_TYPE_EMAIL_VER_CODE).collect {
                 Dialogs.dismissWait()
                 when (it.first) {
-                    1 -> Dialogs.showWait("假装正在-"+getString(R.string.download_data))
+                    1 -> Dialogs.showWait(getString(R.string.download_data))
                     2 -> onLoginSuccess()
                     -1 -> getString(R.string.login_fail).toastShort()
                     -2 -> it.second.toastShort()

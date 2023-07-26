@@ -9,7 +9,9 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.ScatterData
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.interfaces.datasets.IScatterDataSet
+import com.microtech.aidexx.R
 import com.microtech.aidexx.common.formatToYMdHm
+import com.microtech.aidexx.common.getContext
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
@@ -19,7 +21,6 @@ import com.microtech.aidexx.db.repository.CgmCalibBgRepository
 import com.microtech.aidexx.db.repository.EventDbRepository
 import com.microtech.aidexx.utils.CalibrateManager
 import com.microtech.aidexx.utils.LogUtil
-import com.microtech.aidexx.utils.LogUtils
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.eventbus.DataChangedType
@@ -35,12 +36,15 @@ import com.microtech.aidexx.views.chart.dataset.CalDataSet
 import com.microtech.aidexx.views.chart.dataset.GlucoseDataSet
 import com.microtech.aidexx.views.chart.dataset.IconDataSet
 import com.microtech.aidexx.views.chart.dataset.toChartEntry
+import com.microtech.aidexx.views.dialog.Dialogs
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -153,6 +157,7 @@ class ChartViewModel: ViewModel() {
             launch {
                 startApplyNextPageData.collect {
                     if (it) {
+                        val dataUserId = UserInfoManager.getCurShowUserId()
                         var needNotify = false
 
                         withContext(Dispatchers.IO) {
@@ -191,6 +196,16 @@ class ChartViewModel: ViewModel() {
                                 }
                             )
                             mergeDataTasks.awaitAll()
+                        }
+
+                        if (UserInfoManager.getCurShowUserId() != dataUserId) {
+                            LogUtil.xLogE("数据合并完成后发现切换用户", TAG)
+                            reset()
+                            needNotify = false
+                            //重置标记
+                            val ret = startApplyNextPageData.compareAndSet(true, update = false)
+                            LogUtil.d("===CHART=== 应用分页数据标记重置 ret=$ret")
+                            return@collect
                         }
 
                         if (needNotify) {
@@ -287,12 +302,33 @@ class ChartViewModel: ViewModel() {
     fun reload() {
         LogUtil.d("reload()", TAG)
         if (!isDataInit) return
-        reset()
-        viewModelScope.launch {
-            initData(true).collect {
-                LogUtil.d("===CHART=== reload initdata")
-                mDataChangedFlow.emit(ChartChangedInfo(timeMin, true))
+
+        fun startReset() {
+            reset()
+            viewModelScope.launch {
+                initData(true).collect {
+                    LogUtil.d("===CHART=== reload initdata")
+                    mDataChangedFlow.emit(ChartChangedInfo(timeMin, true))
+                }
             }
+        }
+
+//        startReset()
+
+        var job: Job? = null
+        if (startApplyNextPageData.value) {
+            Dialogs.showWait(getContext().getString(R.string.loading))
+            job = viewModelScope.launch {
+                startApplyNextPageData.collectLatest {
+                    if (!it) {
+                        startReset()
+                        Dialogs.dismissWait()
+                        job?.cancel()
+                    }
+                }
+            }
+        } else {
+            startReset()
         }
     }
 
@@ -550,6 +586,7 @@ class ChartViewModel: ViewModel() {
      * 切换用户重置数据
      */
     private fun reset() {
+        LogUtil.d("reset data1", TAG)
         //重置数据
         clearEventSets()
         clearGlucoseSets()
@@ -557,11 +594,16 @@ class ChartViewModel: ViewModel() {
         combinedData.scatterData.clearValues()
         combinedData.clearValues()
 
+        nextPageCgmData.clear()
+        nextPageBgData.clear()
+        nextPageCalData.clear()
+        nextPageEventData.clear()
+
         //重置分页标记
         val ret = startLoadNextPage.compareAndSet(true, update = false)
         loadedMinDate = -Float.MAX_VALUE
         curPageMinDate = Date()
-
+        LogUtil.d("reset data2", TAG)
     }
 
     //region cgm
@@ -576,17 +618,24 @@ class ChartViewModel: ViewModel() {
         }
 
         cgmHistories.forEach {history ->
-            if (history.isGlucoseIsValid()) {
-                if (history.glucose != null && history.eventWarning != -1) {
-                    val entry = history.toChartEntry()
-                    if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
-                    glucoseSets.last().addEntryOrdered(entry)
-                    xMaxMin(entry.x)
-                    calDateMaxMin(Date(history.timestamp))
+            history.userId?.let {
+                if (!canMergeData(it)) {
+                    LogUtil.xLogE("正在把cgm数据合并到chart 发现换人了", TAG)
+                    reset()
+                    return
                 }
-            }
+                if (history.isGlucoseIsValid()) {
+                    if (history.glucose != null && history.eventWarning != -1) {
+                        val entry = history.toChartEntry()
+                        if (glucoseSets.isEmpty()) glucoseSets.add(GlucoseDataSet())
+                        glucoseSets.last().addEntryOrdered(entry)
+                        xMaxMin(entry.x)
+                        calDateMaxMin(Date(history.timestamp))
+                    }
+                }
+            } ?: LogUtil.d("cgm data userid null", TAG)
         }
-        LogUtils.data("glucoseSets last : ${glucoseSets.last().entries.size}")
+        LogUtil.d("glucoseSets last : ${glucoseSets.last().entries.size}")
 
         if (isGp) {
             val all: MutableList<CalibrateEntity> = CalibrateManager.getCalibrateHistorys()
@@ -610,10 +659,17 @@ class ChartViewModel: ViewModel() {
      */
     private fun addBgData(bgs: List<BloodGlucoseEntity>) {
         for (bg in bgs) {
-            val entry = bg.toChartEntry()
-            bgSet.addEntryOrdered(entry)
-            xMaxMin(entry.x)
-            calDateMaxMin(Date(bg.timestamp))
+            bg.userId?.let {
+                if (!canMergeData(it)) {
+                    LogUtil.xLogE("正在把bg数据合并到chart 发现换人了", TAG)
+                    reset()
+                    return
+                }
+                val entry = bg.toChartEntry()
+                bgSet.addEntryOrdered(entry)
+                xMaxMin(entry.x)
+                calDateMaxMin(Date(bg.timestamp))
+            } ?: LogUtil.d("bg data userid null", TAG)
         }
     }
 
@@ -621,14 +677,25 @@ class ChartViewModel: ViewModel() {
 
     //region 校准
     private fun addCalData(calEntityList: List<CalibrateEntity>) {
-
         calEntityList.forEach { calEntity ->
-            val entry = calEntity.toChartEntry()
-            calSet.addEntryOrdered(entry)
-            xMaxMin(entry.x)
-            calDateMaxMin(Date(calEntity.timestamp))
+            calEntity.userId?.let {
+                if (!canMergeData(it)) {
+                    LogUtil.xLogE("正在把cal数据合并到chart 发现换人了", TAG)
+                    reset()
+                    return
+                }
+                val entry = calEntity.toChartEntry()
+                calSet.addEntryOrdered(entry)
+                xMaxMin(entry.x)
+                calDateMaxMin(Date(calEntity.timestamp))
+            } ?: LogUtil.d("cal data userid null", TAG)
         }
     }
+
+    private fun canMergeData(dataUserId: String) =
+        (UserInfoManager.shareUserInfo != null && UserInfoManager.instance().userId() != dataUserId)
+                || (UserInfoManager.shareUserInfo == null
+                    && UserInfoManager.instance().userId() == dataUserId)
 
     // 国际版用
     private fun updateGpCalibrationSet(history: CalibrateEntity) {
@@ -648,12 +715,20 @@ class ChartViewModel: ViewModel() {
 
     //region 事件
     private fun <T : BaseEventEntity> addEvent(es: List<T>) {
-        LogUtils.error("initIconSet")
+        LogUtil.d("initIconSet")
         for (e in es) {
-            val entry = e.toChartEntry {
-                (5f * 18).toGlucoseValue()
-            }
-            eventSet.addEntryOrdered(entry)
+
+            e.userId?.let {
+                if (!canMergeData(it)) {
+                    LogUtil.xLogE("正在把event数据合并到chart 发现换人了", TAG)
+                    reset()
+                    return
+                }
+                val entry = e.toChartEntry {
+                    (5f * 18).toGlucoseValue()
+                }
+                eventSet.addEntryOrdered(entry)
+            } ?: LogUtil.d("event data $e userid null", TAG)
         }
         LogUtil.d("eventSet :" + eventSet.entries?.size)
     }

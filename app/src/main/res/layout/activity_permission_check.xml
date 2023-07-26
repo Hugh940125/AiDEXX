@@ -76,8 +76,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         >
-
-
+        <!-- 动态插入 SettingItemWidget-->
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
