@@ -63,7 +63,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         } ?: getString(R.string.trends_title)
         currentStartDate = Dialogs.DateInfo.dateLastWeek!!
         currentEndDate = Dialogs.DateInfo.dateToday!!
-        if (!binding.trendRefreshLayout.isRefreshing){
+        if (!binding.trendRefreshLayout.isRefreshing) {
             binding.trendRefreshLayout.autoRefresh()
         }
         rangeChanged = false
@@ -352,13 +352,15 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         val lineData = LineData()
         if (dailyMean != null && daily90 != null && daily10 != null) {
             val p90Entries: MutableList<Entry> = ArrayList()
-            for (i in 0..287) {
-                p90Entries.add(
-                    Entry(
-                        24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily90[i].toFloat() else daily90[i].toFloat() * 18
+            if (daily90.any { it != 0.0 }) {
+                for (i in 0..287) {
+                    p90Entries.add(
+                        Entry(
+                            24f / 288 * (i.toFloat() + 0.5f),
+                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily90[i].toFloat() else daily90[i].toFloat() * 18
+                        )
                     )
-                )
+                }
             }
             val p90DataSet = LineDataSet(p90Entries, "")
             p90DataSet.setDrawIcons(false)
@@ -370,13 +372,15 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
             p90DataSet.color = color90
             p90DataSet.lineWidth = 0f
             val p10Entries: MutableList<Entry> = ArrayList()
-            for (i in 0..287) {
-                p10Entries.add(
-                    Entry(
-                        24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily10[i].toFloat() else daily10[i].toFloat() * 18
+            if (daily10.any { it != 0.0 }) {
+                for (i in 0..287) {
+                    p10Entries.add(
+                        Entry(
+                            24f / 288 * (i.toFloat() + 0.5f),
+                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily10[i].toFloat() else daily10[i].toFloat() * 18
+                        )
                     )
-                )
+                }
             }
             val p10DataSet = LineDataSet(p10Entries, "")
             p10DataSet.setDrawIcons(false)
@@ -408,13 +412,15 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         }
         if (dailyMean != null && daily75 != null && daily25 != null) {
             val p75Entries: MutableList<Entry> = ArrayList()
-            for (i in 0..287) {
-                p75Entries.add(
-                    Entry(
-                        24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily75[i].toFloat() else daily75[i].toFloat() * 18
+            if (daily75.any { it != 0.0 }) {
+                for (i in 0..287) {
+                    p75Entries.add(
+                        Entry(
+                            24f / 288 * (i.toFloat() + 0.5f),
+                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily75[i].toFloat() else daily75[i].toFloat() * 18
+                        )
                     )
-                )
+                }
             }
             val p75DataSet = LineDataSet(p75Entries, "")
             p75DataSet.setDrawIcons(false)
@@ -425,15 +431,16 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
             val color75 = ThemeManager.getTypeValue(context, R.attr.colorTrendChart75)
             p75DataSet.color = color75
             p75DataSet.lineWidth = 0f
-
             val p25Entries: MutableList<Entry> = ArrayList()
-            for (i in 0..287) {
-                p25Entries.add(
-                    Entry(
-                        24f / 288 * (i.toFloat() + 0.5f),
-                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily25[i].toFloat() else daily25[i].toFloat() * 18
+            if (daily25.any { it != 0.0 }) {
+                for (i in 0..287) {
+                    p25Entries.add(
+                        Entry(
+                            24f / 288 * (i.toFloat() + 0.5f),
+                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily25[i].toFloat() else daily25[i].toFloat() * 18
+                        )
                     )
-                )
+                }
             }
             val p25DataSet = LineDataSet(p25Entries, "")
             p25DataSet.setDrawIcons(false)
@@ -470,17 +477,19 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         if (dailyMean != null) {
             val meanEntries: MutableList<Entry> = ArrayList()
             var b = false
-            for (i in 0..287) {
-                if (dailyMean[i].isNaN()) {
-                    if (b) break else continue
-                } else {
-                    b = true
-                    meanEntries.add(
-                        Entry(
-                            24f / 288 * (i.toFloat() + 0.5f),
-                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
+            if (dailyMean.any { it != 0.0 }) {
+                for (i in 0..287) {
+                    if (dailyMean[i].isNaN()) {
+                        if (b) break else continue
+                    } else {
+                        b = true
+                        meanEntries.add(
+                            Entry(
+                                24f / 288 * (i.toFloat() + 0.5f),
+                                if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
+                            )
                         )
-                    )
+                    }
                 }
             }
             val meanDataSet = LineDataSet(meanEntries, "")

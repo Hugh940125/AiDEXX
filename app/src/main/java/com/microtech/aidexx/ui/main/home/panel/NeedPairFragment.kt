@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.databinding.FragmentNeedPairBinding
 import com.microtech.aidexx.ui.pair.TransmitterActivity
 import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.utils.ThemeManager
 
 class NeedPairFragment : BaseFragment<BaseViewModel, FragmentNeedPairBinding>(), View.OnClickListener {
 
@@ -23,6 +25,9 @@ class NeedPairFragment : BaseFragment<BaseViewModel, FragmentNeedPairBinding>(),
     }
 
     private fun initView() {
+        binding.llPanel.setBackgroundResource(
+            if (ThemeManager.isLight()) R.drawable.bg_panel_blank_light else R.drawable.bg_panel_blank_dark
+        )
         binding.btConfirm.setOnClickListener(this)
     }
 

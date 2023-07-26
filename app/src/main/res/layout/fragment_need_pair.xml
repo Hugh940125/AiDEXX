@@ -1,92 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:layout_constraintVertical_weight="1"
     android:id="@+id/layout_panel"
-    app:layout_constraintTop_toBottomOf="@id/layout_actionbar"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     app:layout_constraintBottom_toTopOf="@id/layout_chart"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    app:layout_constraintTop_toBottomOf="@id/layout_actionbar"
+    app:layout_constraintVertical_weight="1">
 
     <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guide_line"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:id="@+id/guide_line"
-        app:layout_constraintGuide_percent="0.5"/>
+        app:layout_constraintGuide_percent="0.5" />
 
     <LinearLayout
         android:id="@+id/ll_panel"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:background="@drawable/bg_panel_blank_light"
-        android:layout_marginStart="20dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/guide_line"
         app:layout_constraintBottom_toBottomOf="@id/guide_line"
-        android:layout_width="0dp"
         app:layout_constraintDimensionRatio="1:1"
-        android:layout_height="match_parent"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="20dp">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/guide_line">
 
         <TextView
-                app:emojiCompatEnabled="false"
-            android:textColor="@color/black_33"
-            android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="--"
-            android:textSize="35sp"/>
+            android:textColor="@color/black_33"
+            android:textSize="35sp"
+            android:textStyle="bold"
+            app:emojiCompatEnabled="false" />
 
         <TextView
-                app:emojiCompatEnabled="false"
             android:id="@+id/tv_unit"
-            android:textColor="@color/black_33"
-            android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="mmol/L"/>
+            android:text="mmol/L"
+            android:textColor="@color/black_33"
+            android:textSize="14sp"
+            app:emojiCompatEnabled="false" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:gravity="end"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="20dp"
+        android:gravity="end"
         android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="@id/guide_line"
         app:layout_constraintBottom_toBottomOf="@id/guide_line"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ll_panel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content">
+        app:layout_constraintTop_toTopOf="@id/guide_line">
 
         <TextView
-                app:emojiCompatEnabled="false"
-            android:maxEms="10"
-            android:textAlignment="viewEnd"
             android:id="@+id/txt_sn"
-            android:layout_gravity="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:maxEms="10"
+            android:text="@string/tap_to_pair"
+            android:textAlignment="viewEnd"
             android:textSize="16sp"
-            android:text="@string/tap_to_pair" />
+            app:emojiCompatEnabled="false" />
 
         <TextView
-                app:emojiCompatEnabled="false"
-            android:background="@drawable/bg_bt_pair"
-            android:textColor="@color/green_65"
-            android:gravity="center"
-            android:layout_marginTop="20dp"
-            android:paddingStart="45dp"
-            android:paddingEnd="45dp"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
+            android:id="@+id/bt_confirm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_bt_pair"
+            android:gravity="center"
+            android:paddingStart="45dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="45dp"
+            android:paddingBottom="6dp"
+            android:text="@string/pair"
+            android:textColor="@color/green_65"
             android:textSize="18sp"
-            android:id="@+id/bt_confirm"
-            android:text="@string/pair" />
+            app:emojiCompatEnabled="false" />
 
     </LinearLayout>
 

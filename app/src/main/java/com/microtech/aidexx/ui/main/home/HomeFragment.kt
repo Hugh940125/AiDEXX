@@ -193,6 +193,14 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     }
 
     private fun initView() {
+        binding.welfareCenter.setOnClickListener {
+            WebActivity.loadWeb(
+                requireContext(),
+                url = getWelfareCenterUrl(),
+                fullScreen = true,
+                from = "welfare_center"
+            )
+        }
         judgeState()
         HomeStateManager.onHomeStateChange = { tag ->
             replaceFragment(tag)

@@ -8,12 +8,14 @@ import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
+import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.minutesToMillis
 import com.microtech.aidexx.databinding.FragmentWarmingUpBinding
 import com.microtech.aidexx.ui.main.home.HomeStateManager
+import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 
 class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>() {
@@ -35,6 +37,9 @@ class WarmingUpFragment : BaseFragment<BaseViewModel, FragmentWarmingUpBinding>(
                 binding.tvRemain.text = "--"
             }
         }
+        binding.bgPanelBlank.setBackgroundResource(
+            if (ThemeManager.isLight()) R.drawable.bg_panel_blank_light else R.drawable.bg_panel_blank_dark
+        )
         return binding.root
     }
 

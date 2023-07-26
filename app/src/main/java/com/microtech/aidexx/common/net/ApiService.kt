@@ -14,6 +14,7 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.entity.BaseEventEntity
 import com.microtech.aidexx.db.entity.BloodGlucoseEntity
 import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.HistoryDeviceInfo
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.SettingsEntity
 import com.microtech.aidexx.db.entity.UserEntity
@@ -151,6 +152,7 @@ const val API_DOWNLOAD_SETTING = "$middleUrl/userSetting/getUserSetting" //下�
 const val API_UPLOAD_SETTING = "$middleUrl/userSetting/updateUserSetting" //上传设置
 const val API_DEVICE_REGISTER = "$middleUrl/cgmDevice/userDeviceRegister" //注册设备
 const val API_DEVICE_UNREGISTER = "$middleUrl/cgmDevice/deviceUnRegister" //注销设备
+const val API_HISTORY_DEVICE = "$middleUrl/cgmDevice/getUserDeviceHistory" //注销设备
 const val DEVICE = "$middleUrl/cgmDevice/getUserDeviceInfo" //获取设备
 const val USER_PREFERENCE = "$middleUrl/user-preference" //
 const val UPLOAD_CAL_HISTORY = "$middleUrl/cgmCalibration/saveCalibration" //上传日志
@@ -195,6 +197,7 @@ interface ApiService {
 
     @POST(updateUserInformation)
     suspend fun updateUserInformation(@Body map: HashMap<String, Any?>): ApiResult<BaseResponse<String>>
+
     @Multipart
     @POST(userUploadAvatar)
     suspend fun userUploadAvatar(@Part part: MultipartBody.Part): ApiResult<BaseResponse<String>>
@@ -240,66 +243,82 @@ interface ApiService {
     //region 事件
     @GET(getSysPresetVersion)
     suspend fun getPresetVersion(@Query("eventType") eventType: Int?): ApiResult<BaseResponse<List<ResEventPresetVersion>>>
+
     @GET(getExerciseSysPresetList)
     suspend fun getExerciseSysPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<SportSysPresetEntity>>>
+
     @GET(getExerciseUserPresetList)
     suspend fun getExerciseUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<SportUsrPresetEntity>>>
+
     @POST(saveOrUpdateExerciseUserPreset)
     suspend fun saveOrUpdateExerciseUserPreset(@Body data: ReqSaveOrUpdateEventRecords<SportUsrPresetEntity>): ApiResult<BaseResponse<List<SportUsrPresetEntity>>>
 
 
     @GET(findFoodUserPresetList)
     suspend fun getFoodUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<DietUsrPresetEntity>>>
+
     @POST(saveOrUpdateUserFoodPreset)
     suspend fun saveOrUpdateUserFoodPreset(@Body data: ReqSaveOrUpdateEventRecords<DietUsrPresetEntity>): ApiResult<BaseResponse<List<DietUsrPresetEntity>>>
 
 
     @GET(findInsulinUserPresetList)
     suspend fun getInsulinUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<InsulinUsrPresetEntity>>>
+
     @POST(saveOrUpdateUserInsulinPreset)
     suspend fun saveOrUpdateUserInsulinPreset(@Body data: ReqSaveOrUpdateEventRecords<InsulinUsrPresetEntity>): ApiResult<BaseResponse<List<InsulinUsrPresetEntity>>>
 
 
     @GET(findMedicationUsrPresetList)
     suspend fun getMedicineUserPresetList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<MedicineUsrPresetEntity>>>
+
     @POST(saveOrUpdateMedicationUsrPreset)
     suspend fun saveOrUpdateMedicationUsrPreset(@Body data: ReqSaveOrUpdateEventRecords<MedicineUsrPresetEntity>): ApiResult<BaseResponse<List<MedicineUsrPresetEntity>>>
 
 
     @GET(findFoodRecordList)
     suspend fun getFoodRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<DietEntity>>>
+
     @POST(saveOrUpdateFoodRecord)
     suspend fun saveOrUpdateFoodRecord(@Body data: ReqSaveOrUpdateEventRecords<DietEntity>): ApiResult<BaseResponse<MutableList<DietEntity>>>
+
     @POST(deleteByIdsFood)
     suspend fun deleteByIdsFood(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
     @GET(findInsulinRecordList)
     suspend fun getInsulinRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<InsulinEntity>>>
+
     @POST(saveOrUpdateInsulinRecord)
     suspend fun saveOrUpdateInsulinRecord(@Body data: ReqSaveOrUpdateEventRecords<InsulinEntity>): ApiResult<BaseResponse<MutableList<InsulinEntity>>>
+
     @POST(deleteByIdsInsulin)
     suspend fun deleteByIdsInsulin(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
     @GET(findExerciseRecordList)
     suspend fun getExerciseRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ExerciseEntity>>>
+
     @POST(saveOrUpdateExerciseRecord)
     suspend fun saveOrUpdateExerciseRecord(@Body data: ReqSaveOrUpdateEventRecords<ExerciseEntity>): ApiResult<BaseResponse<MutableList<ExerciseEntity>>>
+
     @POST(deleteByIdsExercise)
     suspend fun deleteByIdsExercise(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
 
     @GET(findMedicationRecordList)
     suspend fun getMedicationRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<MedicationEntity>>>
+
     @POST(saveOrUpdateMedicationRecord)
     suspend fun saveOrUpdateMedicationRecord(@Body data: ReqSaveOrUpdateEventRecords<MedicationEntity>): ApiResult<BaseResponse<MutableList<MedicationEntity>>>
+
     @POST(deleteByIdsMedication)
     suspend fun deleteByIdsMedication(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
     @GET(findOtherRecordList)
     suspend fun getOthersRecordsByPageInfo(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<OthersEntity>>>
+
     @POST(saveOrUpdateOtherRecord)
     suspend fun saveOrUpdateOtherRecord(@Body data: ReqSaveOrUpdateEventRecords<OthersEntity>): ApiResult<BaseResponse<MutableList<OthersEntity>>>
+
     @POST(deleteByIdsOthers)
     suspend fun deleteByIdsOthers(@Body data: ReqDeleteEventIds): ApiResult<BaseResponse<String?>>
 
@@ -308,12 +327,16 @@ interface ApiService {
     //region 分享关注
     @GET(findUserAuthorizationList)
     suspend fun findUserAuthorizationList(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<List<ShareUserInfo>>>
+
     @GET(findAuthorizationInfoById)
     suspend fun findAuthorizationInfoById(@QueryMap queryMap: Map<String, String>): ApiResult<BaseResponse<ShareUserInfo>>
+
     @POST(saveOrUpdateUserAuthorization)
     suspend fun saveOrUpdateUserAuthorization(@Body body: ReqShareUserInfo): ApiResult<BaseResponse<ShareUserInfo>>
+
     @POST(deleteByIdsShareFollow)
     suspend fun deleteByIdsShareFollow(@Body body: ReqDeleteEventIds): ApiResult<BaseResponse<String>>
+
     @POST(updateAuthorizationInfo)
     suspend fun updateAuthorizationInfo(@Body body: ReqModifyShareUserInfo): ApiResult<BaseResponse<String>>
 
@@ -349,6 +372,9 @@ interface ApiService {
 
     @POST(API_DEVICE_UNREGISTER)
     suspend fun deviceUnregister(@Body map: HashMap<String, String>): ApiResult<BaseResponse<Nothing>>
+
+    @GET(API_HISTORY_DEVICE)
+    suspend fun getHistoryDevice(): ApiResult<BaseResponse<List<HistoryDeviceInfo>>>
 
     @POST(API_UPLOAD_SETTING)
     suspend fun uploadSetting(@Body body: RequestBody): ApiResult<BaseResponse<Nothing>>

@@ -193,4 +193,5 @@
     <color name="dialogxMaterialDarkDialogBkgColor">#343434</color>
     <color name="dialogxWaitBkgLight">#F5F6F7</color>
     <color name="dialogxWaitBkgDark">#232323</color>
+    <color name="red_4f">#CD494F</color>
 </resources>

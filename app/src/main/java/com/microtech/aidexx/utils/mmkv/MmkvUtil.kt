@@ -6,7 +6,7 @@ import com.tencent.mmkv.MMKV
 class MmkvUtil {
     companion object {
         private val INSTANCE = MMKV.defaultMMKV()
-        val SETTING = MMKV.mmkvWithID("setting")
+        val SETTING: MMKV = MMKV.mmkvWithID("setting")
 
         fun encodeString(key: String, value: String) {
             INSTANCE.encode(key, value)

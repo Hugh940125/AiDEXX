@@ -1,19 +1,21 @@
 package com.microtech.aidexx.ui.pair
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
-import androidx.core.text.toSpannable
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
@@ -30,16 +32,19 @@ import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
 import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.utils.DensityUtils
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.permission.PermissionsUtil
+import com.microtech.aidexx.views.HyperLinkText
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import io.objectbox.reactive.DataObserver
 import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
@@ -112,9 +117,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         AidexBleAdapter.getInstance().onDeviceDiscover = {
             if (it.name.contains(X_NAME)) {
                 val address = it.address
-                if ((transmitter == null || address != transmitter?.deviceMac)
-                    && !transmitterList.contains(it)
-                ) {
+                if ((transmitter == null || address != transmitter?.deviceMac) && !transmitterList.contains(it)) {
                     transmitterList.add(it)
                 }
                 transmitterAdapter.setList(transmitterList)
@@ -158,28 +161,45 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         val spannableString = SpannableString("点击查看更多历史设备")
         spannableString.setSpan(
             ForegroundColorSpan(getColor(R.color.green_65)),
-            5,
-            9,
+            6,
+            spannableString.length,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-        binding.tvHistoryDevice.text = spannableString.toSpannable()
+        spannableString.setSpan(
+            AbsoluteSizeSpan(DensityUtils.sp2px(16f).toInt()),
+            6,
+            spannableString.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannableString.setSpan(object : HyperLinkText(this) {
+            override fun onClick(widget: View) {
+                startActivity(Intent(this@TransmitterActivity, PairedHistoryActivity::class.java))
+            }
+        }, 6, spannableString.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        binding.tvHistoryDevice.text = spannableString
+        binding.tvHistoryDevice.movementMethod = LinkMovementMethod.getInstance()
+        binding.tvHistoryDevice.highlightColor = Color.TRANSPARENT
         binding.actionbarTransmitter.getLeftIcon().setOnClickListener { finish() }
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
         transmitterAdapter = TransmitterAdapter()
         transmitterAdapter.onPairClick = {
-            if (transmitter != null) {
-                when (transmitter?.deviceType) {
-                    TYPE_G7 -> {
-                        ToastUtil.showLong("请先解配存在的设备")
-                    }
+            val build = PairCheckDialog(this).build(it)
+            build.onPass = { info ->
+                if (transmitter != null) {
+                    when (transmitter?.deviceType) {
+                        TYPE_G7 -> {
+                            ToastUtil.showLong("请先解配存在的设备")
+                        }
 
-                    TYPE_X -> {
-                        PairUtil.startPair(this@TransmitterActivity, it)
+                        TYPE_X -> {
+                            PairUtil.startPair(this@TransmitterActivity, info)
+                        }
                     }
+                } else {
+                    PairUtil.startPair(this@TransmitterActivity, info)
                 }
-            } else {
-                PairUtil.startPair(this@TransmitterActivity, it)
             }
+            build.show()
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
         binding.rvOtherTrans.adapter = transmitterAdapter

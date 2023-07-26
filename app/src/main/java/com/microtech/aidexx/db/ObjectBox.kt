@@ -54,10 +54,10 @@ object ObjectBox {
             return field
         }
 
-    var AlertSettingsBox: Box<SettingsEntity>? = null
+    var historyDeviceBox: Box<HistoryDeviceInfo>? = null
         get() {
             if (field == null) {
-                field = store.boxFor(SettingsEntity::class.java)
+                field = store.boxFor(HistoryDeviceInfo::class.java)
                 return field
             }
             return field

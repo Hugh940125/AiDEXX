@@ -22,6 +22,7 @@ import com.microtech.aidexx.db.entity.event.InsulinEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
 import com.microtech.aidexx.db.repository.EventDbRepository
+import com.microtech.aidexx.ui.pair.PairedDeviceManager
 import com.microtech.aidexx.ui.setting.SettingsManager
 import com.microtech.aidexx.utils.LogUtil
 import io.objectbox.Box
@@ -173,6 +174,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
             val tasks = listOf(
                 async { SettingsManager.downloadSettings(userId) },
+                async { PairedDeviceManager.loadHistoryDevice() },
                 async { updateStatus(EventRepository.getRecentData<RealCgmHistoryEntity>(userId, CGM_RECENT_COUNT, PAGE_SIZE_CGM)) },
                 async { updateStatus(EventRepository.getRecentData<BloodGlucoseEntity>(userId, BG_RECENT_COUNT)) },
                 async { updateStatus(EventRepository.getRecentData<CalibrateEntity>(userId, CAL_RECENT_COUNT)) },

@@ -19,7 +19,6 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-                app:emojiCompatEnabled="false"
             android:id="@+id/tv_trends_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -33,6 +32,7 @@
             android:text="@string/title_bg"
             android:textSize="20sp"
             android:textStyle="bold"
+            app:emojiCompatEnabled="false"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText" />
@@ -62,7 +62,6 @@
                 android:paddingBottom="16dp">
 
                 <TextView
-                app:emojiCompatEnabled="false"
                     android:id="@+id/tvGlucoseTimeText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -71,11 +70,11 @@
                     android:text="@string/glucose_test_time"
                     android:textColor="?colorFormTitle"
                     android:textSize="16sp"
+                    app:emojiCompatEnabled="false"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                app:emojiCompatEnabled="false"
                     android:id="@+id/tv_time"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -83,6 +82,7 @@
                     android:includeFontPadding="false"
                     android:textSize="20sp"
                     app:drawableEndCompat="@drawable/ic_arrow_right"
+                    app:emojiCompatEnabled="false"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tvGlucoseTimeText"
                     tools:text="2022/05/13 15:36" />
@@ -104,14 +104,14 @@
                 android:paddingBottom="16dp">
 
                 <TextView
-                app:emojiCompatEnabled="false"
                     android:id="@+id/tvGlucoseValueText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="15dp"
                     android:text="@string/finger_glucose_value"
                     android:textColor="?colorFormTitle"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    app:emojiCompatEnabled="false" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -119,12 +119,13 @@
                     android:orientation="horizontal">
 
                     <androidx.appcompat.widget.AppCompatEditText
-                        android:layout_marginTop="10dp"
                         android:id="@+id/et_glucose_value"
                         style="@style/MyEditText"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
                         android:layout_weight="1"
+                        android:autoSizeMinTextSize="16sp"
                         android:background="@drawable/shape_rounded_setting"
                         android:digits="0123456789."
                         android:inputType="numberDecimal"
@@ -132,16 +133,17 @@
                         android:maxLength="5"
                         android:singleLine="true"
                         android:textColorHint="?textColorHint"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        tools:targetApi="o" />
 
                     <TextView
-                app:emojiCompatEnabled="false"
-                        android:layout_gravity="bottom"
                         android:id="@+id/tv_glucose_unit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
                         android:layout_marginStart="2dp"
-                        android:textSize="20sp" />
+                        android:textSize="20sp"
+                        app:emojiCompatEnabled="false" />
 
                 </LinearLayout>
 
@@ -166,13 +168,13 @@
                     android:background="@drawable/shape_rounded_setting">
 
                     <TextView
-                app:emojiCompatEnabled="false"
                         android:id="@+id/slop_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/time_slop"
                         android:textColor="?colorFormTitle"
                         android:textSize="17sp"
+                        app:emojiCompatEnabled="false"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -208,16 +210,15 @@
                     android:layout_height="wrap_content">
 
                     <TextView
-                app:emojiCompatEnabled="false"
                         android:id="@+id/tvHistoryRecord"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/history_record"
                         android:textColor="?colorFormTitle"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        app:emojiCompatEnabled="false" />
 
                     <TextView
-                app:emojiCompatEnabled="false"
                         android:id="@+id/tvMoreHistory"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -225,43 +226,44 @@
                         android:text="@string/more"
                         android:textColor="?colorFormTitle"
                         android:textSize="16sp"
-                        app:drawableEndCompat="@drawable/ic_arrow_right_gray" />
+                        app:drawableEndCompat="@drawable/ic_arrow_right_gray"
+                        app:emojiCompatEnabled="false" />
                 </RelativeLayout>
 
                 <RelativeLayout
-                    android:layout_marginTop="10dp"
-                    android:gravity="center"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center">
 
                     <include
                         android:id="@+id/ll_bg_recode"
                         layout="@layout/item_glucose_history_bg" />
 
                     <TextView
-                app:emojiCompatEnabled="false"
-                        android:layout_centerInParent="true"
                         android:id="@+id/tv_none_record"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
                         android:layout_marginBottom="16dp"
                         android:text="@string/no_record"
                         android:textColor="?colorFormTitle"
                         android:textSize="14sp"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        app:emojiCompatEnabled="false" />
 
                 </RelativeLayout>
 
             </LinearLayout>
 
             <LinearLayout
-                android:paddingBottom="5dp"
-                android:paddingTop="5dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
                 android:layout_marginBottom="20dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp">
 
                 <com.microtech.aidexx.views.button.StateButton
                     android:id="@+id/button_calibration"
@@ -295,19 +297,19 @@
                 android:orientation="vertical">
 
                 <TextView
-                app:emojiCompatEnabled="false"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="top|start"
                     android:lineSpacingMultiplier="1.2"
                     android:text="@string/tip_calibrate"
                     android:textColor="?colorFormTitle"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    app:emojiCompatEnabled="false" />
             </LinearLayout>
 
             <Space
                 android:layout_width="match_parent"
-                android:layout_height="25dp"/>
+                android:layout_height="25dp" />
 
         </LinearLayout>
     </com.microtech.aidexx.views.NoHorizontallyScrollView>

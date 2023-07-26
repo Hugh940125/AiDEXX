@@ -46,6 +46,14 @@
         android:theme="@style/AppThemeLight"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.qrcode.QrCodeScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.pair.PairedHistoryActivity"
+            android:exported="false"
+            android:label="@string/title_activity_paired_history"
+            android:theme="@style/AppThemeLight.NoActionBar" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -81,6 +89,7 @@
             android:name=".ui.pair.TransmitterActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".ui.account.LoginActivity"

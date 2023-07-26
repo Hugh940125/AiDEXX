@@ -12,6 +12,7 @@ public class BleControllerInfo implements Parcelable {
     public String name;
     public String sn;
     public int rssi;
+    public boolean isPaired;
 
     public BleControllerInfo() {
     }
@@ -28,6 +29,7 @@ public class BleControllerInfo implements Parcelable {
         name = in.readString();
         sn = in.readString();
         rssi = in.readInt();
+        isPaired = in.readInt() == 1;
     }
 
     public static final Creator<BleControllerInfo> CREATOR = new Creator<BleControllerInfo>() {
@@ -77,5 +79,6 @@ public class BleControllerInfo implements Parcelable {
         dest.writeString(name);
         dest.writeString(sn);
         dest.writeInt(rssi);
+        dest.writeInt(isPaired ? 1 : 0);
     }
 }

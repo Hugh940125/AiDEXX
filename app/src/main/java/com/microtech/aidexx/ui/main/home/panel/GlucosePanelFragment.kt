@@ -17,6 +17,7 @@ import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentGlucosePanelBinding
 import com.microtech.aidexx.ui.main.home.HomeBackGroundSelector
+import com.microtech.aidexx.utils.ThemeManager
 import com.microtech.aidexx.utils.TimeUtils
 import com.microtech.aidexx.utils.UnitManager
 import com.microtech.aidexx.utils.eventbus.EventBusKey
@@ -50,6 +51,9 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentGlucosePanelBinding.inflate(layoutInflater)
+        binding.bgPanel.setBackgroundResource(
+            if (ThemeManager.isLight()) R.drawable.bg_panel_blank_light else R.drawable.bg_panel_blank_dark
+        )
         return binding.root
     }
 
