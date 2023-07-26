@@ -58,7 +58,7 @@ android {
             buildConfigField("String", "welfareCenterUrl", "\"https://aidexh5-test.microtechmd.com/#/\"")
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             manifestPlaceholders = [
-                    GETUI_APPID: ""
+                    GETUI_APPID: "nwQJTPvYSL86k4zuAkbUC1"
             ]
         }
 
