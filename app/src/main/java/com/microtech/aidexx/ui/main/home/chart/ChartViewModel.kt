@@ -157,6 +157,11 @@ class ChartViewModel: ViewModel() {
             launch {
                 startApplyNextPageData.collect {
                     if (it) {
+                        if (startLoadNextPage.value) {
+                            val ret = startApplyNextPageData.compareAndSet(true, update = false)
+                            LogUtil.d("===CHART=== 发现正在加载分页数据 应用分页数据终止 ret=$ret")
+                            return@collect
+                        }
                         val dataUserId = UserInfoManager.getCurShowUserId()
                         var needNotify = false
 
@@ -355,7 +360,7 @@ class ChartViewModel: ViewModel() {
         ) <= TimeUtils.oneDaySeconds * 2
 
         if (isLeftTwoDays) {
-            LogUtil.d("===CHART=== 滚动过程触发加载下一页")
+//            LogUtil.d("===CHART=== 滚动过程触发加载下一页")
             loadedMinDate = xAxisMin
         }
         return isLeftTwoDays
