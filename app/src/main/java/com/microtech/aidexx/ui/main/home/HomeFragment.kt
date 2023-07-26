@@ -12,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
-import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -98,7 +97,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
             binding.switchUserData.isVisible = homeViewModel.getFollowers()
             welfareInfo = homeViewModel.getActivities()
             welfareInfo?.let {
-                binding.welfareCenter.isVisible = it.viewIndexTag
+                binding.welfareCenter.isVisible = it.viewIndexTag && UserInfoManager.shareUserInfo == null
                 val showRedDot = it.activityList.any { activity -> activity.isLook != 1 }
                 binding.welfareCenter
                     .setImageDrawable(
@@ -253,7 +252,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
                     welfareCenter.isVisible = isMyself
                     dataOwner.isVisible = !isMyself
                     frgShare.root.isVisible = !isMyself
-                    fcvPanel.isInvisible = !isMyself
+                    fcvPanel.isVisible = isMyself
                 }
 
                 if (it.dataProviderId == UserInfoManager.instance().userId()) { // 自己

@@ -244,12 +244,21 @@
                 android:paddingBottom="5dp">
 
                 <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/setting_permission"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:has_next="true"
+                    app:icon="@drawable/ic_setting_permission"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:title="@string/phone_permission_setting" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_language"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
                     app:icon="@drawable/ic_setting_language"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/setting_permission"
                     app:title="@string/setting_language" />
 
                 <com.microtech.aidexx.views.SettingItemWidget

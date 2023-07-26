@@ -25,6 +25,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <queries>
         <intent>
@@ -186,6 +187,11 @@
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ui.setting.PermissionCheckActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             tools:ignore="LockedOrientationActivity" />

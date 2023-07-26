@@ -491,6 +491,7 @@
     <string name="need_bt_permission">"微泰动态"需要你的蓝牙权限</string>
     <string name="storage_use_for">用于设置头像，记录应用日志，下载AGP报告，OTA升级等功能</string>
     <string name="bt_permission_use_for">需要蓝牙权限才能与CGM进行蓝牙连接</string>
+    <string name="camera_use_for">用于扫描设备二维码完成设备登录</string>
     <string name="access_location">微泰动态需要你的位置权限</string>
     <string name="bt_need_location">蓝牙连接需要位置权限</string>
     <string name="scan">扫一扫</string>
@@ -730,6 +731,21 @@
     <string name="date_md_show_unit">MM月dd日</string>
     <string name="date_HHmm">HH:mm</string>
     <!-- 日期事件格式 -->
+
+    <!-- 手机授权设置 -->
+    <string name="phone_permission_setting">权限管理</string>
+    <string name="phone_permission_tip">为了更好的使用微泰动泰App持续接收血糖数据，请务必保证启用以下设置项。</string>
+    <string name="checkOnce">一键检测</string>
+    <string name="open_location">开启定位</string>
+    <string name="open_bluetooth">开启蓝牙</string>
+    <string name="open_notification">开启通知</string>
+    <string name="run_in_background">始终允许后台运行</string>
+    <string name="battery_no_optimization">电池不允许优化</string>
+    <string name="open_storage">本地存储</string>
+    <string name="open_camera">相机</string>
+    <string name="manual_setting">手动设置</string>
+    <string name="no_open_location">定位权限未打开</string>
+    <!-- 手机授权设置 -->
 
     <string name="help_center">帮助中心</string>
     <string name="battery_low">电池电量低</string>

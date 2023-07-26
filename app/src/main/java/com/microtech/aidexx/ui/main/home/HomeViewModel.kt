@@ -62,6 +62,7 @@ class HomeViewModel : BaseViewModel() {
                         // 该用户的数据下载成功后再执行切换
                         if (CloudHistorySync.downloadRecentData(shareUserInfo.dataProviderId!!)) {
                             Dialogs.dismissWait()
+                            UserInfoManager.shareUserInfo = shareUserInfo
                             LiveEventBus
                                 .get(EventBusKey.EVENT_SWITCH_USER, ShareUserInfo::class.java)
                                 .post(shareUserInfo)

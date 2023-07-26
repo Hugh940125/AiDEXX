@@ -38,4 +38,6 @@
 
     <color name="time_picker_title_bg">#111111</color>
 
+    <color name="check_btn">#007400</color>
+
 </resources>

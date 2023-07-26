@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.microtech.aidexx.R
 import com.microtech.aidexx.databinding.WidgetSettingItemBinding
 
@@ -49,10 +50,19 @@ class SettingItemWidget : ConstraintLayout {
     }
 
 
+    fun getLeftImage(): ImageView {
+        return settingItemBinding.ivIconLeft
+    }
     fun getRightImage(): ImageView {
         return settingItemBinding.tvNext
     }
+    fun setDivider(noDivider: Boolean) {
+        settingItemBinding.viewLine.isVisible = !noDivider
+    }
 
+    fun setTitle(str: String?) {
+        settingItemBinding.tvTitle.text = str
+    }
 
     fun setValue(str: String?) {
         settingItemBinding.tvValue.text = str

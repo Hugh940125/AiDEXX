@@ -22,9 +22,7 @@ import com.microtech.aidexx.views.chart.GlucoseChart
 import com.microtech.aidexx.views.chart.MyAnimatedZoomJob
 import com.microtech.aidexx.views.chart.MyChart
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.seconds
 
 class ChartViewHolder(
     private val vb: FragmentHomeBinding,
@@ -130,17 +128,20 @@ class ChartViewHolder(
 
                 launch {
 
-                    var firstIn = true
+                    var isReCreateFirstIn = chartViewModel.mDataChangedFlow.value != null
+
+//                    chartViewModel.mDataChangedFlow.debounce{
+//                        if (it?.needScrollToLatest != false) 0.seconds else 1.seconds
+//                    }
                     // 重建后禁用粘性事件 否则导致图表滚动位置不一致
-                    chartViewModel.mDataChangedFlow.debounce{
-                        if (it?.needScrollToLatest != false) 0.seconds else 1.seconds
-                    }.collect {
+                    chartViewModel.mDataChangedFlow.collect {
                         it?.let {
-                            if (!firstIn) {
+                            if (!isReCreateFirstIn) {
                                 LogUtil.d("===CHART=== 刷新图表 $it", TAG)
                                 chart.notifyChanged(it.needScrollToLatest)
                             } else {
-                                firstIn = false
+                                LogUtil.d("===CHART=== 重建后的第一次进来不刷新图表 $it", TAG)
+                                isReCreateFirstIn = false
                             }
                         }
                     }

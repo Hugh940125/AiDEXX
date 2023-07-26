@@ -37,6 +37,7 @@ class UserInfoManager {
 
     companion object {
 
+        @Volatile
         var shareUserInfo: ShareUserInfo? = null
 
         private var INSTANCE: UserInfoManager? = null

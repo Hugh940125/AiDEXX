@@ -115,7 +115,7 @@ fun RealCgmHistoryEntity.toHistoryDetailModel(): HistoryDetailModel {
             historyDetailModel.resourceId = R.drawable.ic_red_alert
         }
     }
-    historyDetailModel.title = getEventDescription(getContext().resources)
+    historyDetailModel.title = getEventWarningTip(getContext().resources)
     return historyDetailModel
 }
 fun BloodGlucoseEntity.toHistoryDetailModel(): HistoryDetailModel {
