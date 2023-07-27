@@ -53,8 +53,8 @@
         <activity
             android:name=".ui.pair.PairedHistoryActivity"
             android:exported="false"
-            android:label="@string/title_activity_paired_history"
-            android:theme="@style/AppThemeLight.NoActionBar" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

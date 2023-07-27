@@ -278,9 +278,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 binding.layoutMyTrans.tvSn.text = transmitter!!.deviceName
                 binding.layoutMyTrans.tvTransPairState.visibility = View.VISIBLE
                 if (transmitter!!.accessId == null) {
-                    binding.layoutMyTrans.tvTransPairState.text = "未配对"
+                    binding.layoutMyTrans.tvTransPairState.text = getString(R.string.not_paired)
                 } else {
-                    binding.layoutMyTrans.tvTransPairState.text = "已配对"
+                    binding.layoutMyTrans.tvTransPairState.text = getString(R.string.paired)
                 }
             }
             if (transmitter == null || transmitter?.accessId == null) {
