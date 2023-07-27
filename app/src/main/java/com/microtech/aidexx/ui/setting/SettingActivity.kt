@@ -26,11 +26,13 @@ import com.microtech.aidexx.data.resource.LanguageResourceManager
 import com.microtech.aidexx.databinding.ActivitySettingBinding
 import com.microtech.aidexx.ui.pair.TransmitterActivity
 import com.microtech.aidexx.ui.setting.alert.AlertSettingsActivity
+import com.microtech.aidexx.ui.setting.log.FeedbackUtil
 import com.microtech.aidexx.ui.setting.profile.ProfileSettingsActivity
 import com.microtech.aidexx.ui.setting.share.ShareFollowActivity
 import com.microtech.aidexx.ui.web.WebActivity
 import com.microtech.aidexx.ui.welcome.WelcomeActivity
 import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.utils.DeviceInfoHelper
 import com.microtech.aidexx.utils.FileUtils
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager
@@ -42,6 +44,7 @@ import com.microtech.aidexx.utils.permission.PermissionGroups
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtech.aidexx.views.dialog.lib.WaitDialog
+import com.tencent.mars.xlog.Log
 import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -213,12 +216,34 @@ class SettingActivity : BaseActivity<BaseViewModel, ActivitySettingBinding>() {
                 }
             }
 
-            settingOther.setDebounceClickListener {
-                startActivity(Intent(this@SettingActivity, OtherSettingActivity::class.java))
+            settingAccountSecurity.setDebounceClickListener {
+                startActivity(Intent(this@SettingActivity, AccountSecurityActivity::class.java))
             }
             settingAbout.setDebounceClickListener {
                 startActivity(Intent(this@SettingActivity, AboutActivity::class.java))
             }
+
+            settingUploadLog.setDebounceClickListener {
+                Dialogs.showWait(getString(R.string.log_uploading))
+                Log.appenderFlushSync(true)
+                val externalFile = getExternalFilesDir(null)?.absolutePath
+                val logPath = "$externalFile${File.separator}aidex"
+                val logFile = File("${logPath}${File.separator}log")
+                val userId = UserInfoManager.instance().userId()
+                val deviceName = DeviceInfoHelper.deviceName()
+                val installVersion = DeviceInfoHelper.installVersion(this@SettingActivity)
+                val osVersion = DeviceInfoHelper.osVersion()
+                val sn = TransmitterManager.instance().getDefault()?.entity?.deviceSn ?: ""
+                val zipFileName = "AiDEX${installVersion}_${deviceName}_${osVersion}_${sn}_${userId}.zip"
+                if (logFile.isDirectory) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        FeedbackUtil.zipAndUpload(this@SettingActivity, logFile, logPath, zipFileName, false)
+                    }
+                } else {
+                    Dialogs.showSuccess(getString(R.string.str_succ))
+                }
+            }
+
 
             txtVersion.text = buildString {
                 append("Version ")

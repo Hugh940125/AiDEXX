@@ -67,7 +67,7 @@
         </provider>
 
         <activity
-            android:name=".ui.setting.OtherSettingActivity"
+            android:name=".ui.setting.AccountSecurityActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
@@ -116,6 +116,7 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan"
+            android:launchMode="singleTask"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

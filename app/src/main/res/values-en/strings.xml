@@ -749,4 +749,8 @@
 
     <string name="help_center">帮助中心</string>
     <string name="battery_low">电池电量低</string>
+
+    <!-- 账号安全 -->
+    <string name="setting_account_security">账号安全</string>
+    <!-- 账号安全 -->
 </resources>

@@ -845,4 +845,8 @@
     <string name="paired_history">历史设备</string>
     <string name="sn">SN：</string>
     <string name="pair_time">配对时间：</string>
+
+    <!-- 账号安全 -->
+    <string name="setting_account_security">账号安全</string>
+    <!-- 账号安全 -->
 </resources>
