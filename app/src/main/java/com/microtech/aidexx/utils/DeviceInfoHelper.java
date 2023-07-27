@@ -1,14 +1,10 @@
 package com.microtech.aidexx.utils;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.text.TextUtils;
 
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -47,7 +43,7 @@ public class DeviceInfoHelper {
     }
 
     public static String deviceName() {
-        return Build.BRAND +" "+ Build.MODEL;
+        return Build.BRAND + Build.MODEL;
     }
 
     public static String installVersion(Context context) {

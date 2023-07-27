@@ -3,6 +3,8 @@ package com.microtech.aidexx.ui.pair
 import com.microtech.aidexx.common.net.ApiResult
 import com.microtech.aidexx.common.net.ApiService
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.entity.HistoryDeviceInfo
+import com.microtech.aidexx.db.entity.HistoryDeviceInfo_
 import com.microtech.aidexx.utils.ToastUtil
 
 /**
@@ -12,7 +14,7 @@ import com.microtech.aidexx.utils.ToastUtil
  */
 object PairedDeviceManager {
 
-    suspend fun loadHistoryDevice() {
+    suspend fun downloadHistoryDevice() {
         when (val historyDevice = ApiService.instance.getHistoryDevice()) {
             is ApiResult.Success -> {
                 historyDevice.result.data?.let {
@@ -23,6 +25,12 @@ object PairedDeviceManager {
             is ApiResult.Failure -> {
                 ToastUtil.showShort(historyDevice.msg)
             }
+        }
+    }
+
+    suspend fun loadHistoryDevices(): List<HistoryDeviceInfo>? {
+        return ObjectBox.awaitCallInTx {
+            ObjectBox.historyDeviceBox!!.query().orderDesc(HistoryDeviceInfo_.registerTime).build().find()
         }
     }
 }

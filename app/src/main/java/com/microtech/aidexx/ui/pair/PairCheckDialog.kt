@@ -80,6 +80,7 @@ class PairCheckDialog : AlertDialog {
                 val equals = bind.etVerCode.inputContent.equals(info.sn)
                 if (equals) {
                     onPass?.invoke(info)
+                    dismiss()
                 } else {
                     bind.clReselect.isVisible = true
                     bind.tvNotSame.isVisible = true

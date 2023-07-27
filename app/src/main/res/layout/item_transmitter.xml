@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="60dp"
-    android:clickable="true"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
     android:focusable="true">
 
     <View
-        app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/trans_line"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="?attr/colorLine" />
+        android:background="?attr/colorLine"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/trans_item"
-        app:layout_constraintTop_toBottomOf="@id/trans_line"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="?containerBackgroundDark"
@@ -26,10 +24,10 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingTop="10dp"
-        android:paddingBottom="10dp">
+        android:paddingBottom="10dp"
+        app:layout_constraintTop_toBottomOf="@id/trans_line">
 
         <TextView
-                app:emojiCompatEnabled="false"
             android:id="@+id/tv_sn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -38,20 +36,40 @@
             android:ellipsize="end"
             android:gravity="start"
             android:textSize="16sp"
+            app:emojiCompatEnabled="false"
             tools:text="AF1122" />
 
         <TextView
-                app:emojiCompatEnabled="false"
             android:id="@+id/tv_trans_pair_state"
-            android:visibility="visible"
-            android:drawablePadding="10dp"
-            android:textColor="?colorHint"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="32dp"
-            tools:text="已配对"
+            android:drawablePadding="10dp"
+            android:textColor="?colorHint"
             android:textSize="14sp"
-            app:drawableEndCompat="@drawable/ic_info" />
+            android:visibility="gone"
+            app:drawableEndCompat="@drawable/ic_info"
+            app:emojiCompatEnabled="false"
+            tools:text="已配对" />
     </LinearLayout>
+
+    <TextView
+        android:clickable="true"
+        android:id="@+id/tv_more_device"
+        android:visibility="gone"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_marginStart="20dp"
+        android:gravity="center"
+        android:text="@string/more_device"
+        android:textColor="@color/green_65"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/trans_item"
+        android:focusable="true" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

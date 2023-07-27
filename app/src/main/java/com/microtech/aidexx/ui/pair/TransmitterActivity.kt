@@ -17,6 +17,7 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.RotateAnimation
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
 import com.microtech.aidexx.R
@@ -28,6 +29,7 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.X_NAME
 import com.microtech.aidexx.databinding.ActivityTransmitterBinding
 import com.microtech.aidexx.db.ObjectBox
+import com.microtech.aidexx.db.entity.HistoryDeviceInfo
 import com.microtech.aidexx.db.entity.TYPE_G7
 import com.microtech.aidexx.db.entity.TYPE_X
 import com.microtech.aidexx.db.entity.TransmitterEntity
@@ -44,7 +46,6 @@ import io.objectbox.reactive.DataObserver
 import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
@@ -58,14 +59,17 @@ const val BLE_INFO = "info"
 
 class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBinding>(),
     OnClickListener {
+    private var historySubscription: DataSubscription? = null
+    private var historyDevices: MutableList<HistoryDeviceInfo>? = mutableListOf()
     private var checkPass: Boolean = false
     private var scanStarted = false
     private var rotateAnimation: RotateAnimation? = null
-    private var subscription: DataSubscription? = null
+    private var tranSubscription: DataSubscription? = null
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
     private var transmitter: TransmitterEntity? = null
-    private lateinit var transmitterList: MutableList<BleControllerInfo>
+    private lateinit var availableTransmitterList: MutableList<BleControllerInfo>
+    private lateinit var unavailableTransmitterList: MutableList<BleControllerInfo>
 
     class TransmitterHandler(val activity: TransmitterActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
@@ -86,7 +90,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         super.onCreate(savedInstanceState)
         checkPass = false
         setContentView(binding.root)
-        transmitterList = mutableListOf()
+        availableTransmitterList = mutableListOf()
+        unavailableTransmitterList = mutableListOf()
         transmitterHandler = TransmitterHandler(this)
         PairUtil.observeMessage(this, AidexxApp.mainScope)
         initView()
@@ -117,10 +122,17 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         AidexBleAdapter.getInstance().onDeviceDiscover = {
             if (it.name.contains(X_NAME)) {
                 val address = it.address
-                if ((transmitter == null || address != transmitter?.deviceMac) && !transmitterList.contains(it)) {
-                    transmitterList.add(it)
+                if ((transmitter == null || address != transmitter?.deviceMac)
+                    && !availableTransmitterList.contains(it) && !unavailableTransmitterList.contains(it)
+                ) {
+                    if ((it.isPaired && historyDevices?.any { device -> device.deviceSn == it.sn } == true) || !it.isPaired) {
+                        availableTransmitterList.add(it)
+                    } else {
+                        unavailableTransmitterList.add(it)
+                    }
                 }
-                transmitterAdapter.setList(transmitterList)
+                transmitterAdapter.canShowMore = unavailableTransmitterList.isNotEmpty()
+                transmitterAdapter.refreshData(availableTransmitterList)
             }
         }
     }
@@ -181,28 +193,44 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         binding.tvHistoryDevice.highlightColor = Color.TRANSPARENT
         binding.actionbarTransmitter.getLeftIcon().setOnClickListener { finish() }
         binding.rvOtherTrans.layoutManager = LinearLayoutManager(this)
-        transmitterAdapter = TransmitterAdapter()
-        transmitterAdapter.onPairClick = {
-            val build = PairCheckDialog(this).build(it)
-            build.onPass = { info ->
-                if (transmitter != null) {
-                    when (transmitter?.deviceType) {
-                        TYPE_G7 -> {
-                            ToastUtil.showLong("请先解配存在的设备")
-                        }
-
-                        TYPE_X -> {
-                            PairUtil.startPair(this@TransmitterActivity, info)
-                        }
-                    }
-                } else {
-                    PairUtil.startPair(this@TransmitterActivity, info)
+        transmitterAdapter = TransmitterAdapter(this)
+        transmitterAdapter.onShowMoreClick = {
+            availableTransmitterList.addAll(unavailableTransmitterList)
+            unavailableTransmitterList.clear()
+            transmitterAdapter.canShowMore = unavailableTransmitterList.isNotEmpty()
+            transmitterAdapter.refreshData(availableTransmitterList)
+        }
+        transmitterAdapter.onPairClick = { bleControllerInfo ->
+            if (availableTransmitterList.filter { !it.isPaired }.size > 1) {
+                val build = PairCheckDialog(this).build(bleControllerInfo)
+                build.onPass = { info ->
+                    executePair(info)
                 }
+                build.show()
+            } else {
+                executePair(bleControllerInfo)
             }
-            build.show()
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
-        binding.rvOtherTrans.adapter = transmitterAdapter
+        val config = ConcatAdapter.Config.Builder().setIsolateViewTypes(true).build()
+        val concatAdapter = ConcatAdapter(config, transmitterAdapter, transmitterAdapter)
+        binding.rvOtherTrans.adapter = concatAdapter
+    }
+
+    private fun executePair(bleControllerInfo: BleControllerInfo) {
+        if (transmitter != null) {
+            when (transmitter?.deviceType) {
+                TYPE_G7 -> {
+                    ToastUtil.showLong("请先解配存在的设备")
+                }
+
+                TYPE_X -> {
+                    PairUtil.startPair(this@TransmitterActivity, bleControllerInfo)
+                }
+            }
+        } else {
+            PairUtil.startPair(this@TransmitterActivity, bleControllerInfo)
+        }
     }
 
     override fun onDestroy() {
@@ -215,7 +243,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             AidexBleAdapter.getInstance().stopBtScan(false)
         }
         transmitterHandler.removeMessages(DISMISS_LOADING)
-        subscription?.cancel()
+        tranSubscription?.cancel()
+        historySubscription?.cancel()
         AidexBleAdapter.getInstance().removeDiscoverCallback()
     }
 
@@ -224,13 +253,19 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     }
 
     private fun loadSavedTransmitter() {
-        val observer = DataObserver<Class<TransmitterEntity>> { refreshMine() }
-        subscription = ObjectBox.store.subscribe(TransmitterEntity::class.java).observer(observer)
+        val transObserver = DataObserver<Class<TransmitterEntity>> { refreshMine() }
+        tranSubscription = ObjectBox.store.subscribe(TransmitterEntity::class.java).observer(transObserver)
+        historySubscription = ObjectBox.historyDeviceBox!!.query().build()
+            .subscribe()
+            .observer {
+                historyDevices = it
+            }
     }
 
     private fun refreshMine() {
         lifecycleScope.launch {
-            transmitterList.clear()
+            availableTransmitterList.clear()
+            unavailableTransmitterList.clear()
             withContext(Dispatchers.IO) {
                 transmitter = TransmitterManager.instance().getDefault()?.entity
             }

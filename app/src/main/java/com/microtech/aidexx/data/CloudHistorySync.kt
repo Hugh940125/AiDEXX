@@ -174,7 +174,7 @@ abstract class CloudHistorySync<T : BaseEventEntity> : DataSyncController<T>() {
 
             val tasks = listOf(
                 async { SettingsManager.downloadSettings(userId) },
-                async { PairedDeviceManager.loadHistoryDevice() },
+                async { PairedDeviceManager.downloadHistoryDevice() },
                 async { updateStatus(EventRepository.getRecentData<RealCgmHistoryEntity>(userId, CGM_RECENT_COUNT, PAGE_SIZE_CGM)) },
                 async { updateStatus(EventRepository.getRecentData<BloodGlucoseEntity>(userId, BG_RECENT_COUNT)) },
                 async { updateStatus(EventRepository.getRecentData<CalibrateEntity>(userId, CAL_RECENT_COUNT)) },

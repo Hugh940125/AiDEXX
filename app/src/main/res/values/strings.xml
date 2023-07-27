@@ -845,4 +845,5 @@
     <string name="paired_history">历史设备</string>
     <string name="sn">SN：</string>
     <string name="pair_time">配对时间：</string>
+    <string name="more_device">更多设备</string>
 </resources>

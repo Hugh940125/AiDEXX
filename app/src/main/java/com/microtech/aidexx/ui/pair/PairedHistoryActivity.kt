@@ -38,17 +38,8 @@ class PairedHistoryActivity : BaseActivity<BaseViewModel, ActivityPairedHistoryB
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
-            when(val historyDevice = ApiService.instance.getHistoryDevice()){
-                is ApiResult.Success -> {
-                    historyDevice.result.data?.let {
-                        pairedHistoryAdapter.setList(it)
-                    }
-                }
-
-                is ApiResult.Failure -> {
-                    ToastUtil.showShort(historyDevice.msg)
-                }
-            }
+            val loadHistoryDevices = PairedDeviceManager.loadHistoryDevices()
+            pairedHistoryAdapter.setList(loadHistoryDevices)
         }
     }
 }

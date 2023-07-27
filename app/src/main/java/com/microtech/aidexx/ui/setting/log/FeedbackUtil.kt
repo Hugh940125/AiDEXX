@@ -9,22 +9,28 @@ import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.views.dialog.Dialogs
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.Response
+import okio.BufferedSink
+import okio.source
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 object FeedbackUtil {
 
-    suspend fun zipAndUpload(
+    fun zipAndUpload(
         context: Context,
         logFile: File,
         logPath: String,
@@ -55,21 +61,41 @@ object FeedbackUtil {
         }
         val zipFile = zipFolder(logPath, zipFileName, fileList)
         if (zipFile?.exists() == true) {
-            val okHttpClient = OkHttpClient()
+            val fileRequestBody = object : RequestBody() {
+                override fun contentType(): MediaType {
+                    return "application/zip".toMediaType()
+                }
+
+                @Throws(IOException::class)
+                override fun writeTo(sink: BufferedSink) {
+                    zipFile.source().use { source ->
+                        sink.writeAll(source)
+                    }
+                }
+
+                override fun contentLength(): Long {
+                    return zipFile.length()
+                }
+            }
+            val okHttpClient = OkHttpClient.Builder()
+                .callTimeout(5, TimeUnit.MINUTES)
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(5, TimeUnit.MINUTES)
+                .writeTimeout(5, TimeUnit.MINUTES)
+                .retryOnConnectionFailure(true)
+                .build()
             val requestBody = MultipartBody.Builder()
-                .setType(MultipartBody.ALTERNATIVE)
                 .addFormDataPart("appName", "cgms")  // 上传参数
                 .addFormDataPart(
                     "file",
                     zipFileName,
-                    zipFile.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                    fileRequestBody
                 )   // 上传文件
                 .build()
             val request = Request.Builder()
                 .url(BuildConfig.logUploadUrl)
                 .post(requestBody)//默认就是GET请求，可以不写
                 .build()
-
             val call = okHttpClient.newCall(request)
             call.enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
