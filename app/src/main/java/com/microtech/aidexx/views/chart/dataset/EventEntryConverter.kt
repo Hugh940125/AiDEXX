@@ -10,6 +10,7 @@ import com.microtech.aidexx.db.entity.event.ExerciseEntity
 import com.microtech.aidexx.db.entity.event.InsulinEntity
 import com.microtech.aidexx.db.entity.event.MedicationEntity
 import com.microtech.aidexx.db.entity.event.OthersEntity
+import com.microtech.aidexx.utils.roundOffDecimal
 import com.microtech.aidexx.utils.toGlucoseValue
 import com.microtech.aidexx.views.chart.ChartUtil
 
@@ -44,7 +45,14 @@ fun BaseEventEntity.toChartEntry(getY: (()->Float)? = null): ChartEntry =
         }
         is CalibrateEntity -> {
             val xValue = ChartUtil.millSecondToX(timestamp)
-            val bg = BloodGlucoseEntity(calTime, referenceGlucose)
+//            val bg = BloodGlucoseEntity(calTime, referenceGlucose)
+            val bg = BloodGlucoseEntity()
+            bg.timestamp = timestamp
+            bg.bloodGlucoseMg = roundOffDecimal(referenceGlucose)
+            bg.appTime = appTime
+            bg.appTimeZone = appTimeZone
+            bg.dstOffset = dstOffset
+
             bg.calibration = true
             val entry = ChartEntry(xValue, bg.bloodGlucoseMg.toGlucoseValue(), bg)
 //            val entry = ChartEntry(xValue, bg.bloodGlucoseMg.toGlucoseValue(), "CAL-${idx}")

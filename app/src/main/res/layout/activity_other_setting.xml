@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.setting.OtherSettingActivity">
+    tools:context=".ui.setting.AccountSecurityActivity">
 
     <com.microtech.aidexx.views.ActionBarWidget
         app:leftIcon="@drawable/ic_back"

@@ -56,7 +56,6 @@ class HomeViewModel : BaseViewModel() {
                 is ApiResult.Success -> {
                     val shareUserInfo = ret.result.data
                     if (shareUserInfo?.dataProviderId != null && UserInfoManager.shareUserInfo?.dataProviderId != shareUserInfo.dataProviderId) {
-                        UserInfoManager.shareUserInfo = shareUserInfo
                         Dialogs.showWait(getContext().getString(R.string.loading))
 
                         // 该用户的数据下载成功后再执行切换

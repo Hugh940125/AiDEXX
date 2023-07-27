@@ -244,13 +244,32 @@
                 android:paddingBottom="5dp">
 
                 <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/setting_upload_log"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:has_line="true"
+                    app:has_next="true"
+                    app:icon="@drawable/ic_setting_feedback"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:title="@string/log_upload" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_permission"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_next="true"
                     app:icon="@drawable/ic_setting_permission"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/setting_upload_log"
                     app:title="@string/phone_permission_setting" />
+
+                <com.microtech.aidexx.views.SettingItemWidget
+                    android:id="@+id/setting_account_security"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:has_next="true"
+                    app:icon="@drawable/ic_setting_account_safe"
+                    app:layout_constraintTop_toBottomOf="@id/setting_permission"
+                    app:title="@string/setting_account_security" />
 
                 <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_language"
@@ -258,7 +277,7 @@
                     android:layout_height="wrap_content"
                     app:has_next="true"
                     app:icon="@drawable/ic_setting_language"
-                    app:layout_constraintTop_toBottomOf="@id/setting_permission"
+                    app:layout_constraintTop_toBottomOf="@+id/setting_account_security"
                     app:title="@string/setting_language" />
 
                 <com.microtech.aidexx.views.SettingItemWidget
@@ -271,22 +290,13 @@
                     app:title="@string/setting_theme" />
 
                 <com.microtech.aidexx.views.SettingItemWidget
-                    android:id="@+id/setting_other"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:has_next="true"
-                    app:icon="@drawable/ic_setting_other"
-                    app:layout_constraintTop_toBottomOf="@id/setting_theme"
-                    app:title="@string/setting_other" />
-
-                <com.microtech.aidexx.views.SettingItemWidget
                     android:id="@+id/setting_about"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:has_line="false"
                     app:has_next="true"
                     app:icon="@drawable/ic_setting_about"
-                    app:layout_constraintTop_toBottomOf="@id/setting_other"
+                    app:layout_constraintTop_toBottomOf="@id/setting_theme"
                     app:title="@string/setting_about" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

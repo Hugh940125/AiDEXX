@@ -92,18 +92,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dp"
-                app:has_next="true"
+                app:has_next="false"
                 app:has_line="true"
                 app:title="@string/Privacy_Policy" />
-
-            <com.microtech.aidexx.views.SettingItemWidget
-                android:id="@+id/setting_upload_log"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:has_line="false"
-                app:has_next="true"
-                app:layout_constraintTop_toTopOf="parent"
-                app:title="@string/log_upload" />
 
         </LinearLayout>
 
