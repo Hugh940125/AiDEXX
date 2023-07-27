@@ -21,8 +21,10 @@ import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.db.ObjectBox
 import com.microtech.aidexx.db.ObjectBox.calibrationBox
 import com.microtech.aidexx.db.ObjectBox.cgmHistoryBox
+import com.microtech.aidexx.db.ObjectBox.historyDeviceBox
 import com.microtech.aidexx.db.ObjectBox.transmitterBox
 import com.microtech.aidexx.db.entity.CalibrateEntity
+import com.microtech.aidexx.db.entity.HistoryDeviceInfo
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity
 import com.microtech.aidexx.db.entity.RealCgmHistoryEntity_
 import com.microtech.aidexx.db.entity.SettingsEntity
@@ -292,6 +294,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         entity.accessId = controller?.id
         entity.deviceName = "$X_NAME-${entity.deviceSn}"
         transmitterBox!!.put(entity)
+        val historyDeviceInfo = HistoryDeviceInfo()
+        historyDeviceInfo.deviceSn = entity.deviceSn
+        historyDeviceInfo.registerTime = Date()
+        historyDeviceBox!!.put(historyDeviceInfo)
     }
 
     fun resetIndex() {

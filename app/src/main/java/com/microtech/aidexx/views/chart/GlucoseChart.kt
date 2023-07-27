@@ -224,7 +224,7 @@ class GlucoseChart : MyChart {
                 }
                 if (e.data == null) {
                     extraParams?.outerDescriptionY?.text = buildString {
-                        append(h.y)
+                        append(UnitManager.unitFormat().format(h.y))
                     }
                     extraParams?.outerDescriptionUnit?.text = UnitManager.glucoseUnit.text
                     isValueNull = false

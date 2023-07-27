@@ -73,7 +73,7 @@ class MainService : Service(), LifecycleOwner {
             if (field == null) {
                 field = PendingIntent.getActivity(
                     this, 0, this.packageManager?.getLaunchIntentForPackage(
-                        this.packageName ?: "com.microtechmd.cgms"
+                        this.packageName ?: "com.microtech.aidexx"
                     ), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             }

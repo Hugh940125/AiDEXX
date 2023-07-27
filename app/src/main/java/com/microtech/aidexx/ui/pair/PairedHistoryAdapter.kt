@@ -1,15 +1,15 @@
 package com.microtech.aidexx.ui.pair
 
 import com.microtech.aidexx.R
-import com.microtech.aidexx.ble.device.entity.DeviceInfo
 import com.microtech.aidexx.common.formatToYMdHm
+import com.microtech.aidexx.db.entity.HistoryDeviceInfo
 import com.microtech.aidexx.utils.adapter.BaseQuickAdapter
 import com.microtech.aidexx.utils.adapter.BaseViewHolder
 
 class PairedHistoryAdapter :
-    BaseQuickAdapter<DeviceInfo, BaseViewHolder>(R.layout.item_paired_history) {
+    BaseQuickAdapter<HistoryDeviceInfo, BaseViewHolder>(R.layout.item_paired_history) {
 
-    override fun convert(holder: BaseViewHolder, item: DeviceInfo) {
+    override fun convert(holder: BaseViewHolder, item: HistoryDeviceInfo) {
         holder.apply {
             setText(R.id.history_device_sn, buildString {
                 append(context.getString(R.string.sn))

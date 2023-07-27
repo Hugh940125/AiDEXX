@@ -2151,10 +2151,91 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "27:4384700248466900906",
+      "lastPropertyId": "14:3968463069923532950",
+      "name": "HistoryDeviceInfo",
+      "properties": [
+        {
+          "id": "1:2256085287853661061",
+          "name": "idx",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:9034952929032124796",
+          "name": "deviceId",
+          "type": 9
+        },
+        {
+          "id": "3:1029730291555361963",
+          "name": "userId",
+          "type": 9
+        },
+        {
+          "id": "4:5623795344835499733",
+          "name": "sensorId",
+          "type": 9
+        },
+        {
+          "id": "5:8027261356143614081",
+          "name": "sensorIndex",
+          "type": 5
+        },
+        {
+          "id": "6:1318528388025443079",
+          "name": "sensorStartUp",
+          "type": 10
+        },
+        {
+          "id": "7:749200512857774575",
+          "name": "startUpTimeZone",
+          "type": 9
+        },
+        {
+          "id": "8:1546702258521641512",
+          "name": "deviceModel",
+          "type": 5
+        },
+        {
+          "id": "9:1428024561358246977",
+          "name": "deviceSn",
+          "indexId": "124:3096654673525374584",
+          "type": 9,
+          "flags": 34848
+        },
+        {
+          "id": "10:3687832090412056131",
+          "name": "deviceMac",
+          "type": 9
+        },
+        {
+          "id": "11:83629949689631071",
+          "name": "deviceKey",
+          "type": 9
+        },
+        {
+          "id": "12:7734517528381146718",
+          "name": "registerTime",
+          "type": 10
+        },
+        {
+          "id": "13:2468569461220254728",
+          "name": "unregisterTime",
+          "type": 10
+        },
+        {
+          "id": "14:3968463069923532950",
+          "name": "et",
+          "type": 5
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "26:1394050152852526191",
-  "lastIndexId": "123:349843899380339168",
+  "lastEntityId": "27:4384700248466900906",
+  "lastIndexId": "124:3096654673525374584",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

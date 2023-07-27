@@ -1,7 +1,9 @@
 package com.microtech.aidexx.db.entity
 
+import io.objectbox.annotation.ConflictStrategy
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.annotation.Unique
 import java.util.Date
 
 /**
@@ -20,6 +22,7 @@ class HistoryDeviceInfo {
     var sensorStartUp: Date? = null
     var startUpTimeZone: String? = null
     var deviceModel: Int = 0
+    @Unique(onConflict = ConflictStrategy.REPLACE)
     var deviceSn: String? = null
     var deviceMac: String? = null
     var deviceKey: String? = null

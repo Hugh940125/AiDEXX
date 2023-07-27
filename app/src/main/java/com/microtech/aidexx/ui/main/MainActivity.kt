@@ -1,14 +1,14 @@
 package com.microtech.aidexx.ui.main
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.ComponentName
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.net.Uri
-import android.os.*
-import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
+import android.os.PowerManager
 import android.view.View
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.WindowInsets
@@ -35,7 +35,10 @@ import com.microtech.aidexx.ui.main.event.EventFragment
 import com.microtech.aidexx.ui.main.home.HomeViewModel
 import com.microtech.aidexx.ui.upgrade.AppUpdateFragment
 import com.microtech.aidexx.ui.welcome.WelcomeActivity
-import com.microtech.aidexx.utils.*
+import com.microtech.aidexx.utils.ActivityUtil
+import com.microtech.aidexx.utils.BleUtil
+import com.microtech.aidexx.utils.LocationUtils
+import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.utils.ThemeManager.themeConfig
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
@@ -63,6 +66,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
     private var checkStep = 0
     private var curTimeZoneId: Int? = null
     private val homeViewModel: HomeViewModel by viewModels()
+
     companion object {
         private val TAG = MainActivity::class.java.simpleName
         const val HISTORY = 0
@@ -98,6 +102,7 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
+
                         REQUEST_BLUETOOTH_PERMISSION -> {
                             bluetoothPermissionDialog?.dismiss()
                             bluetoothPermissionDialog = EnquireManager.instance()
@@ -113,12 +118,15 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                                     }, flag = null
                                 )
                         }
+
                         REQUEST_ENABLE_LOCATION_SERVICE -> {
                             it.enableLocation()
                         }
+
                         REQUEST_ENABLE_BLUETOOTH -> {
                             it.enableBluetooth()
                         }
+
                         REQUEST_IGNORE_BATTERY_OPTIMIZATIONS -> {
                             val powerManager = it.getSystemService(POWER_SERVICE) as PowerManager
                             val hasIgnored =
@@ -158,7 +166,6 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
         initView()
         loadData()
         initEvent()
-
         processIntent(intent)
     }
 
@@ -195,9 +202,12 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
                 } else {
                     startService(intent)
                 }
+                LogUtil.eAiDEX("start main service")
+            } else {
+                LogUtil.eAiDEX("main service is running,need not start")
             }
         } catch (e: Exception) {
-            LogUtil.eAiDEX("Start service error:${e.message.toString()}")
+            LogUtil.eAiDEX("start main service error:${e.message.toString()}")
         }
     }
 
@@ -349,8 +359,8 @@ class MainActivity : BaseActivity<AccountViewModel, ActivityMainBinding>() {
 //        CrashReport.initCrashReport(applicationContext, "b2c5f05676", BuildConfig.DEBUG)
         PushManager.getInstance().initialize(this)
         if (BuildConfig.DEBUG) {
-            PushManager.getInstance().setDebugLogger(this) {
-                s -> Log.i("PUSH_LOG", s)
+            PushManager.getInstance().setDebugLogger(this) { s ->
+                Log.i("PUSH_LOG", s)
             }
         }
     }
