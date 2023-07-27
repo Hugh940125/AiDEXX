@@ -41,6 +41,7 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
     private lateinit var batteryItem: SettingItemWidget
     private lateinit var storageItem: SettingItemWidget
     private lateinit var cameraItem: SettingItemWidget
+    private var isChecking = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +81,8 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
     }
 
     private fun checkAllPermission() {
+        if (isChecking) return
+        isChecking = true
         resetView()
         lifecycleScope.launch {
 
@@ -94,6 +97,7 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
             checkStorage(storageItem)
             delay(genRandomLoadingTime())
             checkCamera(cameraItem)
+            isChecking = false
         }
     }
 
@@ -359,7 +363,7 @@ class PermissionCheckActivity : BaseActivity<BaseViewModel, ActivityPermissionCh
         rotateAnimation.interpolator = LinearInterpolator()
         rotateAnimation.repeatCount = Animation.INFINITE
         rotateAnimation.repeatMode = Animation.RESTART
-        rotateAnimation.duration = 1500
+        rotateAnimation.duration = 1000
 
         itemView.getRightImage().startAnimation(rotateAnimation)
         itemView.setDivider(noDivider)
