@@ -77,14 +77,16 @@ class PairCheckDialog : AlertDialog {
         bind.etVerCode.requestFocus()
         bind.etVerCode.setInputCompleteListener(object : InputCompleteListener {
             override fun inputComplete() {
-                val equals = bind.etVerCode.inputContent.equals(info.sn)
-                if (equals) {
-                    onPass?.invoke(info)
-                    dismiss()
-                } else {
-                    bind.clReselect.isVisible = true
-                    bind.tvNotSame.isVisible = true
-                    bind.ivClosePairCheck.isVisible = false
+                if (bind.etVerCode.inputContent.length == bind.etVerCode.etNumber) {
+                    val equals = bind.etVerCode.inputContent.equals(info.sn)
+                    if (equals) {
+                        onPass?.invoke(info)
+                        dismiss()
+                    } else {
+                        bind.clReselect.isVisible = true
+                        bind.tvNotSame.isVisible = true
+                        bind.ivClosePairCheck.isVisible = false
+                    }
                 }
             }
 
