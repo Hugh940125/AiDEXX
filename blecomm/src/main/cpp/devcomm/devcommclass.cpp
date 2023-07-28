@@ -74,6 +74,10 @@
      return DrvUART_Receive(0, data, length);
  }
 
+int DevComm1::receive(uint16 uuid, const uint8 *data, uint16 length) {
+    return receive(data, length);
+}
+
  void DevComm1::turnOffEncryption() {
      return TaskComm_TurnOffEncryption();
  }
@@ -100,8 +104,8 @@
 #endif
 
 DevComm2::DevComm2()  {
-    sendTimeout = 400;
-    retryCount = 3;
+    sendTimeout = 2000;
+    retryCount = 10;
     retryTimer = new CTimer();
     encryptor = new AesEncryptor(AesEncryptor::CFB, AesEncryptor::AES128);
 }
@@ -186,6 +190,30 @@ int DevComm2::receive(const uint8 *data, uint16 length) {
     retryTimer->Cancel();
     currentOp = 0xFF;
     return sCallback->onHandleCommand( 0xFF, operation, 0xFF, receiveData + 1, receiveLength);
+}
+
+int DevComm2::receive(uint16 uuid, const uint8 *data, uint16 length) {
+#if ENABLE_ENCRYPTION
+    for (uint16 i = 0; i < length; i++)
+        buffer[i] = data[i];
+    encryptor->decrypt(buffer, length);
+    const uint8 *receiveData = buffer;
+#else
+    const uint8 *receiveData = data;
+#endif
+
+#if ENABLE_CRC16_CCITT
+    if (length < 3)
+        return FUNCTION_FAIL;
+    uint16 crc16 = LittleEndianByteUtils::byteToUnsignedShort(receiveData + length - 2);
+    if (crc16 != LibChecksum_GetChecksum16Bit_CCITT(receiveData, length - 2))
+        return FUNCTION_FAIL;
+    uint16 receiveLength = length - 2;
+#else
+    uint16 receiveLength = length;
+#endif
+    
+    return sCallback->onHandleCommand( 0xFF, 0xFE, 0xFF, receiveData, receiveLength);
 }
 
 void DevComm2::turnOffEncryption() {

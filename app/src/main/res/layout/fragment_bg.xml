@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:background="@color/transparent"
-        android:paddingTop="50dp"
         android:paddingBottom="10dp"
         app:layout_constraintBottom_toTopOf="@id/layout_state"
         app:layout_constraintTop_toTopOf="parent">

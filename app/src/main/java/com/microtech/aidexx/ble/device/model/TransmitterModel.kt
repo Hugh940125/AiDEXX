@@ -2,6 +2,7 @@ package com.microtech.aidexx.ble.device.model
 
 import android.os.SystemClock
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
@@ -228,6 +229,18 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     saveRawHistoryFromConnect(message.data)
                 }
             }
+
+            AidexXOperation.AUTO_UPDATE_CALIBRATION -> {
+                if (UserInfoManager.instance().isLogin()) {
+                    AidexxApp.mainScope.launch(Dispatchers.IO) {
+                        saveCalHistory(message.data)
+                    }
+                }
+            }
+
+            AidexXOperation.AUTO_UPDATE_FULL_HISTORY -> {
+
+            }
         }
     }
 
@@ -366,100 +379,105 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
-        val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
-        LogUtil.eAiDEX("Advertising ----> $broadcast")
-        latestAdTime = SystemClock.elapsedRealtime()
-        val refreshSensorState = refreshSensorState(broadcast)
-        if (refreshSensorState) return
-        val adHistories = broadcast.history
-        latestAd = broadcast
-        if (adHistories.isNotEmpty()) {
-            if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
-                val temp = adHistories[0].glucose
-                glucose = if (malFunctionList.isNotEmpty() || isSensorExpired || temp < 0) null
-                else temp.toFloat()
-            }
-            latestHistory = adHistories[0]
-            latestHistory?.let {
-                if (it.timeOffset > 60) {
-                    EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, true)
-                }
-            }
+        if (BuildConfig.keepAlive) {
+            getController().setDynamicMode(1)
+            getController().setAutoUpdateStatus()
         } else {
-            return
-        }
-        isHistoryValid =
-            latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
-        glucoseLevel = getGlucoseLevel(glucose)
-        if (entity.sensorStartTime == null) {
-            getController().startTime
-            return
-        }
-        latestHistory?.let {
-            val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
-            if (isHistoryValid && glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
-                lastHistoryTime = historyDate
-                AidexxApp.mainScope.launch {
-//                    uploadTrend(broadcast.trend, historyDate)
+            val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
+            LogUtil.eAiDEX("Advertising ----> $broadcast")
+            latestAdTime = SystemClock.elapsedRealtime()
+            val refreshSensorState = refreshSensorState(broadcast)
+            if (refreshSensorState) return
+            val adHistories = broadcast.history
+            latestAd = broadcast
+            if (adHistories.isNotEmpty()) {
+                if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
+                    val temp = adHistories[0].glucose
+                    glucose = if (malFunctionList.isNotEmpty() || isSensorExpired || temp < 0) null
+                    else temp.toFloat()
                 }
-            }
-        }
-        targetEventIndex = latestHistory?.timeOffset ?: 1
-        if (nextEventIndex <= targetEventIndex) {
-            val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
-            if (broadcastContainsNext) {
-                AidexxApp.mainScope.launch {
-                    val historiesFromBroadcast: MutableList<AidexXHistoryEntity>
-                    withContext(Dispatchers.IO) {
-                        historiesFromBroadcast =
-                            getHistoriesFromBroadcast(nextEventIndex, adHistories)
-                    }
-                    if (historiesFromBroadcast.isNotEmpty()) {
-                        alertSetting = SettingsManager.settingEntity
-                        saveBriefHistory(historiesFromBroadcast.asReversed(), false)
+                latestHistory = adHistories[0]
+                latestHistory?.let {
+                    if (it.timeOffset > 60) {
+                        EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, true)
                     }
                 }
             } else {
-                latestHistory?.let {
-                    if (targetEventIndex > nextEventIndex) {
-                        if (newestEventIndex == targetEventIndex) {
-                            if (nextEventIndex < briefRangeStartIndex) {
-                                nextEventIndex = briefRangeStartIndex
+                return
+            }
+            isHistoryValid =
+                latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
+            glucoseLevel = getGlucoseLevel(glucose)
+            if (entity.sensorStartTime == null) {
+                getController().startTime
+                return
+            }
+            latestHistory?.let {
+                val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
+                if (isHistoryValid && glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
+                    lastHistoryTime = historyDate
+                    AidexxApp.mainScope.launch {
+//                    uploadTrend(broadcast.trend, historyDate)
+                    }
+                }
+            }
+            targetEventIndex = latestHistory?.timeOffset ?: 1
+            if (nextEventIndex <= targetEventIndex) {
+                val broadcastContainsNext = isNextInBroadcast(nextEventIndex, adHistories)
+                if (broadcastContainsNext) {
+                    AidexxApp.mainScope.launch {
+                        val historiesFromBroadcast: MutableList<AidexXHistoryEntity>
+                        withContext(Dispatchers.IO) {
+                            historiesFromBroadcast =
+                                getHistoriesFromBroadcast(nextEventIndex, adHistories)
+                        }
+                        if (historiesFromBroadcast.isNotEmpty()) {
+                            alertSetting = SettingsManager.settingEntity
+                            saveBriefHistory(historiesFromBroadcast.asReversed(), false)
+                        }
+                    }
+                } else {
+                    latestHistory?.let {
+                        if (targetEventIndex > nextEventIndex) {
+                            if (newestEventIndex == targetEventIndex) {
+                                if (nextEventIndex < briefRangeStartIndex) {
+                                    nextEventIndex = briefRangeStartIndex
+                                }
+                                getController().getHistories(nextEventIndex)
+                            } else {
+                                dataTypeNeedSync = TYPE_BRIEF
+                                getController().historyRange
                             }
-                            getController().getHistories(nextEventIndex)
-                        } else {
-                            dataTypeNeedSync = TYPE_BRIEF
-                            getController().historyRange
                         }
                     }
                 }
+                return
             }
-            return
-        }
-        val numGetHistory = 30
-        if (targetEventIndex >= nextFullEventIndex + numGetHistory
-            || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
-        ) {
-            if (newestEventIndex == targetEventIndex) {
-                if (nextFullEventIndex < rawRangeStartIndex) {
-                    nextFullEventIndex = rawRangeStartIndex
+            val numGetHistory = 30
+            if (targetEventIndex >= nextFullEventIndex + numGetHistory
+                || ((targetEventIndex >= nextFullEventIndex) && isSensorExpired)
+            ) {
+                if (newestEventIndex == targetEventIndex) {
+                    if (nextFullEventIndex < rawRangeStartIndex) {
+                        nextFullEventIndex = rawRangeStartIndex
+                    }
+                    getController().getRawHistories(nextFullEventIndex)
+                } else {
+                    dataTypeNeedSync = TYPE_RAW
+                    getController().historyRange
                 }
-                getController().getRawHistories(nextFullEventIndex)
-            } else {
-                dataTypeNeedSync = TYPE_RAW
-                getController().historyRange
+                return
             }
-            return
-        }
-        val calTimeOffset = broadcast.calTimeOffset
-        if (nextCalIndex <= calTimeOffset) {
-            if (newestCalIndex == calTimeOffset) {
-                if (nextCalIndex < calRangeStartIndex) {
-                    nextCalIndex = calRangeStartIndex
+            val calTimeOffset = broadcast.calTimeOffset
+            if (nextCalIndex <= calTimeOffset) {
+                if (newestCalIndex == calTimeOffset) {
+                    if (nextCalIndex < calRangeStartIndex) {
+                        nextCalIndex = calRangeStartIndex
+                    }
+                    getController().getCalibration(nextCalIndex)
+                } else {
+                    getController().calibrationRange
                 }
-                getController().getCalibration(nextCalIndex)
-            } else {
-                getController().calibrationRange
             }
         }
     }
@@ -521,7 +539,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             if (statusBitArray[0] == 1 && calTempBitArray[0] == 1) {
                 HomeStateManager.instance().setState(newOrUsedSensor)
                 return true
-            } else if (it.historyTimeOffset in 0..59 && it.isPaired == 1) {
+            } else if (it.historyTimeOffset in 0..59) {
                 HomeStateManager.instance().setState(warmingUp)
                 HomeStateManager.instance().setWarmingUpTimeLeft(it.historyTimeOffset)
             } else {

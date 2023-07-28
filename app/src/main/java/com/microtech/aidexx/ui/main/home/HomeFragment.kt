@@ -22,7 +22,9 @@ import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.model.DeviceModel
+import com.microtech.aidexx.common.dp2px
 import com.microtech.aidexx.common.formatToYMd
+import com.microtech.aidexx.common.getStatusBarHeight
 import com.microtech.aidexx.common.net.entity.WelfareInfo
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentHomeBinding
@@ -173,6 +175,7 @@ class HomeFragment : BaseFragment<BaseViewModel, FragmentHomeBinding>() {
     ): View {
         LogUtil.d("ChartViewModel homefragment onCreateView", TAG)
         binding = FragmentHomeBinding.inflate(layoutInflater)
+        binding.layoutActionbar.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
         initView()
         initEvent()
         return binding.root

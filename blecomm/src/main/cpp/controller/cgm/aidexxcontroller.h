@@ -11,8 +11,9 @@ class AidexXController : public BleController
 {
 public:
     static const uint16 SERVICE_UUID = 0x181F;
-    static const uint16 CHARACTERISTIC_UUID = 0x2AFF;
-    static const uint16 PRIVATE_CHARACTERISTIC_UUID = 0x2AFE;
+    static const uint16 CHARACTERISTIC_UUID = 0xF002;
+    static const uint16 PRIVATE_CHARACTERISTIC_UUID = 0xF001;
+    static const uint16 PRIVATE_CHARACTERISTIC_UUID_2 = 0xF003;
     static const uint HOST_ADDRESS_LENGTH = 6;
     static const uint SECRET_LENGTH = 16;
     static const uint KEY_LENGTH = 16;
@@ -47,7 +48,11 @@ public:
     uint16 getDefaultParamData();
     uint16 setDefaultParamData(float32 value[]);
     uint16 getSensorCheck();
-
+    
+    uint16 getAutoUpdateStatus();
+    uint16 setAutoUpdateStatus();
+    uint16 setDynamicAdvMode(uint8 mode);
+    
     uint16 reset();
     uint16 shelfMode();
     uint16 DeleteBond();
@@ -61,7 +66,7 @@ protected:
 
     uint16 getServiceUUID() const override { return SERVICE_UUID; }
     uint16 getCharacteristicUUID() const override { return CHARACTERISTIC_UUID; }
-    uint16 getPrivateCharacteristicUUID() const override { return isPaired() ? 0 : PRIVATE_CHARACTERISTIC_UUID; };
+    uint16 getPrivateCharacteristicUUID() const override { return isPaired() ? PRIVATE_CHARACTERISTIC_UUID_2 : PRIVATE_CHARACTERISTIC_UUID; };
     uint8 getPacketLength() const override { return 0; }
     uint getCommPort() const override { return 0xFF; }
     uint getHostAddressLength() const override {return HOST_ADDRESS_LENGTH;}
@@ -72,8 +77,8 @@ protected:
     bool isEncryptionEnabled() const override { return false; }
     bool isBufferEnabled() const override { return false; }
     bool isAuthenticated() const { return authenticated; }
-	bool isFrameEnabled() const { return frameEnable; }
-	bool isAcknowledgement() const { return acknowledgement; }
+    bool isFrameEnabled() const { return frameEnable; }
+    bool isAcknowledgement() const { return acknowledgement; }
 
     void setSendTimeout(int msec);
     bool sendCommand(uint8 op, uint8 *data, uint16 length, bool instantly = false);

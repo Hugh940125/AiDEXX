@@ -84,6 +84,12 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
 JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_pair
         (JNIEnv *, jobject);
 
+JNIEXPORT jint JNICALL
+Java_com_microtechmd_blecomm_controller_AidexXController_setAutoUpdateStatus(JNIEnv *env,jobject thiz);
+
+JNIEXPORT jint JNICALL
+Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEnv *env,
+                                                                           jobject thiz,jint mode);
 
 #ifdef __cplusplus
 }

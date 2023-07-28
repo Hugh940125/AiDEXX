@@ -23,6 +23,10 @@ public:
     static const uint GET_DEFAULT_PARAM = 0x0301;
     static const uint GET_SENSOR_CHECK = 0x0302;
 
+    static const uint GET_AUTO_UPDATE_STATUS = 0x0303;
+    static const uint SET_AUTO_UPDATE_STATUS = 0x0304;
+    static const uint SET_DYNAMIC_ADV_MODE = 0x0305;
+
     static const uint16 RESET = 0x0F00;
     static const uint16 SHELF_MODE = 0x0F01;
     static const uint16 DELETE_BOND = 0x0F02;
@@ -30,6 +34,9 @@ public:
     static const uint16 SET_GC_BIAS_TRIMMING = 0x0F04;
     static const uint16 SET_GC_IMEAS_TRIMMING = 0x0F05;
     
+    static const uint16 AUTO_UPDATE_FULL_HISTORY = 0xFE01;
+    static const uint16 AUTO_UPDATE_CALIBRATION = 0xFE02;
+
     static const uint16 SET_SN = 0xFF01;
 };
 

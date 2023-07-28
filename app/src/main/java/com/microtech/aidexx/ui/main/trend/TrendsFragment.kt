@@ -23,7 +23,9 @@ import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
+import com.microtech.aidexx.common.dp2px
 import com.microtech.aidexx.common.formatToYMd
+import com.microtech.aidexx.common.getStatusBarHeight
 import com.microtech.aidexx.common.millisToMinutes
 import com.microtech.aidexx.common.setDebounceClickListener
 import com.microtech.aidexx.common.user.UserInfoManager
@@ -74,6 +76,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentTrendBinding.inflate(layoutInflater)
+        binding.layoutActionbar.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
         binding.rlDateSpace.setDebounceClickListener {
             openCalendar()
         }

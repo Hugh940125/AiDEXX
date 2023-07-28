@@ -14,6 +14,8 @@ import com.microtech.aidexx.base.AfterLeaveCallback
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.base.PageActions
+import com.microtech.aidexx.common.dp2px
+import com.microtech.aidexx.common.getStatusBarHeight
 import com.microtech.aidexx.data.resource.EventUnitManager
 import com.microtech.aidexx.databinding.FragmentEventBinding
 import com.microtech.aidexx.ui.main.event.viewmodels.BaseEventViewModel
@@ -40,11 +42,9 @@ class EventFragment : BaseFragment<BaseViewModel, FragmentEventBinding>() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         BaseEventViewModel.periodMgr = EventParameterManager.instance()
-
         binding = FragmentEventBinding.inflate(layoutInflater)
-
+        binding.layoutActionbar.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
         binding.apply {
             stIndicator.setTitles(mTitles)
 

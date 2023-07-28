@@ -23,6 +23,10 @@ public class AidexXController extends BleControllerProxy {
         super.finalize();
     }
 
+    public native int setDynamicAdvMode(int mode);
+
+    public native int setAutoUpdateStatus();
+
     private native void constructor();
 
     private native void destructor();
@@ -79,6 +83,16 @@ public class AidexXController extends BleControllerProxy {
     @Override
     public void newSensor(NewSensorEntity newSensorEntity) {
         newSensor(newSensorEntity.getAidexXDatetimeEntity());
+    }
+
+    @Override
+    public int setDynamicMode(int mode) {
+        return setDynamicAdvMode(mode);
+    }
+
+    @Override
+    public int setAutoUpdate() {
+        return setAutoUpdateStatus();
     }
 
     @Override

@@ -50,6 +50,7 @@ android {
         release {
             debuggable true
             minifyEnabled false
+            buildConfigField("Boolean", "keepAlive", "true")
             buildConfigField("Boolean", "isPre", "false")
             buildConfigField("Boolean", "enableEncrypt", "false")
             buildConfigField("String", "baseUrl", "\"https://china.pancares.com\"")
@@ -64,6 +65,7 @@ android {
 
         debug {
             debuggable true
+            buildConfigField("Boolean", "keepAlive", "true")
             buildConfigField("Boolean", "isPre", "false")
             buildConfigField("Boolean", "enableEncrypt", "false")
             buildConfigField("String", "baseUrl", "\"http://192.168.222.26:5555/\"")

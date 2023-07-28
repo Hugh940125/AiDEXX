@@ -25,7 +25,9 @@ import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.entity.CalibrationInfo
 import com.microtech.aidexx.ble.device.model.DeviceModel
 import com.microtech.aidexx.common.date2ymdhm
+import com.microtech.aidexx.common.dp2px
 import com.microtech.aidexx.common.formatToYMdHm
+import com.microtech.aidexx.common.getStatusBarHeight
 import com.microtech.aidexx.common.toColor
 import com.microtech.aidexx.common.user.UserInfoManager
 import com.microtech.aidexx.databinding.FragmentBgBinding
@@ -159,6 +161,7 @@ class BgFragment : BaseFragment<BaseViewModel, FragmentBgBinding>(), View.OnClic
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentBgBinding.inflate(layoutInflater)
+        binding.layoutActionbar.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
         initView()
         return binding.root
     }

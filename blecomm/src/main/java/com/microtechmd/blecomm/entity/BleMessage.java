@@ -1,6 +1,7 @@
 package com.microtechmd.blecomm.entity;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class BleMessage implements Serializable {
 
@@ -82,5 +83,16 @@ public class BleMessage implements Serializable {
 
     public void setData(byte[] data) {
         this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return " {" +
+                "resCode=" + resCode +
+                ", operation=" + Integer.toHexString(operation) +
+                ", success=" + success +
+                ", data=" + Arrays.toString(data) +
+                ", messageType=" + messageType +
+                '}';
     }
 }

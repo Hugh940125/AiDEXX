@@ -10,28 +10,28 @@ const AidexXBroadcastEntity *AidexXBroadcastParser::getBroadcast() {
         broadcast.status = ibs->readUnsignedByte();
         broadcast.calTemp = ibs->readUnsignedByte();
         broadcast.trend = ibs->readByte();
-        while(!ibs->isEnd()) {
-            try
-            {
-                int timeOffset = (int)broadcast.timeOffset - (int)broadcast.historyCount * AidexxHistory::TIME_INTERVAL;
-                if (timeOffset <= 0)
-                    break;
-                broadcast.history[broadcast.historyCount].timeOffset = timeOffset;
-                uint16 sg_and_state = ibs->readUnsignedShort();
-                broadcast.history[broadcast.historyCount].glucose = sg_and_state & 0x3FF;
-                broadcast.history[broadcast.historyCount].status = (sg_and_state & 0xC00) >> 10;
-                broadcast.history[broadcast.historyCount].quality = ibs->readByte();
-                broadcast.history[broadcast.historyCount].isValid = (sg_and_state != 0xFFFF);
-                if (++broadcast.historyCount >= sizeof(broadcast.history) / sizeof(broadcast.history[0]))
-                    break;
-            }
-            catch (...)
-            {
-                ibs->clear();
-                LOGE("Broadcast Parse Error");
-                break;
+        
+        for (int i = 0; i < sizeof(broadcast.history) / sizeof(broadcast.history[0]); i++) {
+            int timeOffset = (int)broadcast.timeOffset - i * AidexxHistory::TIME_INTERVAL;
+            uint16 sg_and_state = ibs->readUnsignedShort();
+            uint8 quality = ibs->readUnsignedByte();
+            
+            if (sg_and_state != 0xFFFF) {
+                broadcast.historyCount++;
+                broadcast.history[i].timeOffset = timeOffset;
+                broadcast.history[i].glucose = sg_and_state & 0x3FF;
+                broadcast.history[i].status = (sg_and_state & 0xC00) >> 10;
+                broadcast.history[i].quality = quality;
+                broadcast.history[i].isValid = (sg_and_state != 0xFFFF);
             }
         }
+        
+        broadcast.calIndex = ibs->readUnsignedShort();
+
+        for (int i = 0; i < sizeof(broadcast.reserved) / sizeof(broadcast.reserved[0]); i++) {
+            broadcast.reserved[i] = ibs->readUnsignedByte();
+        }
+
         return &broadcast;
     }
     catch (...)

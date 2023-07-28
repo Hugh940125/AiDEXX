@@ -2,6 +2,7 @@ package com.microtech.aidexx.ui.main.trend
 
 import com.microtech.aidexx.base.BaseViewModel
 import com.microtech.aidexx.ble.device.model.GLUCOSE_NUM_ONE_DAY
+import com.microtech.aidexx.common.format
 import com.microtech.aidexx.utils.ThresholdManager
 import com.microtech.aidexx.utils.mmolValueDisplay
 import com.microtechmd.cgat.CGA
@@ -44,14 +45,14 @@ class TrendsViewModel : BaseViewModel() {
                         val pt = cgat.getPeriodPT(
                             doubleArrayOf(
                                 0.0,
-                                ThresholdManager.hypo.toDouble(),
-                                ThresholdManager.hyper.toDouble(),
+                                (ThresholdManager.hypo / 18).toDouble(),
+                                (ThresholdManager.hyper / 18).toDouble(),
                                 30.0
                             )
                         )
                         trendsInfo.lowPercent = oneDigitFormat.format(pt[pt.size - 1][0]).toDouble()
                         trendsInfo.highPercent = oneDigitFormat.format(pt[pt.size - 1][2]).toDouble()
-                        trendsInfo.normalPercent = 100.0 - trendsInfo.lowPercent - trendsInfo.highPercent
+                        trendsInfo.normalPercent = (100.0 - trendsInfo.lowPercent - trendsInfo.highPercent).format(1)
                         trendsInfo.lbgi = cgat.lbgi
                         if (it.historyCount > 5 * GLUCOSE_NUM_ONE_DAY) {
                             val dailyP10: DoubleArray? = getValidArray(cgat.getDailyTrendPrctile(10.0))

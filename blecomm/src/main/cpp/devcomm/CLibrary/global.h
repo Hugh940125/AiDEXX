@@ -14,7 +14,7 @@
 #elif __APPLE__
 #include <TargetConditionals.h>
 #ifdef TARGET_OS_IPHONE
-#include "MTKitBridgeC.h"
+#include "MTBleCoreBridgeC.h"
 #endif
 #else
 #define LOG_E(fmt, args...)   {printf("[ERROR] %s: ",__FILE__);printf(fmt,##args);printf("\n");fflush(stdout);}
@@ -72,6 +72,8 @@ extern "C"
 
 
 //Type definition
+
+#define BROADCAST_LENGTH    20
 
 #ifndef uint
 #define	uint				uint32

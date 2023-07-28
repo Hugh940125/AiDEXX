@@ -10,6 +10,26 @@ static AidexXController *getPtr(JNIEnv *env, jobject obj) {
     return reinterpret_cast<AidexXController *>(ptr);
 }
 
+JNIEXPORT jint
+Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEnv *env, jobject obj,jint mode) {
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->setDynamicAdvMode(mode);
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_com_microtechmd_blecomm_controller_AidexXController_setAutoUpdateStatus(JNIEnv *env, jobject obj){
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->setAutoUpdateStatus();
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
+}
+
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_constructor
         (JNIEnv *env, jobject obj) {
     auto ptr = reinterpret_cast<jlong>(new AidexXController());

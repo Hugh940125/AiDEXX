@@ -11,7 +11,7 @@
         android:id="@+id/layout_actionbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="50dp"
+        android:paddingTop="?actionBarIconSize"
         android:paddingBottom="10dp"
         app:layout_constraintBottom_toTopOf="@id/layout_state"
         app:layout_constraintTop_toTopOf="parent">

@@ -19,40 +19,36 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFu
     jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXHistoryEntity");
 
     jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>",
-                                                   "(Ljava/util/List;IIIIIIII)V");
+                                                   "(IIIILjava/util/List;II)V");
     jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIII)V");
     const AidexXFullBroadcastEntity *cbroadcast = aidexXFullBroadcastParser.getFullBroadcast();
 
     jobject listObj = newList(env);
     if (cbroadcast == NULL) {
         return env->NewObject(broad_cls, broadConstructMId,
+                              0,
+                              0,
+                              0,
+                              0,
                               listObj,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
                               0,
                               0);
     }
-    for (int i = 0; i < cbroadcast->historyCount; i++) {
-        AidexXHistoryEntity history = cbroadcast->history[i];
+    for (int i = 0; i < cbroadcast->broadcast.historyCount; i++) {
+        AidexXHistoryEntity history = cbroadcast->broadcast.history[i];
         jobject historyObject = env->NewObject(history_Class, historyConstructMId,
                                                history.timeOffset, history.glucose, history.status,
                                                history.quality, history.isValid);
         env->CallBooleanMethod(listObj, listAdd, historyObject);
     }
     return env->NewObject(broad_cls, broadConstructMId,
+                          cbroadcast->broadcast.timeOffset,
+                          cbroadcast->broadcast.status,
+                          cbroadcast->broadcast.calTemp,
+                          cbroadcast->broadcast.trend,
                           listObj,
-                          cbroadcast->historyTimeOffset,
-                          cbroadcast->calTimeOffset,
-                          cbroadcast->isPaired,
-                          cbroadcast->isInitialized,
-                          cbroadcast->historyCount,
-                          cbroadcast->status,
-                          cbroadcast->calTemp,
-                          cbroadcast->trend
+                          cbroadcast->broadcast.historyCount,
+                          cbroadcast->broadcast.calIndex
     );
 }
 

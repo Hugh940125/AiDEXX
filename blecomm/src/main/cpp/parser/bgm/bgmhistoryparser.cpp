@@ -21,8 +21,8 @@ void BgmHistoryParser::parse() {
     uint8 hour = ibs->readUnsignedByte();
     uint8 min = ibs->readUnsignedByte();
     uint8 sec = ibs->readUnsignedByte();
-    char* dateTime = (char*) malloc(25);
-    sprintf(dateTime, "%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, mon, day, hour, min, sec);
+    char dateTime[25];
+    snprintf(dateTime, sizeof(dateTime), "%.4d-%.2d-%.2d %.2d:%.2d:%.2d", year, mon, day, hour, min, sec);
     history.dateTime = string(dateTime);
 
     history.temperature = ibs->readUnsignedByte();
@@ -43,7 +43,4 @@ void BgmHistoryParser::parse() {
     history.postMeal = (history.flag >> 4) & 0x01;
     history.invalid = (history.flag >> 5) & 0x01;
     history.controlSolution = (history.flag >> 6) & 0x01;
-    
-    free(dateTime);
-    dateTime = NULL;
 }

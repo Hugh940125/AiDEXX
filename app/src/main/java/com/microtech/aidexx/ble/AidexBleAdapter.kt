@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.ble.device.work.StartScanWorker
 import com.microtech.aidexx.ble.device.work.StopScanWorker
@@ -264,21 +265,6 @@ class AidexBleAdapter private constructor() : BleAdapter() {
         }
     }
 
-    fun refreshDeviceCache() {
-        if (mBluetoothGatt != null) {
-            try {
-                val localBluetoothGatt = mBluetoothGatt
-                val localMethod = localBluetoothGatt?.javaClass?.getMethod(
-                    "refresh", *arrayOfNulls(0)
-                )
-                val result = localMethod?.invoke(localBluetoothGatt, *arrayOfNulls(0))
-                eAiDEX("Refresh bluetooth gatt device cache-->$result")
-            } catch (localException: java.lang.Exception) {
-                eAiDEX("An exception occurred while refreshing device")
-            }
-        }
-    }
-
     @SuppressLint("MissingPermission")
     private fun closeGatt() {
         if (mBluetoothGatt != null) {
@@ -335,8 +321,10 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     }
                 }
                 eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
-                workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
-                workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
+                if (!BuildConfig.keepAlive){
+                    workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
+                    workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
+                }
             } else {
                 val pieces = data.size % 20
                 for (i in 0 until pieces) {

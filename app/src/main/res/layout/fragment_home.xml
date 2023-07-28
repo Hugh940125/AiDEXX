@@ -203,7 +203,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/transparent"
-        android:paddingTop="50dp"
         android:paddingBottom="5dp"
         app:layout_constraintBottom_toTopOf="@id/layout_state"
         app:layout_constraintTop_toTopOf="parent">

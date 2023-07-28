@@ -1,13 +1,15 @@
 #ifndef DEVCOMMCLASS_H
 #define DEVCOMMCLASS_H
 
-#include "CLibrary/global.h"
+#ifdef __cplusplus
+
+#include "../devcomm/CLibrary/global.h"
 
 #define ENABLE_CRC16_CCITT  1
 #define ENABLE_ENCRYPTION   1
 
-#define DEV_COMM_TYPE_0         0
-#define DEV_COMM_TYPE_1         1
+#define DEV_COMM_TYPE_0         0   //AiDEX
+#define DEV_COMM_TYPE_1         1   //AiDEX X
 #define DEV_COMM_TYPE_COUNT     2
 
 class AesEncryptor;
@@ -31,6 +33,7 @@ public:
     virtual int setPacketLength(uint8 packetLength) = 0;
     virtual int send(int targetPort, int mode, int operation, int parameter, uint8 *data, uint16 length) = 0;
     virtual int receive(const uint8 *data, uint16 length) = 0;
+    virtual int receive(uint16 uuid, const uint8 *data, uint16 length) = 0;
     virtual AesEncryptor *getEncryptor() { return NULL; }
     virtual void turnOffEncryption() = 0;
     virtual void readyForEncryption(const uint8 *data, uint16 length) = 0;
@@ -58,6 +61,7 @@ public:
     int setPacketLength(uint8 packetLength) override;
     int send(int targetPort, int mode, int operation, int parameter, uint8 *data, uint16 length) override;
     int receive(const uint8 *data, uint16 length) override;
+    int receive(uint16 uuid, const uint8 *data, uint16 length) override;
     void turnOffEncryption() override;
     void readyForEncryption(const uint8 *data, uint16 length) override;
     void updateEncryption(const uint8 *data, uint16 length) override;
@@ -79,6 +83,7 @@ public:
     int setPacketLength(uint8 packetLength) override;
     int send(int targetPort, int mode, int operation, int parameter, uint8 *data, uint16 length) override;
     int receive(const uint8 *data, uint16 length) override;
+    int receive(uint16 uuid, const uint8 *data, uint16 length) override;
     AesEncryptor *getEncryptor() override { return encryptor; }
     void turnOffEncryption() override;
     void readyForEncryption(const uint8 *data, uint16 length) override;
@@ -97,5 +102,7 @@ private:
     DevComm2& operator=(const DevComm2&);
     ~DevComm2();
 };
+
+#endif
 
 #endif // DEVCOMMCLASS_H

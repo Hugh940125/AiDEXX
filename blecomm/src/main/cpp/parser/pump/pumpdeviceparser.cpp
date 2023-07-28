@@ -22,12 +22,9 @@ void PumpDeviceParser::parse() {
     uint8 edition2 = ibs->readUnsignedByte();
     uint8 edition3 = ibs->readUnsignedByte();
     uint8 edition4 = ibs->readUnsignedByte();
-    char* edition = (char*) malloc(16);
-    sprintf(edition, "%d.%d.%d.%d", edition1, edition2, edition3, edition4);
+    char edition[16];
+    snprintf(edition, sizeof(edition), "%d.%d.%d.%d", edition1, edition2, edition3, edition4);
     device.edition = string(edition);
 
     device.capacity = ibs->readUnsignedInt();
-    
-    free(edition);
-    edition = NULL;
 }

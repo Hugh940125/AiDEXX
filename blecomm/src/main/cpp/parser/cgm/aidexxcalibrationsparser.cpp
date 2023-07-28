@@ -7,22 +7,23 @@ bool AidexXCalibrationsParser::hasNext() {
 }
 
 const AidexXCalibrationEntity *AidexXCalibrationsParser::getCalibration() {
-    try {
+    try
+    {
         if (first) {
             calibration.index = ibs->readUnsignedShort();
             first = false;
         } else {
             calibration.index++;
         }
-        calibration.timeOffset = ibs->readUnsignedShort();
+        calibration.timeOffset = ibs->readUnsignedShort(); 
         calibration.referenceGlucose = ibs->readUnsignedShort();
-//        calibration.cf = ibs->readUnsignedShort();
-        calibration.cf = ibs->readShort();
-        calibration.offset = ibs->readShort();
+        calibration.cf = (float32)(ibs->readShort()) / 100.0;
+        calibration.offset = (float32)(ibs->readShort()) / 100.0;
         calibration.isValid = (calibration.referenceGlucose != 0xFFFF);
         return &calibration;
     }
-    catch (...) {
+    catch (...)
+    {
         ibs->clear();
         LOGE("Calibration Parse Error");
         return NULL;

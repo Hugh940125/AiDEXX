@@ -22,6 +22,13 @@ public class AidexXOperation {
     public static int GET_CALIBRATION_RANGE = 0x0206;
     public static int GET_CALIBRATION = 0x0207;
 
+    public static int GET_AUTO_UPDATE_STATUS = 0x0303;
+    public static int SET_AUTO_UPDATE_STATUS = 0x0304;
+    public static int SET_DYNAMIC_ADV_MODE = 0x0305;
+
+    public static int AUTO_UPDATE_FULL_HISTORY = 0xFE01;
+    public static int AUTO_UPDATE_CALIBRATION = 0xFE02;
+
     public static int SET_DEFAULT_PARAM = 0x0300;
     public static int GET_DEFAULT_PARAM = 0x0301;
     public static int GET_SENSOR_CHECK = 0x0302;

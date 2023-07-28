@@ -40,8 +40,7 @@ class HistoryFragment : BaseFragment<BaseViewModel, FragmentHistoryBinding>() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentHistoryBinding.inflate(layoutInflater)
-        binding.root.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
-
+        binding.tvHistoryTitle.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
         initTitle()
         initScrollTab()
         initViewPager()
