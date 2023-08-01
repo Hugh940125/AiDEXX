@@ -3,8 +3,6 @@ package com.microtechmd.blecomm.parser;
 
 
 public class AidexXHistoryEntity {
-
-
     public int timeOffset;
     public int glucose;
     public int status;

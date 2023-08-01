@@ -72,6 +72,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
     override fun onResume() {
         super.onResume()
         MessageDistributor.instance().observer(mObserver)
+        update()
     }
 
     override fun onDestroy() {

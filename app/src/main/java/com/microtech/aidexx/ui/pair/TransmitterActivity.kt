@@ -108,6 +108,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (window.decorView.visibility == View.VISIBLE) {
                     lifecycleScope.launch {
                         Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
+                        AidexBleAdapter.getInstance().executeDisconnect()
                         delay(2500)
                         ActivityUtil.finishToMain()
                     }

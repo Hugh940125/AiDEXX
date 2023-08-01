@@ -65,6 +65,8 @@ add_library( # Sets the name of the library.
         src/main/cpp/parser/cgm/aidexxscanresponseparser.cpp
         src/main/cpp/parser/cgm/aidexxhistoriesparser.cpp
         src/main/cpp/parser/bgm/bgmdeviceparser.cpp
+        src/main/cpp/parser/cgm/aidexxinstanthistoryparser.cpp
+        src/main/cpp/parser/cgm/aidexxdeviceparser.cpp
         src/main/cpp/parser/bgm/bgmhistoryparser.cpp
         src/main/cpp/parser/bgm/bgmstateparser.cpp
         src/main/cpp/parser/pump/pumpbasalprofileparser.cpp

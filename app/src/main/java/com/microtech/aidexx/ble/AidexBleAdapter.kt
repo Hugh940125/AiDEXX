@@ -161,6 +161,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
 
                     FOUND_SERVER -> {
                         //根据指定的服务uuid获取指定的服务
+                        characteristicsMap.clear()
                         val gattService = mBluetoothGatt!!.getService(serviceUUID.toUuid())
                         //根据指定特征值uuid获取指定的特征值
                         if (gattService != null) {
@@ -177,8 +178,10 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                             }
                             //设置特征值通知,即设备的值有变化时会通知该特征值，即回调方法onCharacteristicChanged会有该通知
                             if (privateCharacteristic == null) {
-                                mCharacteristic = null
-                                setNotify(normalCharacteristic)
+                                normalCharacteristic?.let {
+                                    mCharacteristic = null
+                                    setNotify(it)
+                                }
                             } else {
                                 for ((key, characteristic) in characteristicsMap) {
                                     if (key == characteristicUUID) {

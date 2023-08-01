@@ -52,9 +52,10 @@ import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.entity.BleMessage
+import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
 import com.microtechmd.blecomm.parser.AidexXCalibrationEntity
-import com.microtechmd.blecomm.parser.AidexXFullBroadcastEntity
 import com.microtechmd.blecomm.parser.AidexXHistoryEntity
+import com.microtechmd.blecomm.parser.AidexXInstantHistoryEntity
 import com.microtechmd.blecomm.parser.AidexXParser
 import com.microtechmd.blecomm.parser.AidexXRawHistoryEntity
 import io.objectbox.kotlin.equal
@@ -239,7 +240,92 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
 
             AidexXOperation.AUTO_UPDATE_FULL_HISTORY -> {
+                if (UserInfoManager.instance().isLogin()) {
+                    saveHistoryFromLongConnect(message.data)
+                }
+            }
+        }
+    }
 
+    private fun saveHistoryFromLongConnect(data: ByteArray) {
+        val historyEntity = AidexXParser.getAidexXInstantHistory<AidexXInstantHistoryEntity>(data)
+        LogUtil.eAiDEX("history from long connect: ${historyEntity.toString()}")
+        if (historyEntity.history == null || historyEntity.raw == null) {
+            return
+        }
+        if (entity.sensorStartTime == null) {
+            getController().startTime
+            return
+        }
+        latestAdInfo = Pair(historyEntity.timeOffset, historyEntity.calTemp)
+        val refreshSensorState =
+            refreshSensorState(historyEntity.status, historyEntity.calTemp, historyEntity.timeOffset)
+        if (refreshSensorState) return
+        newestEventIndex = historyEntity.timeOffset
+        newestCalIndex = historyEntity.calIndex
+        latestAdTime = SystemClock.elapsedRealtime()
+        if (latestHistory == null || historyEntity.timeOffset != latestHistory?.timeOffset) {
+            val temp = historyEntity.history.glucose
+            glucose = if (malFunctionList.isNotEmpty() || isSensorExpired || temp < 0) null
+            else temp.toFloat()
+        }
+        latestHistory = historyEntity.history
+        latestHistory?.let {
+            if (it.timeOffset > 60) {
+                EventBusManager.send(EventBusKey.UPDATE_NOTIFICATION, true)
+            }
+            isHistoryValid =
+                latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
+            glucoseLevel = getGlucoseLevel(glucose)
+            val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
+            lastHistoryTime = historyDate
+            if (isHistoryValid && glucose != null) {
+                AidexxApp.mainScope.launch {
+//                    uploadTrend(broadcast.trend, historyDate)
+                }
+            }
+            targetEventIndex = latestHistory?.timeOffset ?: 1
+            if (nextEventIndex <= targetEventIndex) {
+                if (nextEventIndex == latestHistory?.timeOffset) {
+                    AidexxApp.mainScope.launch {
+                        alertSetting = SettingsManager.settingEntity
+                        saveBriefHistory(mutableListOf(historyEntity.history), false)
+                    }
+                } else {
+                    if (targetEventIndex > nextEventIndex) {
+                        if (newestEventIndex == targetEventIndex) {
+                            if (nextEventIndex < briefRangeStartIndex) {
+                                nextEventIndex = briefRangeStartIndex
+                            }
+                            getController().getHistories(nextEventIndex)
+                        } else {
+                            dataTypeNeedSync = TYPE_BRIEF
+                            getController().historyRange
+                        }
+                    }
+                }
+            }
+            if (targetEventIndex >= nextFullEventIndex) {
+                if (newestEventIndex == targetEventIndex) {
+                    if (nextFullEventIndex < rawRangeStartIndex) {
+                        nextFullEventIndex = rawRangeStartIndex
+                    }
+                    getController().getRawHistories(nextFullEventIndex)
+                } else {
+                    dataTypeNeedSync = TYPE_RAW
+                    getController().historyRange
+                }
+            }
+        }
+        val calTimeOffset = historyEntity.calIndex
+        if (nextCalIndex <= calTimeOffset) {
+            if (newestCalIndex == calTimeOffset) {
+                if (nextCalIndex < calRangeStartIndex) {
+                    nextCalIndex = calRangeStartIndex
+                }
+                getController().getCalibration(nextCalIndex)
+            } else {
+                getController().calibrationRange
             }
         }
     }
@@ -379,17 +465,18 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     override
     fun handleAdvertisement(data: ByteArray) {
+        val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data) ?: return
+        LogUtil.eAiDEX("Advertising ----> $broadcast")
+        latestAdTime = SystemClock.elapsedRealtime()
+        val refreshSensorState =
+            refreshSensorState(broadcast.status, broadcast.calTemp, broadcast.timeOffset)
+        if (refreshSensorState) return
         if (BuildConfig.keepAlive) {
             getController().setDynamicMode(1)
             getController().setAutoUpdateStatus()
         } else {
-            val broadcast = AidexXParser.getFullBroadcast<AidexXFullBroadcastEntity>(data) ?: return
-            LogUtil.eAiDEX("Advertising ----> $broadcast")
-            latestAdTime = SystemClock.elapsedRealtime()
-            val refreshSensorState = refreshSensorState(broadcast)
-            if (refreshSensorState) return
             val adHistories = broadcast.history
-            latestAd = broadcast
+            latestAdInfo = Pair(broadcast.timeOffset, broadcast.calTemp)
             if (adHistories.isNotEmpty()) {
                 if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
                     val temp = adHistories[0].glucose
@@ -414,8 +501,8 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             }
             latestHistory?.let {
                 val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
-                if (isHistoryValid && glucose != null && (lastHistoryTime == null || lastHistoryTime?.time != historyDate.time)) {
-                    lastHistoryTime = historyDate
+                lastHistoryTime = historyDate
+                if (isHistoryValid && glucose != null) {
                     AidexxApp.mainScope.launch {
 //                    uploadTrend(broadcast.trend, historyDate)
                     }
@@ -468,7 +555,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
                 return
             }
-            val calTimeOffset = broadcast.calTimeOffset
+            val calTimeOffset = broadcast.timeOffset
             if (nextCalIndex <= calTimeOffset) {
                 if (newestCalIndex == calTimeOffset) {
                     if (nextCalIndex < calRangeStartIndex) {
@@ -522,38 +609,35 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     }
 
     override fun isAllowCalibration(): Boolean {
-        latestAd?.let {
-            val entity = latestAd as AidexXFullBroadcastEntity
-            return entity.calTemp != History.CALIBRATION_NOT_ALLOWED && entity.historyTimeOffset > 60 * 6
+        latestAdInfo?.let {
+            return it.second != History.CALIBRATION_NOT_ALLOWED && it.first > 60 * 6
                     && latestAdTime != 0L && abs(SystemClock.elapsedRealtime() - latestAdTime) <= 60 * 1000
         }
         return false
     }
 
-    private fun refreshSensorState(broadcast: AidexXFullBroadcastEntity): Boolean {
-        broadcast.let {
-            for (i in 0 until STATUS_BITS) {
-                statusBitArray[i] = broadcast.status shr i and 0x1
-                calTempBitArray[i] = broadcast.calTemp shr i and 0x1
-            }
-            if (statusBitArray[0] == 1 && calTempBitArray[0] == 1) {
-                HomeStateManager.instance().setState(newOrUsedSensor)
-                return true
-            } else if (it.historyTimeOffset in 0..59) {
-                HomeStateManager.instance().setState(warmingUp)
-                HomeStateManager.instance().setWarmingUpTimeLeft(it.historyTimeOffset)
-            } else {
-                HomeStateManager.instance().setState(glucosePanel)
-            }
-            isSensorExpired = statusBitArray[0] == 1 && calTempBitArray[0] == 0
-            onCalibrationPermitChange?.invoke(!(calTempBitArray[1] == 1 || broadcast.historyTimeOffset < 60 * 6))
-            malFunctionList.clear()
-            if (statusBitArray[5] == 1) malFunctionList.add(History.GENERAL_DEVICE_FAULT)
-            if (statusBitArray[3] == 1) malFunctionList.add(History.SENSOR_MALFUNCTION)
-            if (statusBitArray[2] == 1) malFunctionList.add(History.SENSOR_TYPE_INCORRECT_FOR_DEVICE)
-            if (statusBitArray[4] == 1) malFunctionList.add(History.DEVICE_SPECIFIC_ALERT)
-            if (statusBitArray[1] == 1) malFunctionList.add(History.DEVICE_BATTERY_LOW)
+    private fun refreshSensorState(status: Int, calTemp: Int, timeOffset: Int): Boolean {
+        for (i in 0 until STATUS_BITS) {
+            statusBitArray[i] = status shr i and 0x1
+            calTempBitArray[i] = calTemp shr i and 0x1
         }
+        if (statusBitArray[0] == 1 && calTempBitArray[0] == 1) {
+            HomeStateManager.instance().setState(newOrUsedSensor)
+            return true
+        } else if (timeOffset in 0..59) {
+            HomeStateManager.instance().setState(warmingUp)
+            HomeStateManager.instance().setWarmingUpTimeLeft(timeOffset)
+        } else {
+            HomeStateManager.instance().setState(glucosePanel)
+        }
+        isSensorExpired = statusBitArray[0] == 1 && calTempBitArray[0] == 0
+        onCalibrationPermitChange?.invoke(!(calTempBitArray[1] == 1 || timeOffset < 60 * 6))
+        malFunctionList.clear()
+        if (statusBitArray[5] == 1) malFunctionList.add(History.GENERAL_DEVICE_FAULT)
+        if (statusBitArray[3] == 1) malFunctionList.add(History.SENSOR_MALFUNCTION)
+        if (statusBitArray[2] == 1) malFunctionList.add(History.SENSOR_TYPE_INCORRECT_FOR_DEVICE)
+        if (statusBitArray[4] == 1) malFunctionList.add(History.DEVICE_SPECIFIC_ALERT)
+        if (statusBitArray[1] == 1) malFunctionList.add(History.DEVICE_BATTERY_LOW)
         return false
     }
 
@@ -615,7 +699,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 calibrateEntity.calibrationId = calibrateEntity.updateCalibrationId()
                 calibrateEntity.cf = (calibration.cf / 100).roundTwoDigits()
                 calibrateEntity.offset = (calibration.offset / 100).roundTwoDigits()
-                calibrateEntity.referenceGlucose = calibration.referenceGlucose
+                calibrateEntity.referenceGlucose = calibration.referenceGlucose.toFloat()
                 calibrateEntity.isValid = calibration.isValid
                 calibrateEntity.uploadState = 1
                 tempCalList.add(calibrateEntity)

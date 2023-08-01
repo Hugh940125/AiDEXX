@@ -6,12 +6,14 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.device.TransmitterManager
 import com.microtech.aidexx.databinding.ActivityTransOperationBinding
 import com.microtech.aidexx.utils.ActivityUtil
 import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.utils.eventbus.EventBusKey
 import com.microtech.aidexx.utils.eventbus.EventBusManager
+import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.controller.BleControllerInfo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,6 +38,8 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
             if (data) {
                 if (key == EventBusKey.EVENT_PAIR_RESULT) {
                     lifecycleScope.launch {
+                        Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
+                        AidexBleAdapter.getInstance().executeDisconnect()
                         delay(2500)
                         ActivityUtil.finishToMain()
                     }

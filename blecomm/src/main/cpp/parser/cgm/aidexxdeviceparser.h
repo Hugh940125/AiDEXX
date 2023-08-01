@@ -3,8 +3,8 @@
 
 #ifdef __cplusplus
 
-#include "global.h"
-#include "streamparser.h"
+#include "../devcomm/CLibrary/global.h"
+#include "../parser/streamparser.h"
 #include "aidexxentities.h"
 
 class InputByteStream;

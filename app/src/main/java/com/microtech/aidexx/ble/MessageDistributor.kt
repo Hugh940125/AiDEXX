@@ -3,8 +3,10 @@ package com.microtech.aidexx.ble
 import android.content.Context
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.microtech.aidexx.utils.LogUtil
+import com.microtech.aidexx.utils.StringUtils
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.entity.BleMessage
+import okhttp3.internal.toHexString
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -54,7 +56,7 @@ class MessageDistributor {
 
     fun send(message: BleMessage) {
         if (message.operation != CgmOperation.DISCOVER) {
-            LogUtil.eAiDEX("Operation:${message.operation}, Success:${message.isSuccess}")
+            LogUtil.eAiDEX("Operation:${message.operation.toHexString()}, Success:${message.isSuccess}, data:${StringUtils.binaryToHexString(message.data)}")
         }
         if (topObserver != null) {
             topObserver?.onMessage(message)

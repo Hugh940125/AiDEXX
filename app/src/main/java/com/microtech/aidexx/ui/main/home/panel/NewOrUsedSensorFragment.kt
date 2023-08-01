@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
+import com.microtech.aidexx.ble.AidexBleAdapter
 import com.microtech.aidexx.ble.MessageDistributor
 import com.microtech.aidexx.ble.MessageObserver
 import com.microtech.aidexx.ble.device.TransmitterManager
@@ -65,6 +66,7 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     }
 
                     AidexXOperation.SET_NEW_SENSOR -> {
+                        AidexBleAdapter.getInstance().executeDisconnect()
                         TransmitterManager.instance().getDefault()?.reset()
                     }
 

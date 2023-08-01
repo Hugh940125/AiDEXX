@@ -284,7 +284,7 @@ void Ble::onAdvertiseDecoded(string address, string name, int32 rssi, const char
 }
 
 void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char *data, uint16 length) {
-    if (state != SCANNING) return;
+//    if (state != SCANNING) return;
 
     string name;
     string sn;

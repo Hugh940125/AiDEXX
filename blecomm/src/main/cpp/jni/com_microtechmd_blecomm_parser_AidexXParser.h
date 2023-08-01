@@ -8,6 +8,11 @@
 extern "C" {
 #endif
 
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
+        (JNIEnv *, jclass, jbyteArray);
+
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
+        (JNIEnv *, jclass, jbyteArray);
 
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
         (JNIEnv *, jclass, jbyteArray);
@@ -22,6 +27,9 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
         (JNIEnv *, jclass, jbyteArray);
 
 JNIEXPORT jfloatArray JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getParam
+        (JNIEnv *, jclass, jbyteArray);
+
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXInstantHistory
         (JNIEnv *, jclass, jbyteArray);
 
 #ifdef __cplusplus

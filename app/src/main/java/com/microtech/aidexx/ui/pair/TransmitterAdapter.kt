@@ -36,13 +36,15 @@ class TransmitterAdapter(val context: Context) : RecyclerView.Adapter<Transmitte
     }
 
     override fun onBindViewHolder(holder: TransmitterViewHolder, position: Int) {
-        if (mList.isNotEmpty()){
+        if (mList.isNotEmpty()) {
             holder.bind.tvSn.text = buildString {
                 append("AiDEX X-")
                 append(mList[position].sn)
             }
             holder.bind.transItem.setOnClickListener {
-                onPairClick?.invoke(mList[position])
+                if (mList.isNotEmpty() && mList.size > position) {
+                    onPairClick?.invoke(mList[position])
+                }
             }
             holder.bind.tvTransPairState.isVisible = false
             holder.bind.tvMoreDevice.isVisible = (position == mList.size - 1 && canShowMore)

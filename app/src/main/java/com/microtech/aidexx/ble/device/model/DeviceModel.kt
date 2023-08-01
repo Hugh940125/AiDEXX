@@ -33,7 +33,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
     var nextFullEventIndex = 0
     var nextCalIndex = 0
     var latestAdTime = 0L
-    var latestAd: Any? = null
+    var latestAdInfo: Pair<Int, Int>? = null
     var glucose: Float? = null
     var lastHistoryTime: Date? = null
     var controller: BleController? = null
@@ -57,8 +57,10 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         }
 
     enum class GlucoseLevel { LOW, NORMAL, HIGH }
-    enum class GlucoseTrend(val index: Int) { FAST_FALL(-3), FALL(-2), SLOW_FALL(-1),
-        STEADY(0), SLOW_UP(1), UP(2), FAST_UP(3), UNKNOWN(-99) }
+    enum class GlucoseTrend(val index: Int) {
+        FAST_FALL(-3), FALL(-2), SLOW_FALL(-1),
+        STEADY(0), SLOW_UP(1), UP(2), FAST_UP(3), UNKNOWN(-99)
+    }
 
     fun deviceId(): String? {
         return entity.id
