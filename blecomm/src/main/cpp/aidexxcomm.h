@@ -12,7 +12,6 @@
 #include "parser/cgm/aidexxbroadcastparser.h"
 #include "parser/cgm/aidexxdeviceparser.h"
 #include "parser/cgm/aidexxscanresponseparser.h"
-#include "parser/cgm/aidexxfullbroadcastparser.h"
 #include "parser/cgm/aidexxhistoriesparser.h"
 #include "parser/cgm/aidexxinstanthistoryparser.h"
 #include "parser/cgm/aidexxcalibrationsparser.h"

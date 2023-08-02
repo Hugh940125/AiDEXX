@@ -25,6 +25,7 @@ public:
     static const uint KEY_LENGTH = 16;
 
     explicit CgmController();
+    explicit CgmController(const BleControllerInfo &info);
 
     // CGM初始设置
     void initialSettings(float32 hypo, float32 hyper);
@@ -73,8 +74,8 @@ protected:
     bool isEncryptionEnabled() const override { return true; }
     bool isBufferEnabled() const override { return true; }
     bool isAuthenticated() const { return authenticated; }
-	bool isFrameEnabled() const { return frameEnable; }
-	bool isAcknowledgement() const { return acknowledgement; }
+    bool isFrameEnabled() const { return frameEnable; }
+    bool isAcknowledgement() const { return acknowledgement; }
 
     void setInfo(const BleControllerInfo &info) override;
 
@@ -82,6 +83,8 @@ protected:
     void onReceive(uint16 op, bool success, const uint8 *data = 0, uint16 length = 0) override;
 
 private:
+    void initialize();
+    
     float32 hypo;
     float32 hyper;
     uint8 sensorIndex;

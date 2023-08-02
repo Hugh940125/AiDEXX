@@ -61,7 +61,6 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
         super.onCreate(savedInstanceState)
         timer = Timer()
         timer?.schedule(0, 60000) {
-            handler.removeMessages(REFRESH_PANEL)
             handler.sendEmptyMessage(REFRESH_PANEL)
         }
         EventBusManager.onReceive<Boolean>(EventBusKey.EVENT_PAIR_RESULT, this) {
@@ -72,7 +71,7 @@ class GlucosePanelFragment : BaseFragment<BaseViewModel, FragmentGlucosePanelBin
     override fun onResume() {
         super.onResume()
         MessageDistributor.instance().observer(mObserver)
-        update()
+        handler.sendEmptyMessage(REFRESH_PANEL)
     }
 
     override fun onDestroy() {

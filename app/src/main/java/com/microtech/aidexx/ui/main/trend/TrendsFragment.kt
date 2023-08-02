@@ -76,7 +76,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentTrendBinding.inflate(layoutInflater)
-        binding.layoutActionbar.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0 )
+        binding.layoutActionbar.setPadding(0, getStatusBarHeight() + 10.dp2px(), 0, 0)
         binding.rlDateSpace.setDebounceClickListener {
             openCalendar()
         }
@@ -293,12 +293,14 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                 return if (value.toInt() < 10) "0${value.toInt()}:00" else "${value.toInt()}:00"
             }
         }
+
         val yAxis: YAxis = binding.agpChart.axisLeft
         yAxis.setDrawAxisLine(false)
         yAxis.setDrawGridLines(true)
         yAxis.setDrawLabels(true)
         yAxis.gridColor = lineColor
         yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+
         val limitLineLow = LimitLine(
             (ThresholdManager.hypo).toGlucoseValue(), ""
         )
@@ -309,6 +311,7 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         //设置警告线的宽度
         limitLineLow.lineWidth = 0.5f
         yAxis.addLimitLine(limitLineLow)
+
         val limitLineHigh = LimitLine(
             (ThresholdManager.hyper).toGlucoseValue(), ""
         )
@@ -340,61 +343,59 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
 
                 UnitManager.GlucoseUnit.MG_PER_DL -> {
                     yAxis.axisMinimum = 0f
-                    yAxis.axisMaximum = 540f
+                    yAxis.axisMaximum = 600f
                 }
             }
         }
+
         val lines = floatArrayOf(20f, 1000f)
         xAxis.setGridDashedLine(DashPathEffect(lines, 0f));
         xAxis.gridLineWidth = 1f
         yAxis.setLabelCount(5, true)
         yAxis.textSize = 12f
         yAxis.textColor = textColor
+
         binding.agpChart.axisLeft.isEnabled = true
         binding.agpChart.axisRight.isEnabled = false
+
         val lineData = LineData()
-        if (dailyMean != null && daily90 != null && daily10 != null) {
+        if (daily90 != null && daily10 != null) {
             val p90Entries: MutableList<Entry> = ArrayList()
-            if (daily90.any { it != 0.0 }) {
-                for (i in 0..287) {
-                    p90Entries.add(
-                        Entry(
-                            24f / 288 * (i.toFloat() + 0.5f),
-                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily90[i].toFloat() else daily90[i].toFloat() * 18
-                        )
+            for (i in 0..287) {
+                p90Entries.add(
+                    Entry(
+                        24f / 288 * (i.toFloat() + 0.5f),
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily90[i].toFloat() else daily90[i].toFloat() * 18
                     )
-                }
+                )
             }
             val p90DataSet = LineDataSet(p90Entries, "")
-            p90DataSet.setDrawIcons(false)
             p90DataSet.setDrawValues(false)
-            p90DataSet.isHighlightEnabled = false
             p90DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p90DataSet.setDrawCircles(false)
             val color90 = ThemeManager.getTypeValue(context, R.attr.colorTrendChart90)
             p90DataSet.color = color90
             p90DataSet.lineWidth = 0f
+
             val p10Entries: MutableList<Entry> = ArrayList()
-            if (daily10.any { it != 0.0 }) {
-                for (i in 0..287) {
-                    p10Entries.add(
-                        Entry(
-                            24f / 288 * (i.toFloat() + 0.5f),
-                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily10[i].toFloat() else daily10[i].toFloat() * 18
-                        )
+            for (i in 0..287) {
+                p10Entries.add(
+                    Entry(
+                        24f / 288 * (i.toFloat() + 0.5f),
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily10[i].toFloat() else daily10[i].toFloat() * 18
                     )
-                }
+                )
             }
             val p10DataSet = LineDataSet(p10Entries, "")
-            p10DataSet.setDrawIcons(false)
             p10DataSet.setDrawValues(false)
-            p10DataSet.isHighlightEnabled = false
             p10DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p10DataSet.setDrawCircles(false)
-            p10DataSet.color = resources.getColor(R.color.transparent)
+            p10DataSet.color = color90
             p10DataSet.lineWidth = 0f
-            p90DataSet.setDrawFilled(true)
+
+            p90DataSet.setDrawFilled(false)
             p90DataSet.fillColor = color90
+            p90DataSet.fillAlpha = 100
             p90DataSet.fillFormatter = object : IFillFormatter {
                 override fun getFillLinePosition(
                     dataSet: ILineDataSet?,
@@ -413,48 +414,42 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
             lineData.addDataSet(p90DataSet)
             lineData.addDataSet(p10DataSet)
         }
-        if (dailyMean != null && daily75 != null && daily25 != null) {
+
+        if (daily75 != null && daily25 != null) {
             val p75Entries: MutableList<Entry> = ArrayList()
-            if (daily75.any { it != 0.0 }) {
-                for (i in 0..287) {
-                    p75Entries.add(
-                        Entry(
-                            24f / 288 * (i.toFloat() + 0.5f),
-                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily75[i].toFloat() else daily75[i].toFloat() * 18
-                        )
+            for (i in 0..287) {
+                p75Entries.add(
+                    Entry(
+                        24f / 288 * (i.toFloat() + 0.5f),
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily75[i].toFloat() else daily75[i].toFloat() * 18
                     )
-                }
+                )
             }
             val p75DataSet = LineDataSet(p75Entries, "")
-            p75DataSet.setDrawIcons(false)
             p75DataSet.setDrawValues(false)
-            p75DataSet.isHighlightEnabled = false
             p75DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p75DataSet.setDrawCircles(false)
             val color75 = ThemeManager.getTypeValue(context, R.attr.colorTrendChart75)
             p75DataSet.color = color75
             p75DataSet.lineWidth = 0f
+
             val p25Entries: MutableList<Entry> = ArrayList()
-            if (daily25.any { it != 0.0 }) {
-                for (i in 0..287) {
-                    p25Entries.add(
-                        Entry(
-                            24f / 288 * (i.toFloat() + 0.5f),
-                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily25[i].toFloat() else daily25[i].toFloat() * 18
-                        )
+            for (i in 0..287) {
+                p25Entries.add(
+                    Entry(
+                        24f / 288 * (i.toFloat() + 0.5f),
+                        if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) daily25[i].toFloat() else daily25[i].toFloat() * 18
                     )
-                }
+                )
             }
             val p25DataSet = LineDataSet(p25Entries, "")
-            p25DataSet.setDrawIcons(false)
             p25DataSet.setDrawValues(false)
-            p25DataSet.isHighlightEnabled = false
             p25DataSet.axisDependency = YAxis.AxisDependency.LEFT
             p25DataSet.setDrawCircles(false)
-            p25DataSet.color = resources.getColor(R.color.transparent)
+            p25DataSet.color = color75
             p25DataSet.lineWidth = 0f
 
-            p75DataSet.setDrawFilled(true)
+            p75DataSet.setDrawFilled(false)
             p75DataSet.fillColor = color75
             p75DataSet.fillAlpha = 100
             p75DataSet.fillFormatter = object : IFillFormatter {
@@ -472,7 +467,6 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
                     return p25DataSet
                 }
             }
-
             lineData.addDataSet(p75DataSet)
             lineData.addDataSet(p25DataSet)
         }
@@ -480,35 +474,32 @@ class TrendsFragment : BaseFragment<TrendsViewModel, FragmentTrendBinding>(), On
         if (dailyMean != null) {
             val meanEntries: MutableList<Entry> = ArrayList()
             var b = false
-            if (dailyMean.any { it != 0.0 }) {
-                for (i in 0..287) {
-                    if (dailyMean[i].isNaN()) {
-                        if (b) break else continue
-                    } else {
-                        b = true
-                        meanEntries.add(
-                            Entry(
-                                24f / 288 * (i.toFloat() + 0.5f),
-                                if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
-                            )
+            for (i in 0..287) {
+                if (dailyMean[i].isNaN()) {
+                    if (b) break else continue
+                } else {
+                    b = true
+                    meanEntries.add(
+                        Entry(
+                            24f / 288 * (i.toFloat() + 0.5f),
+                            if (UnitManager.glucoseUnit == UnitManager.GlucoseUnit.MMOL_PER_L) dailyMean[i].toFloat() else dailyMean[i].toFloat() * 18
                         )
-                    }
+                    )
                 }
             }
             val meanDataSet = LineDataSet(meanEntries, "")
-            meanDataSet.setDrawIcons(false)
             meanDataSet.setDrawValues(false)
-            meanDataSet.isHighlightEnabled = false
             meanDataSet.axisDependency = YAxis.AxisDependency.LEFT
             meanDataSet.setDrawCircles(false)
             meanDataSet.color = ThemeManager.getTypeValue(context, R.attr.colorTrendChartMain)
             meanDataSet.lineWidth = 1.6f
             lineData.addDataSet(meanDataSet)
         }
-
-        val combinedData = CombinedData()
-        combinedData.setData(lineData)
-        binding.agpChart.data = combinedData
+        if (lineData.dataSets.isNotEmpty()) {
+            val combinedData = CombinedData()
+            combinedData.setData(lineData)
+            binding.agpChart.data = combinedData
+        }
         binding.agpChart.invalidate()
     }
 

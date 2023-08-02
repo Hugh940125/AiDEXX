@@ -86,12 +86,15 @@ void BleController::destroy() {
 BleController::BleController() {
     mtu = 20;
     rxRate = 0;
+    
+    type = DEV_TYPE_UNKNOWN;
     authenticated = false;
     autoSending = true;
     messageCallback = NULL;
 }
 
 void BleController::setInfo(const BleControllerInfo &info) {
+    type = info.type;
     mac = info.address;
     name = info.name;
     sn = info.sn;

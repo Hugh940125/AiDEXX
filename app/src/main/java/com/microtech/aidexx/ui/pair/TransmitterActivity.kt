@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.microtech.aidexx.AidexxApp
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -108,7 +109,9 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (window.decorView.visibility == View.VISIBLE) {
                     lifecycleScope.launch {
                         Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
-                        AidexBleAdapter.getInstance().executeDisconnect()
+                        if (BuildConfig.keepAlive){
+                            AidexBleAdapter.getInstance().executeDisconnect()
+                        }
                         delay(2500)
                         ActivityUtil.finishToMain()
                     }

@@ -3,6 +3,7 @@ package com.microtech.aidexx.ui.pair
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.lifecycleScope
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseActivity
 import com.microtech.aidexx.base.BaseViewModel
@@ -39,7 +40,9 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
                 if (key == EventBusKey.EVENT_PAIR_RESULT) {
                     lifecycleScope.launch {
                         Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
-                        AidexBleAdapter.getInstance().executeDisconnect()
+                        if (BuildConfig.keepAlive){
+                            AidexBleAdapter.getInstance().executeDisconnect()
+                        }
                         delay(2500)
                         ActivityUtil.finishToMain()
                     }

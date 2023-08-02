@@ -1,10 +1,12 @@
 package com.microtech.aidexx.ui.main.home.panel
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import com.microtech.aidexx.BuildConfig
 import com.microtech.aidexx.R
 import com.microtech.aidexx.base.BaseFragment
 import com.microtech.aidexx.base.BaseViewModel
@@ -66,7 +68,9 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     }
 
                     AidexXOperation.SET_NEW_SENSOR -> {
-                        AidexBleAdapter.getInstance().executeDisconnect()
+                        if (BuildConfig.keepAlive){
+                            AidexBleAdapter.getInstance().executeDisconnect()
+                        }
                         TransmitterManager.instance().getDefault()?.reset()
                     }
 

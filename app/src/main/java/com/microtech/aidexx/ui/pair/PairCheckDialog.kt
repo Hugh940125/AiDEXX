@@ -72,6 +72,7 @@ class PairCheckDialog : AlertDialog {
         bind.btnReselect.setOnClickListener {
             dismiss()
         }
+        bind.etVerCode.etNumber = info.sn.length
         bind.etVerCode.isFocusable = true
         bind.etVerCode.isFocusableInTouchMode = true
         bind.etVerCode.requestFocus()
@@ -104,6 +105,7 @@ class PairCheckDialog : AlertDialog {
             val imm = mContext.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
             imm?.hideSoftInputFromWindow(bind.etVerCode.editText.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
         }
+        setCanceledOnTouchOutside(false)
         setOnShowListener {
             val imm = mContext.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
             imm?.showSoftInput(bind.etVerCode.editText, InputMethodManager.SHOW_IMPLICIT)

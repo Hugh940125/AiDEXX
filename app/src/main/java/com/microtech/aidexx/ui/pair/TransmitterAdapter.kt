@@ -42,7 +42,7 @@ class TransmitterAdapter(val context: Context) : RecyclerView.Adapter<Transmitte
                 append(mList[position].sn)
             }
             holder.bind.transItem.setOnClickListener {
-                if (mList.isNotEmpty() && mList.size > position) {
+                if (mList.size > position) {
                     onPairClick?.invoke(mList[position])
                 }
             }

@@ -25,6 +25,13 @@ bool InputByteStream::isEnd() {
     return index >= size;
 }
 
+uint8 InputByteStream::balance() {
+    if (index > size) {
+        throw -1;
+    }
+    return size - index;
+}
+
 sint8 InputByteStream::readByte() {
     if (index+1>size) {
         throw -1;

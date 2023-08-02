@@ -19,6 +19,7 @@ public:
     void skip(uint8 count);
     void clear();
     bool isEnd();
+    uint8 balance();
     sint8 readByte();
     uint8 readUnsignedByte();
     bool readBoolean();

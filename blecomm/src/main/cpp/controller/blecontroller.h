@@ -98,6 +98,7 @@ protected:
 
     static Ble *ble;
 
+    dev_type type;
     string mac;
     string name;
     string sn;

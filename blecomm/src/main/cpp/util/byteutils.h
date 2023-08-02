@@ -18,6 +18,7 @@ public:
     static string bytesToUtf8String(const char *data, uint16 length);
     static bool isUtf8String(const char *data, uint16 length);
     static string bytesToSnString(const char *address, uint16 length);
+    static string bytesToHexString(const char *data, uint16 length);
     static void bytesToSn(char *address, uint16 length);
     static void snToBytes(char *address, uint16 length);
 };

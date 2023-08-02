@@ -165,16 +165,22 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                         val gattService = mBluetoothGatt!!.getService(serviceUUID.toUuid())
                         //根据指定特征值uuid获取指定的特征值
                         if (gattService != null) {
-                            val normalCharacteristic =
-                                gattService.getCharacteristic(characteristicUUID.toUuid())
+                            val normalUuid = characteristicUUID.toUuid()
+                            val normalCharacteristic = gattService.getCharacteristic(normalUuid)
                             if (normalCharacteristic != null) {
                                 characteristicsMap[characteristicUUID] = normalCharacteristic
+                                eAiDEX("discover characters $normalUuid")
+                            } else {
+                                eAiDEX("character $normalUuid not found")
                             }
+                            val privateUuid = privateCharacteristicUUID.toUuid()
                             val privateCharacteristic =
-                                gattService.getCharacteristic(privateCharacteristicUUID.toUuid())
+                                gattService.getCharacteristic(privateUuid)
                             if (privateCharacteristic != null) {
-                                characteristicsMap[privateCharacteristicUUID] =
-                                    privateCharacteristic
+                                characteristicsMap[privateCharacteristicUUID] = privateCharacteristic
+                                eAiDEX("discover characters $privateUuid")
+                            } else {
+                                eAiDEX("character $privateUuid not found")
                             }
                             //设置特征值通知,即设备的值有变化时会通知该特征值，即回调方法onCharacteristicChanged会有该通知
                             if (privateCharacteristic == null) {
@@ -324,7 +330,7 @@ class AidexBleAdapter private constructor() : BleAdapter() {
                     }
                 }
                 eAiDEX("send data ----> ${binaryToHexString(data)}, uuid: ${gattCharacteristic.uuid}")
-                if (!BuildConfig.keepAlive){
+                if (!BuildConfig.keepAlive) {
                     workHandler?.removeMessages(BLE_IDLE_DISCONNECT)
                     workHandler?.sendEmptyMessageDelayed(BLE_IDLE_DISCONNECT, 1500)
                 }

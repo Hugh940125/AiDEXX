@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.text.Editable;
 import android.text.InputFilter;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -15,9 +14,11 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.microtech.aidexx.R;
+import com.microtech.aidexx.utils.DensityUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +40,7 @@ import java.util.regex.Pattern;
 
 public class VerificationCodeView extends RelativeLayout {
 
-    private LinearLayout containerEt;
+    private GridLayout containerEt;
 
     private PwdEditText et;
     // 输入框数量
@@ -87,8 +89,8 @@ public class VerificationCodeView extends RelativeLayout {
         et.setInputType(EditorInfo.TYPE_CLASS_TEXT);
 
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.VerificationCodeView, defStyleAttr, 0);
-        mEtNumber = typedArray.getInteger(R.styleable.VerificationCodeView_icv_et_number, 1);
-        mEtWidth = typedArray.getDimensionPixelSize(R.styleable.VerificationCodeView_icv_et_width, 42);
+        mEtNumber = typedArray.getInteger(R.styleable.VerificationCodeView_icv_et_number, 6);
+        mEtWidth = typedArray.getDimensionPixelSize(R.styleable.VerificationCodeView_icv_et_width, DensityUtils.dp2px(35));
         mEtDividerDrawable = typedArray.getDrawable(R.styleable.VerificationCodeView_icv_et_divider_drawable);
         mEtTextSize = typedArray.getDimensionPixelSize(R.styleable.VerificationCodeView_icv_et_text_size, (int) sp2px(16, context));
         mEtTextColor = typedArray.getColor(R.styleable.VerificationCodeView_icv_et_text_color, Color.BLACK);
@@ -117,7 +119,7 @@ public class VerificationCodeView extends RelativeLayout {
 
     // 初始UI
     private void initUI() {
-        initTextViews(getContext(), mEtNumber, mEtWidth, mEtDividerDrawable, mEtTextSize, mEtTextColor);
+        initTextViews(getContext(), mEtNumber, DensityUtils.dp2px(40), mEtDividerDrawable, DensityUtils.sp2px(16), mEtTextColor);
         initEtContainer(mPwdTextViews);
         setListener();
     }
@@ -130,7 +132,11 @@ public class VerificationCodeView extends RelativeLayout {
 
         int heightMode = MeasureSpec.getMode(mHeightMeasureSpec);
         if (heightMode == MeasureSpec.AT_MOST) {
-            mHeightMeasureSpec = MeasureSpec.makeMeasureSpec((int) dp2px(50, getContext()), MeasureSpec.EXACTLY);
+            if (mEtNumber > 6) {
+                mHeightMeasureSpec = MeasureSpec.makeMeasureSpec((int) dp2px(100, getContext()), MeasureSpec.EXACTLY);
+            } else {
+                mHeightMeasureSpec = MeasureSpec.makeMeasureSpec((int) dp2px(50, getContext()), MeasureSpec.EXACTLY);
+            }
         }
 
         super.onMeasure(widthMeasureSpec, mHeightMeasureSpec);
@@ -143,23 +149,19 @@ public class VerificationCodeView extends RelativeLayout {
         et.setCursorVisible(false);//将光标隐藏
 
         //限制只能输入中文，英文，数字
-        InputFilter typeFilter = new InputFilter() {
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                Pattern p = Pattern.compile("[0-9a-zA-Z]+");
-                Matcher m = p.matcher(source.toString());
-                if (!m.matches()) return "";
-                return null;
-            }
+        InputFilter typeFilter = (source, start, end, dest, dstart, dend) -> {
+            Pattern p = Pattern.compile("[0-9a-zA-Z]+");
+            Matcher m = p.matcher(source.toString());
+            if (!m.matches()) return "";
+            return null;
         };
         et.setFilters(new InputFilter[]{typeFilter, new InputFilter.LengthFilter(etNumber)}); //最大输入长度
         // 设置分割线的宽度
-        if (etDividerDrawable != null) {
-            etDividerDrawable.setBounds(0, 0, etDividerDrawable.getMinimumWidth(), etDividerDrawable.getMinimumHeight());
-            containerEt.setDividerDrawable(etDividerDrawable);
-        }
+//        if (etDividerDrawable != null) {
+//            etDividerDrawable.setBounds(0, 0, etDividerDrawable.getMinimumWidth(), etDividerDrawable.getMinimumHeight());
+//            containerEt.setDividerDrawable(etDividerDrawable);
+//        }
         mPwdTextViews = new PwdTextView[etNumber];
-
         for (int i = 0; i < mPwdTextViews.length; i++) {
             PwdTextView textView = new PwdTextView(context);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, etTextSize);
@@ -168,6 +170,9 @@ public class VerificationCodeView extends RelativeLayout {
             textView.setHeight(etWidth);
             textView.setFocusable(true);
             textView.setFocusableInTouchMode(true);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            layoutParams.setMargins(DensityUtils.dp2px(3), DensityUtils.dp2px(3), DensityUtils.dp2px(3), DensityUtils.dp2px(3));
+            textView.setLayoutParams(layoutParams);
             if (i == 0) {
                 textView.setBackgroundDrawable(mEtBackgroundDrawableFocus);
             } else {
@@ -183,6 +188,11 @@ public class VerificationCodeView extends RelativeLayout {
 
     //初始化存储TextView 的容器
     private void initEtContainer(TextView[] mTextViews) {
+        if (mEtNumber > 6) {
+            containerEt.setColumnCount(5);
+        } else {
+            containerEt.setColumnCount(6);
+        }
         for (TextView mTextView : mTextViews) {
             containerEt.addView(mTextView);
         }
@@ -209,7 +219,6 @@ public class VerificationCodeView extends RelativeLayout {
 
     // 给TextView 设置文字
     private void setText(String inputContent) {
-
         for (int i = 0; i < mPwdTextViews.length; i++) {
             PwdTextView tv = mPwdTextViews[i];
             if (tv.getText().toString().trim().equals("")) {

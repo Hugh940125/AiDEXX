@@ -1,5 +1,6 @@
 package com.microtech.aidexx.views.calendar
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.widget.Toast
@@ -16,6 +17,7 @@ import java.util.Calendar
 import java.util.Date
 import com.haibin.calendarview.Calendar as CalendarCustom
 
+@SuppressLint("ClickableViewAccessibility")
 class CalendarDialog(
     val context: Context,
     onRangeSelected: (Int) -> Unit,
@@ -147,6 +149,7 @@ class CalendarDialog(
         btCancel?.setOnClickListener {
             dismiss()
         }
+        contentContainer.setOnTouchListener { _, _ -> true }
         setKeyBackCancelable(true)
         setOutSideCancelable(true)
         show()

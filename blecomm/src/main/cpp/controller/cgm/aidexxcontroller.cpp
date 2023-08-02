@@ -40,6 +40,23 @@
 
 AidexXController::AidexXController() : BleController()
 {
+    initialize();
+}
+
+AidexXController::AidexXController(const BleControllerInfo &info) : BleController()
+{
+    initialize();
+    setInfo(info);
+}
+
+AidexXController::~AidexXController()
+{
+    delete defaultParam;
+}
+
+void AidexXController::initialize()
+{
+    type = DEV_TYPE_CGM_X;
     authenticated = true;
 #if ENABLE_ENCRYPTION
     authenticated = false;
@@ -49,11 +66,6 @@ AidexXController::AidexXController() : BleController()
     autoDisconnect = false;
 
     defaultParam = new DefaultParam(this);
-}
-
-AidexXController::~AidexXController()
-{
-    delete defaultParam;
 }
 
 void AidexXController::setSn(const string &sn)
@@ -118,7 +130,7 @@ uint16 AidexXController::getDeviceInfo() {
 
 uint16 AidexXController::getBroadcastData() {
     if (sendCommand(OP_GET_BRAODCAST_DATA, 0, 0)) {
-        return AidexXOperation::GET_DEVICE_INFO;
+        return AidexXOperation::GET_BROADCAST_DATA;
     } else {
         return BleOperation::BUSY;
     }
@@ -304,8 +316,22 @@ uint16 AidexXController::setGcImeasTrimming(int16 zero, uint16 scale) {
     }
 }
 
+void AidexXController::setInfo(const BleControllerInfo &info) {
+    BleController::setInfo(info);
+    int size = (int)info.params.size();
+    if (size > 0) {
+        uint8 flag = (uint8)info.params[0];
+        bleNativePaired = (flag & 0x01) > 0;
+        aesInitialized = (flag & 0x02) > 0;
+    }
+}
+
 void AidexXController::setSendTimeout(int msec) {
     DevComm::getInstance()->setSendTimeout(msec);
+}
+
+void AidexXController::setRetryCount(int count) {
+    DevComm::getInstance()->setRetryCount(count);
 }
 
 bool AidexXController::sendCommand(uint8 op, uint8 *data, uint16 length, bool instantly) {

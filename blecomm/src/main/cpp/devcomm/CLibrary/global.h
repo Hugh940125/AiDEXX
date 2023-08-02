@@ -74,6 +74,7 @@ extern "C"
 //Type definition
 
 #define BROADCAST_LENGTH    20
+#define PRIME_NUM           8365943
 
 #ifndef uint
 #define	uint				uint32

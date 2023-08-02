@@ -230,3 +230,28 @@ uint16 LibChecksum_GetChecksumPartial16Bit
 
 	return u16_ChecksumBase;
 }
+
+uint32 LibChecksum_GetChecksum32Bit
+(
+    const uint8 *u8p_Data,
+    uint16 u16_Length,
+    uint32 u32_ChecksumBase
+)
+{
+    uint8 i;
+    uint32 u32_Crc = u32_ChecksumBase;  // Initial value//0xFFFFFFFF
+    
+    while(u16_Length--)
+    {
+        u32_Crc ^= (uint32)(*u8p_Data++) << 24;// crc ^=(uint32_t)(*data)<<24; data++;
+        for (i = 0; i < 8; ++i)
+        {
+            if (u32_Crc & 0x80000000)
+                u32_Crc = (u32_Crc << 1) ^ 0x04C11DB7;
+            else
+                u32_Crc <<= 1;
+        }
+    }
+    
+    return u32_Crc;
+}

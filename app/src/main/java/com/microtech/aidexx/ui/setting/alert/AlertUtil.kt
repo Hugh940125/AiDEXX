@@ -34,7 +34,19 @@ object AlertUtil {
     private var playingSound: Int = -1
     private var vibrator: Vibrator? = null
     var alertFrequency: Long = 30.minutesToMillis()
+        get() {
+            SettingsManager.settingEntity?.let {
+                field = it.alertRate.minutesToMillis()
+            }
+            return field
+        }
     var urgentFrequency: Long = 5.minutesToMillis()
+        get() {
+            SettingsManager.settingEntity?.let {
+                field = it.urgentAlertRate.minutesToMillis()
+            }
+            return field
+        }
 
     fun init(context: Context) {
         soundMap = hashMapOf()

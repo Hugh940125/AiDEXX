@@ -35,7 +35,7 @@ public class PieChartView extends View {
     //饼状图信息列表
     private final List<PieceDataHolder> pieceDataHolders = new ArrayList<>();
     // 标记线长度
-    private float markerLineLength = 5f;
+    private float markerLineLength = 10f;
 
     public PieChartView(Context context) {
         super(context);

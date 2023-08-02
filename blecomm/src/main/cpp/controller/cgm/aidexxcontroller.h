@@ -19,7 +19,11 @@ public:
     static const uint KEY_LENGTH = 16;
 
     explicit AidexXController();
+    explicit AidexXController(const BleControllerInfo &info);
     ~AidexXController();
+    
+    bool isBleNativePaired() { return bleNativePaired; }
+    bool isAesInitialized() { return aesInitialized; }
 
     // getter
     const uint8 *getSecret() const override { return sn.size() ? snSecret1 : NULL; }
@@ -79,13 +83,18 @@ protected:
     bool isAuthenticated() const { return authenticated; }
     bool isFrameEnabled() const { return frameEnable; }
     bool isAcknowledgement() const { return acknowledgement; }
+    
+    void setInfo(const BleControllerInfo &info) override;
 
     void setSendTimeout(int msec);
+    void setRetryCount(int count);
     bool sendCommand(uint8 op, uint8 *data, uint16 length, bool instantly = false);
     bool handleCommand(uint8 port, uint8 op, uint8 param, const uint8 *data, uint16 length) override;
     void onReceive(uint16 op, bool success, const uint8 *data = 0, uint16 length = 0) override;
 
 private:
+    void initialize();
+    
     class LongAttribute
     {
     public:
@@ -129,6 +138,9 @@ private:
     };
 
     DefaultParam *defaultParam;
+    
+    bool bleNativePaired;
+    bool aesInitialized;
 };
 
 #endif // AIDEXXCONTROLLER_H

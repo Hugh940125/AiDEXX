@@ -75,6 +75,9 @@ const val TYPE_BRIEF = 1
 const val TYPE_RAW = 2
 const val STATUS_BITS = 6
 
+const val DISCOVER_BROADCAST = 1
+const val LONG_CONNECT_BROADCAST = 2
+
 class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceModel(entity) {
     companion object {
 
@@ -141,7 +144,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         when (message.operation) {
             CgmOperation.DISCOVER -> {
                 if (message.isSuccess) {
-                    handleAdvertisement(message.data)
+                    handleAdvertisement(message.data, DISCOVER_BROADCAST)
                 }
             }
 
@@ -151,6 +154,10 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                     updateStart(sensorStartTime)
                     ObjectBox.runAsync({
                         transmitterBox!!.put(entity)
+                    }, {
+                        if (BuildConfig.keepAlive) {
+                            startLongConnect()
+                        }
                     })
                 }
             }
@@ -241,30 +248,40 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
             AidexXOperation.AUTO_UPDATE_FULL_HISTORY -> {
                 if (UserInfoManager.instance().isLogin()) {
-                    saveHistoryFromLongConnect(message.data)
+                    handleLongConnectNotification(data)
+                }
+            }
+
+            AidexXOperation.GET_BROADCAST_DATA -> {
+                if (UserInfoManager.instance().isLogin()) {
+                    handleAdvertisement(data, LONG_CONNECT_BROADCAST)
                 }
             }
         }
     }
 
-    private fun saveHistoryFromLongConnect(data: ByteArray) {
+    private fun handleLongConnectNotification(data: ByteArray) {
         val historyEntity = AidexXParser.getAidexXInstantHistory<AidexXInstantHistoryEntity>(data)
-        LogUtil.eAiDEX("history from long connect: ${historyEntity.toString()}")
-        if (historyEntity.history == null || historyEntity.raw == null) {
+        LogUtil.eAiDEX("history from long connect: $historyEntity")
+        if (historyEntity == null) {
             return
         }
         if (entity.sensorStartTime == null) {
             getController().startTime
             return
         }
-        latestAdInfo = Pair(historyEntity.timeOffset, historyEntity.calTemp)
+        latestAdInfo = Pair(historyEntity.abstractEntity.timeOffset, historyEntity.abstractEntity.calTemp)
         val refreshSensorState =
-            refreshSensorState(historyEntity.status, historyEntity.calTemp, historyEntity.timeOffset)
+            refreshSensorState(
+                historyEntity.abstractEntity.status,
+                historyEntity.abstractEntity.calTemp,
+                historyEntity.abstractEntity.timeOffset
+            )
         if (refreshSensorState) return
-        newestEventIndex = historyEntity.timeOffset
-        newestCalIndex = historyEntity.calIndex
+        newestEventIndex = historyEntity.abstractEntity.timeOffset
+        newestCalIndex = historyEntity.abstractEntity.calIndex
         latestAdTime = SystemClock.elapsedRealtime()
-        if (latestHistory == null || historyEntity.timeOffset != latestHistory?.timeOffset) {
+        if (latestHistory == null || historyEntity.abstractEntity.timeOffset != latestHistory?.timeOffset) {
             val temp = historyEntity.history.glucose
             glucose = if (malFunctionList.isNotEmpty() || isSensorExpired || temp < 0) null
             else temp.toFloat()
@@ -317,7 +334,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
             }
         }
-        val calTimeOffset = historyEntity.calIndex
+        val calTimeOffset = historyEntity.abstractEntity.calIndex
         if (nextCalIndex <= calTimeOffset) {
             if (newestCalIndex == calTimeOffset) {
                 if (nextCalIndex < calRangeStartIndex) {
@@ -459,24 +476,35 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
         entity.calIndex = 0
         TransmitterManager.instance().removeDefault()
         TransmitterManager.instance().removeDb()
-        AidexBleAdapter.getInstance().stopBtScan(false)
+        if (BuildConfig.keepAlive) {
+            AidexBleAdapter.getInstance().executeDisconnect()
+        } else {
+            AidexBleAdapter.getInstance().stopBtScan(false)
+        }
         EventBusManager.send(EventBusKey.EVENT_UNPAIR_RESULT, true)
     }
 
     override
-    fun handleAdvertisement(data: ByteArray) {
+    fun handleAdvertisement(data: ByteArray, broadcastType: Int) {
         val broadcast = AidexXParser.getBroadcast<AidexXBroadcastEntity>(data) ?: return
         LogUtil.eAiDEX("Advertising ----> $broadcast")
         latestAdTime = SystemClock.elapsedRealtime()
         val refreshSensorState =
-            refreshSensorState(broadcast.status, broadcast.calTemp, broadcast.timeOffset)
+            refreshSensorState(
+                broadcast.abstractEntity.status,
+                broadcast.abstractEntity.calTemp,
+                broadcast.abstractEntity.timeOffset
+            )
         if (refreshSensorState) return
-        if (BuildConfig.keepAlive) {
-            getController().setDynamicMode(1)
-            getController().setAutoUpdateStatus()
+        if (entity.sensorStartTime == null) {
+            getController().startTime
+            return
+        }
+        if (BuildConfig.keepAlive && broadcastType == DISCOVER_BROADCAST) {
+            startLongConnect()
         } else {
             val adHistories = broadcast.history
-            latestAdInfo = Pair(broadcast.timeOffset, broadcast.calTemp)
+            latestAdInfo = Pair(broadcast.abstractEntity.timeOffset, broadcast.abstractEntity.calTemp)
             if (adHistories.isNotEmpty()) {
                 if (latestHistory == null || adHistories[0].timeOffset != latestHistory?.timeOffset) {
                     val temp = adHistories[0].glucose
@@ -495,10 +523,6 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             isHistoryValid =
                 latestHistory?.isValid == 1 && latestHistory?.status == History.STATUS_OK
             glucoseLevel = getGlucoseLevel(glucose)
-            if (entity.sensorStartTime == null) {
-                getController().startTime
-                return
-            }
             latestHistory?.let {
                 val historyDate = (it.timeOffset).toHistoryDate(entity.sensorStartTime!!)
                 lastHistoryTime = historyDate
@@ -555,7 +579,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
                 return
             }
-            val calTimeOffset = broadcast.timeOffset
+            val calTimeOffset = broadcast.abstractEntity.calIndex
             if (nextCalIndex <= calTimeOffset) {
                 if (newestCalIndex == calTimeOffset) {
                     if (nextCalIndex < calRangeStartIndex) {
@@ -567,6 +591,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
                 }
             }
         }
+    }
+
+    private fun startLongConnect() {
+        getController().setDynamicMode(1)
+        getController().setAutoUpdateStatus()
+        getController().broadcastData
     }
 
     private suspend fun uploadTrend(trendValue: Int, historyDate: Date) {

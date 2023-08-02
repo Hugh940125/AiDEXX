@@ -3,16 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <GridLayout
         android:id="@+id/container_et"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:showDividers="middle">
-
-    </LinearLayout>
+        android:showDividers="middle"/>
 
     <com.microtech.aidexx.views.codeview.PwdEditText
         android:id="@+id/et_code"

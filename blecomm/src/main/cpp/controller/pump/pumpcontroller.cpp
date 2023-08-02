@@ -8,6 +8,7 @@ static const uint32 HOURS_PER_DAY = 24;
 
 PumpController::PumpController() : BleController()
 {
+    type = DEV_TYPE_PUMP;
     authenticated = true;
 	frameEnable = false;
 	acknowledgement = true;

@@ -8,9 +8,21 @@
 
 CgmController::CgmController() : BleController()
 {
+    initialize();
+}
+
+CgmController::CgmController(const BleControllerInfo &info) : BleController()
+{
+    initialize();
+    setInfo(info);
+}
+
+void CgmController::initialize()
+{
+    type = DEV_TYPE_CGM;
     authenticated = false;
-	frameEnable = false;
-	acknowledgement = true;
+    frameEnable = false;
+    acknowledgement = true;
     autoDisconnect = false;
 
     hypo = 0;

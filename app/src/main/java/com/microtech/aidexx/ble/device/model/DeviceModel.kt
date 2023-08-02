@@ -74,7 +74,7 @@ abstract class DeviceModel(val entity: TransmitterEntity) {
         return entity.accessId != null
     }
 
-    abstract fun handleAdvertisement(data: ByteArray)
+    abstract fun handleAdvertisement(data: ByteArray, broadcastType: Int)
 
     abstract fun getController(): BleControllerProxy
 

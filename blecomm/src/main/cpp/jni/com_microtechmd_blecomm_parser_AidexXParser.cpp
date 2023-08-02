@@ -7,7 +7,6 @@
 #include "../parser/cgm/aidexxcalibrationsparser.h"
 #include "../parser/cgm/aidexxdefaultparamsparser.h"
 #include "../cgmscomm.h"
-#include "../parser/cgm/aidexxfullbroadcastparser.h"
 #include "../parser/cgm/aidexxinstanthistoryparser.h"
 
 
@@ -18,13 +17,24 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBr
     AidexXBroadcastParser cgmBroadcastParser((const char *) data, length);
     jclass broad_cls = env->FindClass("com/microtechmd/blecomm/parser/AidexXBroadcastEntity");
     jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXHistoryEntity");
-
+    jclass basic_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXAbstractEntity");
     jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>",
-                                                   "(IIIILjava/util/List;II)V");
+                                                   "(Lcom/microtechmd/blecomm/parser/AidexXAbstractEntity;Ljava/util/List;I)V");
     jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIII)V");
+    jmethodID basicConstructMId = env->GetMethodID(basic_Class, "<init>", "(IIIII)V");
     const AidexXBroadcastEntity *cbroadcast = cgmBroadcastParser.getBroadcast();
-
     jobject listObj = newList(env);
+    if (cbroadcast == NULL) {
+        jobject basic = env->NewObject(basic_Class, basicConstructMId, 0, 0, 0, 0, 0);
+        return env->NewObject(broad_cls, broadConstructMId,
+                              basic,
+                              listObj,
+                              0);
+    }
+    jobject basic = env->NewObject(basic_Class, basicConstructMId,
+                                   cbroadcast->abstract.timeOffset,
+                                   cbroadcast->abstract.status, cbroadcast->abstract.calTemp,
+                                   cbroadcast->abstract.trend, cbroadcast->abstract.calIndex);
     for (int i = 0; i < cbroadcast->historyCount; i++) {
         AidexXHistoryEntity history = cbroadcast->history[i];
         jobject historyObject = env->NewObject(history_Class, historyConstructMId,
@@ -33,56 +43,52 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBr
         env->CallBooleanMethod(listObj, listAdd, historyObject);
     }
     return env->NewObject(broad_cls, broadConstructMId,
-                          cbroadcast->timeOffset,
-                          cbroadcast->status,
-                          cbroadcast->calTemp,
-                          cbroadcast->trend,
+                          basic,
                           listObj,
-                          cbroadcast->historyCount,
-                          cbroadcast->calIndex);
+                          cbroadcast->historyCount);
 }
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
-        (JNIEnv *env, jclass, jbyteArray bytes) {
-    const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
-    jint length = env->GetArrayLength(bytes);
-    AidexXFullBroadcastParser aidexXFullBroadcastParser((const char *) data, length);
-    jclass broad_cls = env->FindClass("com/microtechmd/blecomm/parser/AidexXFullBroadcastEntity");
-    jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXHistoryEntity");
-
-    jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>",
-                                                   "(IIIILjava/util/List;II)V");
-    jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIII)V");
-    const AidexXFullBroadcastEntity *cbroadcast = aidexXFullBroadcastParser.getFullBroadcast();
-
-    jobject listObj = newList(env);
-    if (cbroadcast == NULL) {
-        return env->NewObject(broad_cls, broadConstructMId,
-                              0,
-                              0,
-                              0,
-                              0,
-                              listObj,
-                              0,
-                              0);
-    }
-    for (int i = 0; i < cbroadcast->broadcast.historyCount; i++) {
-        AidexXHistoryEntity history = cbroadcast->broadcast.history[i];
-        jobject historyObject = env->NewObject(history_Class, historyConstructMId,
-                                               history.timeOffset, history.glucose, history.status,
-                                               history.quality, history.isValid);
-        env->CallBooleanMethod(listObj, listAdd, historyObject);
-    }
-    return env->NewObject(broad_cls, broadConstructMId,
-                          cbroadcast->broadcast.timeOffset,
-                          cbroadcast->broadcast.status,
-                          cbroadcast->broadcast.calTemp,
-                          cbroadcast->broadcast.trend,
-                          listObj,
-                          cbroadcast->broadcast.historyCount,
-                          cbroadcast->broadcast.calIndex
-    );
-}
+//JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
+//        (JNIEnv *env, jclass, jbyteArray bytes) {
+//    const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
+//    jint length = env->GetArrayLength(bytes);
+//    AidexXFullBroadcastParser aidexXFullBroadcastParser((const char *) data, length);
+//    jclass broad_cls = env->FindClass("com/microtechmd/blecomm/parser/AidexXFullBroadcastEntity");
+//    jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXHistoryEntity");
+//
+//    jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>",
+//                                                   "(IIIILjava/util/List;II)V");
+//    jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIII)V");
+//    const AidexXFullBroadcastEntity *cbroadcast = aidexXFullBroadcastParser.getFullBroadcast();
+//
+//    jobject listObj = newList(env);
+//    if (cbroadcast == NULL) {
+//        return env->NewObject(broad_cls, broadConstructMId,
+//                              0,
+//                              0,
+//                              0,
+//                              0,
+//                              listObj,
+//                              0,
+//                              0);
+//    }
+//    for (int i = 0; i < cbroadcast->broadcast.historyCount; i++) {
+//        AidexXHistoryEntity history = cbroadcast->broadcast.history[i];
+//        jobject historyObject = env->NewObject(history_Class, historyConstructMId,
+//                                               history.timeOffset, history.glucose, history.status,
+//                                               history.quality, history.isValid);
+//        env->CallBooleanMethod(listObj, listAdd, historyObject);
+//    }
+//    return env->NewObject(broad_cls, broadConstructMId,
+//                          cbroadcast->broadcast.timeOffset,
+//                          cbroadcast->broadcast.status,
+//                          cbroadcast->broadcast.calTemp,
+//                          cbroadcast->broadcast.trend,
+//                          listObj,
+//                          cbroadcast->broadcast.historyCount,
+//                          cbroadcast->broadcast.calIndex
+//    );
+//}
 
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXInstantHistory
         (JNIEnv *env, jclass, jbyteArray bytes) {
@@ -91,14 +97,15 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
     AidexXInstantHistoryParser instantHistoryParser((const char *) data, length);
     jclass result_class = env->FindClass(
             "com/microtechmd/blecomm/parser/AidexXInstantHistoryEntity");
-
     jclass history_class = env->FindClass(
             "com/microtechmd/blecomm/parser/AidexXHistoryEntity");
     jclass raw_history = env->FindClass(
             "com/microtechmd/blecomm/parser/AidexXRawHistoryEntity");
+    jclass basic_history = env->FindClass(
+            "com/microtechmd/blecomm/parser/AidexXAbstractEntity");
 
     jmethodID resultConstructMId = env->GetMethodID(result_class, "<init>",
-                                                    "(IIIIILcom/microtechmd/blecomm/parser/AidexXHistoryEntity;Lcom/microtechmd/blecomm/parser/AidexXRawHistoryEntity;)V");
+                                                    "(Lcom/microtechmd/blecomm/parser/AidexXAbstractEntity;Lcom/microtechmd/blecomm/parser/AidexXHistoryEntity;Lcom/microtechmd/blecomm/parser/AidexXRawHistoryEntity;)V");
 
     jmethodID historyConstructMId = env->GetMethodID(history_class, "<init>",
                                                      "(IIIII)V");
@@ -106,8 +113,20 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
     jmethodID rawConstructMId = env->GetMethodID(raw_history, "<init>",
                                                  "(IFFFI)V");
 
+    jmethodID basicConstructMId = env->GetMethodID(basic_history, "<init>",
+                                                   "(IIIII)V");
     const AidexXInstantHistoryEntity *historyEntity = instantHistoryParser.getInstantHistory();
+    if (historyEntity == nullptr){
+        return nullptr;
+    }
     AidexXHistoryEntity history = historyEntity->history;
+
+    jobject basicObject = env->NewObject(basic_history, basicConstructMId,
+                                         historyEntity->abstract.timeOffset,
+                                         historyEntity->abstract.status,
+                                         historyEntity->abstract.calTemp,
+                                         historyEntity->abstract.trend,
+                                         historyEntity->abstract.calIndex);
 
     jobject historyObject = env->NewObject(history_class, historyConstructMId,
                                            history.timeOffset,
@@ -125,11 +144,7 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
                                        raw.isValid);
 
     jobject result = env->NewObject(result_class, resultConstructMId,
-                                    historyEntity->status,
-                                    historyEntity->calTemp,
-                                    historyEntity->trend,
-                                    historyEntity->timeOffset,
-                                    historyEntity->calIndex,
+                                    basicObject,
                                     historyObject,
                                     rawObject);
     return result;

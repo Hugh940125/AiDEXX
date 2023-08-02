@@ -54,6 +54,13 @@ uint16 LibChecksum_GetChecksumPartial16Bit
 	uint16 u16_ChecksumBase
 );
 
+uint32 LibChecksum_GetChecksum32Bit
+(
+    const uint8 *u8p_Data,
+    uint16 u16_Length,
+    uint32 u32_ChecksumBase
+);
+
 #ifdef __cplusplus
 }
 #endif

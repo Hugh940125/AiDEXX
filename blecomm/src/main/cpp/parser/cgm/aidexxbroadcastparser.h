@@ -9,7 +9,8 @@ class InputByteStream;
 class AidexXBroadcastParser : public StreamParser
 {
 public:
-    static const int MIN_BYTES_LENGTH = 19;
+    static const int HIS_BYTES_LENGTH = 3;
+    static const int MIN_BYTES_LENGTH = 7+HIS_BYTES_LENGTH;
 
     AidexXBroadcastParser(const char *bytes, uint16 length) : StreamParser(bytes, length, InputByteStream::LITTLE_ENDIAN_MODE) {
         if (length < MIN_BYTES_LENGTH) LOGE("bytes too short");

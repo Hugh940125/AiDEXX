@@ -7,6 +7,7 @@
 
 BgmController::BgmController() : BleController()
 {
+    type = DEV_TYPE_BGM;
     authenticated = true;
     frameEnable = true;
     acknowledgement = false;

@@ -11,9 +11,6 @@ extern "C" {
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
         (JNIEnv *, jclass, jbyteArray);
 
-JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
-        (JNIEnv *, jclass, jbyteArray);
-
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
         (JNIEnv *, jclass, jbyteArray);
 

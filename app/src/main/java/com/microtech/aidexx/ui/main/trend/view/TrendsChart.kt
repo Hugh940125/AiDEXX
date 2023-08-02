@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.MotionEvent
 import com.github.mikephil.charting.charts.CombinedChart
@@ -12,9 +13,12 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.BarLineChartTouchListener
 import com.github.mikephil.charting.listener.ChartTouchListener
 import com.github.mikephil.charting.listener.OnChartGestureListener
+import com.github.mikephil.charting.utils.MPPointD
+import com.microtech.aidexx.views.chart.MyAnimatedZoomJob
 
 
 open class TrendsChart : CombinedChart {
+
     private var bitmap: Bitmap? = null
     private var canvas: Canvas? = null
 
@@ -72,7 +76,7 @@ open class TrendsChart : CombinedChart {
 
 
     override fun getChartBitmap(): Bitmap {
-        bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444)
+        bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
         canvas = canvas ?: Canvas(bitmap!!)
 
@@ -124,6 +128,44 @@ open class TrendsChart : CombinedChart {
         super.onSizeChanged(w, h, oldw, oldh)
         if (oldw > 0 || oldh > 0) moveViewToX(lastLowestVisibleX)
     }
+
+
+    /*
+    完善缩放动画
+     */
+    override fun zoomAndCenterAnimated(
+        scaleX: Float,
+        scaleY: Float,
+        xValue: Float,
+        yValue: Float,
+        axis: AxisDependency?,
+        duration: Long
+    ) {
+        val origin = getValuesByTouchPoint(
+            mViewPortHandler.contentLeft(),
+            mViewPortHandler.contentRect.centerY(),
+            axis
+        )
+        val job = MyAnimatedZoomJob.getInstance(
+            mViewPortHandler,
+            this,
+            getTransformer(axis),
+            getAxis(axis),
+            mXAxis.mAxisRange,
+            scaleX,
+            scaleY,
+            mViewPortHandler.scaleX,
+            mViewPortHandler.scaleY,
+            xValue,
+            yValue,
+            origin.x.toFloat(),
+            origin.y.toFloat(),
+            200
+        )
+        addViewportJob(job)
+        MPPointD.recycleInstance(origin)
+    }
+
 
     fun delayAutoScaleY(delayMillis: Long) {
         postDelayed({ autoScaleY() }, delayMillis)

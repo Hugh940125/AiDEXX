@@ -6,13 +6,14 @@ const AidexXBroadcastEntity *AidexXBroadcastParser::getBroadcast() {
     try
     {
         broadcast.historyCount = 0;
-        broadcast.timeOffset = ibs->readUnsignedShort();
-        broadcast.status = ibs->readUnsignedByte();
-        broadcast.calTemp = ibs->readUnsignedByte();
-        broadcast.trend = ibs->readByte();
+        broadcast.abstract.timeOffset = ibs->readUnsignedShort();
+        broadcast.abstract.status = ibs->readUnsignedByte();
+        broadcast.abstract.calTemp = ibs->readUnsignedByte();
+        broadcast.abstract.trend = ibs->readByte();
         
+        int count = 0;
         for (int i = 0; i < sizeof(broadcast.history) / sizeof(broadcast.history[0]); i++) {
-            int timeOffset = (int)broadcast.timeOffset - i * AidexxHistory::TIME_INTERVAL;
+            int timeOffset = (int)broadcast.abstract.timeOffset - i * AidexxHistory::TIME_INTERVAL;
             uint16 sg_and_state = ibs->readUnsignedShort();
             uint8 quality = ibs->readUnsignedByte();
             
@@ -24,13 +25,14 @@ const AidexXBroadcastEntity *AidexXBroadcastParser::getBroadcast() {
                 broadcast.history[i].quality = quality;
                 broadcast.history[i].isValid = (sg_and_state != 0xFFFF);
             }
+            
+            count++;
+            if (i == 0 && ibs->balance() == sizeof(broadcast.abstract.calIndex)) {
+                break;;
+            }
         }
         
-        broadcast.calIndex = ibs->readUnsignedShort();
-
-        for (int i = 0; i < sizeof(broadcast.reserved) / sizeof(broadcast.reserved[0]); i++) {
-            broadcast.reserved[i] = ibs->readUnsignedByte();
-        }
+        broadcast.abstract.calIndex = ibs->readUnsignedShort();
 
         return &broadcast;
     }

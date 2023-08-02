@@ -1,5 +1,6 @@
 #include "ble.h"
 #include "controller/blecontroller.h"
+#include "controller/cgm/aidexxcontroller.h"
 #include "devcomm/devcommclass.h"
 #include "devcomm/CLibrary/lib_checksum.h"
 #include "constant/globalconstants.h"
@@ -85,9 +86,11 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
     //"AiDEX X" LocalName有SN，ScanResponse无SN
     //"AiDEX" LocalName无SN，ScanResponse有SN
     list<string> snInNameList {"GoChek", "Insight", "Exactive", "Equil", "AiDEX X"};
+    string pump = "Equil";
     string aidex = "AiDEX";
     string aidexX = "AiDEX X";
     
+    dev_type type = DEV_TYPE_UNKNOWN;
     bool found = false;
     for (list<string>::iterator it = snInNameList.begin(); it != snInNameList.end(); ++it) {
         string::size_type idx = name.find(it->data());
@@ -107,14 +110,22 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
             name.erase(pos, tmp.length() + delimiter.length());
             name = ByteUtils::trim(name);
         }
+        
+        if (pump.compare(name) == 0) {
+           type = DEV_TYPE_PUMP;
+        } else {
+            type = DEV_TYPE_BGM;
+        }
     }
     
     if (aidex.compare(name) == 0) {
+        type = DEV_TYPE_CGM;
         if (mfrLength >= 8) {
             sn = ByteUtils::bytesToSnString(mfrData, 6);
             params = vector<uint8>(mfrData+6, mfrData+mfrLength);
         }
     } else if (aidexX.compare(name) == 0) {
+        type = DEV_TYPE_CGM_X;
         params = vector<uint8>(mfrData, mfrData+mfrLength);
     }
     
@@ -123,6 +134,7 @@ void Ble::onScanRespond(string address, int32 rssi, const char *data, uint16 len
     }
     
     BleControllerInfo info;
+    info.type = type;
     info.address = address;
     info.name = name;
     info.sn = sn;
@@ -165,9 +177,11 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
     //"AiDEX X" LocalName有SN，ScanResponse无SN
     //"AiDEX" LocalName无SN，ScanResponse有SN
     list<string> snInNameList {"GoChek", "Insight", "Exactive", "Equil", "AiDEX X"};
+    string pump = "Equil";
     string aidex = "AiDEX";
     string aidexX = "AiDEX X";
     
+    dev_type type = DEV_TYPE_UNKNOWN;
     bool found = false;
     for (list<string>::iterator it = snInNameList.begin(); it != snInNameList.end(); ++it) {
         string::size_type idx = name.find(it->data());
@@ -187,14 +201,22 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
             name.erase(pos, tmp.length() + delimiter.length());
             name = ByteUtils::trim(name);
         }
+        
+        if (pump.compare(name) == 0) {
+           type = DEV_TYPE_PUMP;
+        } else {
+            type = DEV_TYPE_BGM;
+        }
     }
     
     if (aidex.compare(name) == 0) {
+        type = DEV_TYPE_CGM;
         if (length >= 2+BROADCAST_LENGTH+6) {
             sn = ByteUtils::bytesToSnString(data+2+BROADCAST_LENGTH, 6);
             params = vector<uint8>(data+2+BROADCAST_LENGTH+6, data+length);
         }
     } else if (aidexX.compare(name) == 0) {
+        type = DEV_TYPE_CGM_X;
         if (length > 2 + BROADCAST_LENGTH) {
             params = vector<uint8>(data+2+BROADCAST_LENGTH, data+length);
         }
@@ -205,6 +227,7 @@ void Ble::onScanRespondDecoded(string address, string name, int32 rssi, const ch
     }
     
     BleControllerInfo info;
+    info.type = type;
     info.address = address;
     info.name = name;
     info.sn = sn;
@@ -259,8 +282,27 @@ void Ble::onAdvertise(string address, int32 rssi, const char *data, uint16 lengt
         i += len-1;
     }
     
-    if  (mfrLength > 1 && (uint8)mfrData[mfrLength-1] == LibChecksum_GetChecksum8Bit((const uint8 *)mfrData, mfrLength-1)) {
-        controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData, mfrLength-1);
+    if (mfrLength != BROADCAST_LENGTH) {
+        return;
+    }
+    
+    if (typeid(*controller) == typeid(AidexXController)) {
+        uint32 u32_ChecksumBase = 0;
+        uint8 i;
+        for (i = 0; i < BROADCAST_LENGTH - 4; i += 4) {
+            u32_ChecksumBase += LittleEndianByteUtils::byteToUnsignedInt((const uint8*)mfrData+i);
+        }
+        u32_ChecksumBase = u32_ChecksumBase % PRIME_NUM;
+        
+        uint32 crc = LittleEndianByteUtils::byteToUnsignedInt((const uint8*)mfrData+BROADCAST_LENGTH-4);
+        if (crc == LibChecksum_GetChecksum32Bit((const uint8 *)mfrData, BROADCAST_LENGTH-4, u32_ChecksumBase)) {
+            controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData, BROADCAST_LENGTH-4);
+        }
+    } else {
+        uint8 crc = (uint8)mfrData[BROADCAST_LENGTH-1];
+        if (crc == LibChecksum_GetChecksum8Bit((const uint8 *)mfrData, BROADCAST_LENGTH-1)) {
+            controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData, BROADCAST_LENGTH-1);
+        }
     }
 }
 
@@ -277,9 +319,30 @@ void Ble::onAdvertiseDecoded(string address, string name, int32 rssi, const char
     // controller->setRssi(rssi);
     // controller->setName(name);
     
-            
-    if (length > BROADCAST_LENGTH + 2 && (uint8)data[2+BROADCAST_LENGTH-1] == LibChecksum_GetChecksum8Bit((const uint8 *)data+2, BROADCAST_LENGTH-1)) {
-        controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)data+2, BROADCAST_LENGTH-1);
+    if (length < BROADCAST_LENGTH + 2) {
+        return;
+    }
+    
+    char mfrData[BROADCAST_LENGTH] = {0};
+    ByteUtils::copy(mfrData, (const char*)data+2, BROADCAST_LENGTH);
+
+    if (typeid(*controller) == typeid(AidexXController)) {
+        uint32 u32_ChecksumBase = 0;
+        uint8 i;
+        for (i = 0; i < BROADCAST_LENGTH - 4; i += 4) {
+            u32_ChecksumBase += LittleEndianByteUtils::byteToUnsignedInt((const uint8*)mfrData+i);
+        }
+        u32_ChecksumBase = u32_ChecksumBase % PRIME_NUM;
+        
+        uint32 crc = LittleEndianByteUtils::byteToUnsignedInt((const uint8*)mfrData+BROADCAST_LENGTH-4);
+        if (crc == LibChecksum_GetChecksum32Bit((const uint8 *)mfrData, BROADCAST_LENGTH-4, u32_ChecksumBase)) {
+            controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData, BROADCAST_LENGTH-4);
+        }
+    } else {
+        uint8 crc = (uint8)mfrData[BROADCAST_LENGTH-1];
+        if (crc == LibChecksum_GetChecksum8Bit((const uint8 *)mfrData, BROADCAST_LENGTH-1)) {
+            controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData, BROADCAST_LENGTH-1);
+        }
     }
 }
 
@@ -322,8 +385,26 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
     std::map<string, BleController*>::iterator iter = controllers.find(address);
     if (iter!=controllers.end()) {
         BleController *controller = iter->second;
-        if  (mfrLength1 > 1 && (uint8)mfrData1[mfrLength1-1] == LibChecksum_GetChecksum8Bit((const uint8 *)mfrData1, mfrLength1-1)) {
-            controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData1, mfrLength1-1);
+        
+        if (mfrLength1 == BROADCAST_LENGTH) {
+            if (typeid(*controller) == typeid(AidexXController)) {
+                uint32 u32_ChecksumBase = 0;
+                uint8 i;
+                for (i = 0; i < BROADCAST_LENGTH - 4; i += 4) {
+                    u32_ChecksumBase += LittleEndianByteUtils::byteToUnsignedInt((const uint8*)mfrData1+i);
+                }
+                u32_ChecksumBase = u32_ChecksumBase % PRIME_NUM;
+                
+                uint32 crc = LittleEndianByteUtils::byteToUnsignedInt((const uint8*)mfrData1+BROADCAST_LENGTH-4);
+                if (crc == LibChecksum_GetChecksum32Bit((const uint8 *)mfrData1, BROADCAST_LENGTH-4, u32_ChecksumBase)) {
+                    controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData1, BROADCAST_LENGTH-4);
+                }
+            } else {
+                uint8 crc = (uint8)mfrData1[BROADCAST_LENGTH-1];
+                if (crc == LibChecksum_GetChecksum8Bit((const uint8 *)mfrData1, BROADCAST_LENGTH-1)) {
+                    controller->onReceive(BleOperation::DISCOVER, true, (const uint8 *)mfrData1, BROADCAST_LENGTH-1);
+                }
+            }
         }
     }
     
@@ -332,9 +413,11 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
     //"AiDEX X" LocalName有SN，ScanResponse无SN
     //"AiDEX" LocalName无SN，ScanResponse有SN
     list<string> snInNameList {"GoChek", "Insight", "Exactive", "Equil", "AiDEX X"};
+    string pump = "Equil";
     string aidex = "AiDEX";
     string aidexX = "AiDEX X";
     
+    dev_type type = DEV_TYPE_UNKNOWN;
     bool found = false;
     for (list<string>::iterator it = snInNameList.begin(); it != snInNameList.end(); ++it) {
         string::size_type idx = name.find(it->data());
@@ -354,14 +437,22 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
             name.erase(pos, tmp.length() + delimiter.length());
             name = ByteUtils::trim(name);
         }
+        
+        if (pump.compare(name) == 0) {
+           type = DEV_TYPE_PUMP;
+        } else {
+            type = DEV_TYPE_BGM;
+        }
     }
     
     if (aidex.compare(name) == 0) {
+        type = DEV_TYPE_CGM;
         if (mfrLength2 >= 8) {
             sn = ByteUtils::bytesToSnString(mfrData2, 6);
             params = vector<uint8>(mfrData2+6, mfrData2+mfrLength2);
         }
     } else if (aidexX.compare(name) == 0) {
+        type = DEV_TYPE_CGM_X;
         params = vector<uint8>(mfrData2, mfrData2+mfrLength2);
     }
     
@@ -370,6 +461,7 @@ void Ble::onAdvertiseWithAndroidRawBytes(string address, int32 rssi, const char 
     }
     
     BleControllerInfo info;
+    info.type = type;
     info.address = address;
     info.name = name;
     info.sn = sn;
@@ -730,7 +822,9 @@ void Ble::handleEvent(uint8 event) {
                 controller = NULL;
             }
         }
-        disconnect();
+//        if (controller->isAutoDisconnect()) {
+            disconnect();
+//        }
     }
 }
 

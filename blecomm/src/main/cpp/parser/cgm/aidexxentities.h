@@ -66,38 +66,33 @@ typedef struct {
     bool isValid;      // false: data loss
 } AidexXRawHistoryEntity;
 
-/* NewSensor:         (status & AidexxStatus::SESSION_STOPPED) && (calTemp & AidexxCalTemp::TIME_SYNCHRONIZATION_REQUIRED)
-   SensorExpired:     (status & AidexxStatus::SESSION_STOPPED) && !(calTemp & AidexxCalTemp::TIME_SYNCHRONIZATION_REQUIRED)
+/* NewSensorDetection:  (status & AidexxStatus::SESSION_STOPPED) && (calTemp & AidexxCalTemp::TIME_SYNCHRONIZATION_REQUIRED)
+   SensorExpired:       (status & AidexxStatus::SESSION_STOPPED) && !(calTemp & AidexxCalTemp::TIME_SYNCHRONIZATION_REQUIRED)
 */
+
 typedef struct {
-    uint16 timeOffset;              // minutes, based on Session Start Time
-    uint8 status;                   // AidexxStatus in aidexxconstants.h
-    uint8 calTemp;                  // AidexxCalTemp in aidexxconstants.h
-    int8 trend;                     // mg/dL/min; -128: Unknow
-    AidexXHistoryEntity history[3]; //histories, max to 3
-    uint8 historyCount;             // count of history entities in this broadcast
-    uint16 calIndex;                // calibration record index
-    uint8 reserved[3];
+    uint16 timeOffset;      // minutes, based on Session Start Time
+    uint8 status;           // AidexxStatus in aidexxconstants.h
+    uint8 calTemp;          // AidexxCalTemp in aidexxconstants.h
+    int8 trend;             // mg/dL/min; -128: Unknow
+    uint16 calIndex;        // calibration record index
+} AidexXAbstractEntity;
+
+typedef struct {
+    AidexXAbstractEntity abstract;
+    AidexXHistoryEntity history[3];     //histories, max to 3
+    uint8 historyCount;                 // count of history entities in this broadcast
 } AidexXBroadcastEntity;
 
 typedef struct {
-    bool isNativePaired;            // true: Ble pairing information saved
-    bool isInitialized;             // true: AES_Key is initialized
+    bool isBleNativePaired;            // true: Ble pairing information saved
+    bool isAesInitialized;             // true: AES_Key is initialized
 } AidexXScanResponseEntity;
 
 typedef struct {
-    AidexXBroadcastEntity broadcast;
-    AidexXScanResponseEntity scanResponse;
-} AidexXFullBroadcastEntity;
-
-typedef struct {
-    uint16 timeOffset;
-    uint8 status;
-    uint8 calTemp;
-    int8 trend;
+    AidexXAbstractEntity abstract;
     AidexXHistoryEntity history;
     AidexXRawHistoryEntity raw;
-    uint16 calIndex;
 } AidexXInstantHistoryEntity;
 
 typedef enum

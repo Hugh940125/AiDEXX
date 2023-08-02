@@ -6,8 +6,8 @@ const AidexXScanResponseEntity *AidexXScanResponseParser::getScanResponse() {
     try
     {
         uint8 flag = ibs->readUnsignedByte();
-        scanResponse.isNativePaired = (flag & 0x01) > 0;
-        scanResponse.isInitialized = (flag & 0x02) > 0;;
+        scanResponse.isBleNativePaired = (flag & 0x01) > 0;
+        scanResponse.isAesInitialized = (flag & 0x02) > 0;;
         return &scanResponse;
     }
     catch (...)

@@ -105,6 +105,16 @@ string ByteUtils::bytesToSnString(const char *address, uint16 length) {
     return s;
 }
 
+string ByteUtils::bytesToHexString(const char *data, uint16 length) {
+    uint16 strlen = 3*length+1;
+    char s[strlen];
+    uint8 offset = 0;
+    for (uint16 i = 0; i < length; i++) {
+        offset += snprintf(s+offset, sizeof(s)-offset, "%02X ", (uint8)data[i]);
+    }
+    return string(s, strlen);
+}
+
 void ByteUtils::bytesToSn(char *address, uint16 length) {
     for (int i = 0; i < length; i++)
     {
