@@ -17,6 +17,8 @@ import com.microtech.aidexx.ui.main.home.HomeStateManager
 import com.microtech.aidexx.ui.main.home.needPair
 import com.microtech.aidexx.utils.LogUtil
 import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtechmd.blecomm.controller.AidexXController
+import com.microtechmd.blecomm.controller.BleControllerProxy
 import io.objectbox.kotlin.awaitCallInTx
 import io.objectbox.query.QueryBuilder
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +42,7 @@ class TransmitterManager private constructor() {
         if (transmitterEntity != null) {
             when (transmitterEntity.deviceType) {
                 2 -> {
-                    set(TransmitterModel.instance(transmitterEntity))
+                    set(TransmitterModel.instance(transmitterEntity, AidexXController.getInstance()))
                 }
             }
         } else {
@@ -62,7 +64,7 @@ class TransmitterManager private constructor() {
                         }, {
                             when (newEntity.deviceType) {
                                 2 -> {
-                                    set(TransmitterModel.instance(newEntity))
+                                    set(TransmitterModel.instance(newEntity, AidexXController.getInstance()))
                                 }
                             }
                         })
@@ -101,22 +103,23 @@ class TransmitterManager private constructor() {
         ObjectBox.awaitCallInTx { transmitterBox!!.removeAll() }
     }
 
-    suspend fun clear(){
+    suspend fun clear() {
         ObjectBox.awaitCallInTx { transmitterBox!!.removeAll() }
         defaultModel?.getController()?.unregister()
         defaultModel?.controller = null
         defaultModel = null
     }
 
-    fun buildModel(sn: String, address: String): DeviceModel? {
+    fun buildModel(bleControllerProxy: BleControllerProxy): DeviceModel? {
+        val sn = bleControllerProxy.sn
         if (sn == defaultModel?.entity?.deviceSn && defaultModel?.isPaired() == true) {
             Dialogs.showError("已配对")
             return null
         }
         val entity = TransmitterEntity(sn)
         entity.idx = 1
-        entity.deviceMac = address
-        pairModel = TransmitterModel.instance(entity)
+        entity.deviceMac = bleControllerProxy.mac
+        pairModel = TransmitterModel.instance(entity, bleControllerProxy)
         return pairModel
     }
 

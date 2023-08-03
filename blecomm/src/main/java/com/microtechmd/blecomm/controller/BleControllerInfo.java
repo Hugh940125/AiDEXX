@@ -2,26 +2,37 @@ package com.microtechmd.blecomm.controller;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class BleControllerInfo implements Parcelable {
+    public int type;
     public String address;
     public String name;
     public String sn;
     public int rssi;
+    public byte[] params;
     public boolean isPaired;
 
     public BleControllerInfo() {
     }
 
-    public BleControllerInfo(String address, String name, String sn, int rssi) {
+    public BleControllerInfo(int type, String address, String name, String sn) {
+        this.type = type;
+        this.address = address;
+        this.name = name;
+        this.sn = sn;
+    }
+
+    public BleControllerInfo(int type, String address, String name, String sn, int rssi, byte[] params) {
+        this.type = type;
         this.address = address;
         this.name = name;
         this.sn = sn;
         this.rssi = rssi;
+        this.params = params;
     }
 
     protected BleControllerInfo(Parcel in) {
@@ -29,7 +40,7 @@ public class BleControllerInfo implements Parcelable {
         name = in.readString();
         sn = in.readString();
         rssi = in.readInt();
-        isPaired = in.readInt() == 1;
+        params = in.createByteArray();
     }
 
     public static final Creator<BleControllerInfo> CREATOR = new Creator<BleControllerInfo>() {
@@ -57,14 +68,15 @@ public class BleControllerInfo implements Parcelable {
         return Objects.hash(address, name, sn);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "BleControllerInfo{" +
-                "address='" + address + '\'' +
+                "type=" + type +
+                ", address='" + address + '\'' +
                 ", name='" + name + '\'' +
                 ", sn='" + sn + '\'' +
                 ", rssi=" + rssi +
+                ", params=" + Arrays.toString(params) +
                 '}';
     }
 
@@ -79,6 +91,54 @@ public class BleControllerInfo implements Parcelable {
         dest.writeString(name);
         dest.writeString(sn);
         dest.writeInt(rssi);
-        dest.writeInt(isPaired ? 1 : 0);
+        dest.writeByteArray(params);
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSn() {
+        return sn;
+    }
+
+    public void setSn(String sn) {
+        this.sn = sn;
+    }
+
+    public int getRssi() {
+        return rssi;
+    }
+
+    public void setRssi(int rssi) {
+        this.rssi = rssi;
+    }
+
+    public byte[] getParams() {
+        return params;
+    }
+
+    public void setParams(byte[] params) {
+        this.params = params;
     }
 }

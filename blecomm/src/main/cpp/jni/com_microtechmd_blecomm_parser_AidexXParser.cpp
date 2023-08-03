@@ -8,6 +8,7 @@
 #include "../parser/cgm/aidexxdefaultparamsparser.h"
 #include "../cgmscomm.h"
 #include "../parser/cgm/aidexxinstanthistoryparser.h"
+#include "../parser/cgm/aidexxscanresponseparser.h"
 
 
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBroadcast
@@ -48,47 +49,25 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getBr
                           cbroadcast->historyCount);
 }
 
-//JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getFullBroadcast
-//        (JNIEnv *env, jclass, jbyteArray bytes) {
-//    const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
-//    jint length = env->GetArrayLength(bytes);
-//    AidexXFullBroadcastParser aidexXFullBroadcastParser((const char *) data, length);
-//    jclass broad_cls = env->FindClass("com/microtechmd/blecomm/parser/AidexXFullBroadcastEntity");
-//    jclass history_Class = env->FindClass("com/microtechmd/blecomm/parser/AidexXHistoryEntity");
-//
-//    jmethodID broadConstructMId = env->GetMethodID(broad_cls, "<init>",
-//                                                   "(IIIILjava/util/List;II)V");
-//    jmethodID historyConstructMId = env->GetMethodID(history_Class, "<init>", "(IIIII)V");
-//    const AidexXFullBroadcastEntity *cbroadcast = aidexXFullBroadcastParser.getFullBroadcast();
-//
-//    jobject listObj = newList(env);
-//    if (cbroadcast == NULL) {
-//        return env->NewObject(broad_cls, broadConstructMId,
-//                              0,
-//                              0,
-//                              0,
-//                              0,
-//                              listObj,
-//                              0,
-//                              0);
-//    }
-//    for (int i = 0; i < cbroadcast->broadcast.historyCount; i++) {
-//        AidexXHistoryEntity history = cbroadcast->broadcast.history[i];
-//        jobject historyObject = env->NewObject(history_Class, historyConstructMId,
-//                                               history.timeOffset, history.glucose, history.status,
-//                                               history.quality, history.isValid);
-//        env->CallBooleanMethod(listObj, listAdd, historyObject);
-//    }
-//    return env->NewObject(broad_cls, broadConstructMId,
-//                          cbroadcast->broadcast.timeOffset,
-//                          cbroadcast->broadcast.status,
-//                          cbroadcast->broadcast.calTemp,
-//                          cbroadcast->broadcast.trend,
-//                          listObj,
-//                          cbroadcast->broadcast.historyCount,
-//                          cbroadcast->broadcast.calIndex
-//    );
-//}
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getScanResponseInfo
+        (JNIEnv *env, jclass, jbyteArray bytes) {
+    const jbyte *data = env->GetByteArrayElements(bytes, JNI_FALSE);
+    jint length = env->GetArrayLength(bytes);
+    AidexXScanResponseParser aidexXScanResponseParser((const char *) data, length);
+    jclass scan_response_cls = env->FindClass(
+            "com/microtechmd/blecomm/controller/ScanResponseInfo");
+    jmethodID scanResponseMId = env->GetMethodID(scan_response_cls, "<init>",
+                                                 "(ZZ)V");
+    const AidexXScanResponseEntity *scanResponseEntity = aidexXScanResponseParser.getScanResponse();
+    jobject listObj = newList(env);
+    if (scanResponseEntity == NULL) {
+        return NULL;
+    }
+    return env->NewObject(scan_response_cls, scanResponseMId,
+                          scanResponseEntity->isBleNativePaired,
+                          scanResponseEntity->isAesInitialized);
+}
+
 
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXInstantHistory
         (JNIEnv *env, jclass, jbyteArray bytes) {
@@ -116,7 +95,7 @@ JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAi
     jmethodID basicConstructMId = env->GetMethodID(basic_history, "<init>",
                                                    "(IIIII)V");
     const AidexXInstantHistoryEntity *historyEntity = instantHistoryParser.getInstantHistory();
-    if (historyEntity == nullptr){
+    if (historyEntity == nullptr) {
         return nullptr;
     }
     AidexXHistoryEntity history = historyEntity->history;

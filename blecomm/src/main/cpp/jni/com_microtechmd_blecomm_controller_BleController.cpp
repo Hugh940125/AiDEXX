@@ -52,16 +52,29 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_BleController_set
             jclass bleControllerInfoCls = env->FindClass(
                     "com/microtechmd/blecomm/controller/BleControllerInfo");
             jmethodID controllerInfo_new = env->GetMethodID(bleControllerInfoCls, "<init>", "()V");
+            jfieldID typeField = env->GetFieldID(bleControllerInfoCls, "type",
+                                                 "I");
             jfieldID addressField = env->GetFieldID(bleControllerInfoCls, "address",
                                                     "Ljava/lang/String;");
             jfieldID nameField = env->GetFieldID(bleControllerInfoCls, "name",
                                                  "Ljava/lang/String;");
             jfieldID snField = env->GetFieldID(bleControllerInfoCls, "sn", "Ljava/lang/String;");
             jfieldID rssiField = env->GetFieldID(bleControllerInfoCls, "rssi", "I");
+            jfieldID paramsField = env->GetFieldID(bleControllerInfoCls, "params",
+                                                   "[B");
             jobject controllerInfo = env->NewObject(bleControllerInfoCls, controllerInfo_new);
             jstring addressString = env->NewStringUTF(info.address.data());
             jstring nameString = env->NewStringUTF(info.name.data());
             jstring snString = env->NewStringUTF(info.sn.data());
+            env->SetIntField(controllerInfo, typeField, jint(info.type));
+            int size = static_cast<int>(info.params.size());
+            unsigned char buffer[size];
+            for (int i = 0; i < size; i++) {
+                buffer[i] = info.params[i];
+            }
+            jbyteArray array = env->NewByteArray(size);
+            env->SetByteArrayRegion(array, 0, size, (const jbyte *) buffer);
+            env->SetObjectField(controllerInfo, paramsField, array);
             env->SetObjectField(controllerInfo, addressField, addressString);
             env->SetObjectField(controllerInfo, nameField, nameString);
             env->SetObjectField(controllerInfo, snField, snString);
@@ -240,8 +253,8 @@ JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_BleController_set
             bool isAttached = false;
             status = m_jvm->GetEnv((void **) &env, JNI_VERSION_1_6);
             if (status < 0) {
-                　　m_jvm->AttachCurrentThread(&env, NULL);//将当前线程注册到虚拟机中．
-                　　isAttached = true;
+                m_jvm->AttachCurrentThread(&env, NULL);//将当前线程注册到虚拟机中．
+                isAttached = true;
             }
 
             jbyteArray bytes = env->NewByteArray(length);
@@ -374,4 +387,3 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_BleController_unp
         return BleOperation::UNKNOWN;
     }
 }
-

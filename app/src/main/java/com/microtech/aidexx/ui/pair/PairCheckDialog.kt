@@ -21,6 +21,7 @@ import com.microtech.aidexx.utils.ToastUtil
 import com.microtech.aidexx.views.HyperLinkText
 import com.microtech.aidexx.views.codeview.VerificationCodeView.InputCompleteListener
 import com.microtechmd.blecomm.controller.BleControllerInfo
+import com.microtechmd.blecomm.controller.BleControllerProxy
 
 
 /**
@@ -30,7 +31,7 @@ import com.microtechmd.blecomm.controller.BleControllerInfo
  */
 class PairCheckDialog : AlertDialog {
 
-    var onPass: ((info: BleControllerInfo) -> Unit)? = null
+    var onPass: ((info: BleControllerProxy) -> Unit)? = null
 
     private var mContext: Context
     private lateinit var bind: PairCheckDialogBinding
@@ -40,7 +41,7 @@ class PairCheckDialog : AlertDialog {
         this.mContext = context
     }
 
-    fun build(info: BleControllerInfo): PairCheckDialog {
+    fun build(info: BleControllerProxy): PairCheckDialog {
         val inflate = LayoutInflater.from(context).inflate(R.layout.pair_check_dialog, null)
         bind = PairCheckDialogBinding.bind(inflate)
         val spannableStringBuilder = SpannableStringBuilder()

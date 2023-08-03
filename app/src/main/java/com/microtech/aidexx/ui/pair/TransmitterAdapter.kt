@@ -5,16 +5,18 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.microtech.aidexx.R
 import com.microtech.aidexx.databinding.ItemTransmitterBinding
-import com.microtechmd.blecomm.controller.BleControllerInfo
+import com.microtechmd.blecomm.controller.BleController
+import com.microtechmd.blecomm.controller.BleControllerProxy
 
 class TransmitterAdapter(val context: Context) : RecyclerView.Adapter<TransmitterAdapter.TransmitterViewHolder>() {
 
-    private var mList: List<BleControllerInfo> = mutableListOf()
-    var onPairClick: ((item: BleControllerInfo) -> Unit)? = null
+    private var mList: List<BleControllerProxy> = mutableListOf()
+    var onPairClick: ((item: BleControllerProxy) -> Unit)? = null
     var onShowMoreClick: (() -> Unit)? = null
     var canShowMore = false
 
@@ -28,6 +30,8 @@ class TransmitterAdapter(val context: Context) : RecyclerView.Adapter<Transmitte
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransmitterViewHolder {
         val inflate = LayoutInflater.from(context).inflate(R.layout.item_transmitter, null)
+        val layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+        inflate.layoutParams = layoutParams
         return TransmitterViewHolder(inflate)
     }
 
@@ -55,7 +59,7 @@ class TransmitterAdapter(val context: Context) : RecyclerView.Adapter<Transmitte
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun refreshData(list: List<BleControllerInfo>) {
+    fun refreshData(list: List<BleControllerProxy>) {
         mList = list
         notifyDataSetChanged()
     }

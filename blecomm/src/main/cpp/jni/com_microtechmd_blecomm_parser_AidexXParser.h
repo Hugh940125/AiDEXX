@@ -29,6 +29,9 @@ JNIEXPORT jfloatArray JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_g
 JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getAidexXInstantHistory
         (JNIEnv *, jclass, jbyteArray);
 
+JNIEXPORT jobject JNICALL Java_com_microtechmd_blecomm_parser_AidexXParser_getScanResponseInfo
+        (JNIEnv *, jclass, jbyteArray);
+
 #ifdef __cplusplus
 }
 #endif

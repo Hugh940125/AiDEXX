@@ -15,6 +15,10 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_constructor
         (JNIEnv *, jobject);
 
+
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_constructorWithInfo
+        (JNIEnv *, jobject,jobject);
+
 /*
  * Class:     com_microtechmd_blecomm_controller_CgmController
  * Method:    destructor
@@ -88,8 +92,13 @@ JNIEXPORT jint JNICALL
 Java_com_microtechmd_blecomm_controller_AidexXController_setAutoUpdateStatus(JNIEnv *env,jobject thiz);
 
 JNIEXPORT jint JNICALL
-Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEnv *env,
-                                                                           jobject thiz,jint mode);
+Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEnv *env,jobject thiz,jint mode);
+
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_isBleNativePaired
+        (JNIEnv *, jobject);
+
+JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_isAesInitialized
+        (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

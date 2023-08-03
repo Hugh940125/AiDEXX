@@ -20,10 +20,6 @@ public abstract class BleController {
         public void onReceive(int operation, boolean success, byte[] data);
     }
 
-    public native int setDynamicAdvMode(int mode);
-
-    public native int setAutoUpdateStatus();
-
     static public native void setBleAdapter(BleAdapter adapter);
 
     static public native void startScan();

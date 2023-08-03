@@ -11,7 +11,8 @@ static AidexXController *getPtr(JNIEnv *env, jobject obj) {
 }
 
 JNIEXPORT jint
-Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEnv *env, jobject obj,jint mode) {
+Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEnv *env, jobject obj,
+                                                                           jint mode) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         return ptr->setDynamicAdvMode(mode);
@@ -21,7 +22,8 @@ Java_com_microtechmd_blecomm_controller_AidexXController_setDynamicAdvMode(JNIEn
 }
 
 JNIEXPORT jint JNICALL
-Java_com_microtechmd_blecomm_controller_AidexXController_setAutoUpdateStatus(JNIEnv *env, jobject obj){
+Java_com_microtechmd_blecomm_controller_AidexXController_setAutoUpdateStatus(JNIEnv *env,
+                                                                             jobject obj) {
     AidexXController *ptr = getPtr(env, obj);
     if (ptr) {
         return ptr->setAutoUpdateStatus();
@@ -282,4 +284,58 @@ JNIEXPORT jint JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_
     } else {
         return AidexXOperation::UNKNOWN;
     }
+}
+
+JNIEXPORT jint Java_com_microtechmd_blecomm_controller_AidexXController_isBleNativePaired
+        (JNIEnv *env, jobject obj) {
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->isBleNativePaired();
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
+}
+
+JNIEXPORT jint Java_com_microtechmd_blecomm_controller_AidexXController_isAesInitialized
+        (JNIEnv *env, jobject obj) {
+    AidexXController *ptr = getPtr(env, obj);
+    if (ptr) {
+        return ptr->isAesInitialized();
+    } else {
+        return AidexXOperation::UNKNOWN;
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL Java_com_microtechmd_blecomm_controller_AidexXController_constructorWithInfo
+        (JNIEnv *env, jobject obj, jobject info) {
+    jclass info_cls = env->GetObjectClass(info);
+    jlong ptr;
+    if (NULL == info_cls) {
+        ptr = reinterpret_cast<jlong>(new AidexXController());
+    } else {
+        BleControllerInfo bleControllerInfo;
+        jfieldID typeField = env->GetFieldID(info_cls, "type", "I");
+        jfieldID addressField = env->GetFieldID(info_cls, "address", "Ljava/lang/String;");
+        jfieldID nameField = env->GetFieldID(info_cls, "name", "Ljava/lang/String;");
+        jfieldID snField = env->GetFieldID(info_cls, "sn", "Ljava/lang/String;");
+        jfieldID rssiField = env->GetFieldID(info_cls, "rssi", "I");
+        jfieldID paramsField = env->GetFieldID(info_cls, "params", "[B");
+        bleControllerInfo.rssi = dev_type(env->GetIntField(info, rssiField));
+        bleControllerInfo.type = dev_type(env->GetIntField(info, typeField));
+        auto jAdd = (jstring) env->GetObjectField(info, addressField);
+        bleControllerInfo.address = env->GetStringUTFChars(jAdd, JNI_FALSE);
+        auto jName = (jstring) env->GetObjectField(info, nameField);
+        bleControllerInfo.name = env->GetStringUTFChars(jName, JNI_FALSE);
+        auto jSn = (jstring) env->GetObjectField(info, snField);
+        bleControllerInfo.sn = env->GetStringUTFChars(jSn, JNI_FALSE);
+        auto params = (jbyteArray) (env->GetObjectField(info, paramsField));
+        jbyte *paramsBytes = env->GetByteArrayElements(params, JNI_FALSE);
+        jsize paramsLength = env->GetArrayLength(params);
+        std::vector<uint8_t> paramsVec(paramsBytes, paramsBytes + paramsLength);
+        bleControllerInfo.params = paramsVec;
+        ptr = reinterpret_cast<jlong>(new AidexXController(bleControllerInfo));
+    }
+
+    env->SetLongField(obj, fieldBleControllerPtr, ptr);
 }

@@ -42,7 +42,10 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.utils.permission.PermissionsUtil
 import com.microtech.aidexx.views.HyperLinkText
 import com.microtech.aidexx.views.dialog.Dialogs
+import com.microtechmd.blecomm.controller.AidexXController
 import com.microtechmd.blecomm.controller.BleControllerInfo
+import com.microtechmd.blecomm.controller.BleControllerProxy
+import com.microtechmd.blecomm.controller.CgmController
 import io.objectbox.reactive.DataObserver
 import io.objectbox.reactive.DataSubscription
 import kotlinx.coroutines.Dispatchers
@@ -69,8 +72,8 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     private lateinit var transmitterHandler: TransmitterHandler
     private lateinit var transmitterAdapter: TransmitterAdapter
     private var transmitter: TransmitterEntity? = null
-    private lateinit var availableTransmitterList: MutableList<BleControllerInfo>
-    private lateinit var unavailableTransmitterList: MutableList<BleControllerInfo>
+    private lateinit var availableTransmitterList: MutableList<BleControllerProxy>
+    private lateinit var unavailableTransmitterList: MutableList<BleControllerProxy>
 
     class TransmitterHandler(val activity: TransmitterActivity) : Handler(Looper.getMainLooper()) {
         private val reference = WeakReference(activity)
@@ -109,7 +112,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 if (window.decorView.visibility == View.VISIBLE) {
                     lifecycleScope.launch {
                         Dialogs.showSuccess(getString(R.string.Pairing_Succeed))
-                        if (BuildConfig.keepAlive){
+                        if (BuildConfig.keepAlive) {
                             AidexBleAdapter.getInstance().executeDisconnect()
                         }
                         delay(2500)
@@ -125,18 +128,36 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
     private fun deviceDiscover() {
         AidexBleAdapter.getInstance().onDeviceDiscover = {
             if (it.name.contains(X_NAME)) {
-                val address = it.address
-                if ((transmitter == null || address != transmitter?.deviceMac)
-                    && !availableTransmitterList.contains(it) && !unavailableTransmitterList.contains(it)
-                ) {
-                    if ((it.isPaired && historyDevices?.any { device -> device.deviceSn == it.sn } == true) || !it.isPaired) {
-                        availableTransmitterList.add(it)
-                    } else {
-                        unavailableTransmitterList.add(it)
+                when (it.type) {
+                    3 -> {
+                        CgmController()
+                    }
+
+                    4 -> {
+                        val address = it.address
+                        val controller = AidexXController.getInstance(it)
+                        if ((transmitter == null || address != transmitter?.deviceMac)
+                            && !availableTransmitterList.any { trans->trans.mac == address } && !unavailableTransmitterList.any { trans->trans.mac == address }
+                        ) {
+                            if (it.type == 3) {
+
+                            } else if (it.type == 4) {
+                                val aidexXController = AidexXController.getInstance(it)
+                                if ((aidexXController.isBleNativePaired == 1 && historyDevices?.any { device -> device.deviceSn == it.sn } == true) || aidexXController.isBleNativePaired != 1) {
+                                    availableTransmitterList.add(controller)
+                                } else {
+                                    unavailableTransmitterList.add(controller)
+                                }
+                            }
+                        }
+                        transmitterAdapter.canShowMore = unavailableTransmitterList.isNotEmpty()
+                        transmitterAdapter.refreshData(availableTransmitterList)
+                    }
+
+                    else -> {
+                        null
                     }
                 }
-                transmitterAdapter.canShowMore = unavailableTransmitterList.isNotEmpty()
-                transmitterAdapter.refreshData(availableTransmitterList)
             }
         }
     }
@@ -204,15 +225,15 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             transmitterAdapter.canShowMore = unavailableTransmitterList.isNotEmpty()
             transmitterAdapter.refreshData(availableTransmitterList)
         }
-        transmitterAdapter.onPairClick = { bleControllerInfo ->
-            if (availableTransmitterList.filter { !it.isPaired }.size > 1) {
-                val build = PairCheckDialog(this).build(bleControllerInfo)
+        transmitterAdapter.onPairClick = { controller ->
+            if (availableTransmitterList.filter { !it.isNativePaired }.size > 1) {
+                val build = PairCheckDialog(this).build(controller)
                 build.onPass = { info ->
                     executePair(info)
                 }
                 build.show()
             } else {
-                executePair(bleControllerInfo)
+                executePair(controller)
             }
         }
         binding.layoutMyTrans.transItem.setOnClickListener(this)
@@ -221,7 +242,7 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
         binding.rvOtherTrans.adapter = concatAdapter
     }
 
-    private fun executePair(bleControllerInfo: BleControllerInfo) {
+    private fun executePair(proxy: BleControllerProxy) {
         if (transmitter != null) {
             when (transmitter?.deviceType) {
                 TYPE_G7 -> {
@@ -229,11 +250,11 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
                 }
 
                 TYPE_X -> {
-                    PairUtil.startPair(this@TransmitterActivity, bleControllerInfo)
+                    PairUtil.startPair(this@TransmitterActivity, proxy)
                 }
             }
         } else {
-            PairUtil.startPair(this@TransmitterActivity, bleControllerInfo)
+            PairUtil.startPair(this@TransmitterActivity, proxy)
         }
     }
 
@@ -300,21 +321,23 @@ class TransmitterActivity : BaseActivity<BaseViewModel, ActivityTransmitterBindi
             binding.layoutMyTrans.transItem -> {
                 transmitter?.let {
                     val intent = Intent(this, TransOperationActivity::class.java)
-                    intent.putExtra(
-                        BLE_INFO,
-                        BleControllerInfo(
-                            transmitter?.deviceMac,
-                            transmitter?.deviceName,
-                            transmitter?.deviceSn,
-                            130
+                    transmitter?.let {
+                        intent.putExtra(
+                            BLE_INFO,
+                            BleControllerInfo(
+                                it.deviceType,
+                                it.deviceMac,
+                                it.deviceName,
+                                it.deviceSn,
+                            )
                         )
-                    )
-                    if (transmitter?.accessId == null) {
-                        intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_PAIR)
-                    } else {
-                        intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
+                        if (transmitter?.accessId == null) {
+                            intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_PAIR)
+                        } else {
+                            intent.putExtra(OPERATION_TYPE, OPERATION_TYPE_UNPAIR)
+                        }
+                        startActivity(intent)
                     }
-                    startActivity(intent)
                 }
             }
         }

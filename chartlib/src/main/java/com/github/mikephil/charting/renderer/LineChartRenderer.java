@@ -484,7 +484,6 @@ public class LineChartRenderer extends LineRadarRenderer {
 
             drawFilledPath(c, filled, drawable);
         } else {
-
             mRenderPaint.setShader(generateLinearGradient(dataSet, dataSet.getFillColors(), dataSet.getFillGradientPositions()));
             drawFilledPath(c, filled, dataSet.getFillColor(), dataSet.getFillAlpha());
             mRenderPaint.setShader(null);

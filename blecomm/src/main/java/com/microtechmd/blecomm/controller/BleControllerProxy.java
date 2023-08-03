@@ -8,6 +8,8 @@ public abstract class BleControllerProxy extends BleController {
    public abstract void newSensor(NewSensorEntity newSensorEntity);
    public abstract void startTime();
    public abstract void clearPair();
-   public abstract int setDynamicMode(int mode);
-   public abstract int setAutoUpdate();
+   public abstract void setDynamicMode(int mode);
+   public abstract void setAutoUpdate();
+   public abstract boolean isNativePaired();
+   public abstract boolean isInitialized();
 }

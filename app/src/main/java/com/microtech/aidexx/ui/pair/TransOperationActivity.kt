@@ -69,8 +69,9 @@ class TransOperationActivity : BaseActivity<BaseViewModel, ActivityTransOperatio
             2 -> binding.llPair.visibility = View.GONE
         }
         binding.tvPair.setOnClickListener {
-            bleControllerInfo?.let {
-                PairUtil.startPair(this@TransOperationActivity, bleControllerInfo)
+            val controller = TransmitterManager.instance().getDefault()?.getController()
+            controller?.let {
+                PairUtil.startPair(this@TransOperationActivity, it)
             }
         }
         binding.tvUnpair.setOnClickListener {

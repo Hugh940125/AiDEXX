@@ -1,6 +1,8 @@
 package com.microtechmd.blecomm.controller;
 
-public class CgmController extends BleController {
+import com.microtechmd.blecomm.entity.NewSensorEntity;
+
+public class CgmController extends BleControllerProxy {
     static {
         System.loadLibrary("blecomm-lib");
     }
@@ -46,4 +48,47 @@ public class CgmController extends BleController {
     public native int getDefaultParamData();
 
     public native int setDefaultParamData(float[] data);
+
+    @Override
+    public void getTransInfo() {
+
+    }
+
+    @Override
+    public void getDefaultParam() {
+
+    }
+
+    @Override
+    public void newSensor(NewSensorEntity newSensorEntity) {
+
+    }
+
+    @Override
+    public void startTime() {
+
+    }
+
+    @Override
+    public void clearPair() {
+
+    }
+
+    @Override
+    public void setDynamicMode(int mode) {
+    }
+
+    @Override
+    public void setAutoUpdate() {
+    }
+
+    @Override
+    public boolean isNativePaired() {
+        return false;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return false;
+    }
 }

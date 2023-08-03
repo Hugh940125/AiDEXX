@@ -23,7 +23,7 @@ import com.microtech.aidexx.utils.eventbus.EventBusManager
 import com.microtech.aidexx.views.dialog.Dialogs
 import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
-import com.microtechmd.blecomm.controller.BleControllerInfo
+import com.microtechmd.blecomm.controller.BleControllerProxy
 import com.microtechmd.blecomm.entity.BleMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -211,7 +211,7 @@ object PairUtil {
         })
     }
 
-    fun startPair(context: Context, controllerInfo: BleControllerInfo) {
+    fun startPair(context: Context, proxy: BleControllerProxy) {
         if (!NetUtil.isNetAvailable(context)) {
             context.getString(R.string.net_error).toastShort()
             return
@@ -220,7 +220,7 @@ object PairUtil {
         Dialogs.showWait(context.getString(R.string.pairing))
         handler.sendEmptyMessageDelayed(DISMISS_DIALOG, TIMEOUT_MILLIS)
         val pairModel =
-            TransmitterManager.instance().buildModel(controllerInfo.sn, controllerInfo.address)
+            TransmitterManager.instance().buildModel(proxy)
         pairModel?.let {
             it.getController().pair()
             it.getController().getTransInfo()

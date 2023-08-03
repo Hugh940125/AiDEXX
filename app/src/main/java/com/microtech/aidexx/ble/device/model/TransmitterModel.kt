@@ -51,6 +51,7 @@ import com.microtechmd.blecomm.constant.AidexXOperation
 import com.microtechmd.blecomm.constant.CgmOperation
 import com.microtechmd.blecomm.constant.History
 import com.microtechmd.blecomm.controller.AidexXController
+import com.microtechmd.blecomm.controller.BleControllerProxy
 import com.microtechmd.blecomm.entity.BleMessage
 import com.microtechmd.blecomm.parser.AidexXBroadcastEntity
 import com.microtechmd.blecomm.parser.AidexXCalibrationEntity
@@ -82,12 +83,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
     companion object {
 
         @Synchronized
-        fun instance(entity: TransmitterEntity): TransmitterModel {
+        fun instance(entity: TransmitterEntity, bleControllerProxy: BleControllerProxy): TransmitterModel {
             val instance = TransmitterModel(entity)
             instance.nextEventIndex = entity.eventIndex + 1
             instance.nextFullEventIndex = entity.fullEventIndex + 1
             instance.nextCalIndex = entity.calIndex + 1
-            instance.controller = AidexXController.getInstance()
+            instance.controller = bleControllerProxy
             instance.controller?.let {
                 it.mac = entity.deviceMac
                 it.sn = entity.deviceSn
@@ -145,6 +146,12 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
             CgmOperation.DISCOVER -> {
                 if (message.isSuccess) {
                     handleAdvertisement(message.data, DISCOVER_BROADCAST)
+                }
+            }
+
+            AidexXOperation.SET_NEW_SENSOR -> {
+                if (BuildConfig.keepAlive) {
+                    AidexBleAdapter.getInstance().executeDisconnect()
                 }
             }
 
@@ -595,7 +602,7 @@ class TransmitterModel private constructor(entity: TransmitterEntity) : DeviceMo
 
     private fun startLongConnect() {
         getController().setDynamicMode(1)
-        getController().setAutoUpdateStatus()
+        getController().setAutoUpdate()
         getController().broadcastData
     }
 

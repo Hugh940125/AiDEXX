@@ -68,9 +68,6 @@ class NewOrUsedSensorFragment : BaseFragment<BaseViewModel, FragmentNewOrUsedSen
                     }
 
                     AidexXOperation.SET_NEW_SENSOR -> {
-                        if (BuildConfig.keepAlive){
-                            AidexBleAdapter.getInstance().executeDisconnect()
-                        }
                         TransmitterManager.instance().getDefault()?.reset()
                     }
 

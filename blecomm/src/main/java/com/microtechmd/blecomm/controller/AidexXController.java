@@ -13,8 +13,16 @@ public class AidexXController extends BleControllerProxy {
         return new AidexXController();
     }
 
+    public static AidexXController getInstance(BleControllerInfo bleControllerInfo) {
+        return new AidexXController(bleControllerInfo);
+    }
+
     private AidexXController() {
         constructor();
+    }
+
+    private AidexXController(BleControllerInfo bleControllerInfo) {
+        constructorWithInfo(bleControllerInfo);
     }
 
     @Override
@@ -23,11 +31,17 @@ public class AidexXController extends BleControllerProxy {
         super.finalize();
     }
 
+    public native int isBleNativePaired();
+
+    public native int isAesInitialized();
+
     public native int setDynamicAdvMode(int mode);
 
     public native int setAutoUpdateStatus();
 
     private native void constructor();
+
+    private native void constructorWithInfo(BleControllerInfo info);
 
     private native void destructor();
 
@@ -86,13 +100,23 @@ public class AidexXController extends BleControllerProxy {
     }
 
     @Override
-    public int setDynamicMode(int mode) {
-        return setDynamicAdvMode(mode);
+    public void setDynamicMode(int mode) {
+        setDynamicAdvMode(mode);
     }
 
     @Override
-    public int setAutoUpdate() {
-        return setAutoUpdateStatus();
+    public void setAutoUpdate() {
+        setAutoUpdateStatus();
+    }
+
+    @Override
+    public boolean isNativePaired() {
+        return isBleNativePaired() == 1;
+    }
+
+    @Override
+    public boolean isInitialized() {
+        return isAesInitialized() == 1;
     }
 
     @Override
